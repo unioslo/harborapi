@@ -1,0 +1,15 @@
+# Dev directories
+venv/
+._dev/
+.vscode/
+codegen/
+
+# Single files
+swagger.yaml
+.coverage
+
+# Cache
+.pytest_cache
+.mypy_cache
+.hypothesis
+*.pyc
