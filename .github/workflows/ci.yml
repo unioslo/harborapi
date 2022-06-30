@@ -1,0 +1,29 @@
+name: Test
+on: [push]
+jobs:
+  unit_tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version:
+          - "3.8"
+          - "3.9"
+          - "3.10"
+        poetry-version: ["1.1.11"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run image
+        uses: abatilo/actions-poetry@v2.0.0
+        with:
+          poetry-version: ${{ matrix.poetry-version }}
+      - name: Poetry install
+        working-directory: ./${{ matrix.service }}
+        run: poetry install
+      - name: Run tests
+        working-directory: ./${{ matrix.service }}
+        run: poetry run pytest -vv
