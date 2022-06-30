@@ -39,7 +39,7 @@ def test_client_init_sanity():
 @pytest.mark.asyncio
 @given(st.builds(UserResp), st.builds(UserResp))
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-async def test_get_users(
+async def test_get_users_mock(
     async_client: HarborAsyncClient,
     httpserver: HTTPServer,
     user1: UserResp,
