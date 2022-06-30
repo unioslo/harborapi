@@ -362,3 +362,15 @@ class HarborAsyncClient(_HarborClientBase):
         return resp
 
     # TODO: add on_giveup callback for all backoff methods
+
+
+# TODO: integrate this with the rest of the codebase
+async def handle_optional_json_response(resp: Response) -> Optional[JSONType]:
+    if not is_json(resp) or resp.status_code == 204:
+        return None
+    try:
+        j = resp.json()
+    except JSONDecodeError as e:
+        logger.error("Failed to parse JSON from {}: {}", resp.url, e)
+        raise HarborAPIException(e)
+    return j
