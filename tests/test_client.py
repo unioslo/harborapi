@@ -51,7 +51,7 @@ async def test_get_pagination_mock(
     ).respond_with_json([{"username": "user3"}, {"username": "user4"}])
     async_client.url = httpserver.url_for("/api/v2.0")
     users = await async_client.get("/users")  # type: ignore
-    assert type(users) is list
+    assert isinstance(users, list)
     assert len(users) == 4
     assert users[0]["username"] == "user1"
     assert users[1]["username"] == "user2"
@@ -76,7 +76,7 @@ async def test_get_pagination_invalid_mock(
     ).respond_with_json({"username": "user3"})
     async_client.url = httpserver.url_for("/api/v2.0")
     users = await async_client.get("/users")  # type: ignore
-    assert type(users) is list
+    assert isinstance(users, list)
     assert len(users) == 2
     assert users[0]["username"] == "user1"
     assert users[1]["username"] == "user2"
@@ -102,7 +102,7 @@ async def test_get_retry_mock(async_client: HarborAsyncClient, httpserver: HTTPS
 
     async_client.url = httpserver.url_for("/api/v2.0")
     users = await async_client.get("/users")
-    assert type(users) is list
+    assert isinstance(users, list)
     assert len(users) == 2
 
 
