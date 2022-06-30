@@ -5,7 +5,7 @@ description = ""
 authors = ["Peder Hovdan Andresen <pederhan@usit.uio.no>"]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.8"
 httpx = "^0.23.0"
 pydantic = "^1.9.1"
 backoff = "^2.1.2"
