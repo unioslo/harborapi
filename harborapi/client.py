@@ -21,7 +21,7 @@ from .types import JSONType
 T = TypeVar("T", bound=BaseModel)
 
 
-def create_model(cls: Type[T], data: Any) -> T:
+def construct_model(cls: Type[T], data: Any) -> T:
     try:
         return cls.parse_obj(data)
     except ValidationError as e:
@@ -72,7 +72,7 @@ class HarborAsyncClient(_HarborClientBase):
             "/users/search",
             params={"username": username, **kwargs},
         )
-        return [create_model(UserSearchRespItem, u) for u in users_resp]
+        return [construct_model(UserSearchRespItem, u) for u in users_resp]
 
     # GET /users
     async def get_users(self, sort: Optional[str] = None, **kwargs) -> List[UserResp]:
@@ -80,12 +80,12 @@ class HarborAsyncClient(_HarborClientBase):
         if sort:
             params["sort"] = sort
         users_resp = await self.get("/users", params=params)
-        return [create_model(UserResp, u) for u in users_resp]
+        return [construct_model(UserResp, u) for u in users_resp]
 
     # GET /users/current
     async def get_current_user(self) -> UserResp:
         user_resp = await self.get("/users/current")
-        return create_model(UserResp, user_resp)
+        return construct_model(UserResp, user_resp)
 
     # GET /users/current/permissions
     async def get_current_user_permissions(
@@ -111,7 +111,7 @@ class HarborAsyncClient(_HarborClientBase):
             params["scope"] = scope
             params["relative"] = relative
         resp = await self.get("/api/users/current/permissions", params=params)
-        return [create_model(Permission, p) for p in resp]
+        return [construct_model(Permission, p) for p in resp]
 
     # CATEGORY: gc
     # CATEGORY: scanAll
@@ -139,26 +139,26 @@ class HarborAsyncClient(_HarborClientBase):
     # POST /scanners
     async def create_scanner(self, scanner: ScannerRegistrationReq) -> str:
         """Creates a new scanner. Returns location of the created scanner."""
-        resp = await self.post("/scanners", json=scanner.dict())
+        resp = await self.post("/scanners", json=scanner)
         return resp.headers.get("Location")
 
     # GET /scanners
     async def get_scanners(self, *args, **kwargs) -> List[ScannerRegistration]:
         scanners = await self.get("/scanners", params=kwargs)
-        return [create_model(ScannerRegistration, s) for s in scanners]
+        return [construct_model(ScannerRegistration, s) for s in scanners]
 
     # PUT /scanners/{registration_id}
     async def update_scanner(
         self, registration_id: Union[int, str], scanner: ScannerRegistrationReq
     ) -> None:
-        await self.put(f"/scanners/{registration_id}", json=scanner.dict())
+        await self.put(f"/scanners/{registration_id}", json=scanner)
 
     # GET /scanners/{registration_id}
     async def get_scanner(
         self, registration_id: Union[int, str]
     ) -> ScannerRegistration:
         scanner = await self.get(f"/scanners/{registration_id}")
-        return create_model(ScannerRegistration, scanner)
+        return construct_model(ScannerRegistration, scanner)
 
     # DELETE /scanners/{registration_id}
     async def delete_scanner(self, registration_id: Union[int, str]) -> None:
@@ -173,7 +173,7 @@ class HarborAsyncClient(_HarborClientBase):
         self, registration_id: int
     ) -> ScannerAdapterMetadata:
         scanner = await self.get(f"/scanners/{registration_id}/metadata")
-        return create_model(ScannerAdapterMetadata, scanner)
+        return construct_model(ScannerAdapterMetadata, scanner)
 
     # CATEGORY: systeminfo
     # CATEGORY: statistic
