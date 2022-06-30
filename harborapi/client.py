@@ -1,5 +1,5 @@
 from json import JSONDecodeError
-from typing import Any, Dict, List, Optional, Type, TypeVar, Union, cast
+from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 
 import backoff
 import httpx
@@ -8,13 +8,20 @@ from loguru import logger
 from pydantic import BaseModel, ValidationError
 
 from .exceptions import HarborAPIException, StatusError
-from .model import Permission, UserResp, UserSearchRespItem
+from .model import (
+    Permission,
+    ScannerAdapterMetadata,
+    ScannerRegistration,
+    ScannerRegistrationReq,
+    UserResp,
+    UserSearchRespItem,
+)
 from .types import JSONType
 
 T = TypeVar("T", bound=BaseModel)
 
 
-def create_model(cls: Type[T], data: JSONType) -> T:
+def create_model(cls: Type[T], data: Any) -> T:
     try:
         return cls.parse_obj(data)
     except ValidationError as e:
@@ -55,6 +62,9 @@ class HarborAsyncClient(_HarborClientBase):
         super().__init__(username, token, url, **kwargs)
         self.client = httpx.AsyncClient()
 
+    # CATEGORY: user
+
+    # GET /users/search?username=<username>
     async def get_users_by_username(
         self, username: str, **kwargs: Any
     ) -> List[UserSearchRespItem]:
@@ -62,21 +72,22 @@ class HarborAsyncClient(_HarborClientBase):
             "/users/search",
             params={"username": username, **kwargs},
         )
-        users_resp = cast(List[dict], users_resp)
         return [create_model(UserSearchRespItem, u) for u in users_resp]
 
+    # GET /users
     async def get_users(self, sort: Optional[str] = None, **kwargs) -> List[UserResp]:
         params = {**kwargs}
         if sort:
             params["sort"] = sort
         users_resp = await self.get("/users", params=params)
-        users_resp = cast(List[dict], users_resp)
         return [create_model(UserResp, u) for u in users_resp]
 
+    # GET /users/current
     async def get_current_user(self) -> UserResp:
         user_resp = await self.get("/users/current")
         return create_model(UserResp, user_resp)
 
+    # GET /users/current/permissions
     async def get_current_user_permissions(
         self, scope: Optional[str], relative: bool = False
     ) -> List[Permission]:
@@ -93,17 +104,90 @@ class HarborAsyncClient(_HarborClientBase):
         Returns
         -------
         List[Permission]
-            _description_
+            A list of Permission objects for the current user.
         """
         params = {}  # type: Dict[str, Any]
         if scope:
             params["scope"] = scope
             params["relative"] = relative
         resp = await self.get("/api/users/current/permissions", params=params)
-        resp = cast(List[dict], resp)
         return [create_model(Permission, p) for p in resp]
 
-    @backoff.on_exception(backoff.expo, RequestError, max_tries=3)
+    # CATEGORY: gc
+    # CATEGORY: scanAll
+    # CATEGORY: configure
+    # CATEGORY: usergroup
+    # CATEGORY: preheat
+    # CATEGORY: replication
+    # CATEGORY: label
+    # CATEGORY: robot
+    # CATEGORY: webhookjob
+    # CATEGORY: icon
+    # CATEGORY: project
+    # CATEGORY: webhook
+    # CATEGORY: scan
+    # CATEGORY: member
+    # CATEGORY: ldap
+    # CATEGORY: registry
+    # CATEGORY: search
+    # CATEGORY: artifact
+    # CATEGORY: immutable
+    # CATEGORY: retention
+
+    # CATEGORY: scanner
+
+    # POST /scanners
+    async def create_scanner(self, scanner: ScannerRegistrationReq) -> str:
+        """Creates a new scanner. Returns location of the created scanner."""
+        resp = await self.post("/scanners", json=scanner.dict())
+        return resp.headers.get("Location")
+
+    # GET /scanners
+    async def get_scanners(self, *args, **kwargs) -> List[ScannerRegistration]:
+        scanners = await self.get("/scanners", params=kwargs)
+        return [create_model(ScannerRegistration, s) for s in scanners]
+
+    # PUT /scanners/{registration_id}
+    async def update_scanner(
+        self, registration_id: Union[int, str], scanner: ScannerRegistrationReq
+    ) -> None:
+        await self.put(f"/scanners/{registration_id}", json=scanner.dict())
+
+    # GET /scanners/{registration_id}
+    async def get_scanner(
+        self, registration_id: Union[int, str]
+    ) -> ScannerRegistration:
+        scanner = await self.get(f"/scanners/{registration_id}")
+        return create_model(ScannerRegistration, scanner)
+
+    # DELETE /scanners/{registration_id}
+    async def delete_scanner(self, registration_id: Union[int, str]) -> None:
+        await self.delete(f"/scanners/{registration_id}")
+
+    # PATCH /scanners/{registration_id}
+
+    # POST /scanners/ping
+
+    # GET /scanners/{registration_id}/metadata
+    async def get_scanner_metadata(
+        self, registration_id: int
+    ) -> ScannerAdapterMetadata:
+        scanner = await self.get(f"/scanners/{registration_id}/metadata")
+        return create_model(ScannerAdapterMetadata, scanner)
+
+    # CATEGORY: systeminfo
+    # CATEGORY: statistic
+    # CATEGORY: quota
+    # CATEGORY: repository
+    # CATEGORY: ping
+    # CATEGORY: oidc
+    # CATEGORY: SystemCVEAllowlist
+    # CATEGORY: health
+    # CATEGORY: robotv1
+    # CATEGORY: projectMetadata
+    # CATEGORY: auditlog
+
+    @backoff.on_exception(backoff.expo, RequestError, max_time=30)
     async def get(self, path: str, params: Optional[dict] = None) -> JSONType:
         return await self._get(path, params)
 
@@ -134,55 +218,68 @@ class HarborAsyncClient(_HarborClientBase):
         return j
 
     async def _handle_pagination(self, data: JSONType, link: str) -> JSONType:
-        if not isinstance(data, list):  # NOTE: use generic?
+        """Handles paginated results by recursing until all results are returned."""
+        # NOTE: can this be done more elegantly?
+        # TODO: re-use async client somehow
+        j = await self._get(link)  # ignoring params and only using the link
+        if not isinstance(j, list) or not isinstance(data, list):
             logger.warning(
-                "Unable to handle paginated results, data is not a list. URL: {}", link
+                "Unable to handle paginated results, received non-list value. URL: {}",
+                link,
             )
+            # TODO: add more diagnostics info here
             return data
-        j = await self._get(link)  # ignoring params
-        data.append(j)
+        data.extend(j)
         return data
 
     # NOTE: POST is not idempotent, should we still retry?
+    # TODO: fix abstraction of post/_post. Put everything into _post?
     @backoff.on_exception(backoff.expo, RequestError, max_tries=1)
-    async def post(self, path: str, body: Union[BaseModel, JSONType]) -> JSONType:
-        if isinstance(body, BaseModel):
-            body = body.dict()
+    async def post(self, path: str, json: Union[BaseModel, JSONType]) -> Response:
+        if isinstance(json, BaseModel):
+            body = json.dict()
+        return await self._post(path, body)
+
+    async def _post(self, path: str, json: JSONType) -> Response:
         try:
-            res = await self._post(path, body)
-            j = res.json()
-        except JSONDecodeError as e:
-            logger.error("Failed to parse JSON from {}{}: {}", self.url, path, e)
-            raise HarborAPIException(e)
-        except Exception as e:
+            async with self.client:
+                resp = await self.client.post(self.url + path, json=json)
+                resp.raise_for_status()
+        except HTTPStatusError as e:
             logger.error(
-                "Failed to post to {}{} with body {}, error: {}",
+                "ERROR: POST {}{} with body {}, error: {}",
                 self.url,
                 path,
-                body,
+                json,
                 e,
             )
             raise HarborAPIException(e)
-        return j
+        return resp
 
-    async def _post(self, path: str, body: JSONType) -> Response:
+    @backoff.on_exception(backoff.expo, RequestError, max_time=30)
+    async def put(self, path: str, json: JSONType) -> Optional[JSONType]:
+        return await self.put(path, json)
+
+    async def _put(self, path: str, json: JSONType) -> Response:
         try:
             async with self.client:
-                resp = await self.client.post(self.url + path, json=body)
+                resp = await self.client.put(self.url + path, json=json)
                 resp.raise_for_status()
         except HTTPStatusError as e:
             raise StatusError(e)
         return resp
 
-    @backoff.on_exception(backoff.expo, RequestError, max_tries=3)
-    async def put(self, path: str, body: JSONType) -> Optional[JSONType]:
-        return await self.put(path, body)
+    @backoff.on_exception(backoff.expo, RequestError, max_time=30)
+    async def delete(self, path: str, **kwargs) -> Optional[JSONType]:
+        return await self.put(path, **kwargs)
 
-    async def _put(self, path: str, body: JSONType) -> Response:
+    async def _delete(self, path: str, **kwargs) -> Response:
         try:
             async with self.client:
-                resp = await self.client.post(self.url + path, json=body)
+                resp = await self.client.delete(self.url + path)
                 resp.raise_for_status()
         except HTTPStatusError as e:
             raise StatusError(e)
         return resp
+
+    # TODO: add on_giveup callback for all backoff methods
