@@ -255,7 +255,7 @@ class HarborAsyncClient(_HarborClientBase):
         except HTTPStatusError as e:
             raise StatusError(e)  # TODO: add information to this exception
         except JSONDecodeError as e:
-            logger.error("Failed to parse JSON from {}{}: {}", self.url, path, e)
+            logger.error("Failed to parse JSON from {}: {}", resp.url, e)
             raise HarborAPIException(e)
         if link := resp.headers.get("link"):
             logger.debug("Handling paginated results. URL: {}", link)
@@ -281,14 +281,14 @@ class HarborAsyncClient(_HarborClientBase):
     # TODO: fix abstraction of post/_post. Put everything into _post?
     @backoff.on_exception(backoff.expo, RequestError, max_tries=1)
     async def post(self, path: str, json: Union[BaseModel, JSONType]) -> Response:
-        if isinstance(json, BaseModel):
-            body = json.dict()
-        return await self._post(path, body)
+        return await self._post(path, json)
 
-    async def _post(self, path: str, json: JSONType) -> Response:
+    async def _post(self, path: str, json: Union[BaseModel, JSONType]) -> Response:
+        if isinstance(json, BaseModel):
+            json = json.dict()
         try:
-            async with self.client:
-                resp = await self.client.post(self.url + path, json=json)
+            async with httpx.AsyncClient() as client:
+                resp = await client.post(self.url + path, json=json)
                 resp.raise_for_status()
         except HTTPStatusError as e:
             logger.error(
@@ -302,13 +302,44 @@ class HarborAsyncClient(_HarborClientBase):
         return resp
 
     @backoff.on_exception(backoff.expo, RequestError, max_time=30)
-    async def put(self, path: str, json: JSONType) -> Optional[JSONType]:
-        return await self.put(path, json)
+    async def put(
+        self, path: str, json: Union[BaseModel, JSONType]
+    ) -> Optional[JSONType]:
+        resp = await self._put(path, json)
+        if not is_json(resp) or resp.status_code == 204:
+            return None
+        return resp.json()
 
-    async def _put(self, path: str, json: JSONType) -> Response:
+    async def _put(self, path: str, json: Union[BaseModel, JSONType]) -> Response:
+        if isinstance(json, BaseModel):
+            json = json.dict()
         try:
-            async with self.client:
-                resp = await self.client.put(self.url + path, json=json)
+            async with httpx.AsyncClient() as client:
+                resp = await client.put(
+                    self.url + path, json=json, headers=self._get_headers()
+                )
+                resp.raise_for_status()
+        except HTTPStatusError as e:
+            raise StatusError(e)
+        return resp
+
+    @backoff.on_exception(backoff.expo, RequestError, max_time=30)
+    async def patch(
+        self, path: str, json: Union[BaseModel, JSONType]
+    ) -> Optional[JSONType]:
+        resp = await self._patch(path, json)
+        if not is_json(resp) or resp.status_code == 204:
+            return None
+        return resp.json()
+
+    async def _patch(self, path: str, json: Union[BaseModel, JSONType]) -> Response:
+        if isinstance(json, BaseModel):
+            json = json.dict()
+        try:
+            async with httpx.AsyncClient() as client:
+                resp = await client.patch(
+                    self.url + path, json=json, headers=self._get_headers()
+                )
                 resp.raise_for_status()
         except HTTPStatusError as e:
             raise StatusError(e)
@@ -316,12 +347,15 @@ class HarborAsyncClient(_HarborClientBase):
 
     @backoff.on_exception(backoff.expo, RequestError, max_time=30)
     async def delete(self, path: str, **kwargs) -> Optional[JSONType]:
-        return await self.put(path, **kwargs)
+        resp = await self._delete(path, **kwargs)
+        if not is_json(resp) or resp.status_code == 204:
+            return None
+        return resp.json()  # TODO: exception handler for malformed JSON
 
     async def _delete(self, path: str, **kwargs) -> Response:
         try:
-            async with self.client:
-                resp = await self.client.delete(self.url + path)
+            async with httpx.AsyncClient() as client:
+                resp = await client.delete(self.url + path, headers=self._get_headers())
                 resp.raise_for_status()
         except HTTPStatusError as e:
             raise StatusError(e)
