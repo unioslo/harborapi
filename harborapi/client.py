@@ -223,6 +223,11 @@ class HarborAsyncClient(_HarborClientBase):
         return construct_model(CVEAllowlist, resp)
 
     # CATEGORY: health
+    # GET /health
+    async def health_check(self) -> OverallHealthStatus:
+        resp = await self.get("/health")
+        return construct_model(OverallHealthStatus, resp)
+
     # CATEGORY: robotv1
     # CATEGORY: projectMetadata
     # CATEGORY: auditlog
