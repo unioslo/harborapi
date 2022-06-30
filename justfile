@@ -9,3 +9,17 @@ _codegen:
 # Fetch swagger.yaml and generate models
 fetchgen: _fetchswagger _codegen
     # Finished fetching new definitions and generating models
+
+# Test
+test:
+    pytest -vv
+
+# Coverage in terminal
+_cov:
+    coverage run --source=. -m pytest
+
+testcov: _cov
+    coverage report -m
+
+testhtml: _cov
+    coverage html && google-chrome htmlcov/index.html
