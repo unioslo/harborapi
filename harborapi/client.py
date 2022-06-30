@@ -197,7 +197,18 @@ class HarborAsyncClient(_HarborClientBase):
     # CATEGORY: statistic
     # CATEGORY: quota
     # CATEGORY: repository
+
     # CATEGORY: ping
+    # GET /ping
+    async def ping_harbor_api(self) -> str:
+        """Pings the Harbor API to check if it is alive."""
+        # TODO: add plaintext GET method so we don't have to do this here
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(self.url + "/ping")
+            if resp is None or resp.status_code != 200:
+                raise HarborAPIException("Ping request failed")
+            return resp.text
+
     # CATEGORY: oidc
     # CATEGORY: SystemCVEAllowlist
     # CATEGORY: health
