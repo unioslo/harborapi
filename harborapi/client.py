@@ -9,14 +9,19 @@ from pydantic import BaseModel, ValidationError
 
 from .exceptions import HarborAPIException, StatusError
 from .model import (
+    CVEAllowlist,
+    IsDefault,
+    OverallHealthStatus,
     Permission,
     ScannerAdapterMetadata,
     ScannerRegistration,
     ScannerRegistrationReq,
+    ScannerRegistrationSettings,
     UserResp,
     UserSearchRespItem,
 )
 from .types import JSONType
+from .utils import is_json
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -161,12 +166,25 @@ class HarborAsyncClient(_HarborClientBase):
         return construct_model(ScannerRegistration, scanner)
 
     # DELETE /scanners/{registration_id}
-    async def delete_scanner(self, registration_id: Union[int, str]) -> None:
-        await self.delete(f"/scanners/{registration_id}")
+    async def delete_scanner(
+        self, registration_id: Union[int, str]
+    ) -> ScannerRegistration:
+        scanner = await self.delete(f"/scanners/{registration_id}")
+        if not scanner:
+            raise HarborAPIException("Deletion request returned no data")
+        return construct_model(ScannerRegistration, scanner)
 
     # PATCH /scanners/{registration_id}
+    async def set_default_scanner(
+        self, registration_id: Union[int, str], is_default: bool = True
+    ) -> None:
+        await self.patch(
+            f"/scanners/{registration_id}", json=IsDefault(is_default=is_default)
+        )
 
     # POST /scanners/ping
+    async def ping_scanner_adapter(self, settings: ScannerRegistrationSettings) -> None:
+        await self.post("/scanners/ping", json=settings)
 
     # GET /scanners/{registration_id}/metadata
     async def get_scanner_metadata(
