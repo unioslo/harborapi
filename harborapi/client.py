@@ -210,7 +210,18 @@ class HarborAsyncClient(_HarborClientBase):
             return resp.text
 
     # CATEGORY: oidc
+
     # CATEGORY: SystemCVEAllowlist
+    # PUT /system/CVEAllowlist
+    async def update_cve_allowlist(self, allowlist: CVEAllowlist) -> None:
+        """Overwrites the existing CVE allowlist with a new one."""
+        await self.put("/system/CVEAllowlist", json=allowlist)
+
+    # GET /system/CVEAllowlist
+    async def get_cve_allowlist(self) -> CVEAllowlist:
+        resp = await self.get("/system/CVEAllowlist")
+        return construct_model(CVEAllowlist, resp)
+
     # CATEGORY: health
     # CATEGORY: robotv1
     # CATEGORY: projectMetadata
