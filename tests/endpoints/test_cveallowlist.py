@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
@@ -6,16 +8,18 @@ from pytest_httpserver import HTTPServer
 from harborapi.client import HarborAsyncClient
 from harborapi.model import CVEAllowlist, CVEAllowlistItem, UserResp
 
+from ..strategies import cveallowlist_strategy
+
 
 @pytest.mark.asyncio
-@given(st.builds(CVEAllowlist))
+@given(cveallowlist_strategy)
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 async def test_get_cve_allowlist(
     async_client: HarborAsyncClient,
     httpserver: HTTPServer,
     cve_allowlist: CVEAllowlist,
 ):
-    httpserver.expect_request(
+    httpserver.expect_oneshot_request(  # IMPORTANT TO USE ONESHOT
         "/api/v2.0/system/CVEAllowlist",
         method="GET",
     ).respond_with_json(cve_allowlist.dict())
@@ -27,7 +31,7 @@ async def test_get_cve_allowlist(
 
 
 @pytest.mark.asyncio
-@given(st.builds(CVEAllowlist))
+@given(cveallowlist_strategy)
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 async def test_update_cve_allowlist(
     async_client: HarborAsyncClient,
@@ -36,7 +40,7 @@ async def test_update_cve_allowlist(
 ):
     # TODO: improve this test? We don't have a way to check the response body
     #       when using .update_cve_allowlist(). Call ._put() directly?
-    httpserver.expect_request(
+    httpserver.expect_oneshot_request(
         "/api/v2.0/system/CVEAllowlist",
         method="PUT",
     ).respond_with_data()
