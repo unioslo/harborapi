@@ -203,11 +203,7 @@ class HarborAsyncClient(_HarborClientBase):
     async def ping_harbor_api(self) -> str:
         """Pings the Harbor API to check if it is alive."""
         # TODO: add plaintext GET method so we don't have to do this here
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(self.url + "/ping")
-            if resp is None or resp.status_code != 200:
-                raise HarborAPIException("Ping request failed")
-            return resp.text
+        return await self.get_text("/ping")
 
     # CATEGORY: oidc
 
@@ -232,34 +228,40 @@ class HarborAsyncClient(_HarborClientBase):
     # CATEGORY: projectMetadata
     # CATEGORY: auditlog
 
-    @backoff.on_exception(backoff.expo, RequestError, max_time=30)
-    async def get(self, path: str, params: Optional[dict] = None) -> JSONType:
-        return await self._get(path, params)
-
     def _get_headers(self) -> Dict[str, str]:
         return {
             "Authorization": "Basic " + self.token,
             "accept": "application/json",
         }
 
+    @backoff.on_exception(backoff.expo, RequestError, max_time=30)
+    async def get(self, path: str, params: Optional[dict] = None) -> JSONType:
+        return await self._get(path, params)
+
+    @backoff.on_exception(backoff.expo, RequestError, max_time=30)
+    async def get_text(self, path: str, params: Optional[dict] = None) -> str:
+        """Bad workaround in order to have a cleaner API for text/plain responses."""
+        resp = await self._get(path, params)
+        return resp  # type: ignore
+
+    # TODO: refactor this method so it looks like the other methods, while still supporting pagination.
     async def _get(self, path: str, params: Optional[dict] = None) -> JSONType:
-        try:
-            async with httpx.AsyncClient() as client:
-                resp = await client.get(
-                    self.url + path,
-                    params=params,
-                    headers=self._get_headers(),
-                )
-                resp.raise_for_status()
-                j = resp.json()
-        except HTTPStatusError as e:
-            raise StatusError(e)  # TODO: add information to this exception
-        except JSONDecodeError as e:
-            logger.error("Failed to parse JSON from {}: {}", resp.url, e)
-            raise HarborAPIException(e)
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(
+                self.url + path,
+                params=params,
+                headers=self._get_headers(),
+            )
+            check_response_status(resp)
+        j = handle_optional_json_response(resp)
+        if j is None:
+            return resp.text  # type: ignore # FIXME: resolve this ASAP (use overload?)
+
+        # If we have "Link" in headers, we need to handle paginated results
         if link := resp.headers.get("link"):
             logger.debug("Handling paginated results. URL: {}", link)
             j = await self._handle_pagination(j, link)  # recursion (refactor?)
+
         return j
 
     async def _handle_pagination(self, data: JSONType, link: str) -> JSONType:
@@ -291,19 +293,9 @@ class HarborAsyncClient(_HarborClientBase):
     ) -> Response:
         if isinstance(json, BaseModel):
             json = json.dict()
-        try:
-            async with httpx.AsyncClient() as client:
-                resp = await client.post(self.url + path, json=json)
-                resp.raise_for_status()
-        except HTTPStatusError as e:
-            logger.error(
-                "ERROR: POST {}{} with body {}, error: {}",
-                self.url,
-                path,
-                json,
-                e,
-            )
-            raise HarborAPIException(e)
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(self.url + path, json=json)
+            check_response_status(resp)
         return resp
 
     @backoff.on_exception(backoff.expo, RequestError, max_time=30)
@@ -311,21 +303,16 @@ class HarborAsyncClient(_HarborClientBase):
         self, path: str, json: Union[BaseModel, JSONType]
     ) -> Optional[JSONType]:
         resp = await self._put(path, json)
-        if not is_json(resp) or resp.status_code == 204:
-            return None
-        return resp.json()
+        return handle_optional_json_response(resp)
 
     async def _put(self, path: str, json: Union[BaseModel, JSONType]) -> Response:
         if isinstance(json, BaseModel):
             json = json.dict()
-        try:
-            async with httpx.AsyncClient() as client:
-                resp = await client.put(
-                    self.url + path, json=json, headers=self._get_headers()
-                )
-                resp.raise_for_status()
-        except HTTPStatusError as e:
-            raise StatusError(e)
+        async with httpx.AsyncClient() as client:
+            resp = await client.put(
+                self.url + path, json=json, headers=self._get_headers()
+            )
+            check_response_status(resp)
         return resp
 
     @backoff.on_exception(backoff.expo, RequestError, max_time=30)
@@ -333,49 +320,28 @@ class HarborAsyncClient(_HarborClientBase):
         self, path: str, json: Union[BaseModel, JSONType]
     ) -> Optional[JSONType]:
         resp = await self._patch(path, json)
-        if not is_json(resp) or resp.status_code == 204:
-            return None
-        return resp.json()
+        return handle_optional_json_response(resp)
 
     async def _patch(self, path: str, json: Union[BaseModel, JSONType]) -> Response:
         if isinstance(json, BaseModel):
             json = json.dict()
-        try:
-            async with httpx.AsyncClient() as client:
-                resp = await client.patch(
-                    self.url + path, json=json, headers=self._get_headers()
-                )
-                resp.raise_for_status()
-        except HTTPStatusError as e:
-            raise StatusError(e)
+
+        async with httpx.AsyncClient() as client:
+            resp = await client.patch(
+                self.url + path, json=json, headers=self._get_headers()
+            )
+            check_response_status(resp)
         return resp
 
     @backoff.on_exception(backoff.expo, RequestError, max_time=30)
     async def delete(self, path: str, **kwargs) -> Optional[JSONType]:
         resp = await self._delete(path, **kwargs)
-        if not is_json(resp) or resp.status_code == 204:
-            return None
-        return resp.json()  # TODO: exception handler for malformed JSON
+        return handle_optional_json_response(resp)
 
     async def _delete(self, path: str, **kwargs) -> Response:
-        try:
-            async with httpx.AsyncClient() as client:
-                resp = await client.delete(self.url + path, headers=self._get_headers())
-                resp.raise_for_status()
-        except HTTPStatusError as e:
-            raise StatusError(e)
+        async with httpx.AsyncClient() as client:
+            resp = await client.delete(self.url + path, headers=self._get_headers())
+            check_response_status(resp)
         return resp
 
     # TODO: add on_giveup callback for all backoff methods
-
-
-# TODO: integrate this with the rest of the codebase
-async def handle_optional_json_response(resp: Response) -> Optional[JSONType]:
-    if not is_json(resp) or resp.status_code == 204:
-        return None
-    try:
-        j = resp.json()
-    except JSONDecodeError as e:
-        logger.error("Failed to parse JSON from {}: {}", resp.url, e)
-        raise HarborAPIException(e)
-    return j
