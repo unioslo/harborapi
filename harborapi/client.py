@@ -1,5 +1,6 @@
 from json import JSONDecodeError
 from typing import Any, Dict, List, Optional, Type, TypeVar, Union
+from urllib.parse import quote
 
 import backoff
 import httpx
@@ -7,7 +8,7 @@ from httpx import HTTPStatusError, RequestError, Response
 from loguru import logger
 from pydantic import BaseModel, ValidationError
 
-from .exceptions import HarborAPIException, StatusError
+from .exceptions import HarborAPIException, StatusError, check_response_status
 from .model import (
     CVEAllowlist,
     IsDefault,
@@ -17,11 +18,13 @@ from .model import (
     ScannerRegistration,
     ScannerRegistrationReq,
     ScannerRegistrationSettings,
+    Schedule,
+    Stats,
     UserResp,
     UserSearchRespItem,
 )
 from .types import JSONType
-from .utils import is_json
+from .utils import get_artifact_path, handle_optional_json_response
 
 T = TypeVar("T", bound=BaseModel)
 
