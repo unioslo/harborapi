@@ -23,3 +23,7 @@ testcov: _cov
 
 testhtml: _cov
     coverage html && google-chrome htmlcov/index.html
+
+# Run pre-commit hooks on all files
+pcrun:
+    pre-commit run --all-files
