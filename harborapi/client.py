@@ -130,7 +130,48 @@ class HarborAsyncClient(_HarborClientBase):
     # CATEGORY: icon
     # CATEGORY: project
     # CATEGORY: webhook
+
     # CATEGORY: scan
+
+    # POST /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan
+    async def scan_artifact(
+        self, project_name: str, repository_name: str, reference: str
+    ) -> None:
+        """Scan an artifact.
+
+        Parameters
+        ----------
+        project_name : str
+            The name of the project
+        repository_name : str
+            The name of the repository
+        reference : str
+            The reference of the artifact, can be digest or tag
+        """
+        path = get_artifact_path(project_name, repository_name, reference)
+        resp = await self.post(f"{path}/scan")
+        if resp.status_code != 202:
+            logger.warning(
+                "Scan request for {} returned status code {}, expected 202",
+                path,
+                resp.status_code,
+            )
+
+    async def get_scan_report_log(
+        self, project_name: str, repository_name: str, reference: str, report_id: str
+    ) -> str:
+        """Get the log of a scan report."""
+        # TODO: investigate what exactly this endpoint returns
+        path = get_artifact_path(project_name, repository_name, reference)
+        return await self.get_text(f"{path}/scan/{report_id}")
+
+    async def stop_artifact_scan(
+        self, project_name: str, repository_name: str, reference: str
+    ) -> None:
+        """Stop a scan for a particular artifact."""
+        path = get_artifact_path(project_name, repository_name, reference)
+        await self.post(f"{path}/scan/stop")
+
     # CATEGORY: member
     # CATEGORY: ldap
     # CATEGORY: registry
