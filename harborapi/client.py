@@ -119,7 +119,34 @@ class HarborAsyncClient(_HarborClientBase):
         return [construct_model(Permission, p) for p in resp]
 
     # CATEGORY: gc
+
     # CATEGORY: scanAll
+
+    # GET /scans/all/metrics
+    async def get_scan_all_metrics(self) -> Stats:
+        resp = await self.get("/scans/all/metrics")
+        return construct_model(Stats, resp)
+
+    # PUT /system/scanAll/schedule
+    async def update_scan_all_schedule(self, schedule: Schedule) -> None:
+        """Update the scan all schedule."""
+        await self.put("/system/scanAll/schedule", json=schedule)
+
+    # POST /system/scanAll/schedule
+    async def create_scan_all_schedule(self, schedule: Schedule) -> str:
+        """Create a new scan all job schedule. Returns location of the created schedule."""
+        resp = await self.post("/system/scanAll/schedule", json=schedule)
+        return resp.headers.get("Location")
+
+    # GET /system/scanAll/schedule
+    async def get_scan_all_schedule(self) -> Schedule:
+        resp = await self.get("/system/scanAll/schedule")
+        return construct_model(Schedule, resp)
+
+    # POST /system/scanAll/stop
+    async def stop_scan_all_job(self) -> None:
+        await self.post("/system/scanAll/stop")
+
     # CATEGORY: configure
     # CATEGORY: usergroup
     # CATEGORY: preheat
