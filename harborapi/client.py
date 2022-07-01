@@ -1,3 +1,4 @@
+from base64 import b64encode
 from json import JSONDecodeError
 from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 from urllib.parse import quote
@@ -45,13 +46,13 @@ class _HarborClientBase:
     def __init__(
         self,
         username: str,
-        token: str,
+        secret: str,
         url: str,
         config: Optional[Any] = None,
         version: str = "v2.0",
     ) -> None:
         self.username = username
-        self.token = token
+        self.token = b64encode(f"{username}:{secret}".encode("utf-8")).decode("utf-8")
 
         # TODO: add URL regex and improve parsing OR don't police this at all
         url = url.strip("/")  # remove trailing slash
@@ -66,8 +67,8 @@ class _HarborClientBase:
 
 
 class HarborAsyncClient(_HarborClientBase):
-    def __init__(self, username: str, token: str, url: str, **kwargs: Any) -> None:
-        super().__init__(username, token, url, **kwargs)
+    def __init__(self, username: str, secret: str, url: str, **kwargs: Any) -> None:
+        super().__init__(username, secret, url, **kwargs)
         self.client = httpx.AsyncClient()
 
     # CATEGORY: user
