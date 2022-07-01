@@ -280,10 +280,15 @@ class HarborAsyncClient(_HarborClientBase):
     # NOTE: POST is not idempotent, should we still retry?
     # TODO: fix abstraction of post/_post. Put everything into _post?
     @backoff.on_exception(backoff.expo, RequestError, max_tries=1)
-    async def post(self, path: str, json: Union[BaseModel, JSONType]) -> Response:
+    async def post(
+        self, path: str, json: Optional[Union[BaseModel, JSONType]] = None
+    ) -> Response:
+        """Sends a POST request to a path, optionally with a JSON body."""
         return await self._post(path, json)
 
-    async def _post(self, path: str, json: Union[BaseModel, JSONType]) -> Response:
+    async def _post(
+        self, path: str, json: Optional[Union[BaseModel, JSONType]] = None
+    ) -> Response:
         if isinstance(json, BaseModel):
             json = json.dict()
         try:
