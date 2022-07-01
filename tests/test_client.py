@@ -1,11 +1,16 @@
 import asyncio
 
 import pytest
+from hypothesis import HealthCheck, given, settings
+from hypothesis import strategies as st
 from pydantic import ValidationError
 from pytest_httpserver import HTTPServer
 
 from harborapi.client import HarborAsyncClient, construct_model
-from harborapi.model import UserResp
+from harborapi.exceptions import StatusError
+from harborapi.model import Error, Errors, UserResp
+
+from .strategies import errors_strategy
 
 
 # TODO: parametrize this to test both clients
@@ -134,3 +139,25 @@ async def test_get_invalid_data(
         await async_client.get_users()
     assert e.value.errors()[0]["loc"] == ("username",)
     assert len(e.value.errors()) == 1
+
+
+@pytest.mark.asyncio
+@given(errors_strategy)
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+async def test_get_errors(
+    async_client: HarborAsyncClient, httpserver: HTTPServer, errors: Errors
+):
+    """Tests handling of data from the server that does not match the schema."""
+    httpserver.expect_request("/api/v2.0/errorpath").respond_with_json(
+        errors.dict(), status=500
+    )
+
+    async_client.url = httpserver.url_for("/api/v2.0")
+    with pytest.raises(StatusError) as e:
+        await async_client.get("/errorpath")
+    assert e is not None
+    assert isinstance(e.value, StatusError)
+    assert isinstance(e.value.errors, Errors)
+    if e.value.errors.errors:
+        for error in e.value.errors.errors:
+            assert isinstance(error, Error)
