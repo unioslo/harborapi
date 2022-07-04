@@ -1,11 +1,8 @@
-from base64 import b64encode
-from json import JSONDecodeError
 from typing import Any, Dict, List, Optional, Type, TypeVar, Union
-from urllib.parse import quote
 
 import backoff
 import httpx
-from httpx import HTTPStatusError, RequestError, Response
+from httpx import RequestError, Response
 from loguru import logger
 from pydantic import BaseModel, ValidationError
 
