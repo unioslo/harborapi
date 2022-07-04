@@ -26,7 +26,7 @@ from .models import (
     UserSearchRespItem,
 )
 from .types import JSONType
-from .utils import get_artifact_path, handle_optional_json_response
+from .utils import get_artifact_path, get_token, handle_optional_json_response
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -46,14 +46,20 @@ class _HarborClientBase:
 
     def __init__(
         self,
-        username: str,
-        secret: str,
         url: str,
+        username: str = None,
+        secret: str = None,
+        token: str = None,
         config: Optional[Any] = None,
         version: str = "v2.0",
     ) -> None:
         self.username = username
-        self.token = b64encode(f"{username}:{secret}".encode("utf-8")).decode("utf-8")
+        if username and secret:
+            self.token = get_token(username, secret)
+        elif token:
+            self.token = token
+        else:
+            raise ValueError("Must provide either username and secret or token")
 
         # TODO: add URL regex and improve parsing OR don't police this at all
         url = url.strip("/")  # remove trailing slash
@@ -68,8 +74,15 @@ class _HarborClientBase:
 
 
 class HarborAsyncClient(_HarborClientBase):
-    def __init__(self, username: str, secret: str, url: str, **kwargs: Any) -> None:
-        super().__init__(username, secret, url, **kwargs)
+    def __init__(
+        self,
+        url: str,
+        username: str = None,
+        secret: str = None,
+        token: str = None,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(url, username, secret, token, **kwargs)
         self.client = httpx.AsyncClient()
 
     # CATEGORY: user

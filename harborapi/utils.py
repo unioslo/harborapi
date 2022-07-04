@@ -1,3 +1,4 @@
+from base64 import b64encode
 from json import JSONDecodeError
 from typing import Optional
 from urllib.parse import quote
@@ -31,3 +32,8 @@ def get_artifact_path(project_name: str, repository_name: str, reference: str) -
     """Get artifact path given a project name, repo name and a reference (tag or digest)"""
     repo_name = quote(repository_name, safe="")  # URL-encode the repository name
     return f"/projects/{project_name}/repositories/{repo_name}/artifacts/{reference}"
+
+
+def get_token(username: str, secret: str) -> str:
+    """Get token given a username and a secret"""
+    return b64encode(f"{username}:{secret}".encode("utf-8")).decode("utf-8")

@@ -28,18 +28,18 @@ from .strategies import errors_strategy
 def test_client_init_url(url: str, expected: str):
     # manually set version to v2.0 for this test
     client = HarborAsyncClient(
-        username="username", token="token", url=url, version="v2.0"
+        username="username", secret="secret", url=url, version="v2.0"
     )
     assert client.url == expected
 
 
 def test_client_init_sanity():
     client = HarborAsyncClient(
-        username="username", token="token", url="https://harbor.example.com"
+        username="username", secret="secret", url="https://harbor.example.com"
     )
     assert client.url == "https://harbor.example.com/api/v2.0"
     assert client.username == "username"
-    assert client.token == "token"
+    assert client.token is not None  # TODO: check token validity?
 
 
 @pytest.mark.asyncio
