@@ -21,7 +21,9 @@ settings.load_profile(os.getenv("HYPOTHESIS_PROFILE", "default"))
 
 @pytest.fixture(scope="session")
 def async_client() -> HarborAsyncClient:
-    return HarborAsyncClient(username="username", token="token", url="http://localhost")
+    return HarborAsyncClient(
+        username="username", secret="secret", url="http://localhost"
+    )
 
 
 @pytest.fixture
