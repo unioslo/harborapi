@@ -19,7 +19,7 @@ async def test_get_cve_allowlist(
     httpserver: HTTPServer,
     cve_allowlist: CVEAllowlist,
 ):
-    httpserver.expect_oneshot_request(  # IMPORTANT TO USE ONESHOT
+    httpserver.expect_oneshot_request(
         "/api/v2.0/system/CVEAllowlist",
         method="GET",
     ).respond_with_json(cve_allowlist.dict())
