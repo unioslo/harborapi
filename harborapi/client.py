@@ -346,30 +346,61 @@ class HarborAsyncClient(_HarborClientBase):
 
     @backoff.on_exception(backoff.expo, RequestError, max_time=30)
     async def get(
-        self, path: str, params: Optional[dict] = None, headers: Optional[dict] = None
+        self,
+        path: str,
+        params: Optional[dict] = None,
+        headers: Optional[dict] = None,
+        follow_links: bool = True,
+        **kwargs,
     ) -> JSONType:
         return await self._get(
             path,
             params=params,
             headers=headers,
+            follow_links=follow_links,
+            **kwargs,
         )
 
     @backoff.on_exception(backoff.expo, RequestError, max_time=30)
     async def get_text(
-        self, path: str, params: Optional[dict] = None, headers: Optional[dict] = None
+        self,
+        path: str,
+        params: Optional[dict] = None,
+        headers: Optional[dict] = None,
+        **kwargs,
     ) -> str:
         """Bad workaround in order to have a cleaner API for text/plain responses."""
-        resp = await self._get(
-            path,
-            params=params,
-            headers=headers,
-        )
+        resp = await self._get(path, params=params, headers=headers, **kwargs)
         return resp  # type: ignore
 
     # TODO: refactor this method so it looks like the other methods, while still supporting pagination.
     async def _get(
-        self, path: str, params: Optional[dict] = None, headers: Optional[dict] = None
+        self,
+        path: str,
+        params: Optional[dict] = None,
+        headers: Optional[dict] = None,
+        follow_links: bool = True,
+        **kwargs,
     ) -> JSONType:
+        """Sends a GET request to the Harbor API.
+        Returns JSON unless the response is text/plain.
+
+        Parameters
+        ----------
+        path : str
+            URL path to resource
+        params : Optional[dict], optional
+            Request parameters, by default None
+        headers : Optional[dict], optional
+            Request headers, by default None
+        follow_links : bool, optional
+            Enable pagination by following links in response header, by default True
+
+        Returns
+        -------
+        JSONType
+            JSON data returned by the API
+        """
         headers = headers or {}
         headers.update(self._get_headers())
 
@@ -385,7 +416,7 @@ class HarborAsyncClient(_HarborClientBase):
             return resp.text  # type: ignore # FIXME: resolve this ASAP (use overload?)
 
         # If we have "Link" in headers, we need to handle paginated results
-        if link := resp.headers.get("link"):
+        if (link := resp.headers.get("link")) and follow_links:
             logger.debug("Handling paginated results. URL: {}", link)
             j = await self._handle_pagination(j, link)  # recursion (refactor?)
 

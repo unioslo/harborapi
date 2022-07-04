@@ -90,6 +90,23 @@ async def test_get_pagination_large_mock(
 
 
 @pytest.mark.asyncio
+async def test_get_pagination_no_follow(
+    async_client: HarborAsyncClient, httpserver: HTTPServer
+):
+    """Test pagination by mocking paginated /users results."""
+    httpserver.expect_oneshot_request("/api/v2.0/users").respond_with_json(
+        [{"username": "user1"}, {"username": "user2"}],
+        headers={"link": "/users?page=2"},
+    )
+    async_client.url = httpserver.url_for("/api/v2.0")
+    users = await async_client.get("/users", follow_links=False)  # type: ignore
+    assert isinstance(users, list)
+    assert len(users) == 2
+    assert users[0]["username"] == "user1"
+    assert users[1]["username"] == "user2"
+
+
+@pytest.mark.asyncio
 async def test_get_pagination_invalid_mock(
     async_client: HarborAsyncClient,
     httpserver: HTTPServer,
