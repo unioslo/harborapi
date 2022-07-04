@@ -4,7 +4,7 @@ from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
 from harborapi.client import HarborAsyncClient
-from harborapi.model import Schedule, Stats
+from harborapi.models import Schedule, Stats
 
 
 @pytest.mark.asyncio

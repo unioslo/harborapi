@@ -10,8 +10,9 @@ from loguru import logger
 from pydantic import BaseModel, ValidationError
 
 from .exceptions import HarborAPIException, StatusError, check_response_status
-from .model import (
+from .models import (
     CVEAllowlist,
+    HarborVulnerabilityReport,
     IsDefault,
     OverallHealthStatus,
     Permission,

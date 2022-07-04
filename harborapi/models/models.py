@@ -8,7 +8,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import AnyUrl, BaseModel, Extra, Field
+from pydantic import AnyUrl, BaseModel, Extra, Field, root_validator
 
 
 class Model(BaseModel):
@@ -196,6 +196,29 @@ class ScanOverview(BaseModel):
         extra = Extra.allow
 
 
+# class VulnerabilitySummaryBreakdown(BaseModel):
+#     critical: int = Field(
+#         0,
+#         alias="Critical",
+#         description="The number of critical vulnerabilities detected.",
+#     )
+#     high: int = Field(
+#         0, alias="High", description="The number of critical vulnerabilities detected."
+#     )
+#     medium: int = Field(
+#         0,
+#         alias="Medium",
+#         description="The number of critical vulnerabilities detected.",
+#     )
+#     low: int = Field(
+#         0, alias="Low", description="The number of critical vulnerabilities detected."
+#     )
+
+#     class Config:
+#         extra = Extra.allow
+#         allow_population_by_field_name = True  # TODO: investigate if this is necessary
+
+
 class VulnerabilitySummary(BaseModel):
     total: Optional[int] = Field(
         None, description="The total number of the found vulnerabilities", example=500
@@ -208,6 +231,10 @@ class VulnerabilitySummary(BaseModel):
         description="Numbers of the vulnerabilities with different severity",
         example={"Critical": 5, "High": 5},
     )
+    # summary: VulnerabilitySummary = Field(
+    #     default_factory=VulnerabilitySummaryBreakdown,
+    #     description="Number of vulnerabilities by severity."
+    # )
 
 
 class AuditLog(BaseModel):

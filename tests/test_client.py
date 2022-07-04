@@ -8,7 +8,7 @@ from pytest_httpserver import HTTPServer
 
 from harborapi.client import HarborAsyncClient, construct_model
 from harborapi.exceptions import StatusError
-from harborapi.model import Error, Errors, UserResp
+from harborapi.models import Error, Errors, UserResp
 
 from .strategies import errors_strategy
 

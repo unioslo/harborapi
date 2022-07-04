@@ -4,7 +4,7 @@ from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
 from harborapi.client import HarborAsyncClient
-from harborapi.model import (
+from harborapi.models import (
     ScannerAdapterMetadata,
     ScannerRegistration,
     ScannerRegistrationReq,

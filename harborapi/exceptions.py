@@ -5,7 +5,7 @@ from loguru import logger
 
 from harborapi.utils import is_json
 
-from .model import Errors
+from .models import Errors
 
 
 class HarborAPIException(Exception):
