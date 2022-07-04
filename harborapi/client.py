@@ -321,22 +321,39 @@ class HarborAsyncClient(_HarborClientBase):
         }
 
     @backoff.on_exception(backoff.expo, RequestError, max_time=30)
-    async def get(self, path: str, params: Optional[dict] = None) -> JSONType:
-        return await self._get(path, params)
+    async def get(
+        self, path: str, params: Optional[dict] = None, headers: Optional[dict] = None
+    ) -> JSONType:
+        return await self._get(
+            path,
+            params=params,
+            headers=headers,
+        )
 
     @backoff.on_exception(backoff.expo, RequestError, max_time=30)
-    async def get_text(self, path: str, params: Optional[dict] = None) -> str:
+    async def get_text(
+        self, path: str, params: Optional[dict] = None, headers: Optional[dict] = None
+    ) -> str:
         """Bad workaround in order to have a cleaner API for text/plain responses."""
-        resp = await self._get(path, params)
+        resp = await self._get(
+            path,
+            params=params,
+            headers=headers,
+        )
         return resp  # type: ignore
 
     # TODO: refactor this method so it looks like the other methods, while still supporting pagination.
-    async def _get(self, path: str, params: Optional[dict] = None) -> JSONType:
+    async def _get(
+        self, path: str, params: Optional[dict] = None, headers: Optional[dict] = None
+    ) -> JSONType:
+        headers = headers or {}
+        headers.update(self._get_headers())
+
         async with httpx.AsyncClient() as client:
             resp = await client.get(
                 self.url + path,
                 params=params,
-                headers=self._get_headers(),
+                headers=headers,
             )
             check_response_status(resp)
         j = handle_optional_json_response(resp)
