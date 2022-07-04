@@ -29,9 +29,10 @@ def check_response_status(response: Response) -> None:
         errors = try_parse_errors(response)
         logger.bind(httpx_err=e, errors=errors).error(
             "Harbor API returned status code {} for {}",
-            response.url,
             response.status_code,
+            response.url,
         )
+        # TODO: add error handling for different status codes
         raise StatusError(errors)
 
 
