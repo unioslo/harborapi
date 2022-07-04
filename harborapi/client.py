@@ -219,6 +219,33 @@ class HarborAsyncClient(_HarborClientBase):
     # CATEGORY: registry
     # CATEGORY: search
     # CATEGORY: artifact
+
+    # GET /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/vulnerabilities
+    async def get_artifact_vulnerabilities(
+        self,
+        project_name: str,
+        repository_name: str,
+        reference: str,  # Make this default to "latest"?
+        # TODO: support multiple mime types?
+        mime_type: str = "application/vnd.security.vulnerability.report; version=1.1",
+    ) -> Optional[HarborVulnerabilityReport]:
+        """Get the vulnerabilities for an artifact."""
+        path = get_artifact_path(project_name, repository_name, reference)
+        url = f"{path}/additions/vulnerabilities"
+        resp = await self.get(url, headers={"X-Accept-Vulnerabilities": mime_type})
+
+        if not isinstance(resp, dict):
+            logger.bind(response=resp).warning("{} returned non-dict response", url)
+            return None
+
+        # Get the report, which is stored under the key of the mime type
+        report = resp.get(mime_type)
+        if not report:
+            logger.warning("{} returned no report", url)  # Is this an error?
+            return None
+
+        return construct_model(HarborVulnerabilityReport, report)
+
     # CATEGORY: immutable
     # CATEGORY: retention
 

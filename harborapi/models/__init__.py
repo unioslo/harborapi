@@ -1,3 +1,4 @@
+from . import scanner
 from .buildhistory import *
 from .models import *
 from .scanner import Artifact as ScanArtifact
