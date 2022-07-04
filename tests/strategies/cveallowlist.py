@@ -1,6 +1,6 @@
 from hypothesis import strategies as st
 
-from harborapi.model import CVEAllowlist, CVEAllowlistItem
+from harborapi.models import CVEAllowlist, CVEAllowlistItem
 
 cveallowlistitem_strategy = st.builds(
     CVEAllowlistItem,
