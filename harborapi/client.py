@@ -395,7 +395,7 @@ class HarborAsyncClient(_HarborClientBase):
         """Handles paginated results by recursing until all results are returned."""
         # NOTE: can this be done more elegantly?
         # TODO: re-use async client somehow
-        j = await self._get(link)  # ignoring params and only using the link
+        j = await self.get(link)  # ignoring params and only using the link
         if not isinstance(j, list) or not isinstance(data, list):
             logger.warning(
                 "Unable to handle paginated results, received non-list value. URL: {}",
