@@ -1,3 +1,4 @@
+import asyncio
 from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 
 import backoff
@@ -81,6 +82,18 @@ class HarborAsyncClient(_HarborClientBase):
     ) -> None:
         super().__init__(url, username, secret, token, **kwargs)
         self.client = httpx.AsyncClient()
+
+    async def close(self):
+        # httpx.AsyncClient.aclose must be awaited!
+        await self.client.aclose()
+
+    def __del__(self) -> None:
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = asyncio.get_event_loop()
+        loop.run_until_complete(self.client.aclose())
+        # self.loop.close() # we might not want this?
 
     # CATEGORY: user
 
