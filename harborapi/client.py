@@ -86,10 +86,6 @@ class HarborAsyncClient(_HarborClientBase):
         super().__init__(url, username, secret, token, **kwargs)
         self.client = httpx.AsyncClient()
 
-    async def close(self):
-        # httpx.AsyncClient.aclose must be awaited!
-        await self.client.aclose()
-
     def __del__(self) -> None:
         try:
             loop = asyncio.get_running_loop()
