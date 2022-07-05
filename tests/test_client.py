@@ -9,6 +9,7 @@ from pytest_httpserver import HTTPServer
 from harborapi.client import HarborAsyncClient, construct_model
 from harborapi.exceptions import StatusError
 from harborapi.models import Error, Errors, UserResp
+from harborapi.utils import get_token
 
 from .strategies import errors_strategy
 
@@ -203,3 +204,66 @@ async def test_get_errors(
     if e.value.errors.errors:
         for error in e.value.errors.errors:
             assert isinstance(error, Error)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "method",
+    [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE",
+        # "HEAD"
+        # "OPTIONS"
+    ],
+)
+@pytest.mark.parametrize(
+    "username,secret,token",
+    [
+        ("user", "secret", ""),
+        ("", "", "token"),
+        ("user", "secret", "token"),
+        # ("", "", ""), # TODO: handle empty
+    ],
+)
+async def test_authentication(
+    httpserver: HTTPServer, method: str, username: str, secret: str, token: str
+):
+    """Tests handling of data from the server that does not match the schema."""
+
+    client = HarborAsyncClient(
+        url=httpserver.url_for("/api/v2.0"),
+        username=username,
+        secret=secret,
+        token=token,
+    )
+
+    # username/password takes precedence over token
+    if username and secret:
+        expect_token = get_token(username, secret)
+    else:
+        expect_token = token
+    assert client.token == expect_token
+
+    # Set up HTTP server to expect a certain set of headers and a method
+    httpserver.expect_request(
+        "/api/v2.0/foo",
+        headers={
+            "Authorization": f"Basic {expect_token}",
+            "Accept": "application/json",
+        },
+        method=method,
+    ).respond_with_data()
+
+    if method == "GET":
+        await client.get("/foo")
+    elif method == "POST":
+        await client.post("/foo", json={"foo": "bar"})
+    elif method == "PUT":
+        await client.put("/foo", json={"foo": "bar"})
+    elif method == "PATCH":
+        await client.patch("/foo", json={"foo": "bar"})
+    elif method == "DELETE":
+        await client.delete("/foo")
