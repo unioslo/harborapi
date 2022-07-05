@@ -1,4 +1,4 @@
-import json
+from typing import List
 
 import pytest
 from hypothesis import HealthCheck, given, settings
@@ -7,6 +7,7 @@ from pytest_httpserver import HTTPServer
 
 from harborapi.client import HarborAsyncClient
 from harborapi.models import HarborVulnerabilityReport
+from harborapi.models.models import Tag
 
 from ..strategies.artifact import get_hbv_strategy
 
@@ -58,3 +59,24 @@ async def test_get_artifact_vulnerabilities_empty_mock(
         "testproj", "testrepo", "latest"
     )
     assert r == None
+
+
+@pytest.mark.asyncio
+@given(st.lists(st.builds(Tag)))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+async def test_get_artifact_tags_mock(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+    tags: List[Tag],
+):
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/tags",
+        method="GET",
+    ).respond_with_data(
+        "[" + ",".join(t.json() for t in tags) + "]",
+        headers={"Content-Type": "application/json"},
+    )
+    async_client.url = httpserver.url_for("/api/v2.0")
+    tags = await async_client.get_artifact_tags("testproj", "testrepo", "latest")
+    for tag in tags:
+        assert isinstance(tag, Tag)

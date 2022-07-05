@@ -7,6 +7,8 @@ from httpx import RequestError, Response
 from loguru import logger
 from pydantic import BaseModel, ValidationError
 
+from harborapi.models.models import Tag
+
 from .exceptions import HarborAPIException, StatusError, check_response_status
 from .models import (
     CVEAllowlist,
@@ -232,6 +234,59 @@ class HarborAsyncClient(_HarborClientBase):
     # CATEGORY: registry
     # CATEGORY: search
     # CATEGORY: artifact
+
+    # POST /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags
+
+    # GET /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags
+    async def get_artifact_tags(
+        self,
+        project_name: str,
+        repository_name: str,
+        reference: str,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 10,
+        with_signature: bool = False,
+        with_immutable_status: bool = False,
+    ) -> List[Tag]:
+        """Get the tags for an artifact.
+
+        Parameters
+        ----------
+        project_name : str
+            The name of the project
+        repository_name : str
+            The name of the repository
+        reference : str
+            The reference of the artifact, can be digest or tag
+        query : Optional[str]
+            A query string to filter the tags
+        sort : Optional[str]
+            The sort order of the tags. TODO: document this parameter
+        page : int
+            The page of results to return, default 1
+        page_size : int
+            The number of results to return per page, default 10
+        with_signature : bool
+            Whether to include the signature of the tag in the response
+        with_immutable_status : bool
+            Whether to include the immutable status of the tag in the response
+
+        """
+        path = get_artifact_path(project_name, repository_name, reference)
+        params = {
+            "page": page,
+            "page_size": page_size,
+            "with_signature": with_signature,
+            "with_immutable_status": with_immutable_status,
+        }  # type: Dict[str, Any]
+        if query:
+            params["q"] = query
+        if sort:
+            params["sort"] = sort
+        resp = await self.get(f"{path}/tags")
+        return [construct_model(Tag, t) for t in resp]
 
     # GET /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/vulnerabilities
     async def get_artifact_vulnerabilities(
