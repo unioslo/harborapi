@@ -612,13 +612,12 @@ class HarborAsyncClient(_HarborClientBase):
     ) -> Response:
         if isinstance(json, BaseModel):
             json = json.dict()
-        async with httpx.AsyncClient() as client:
-            resp = await client.post(
-                self.url + path,
-                json=json,
-                headers=self._get_headers(headers),
-            )
-            check_response_status(resp)
+        resp = await self.client.post(
+            self.url + path,
+            json=json,
+            headers=self._get_headers(headers),
+        )
+        check_response_status(resp)
         return resp
 
     @backoff.on_exception(backoff.expo, RequestError, max_time=30)
@@ -646,14 +645,13 @@ class HarborAsyncClient(_HarborClientBase):
     ) -> Response:
         if isinstance(json, BaseModel):
             json = json.dict()
-        async with httpx.AsyncClient() as client:
-            resp = await client.put(
-                self.url + path,
-                json=json,
-                headers=self._get_headers(headers),
-                **kwargs,
-            )
-            check_response_status(resp)
+        resp = await self.client.put(
+            self.url + path,
+            json=json,
+            headers=self._get_headers(headers),
+            **kwargs,
+        )
+        check_response_status(resp)
         return resp
 
     @backoff.on_exception(backoff.expo, RequestError, max_time=30)
@@ -682,14 +680,13 @@ class HarborAsyncClient(_HarborClientBase):
         if isinstance(json, BaseModel):
             json = json.dict()
 
-        async with httpx.AsyncClient() as client:
-            resp = await client.patch(
-                self.url + path,
-                json=json,
-                headers=self._get_headers(headers),
-                **kwargs,
-            )
-            check_response_status(resp)
+        resp = await self.client.patch(
+            self.url + path,
+            json=json,
+            headers=self._get_headers(headers),
+            **kwargs,
+        )
+        check_response_status(resp)
         return resp
 
     @backoff.on_exception(backoff.expo, RequestError, max_time=30)
