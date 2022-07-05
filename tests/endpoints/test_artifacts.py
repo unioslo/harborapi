@@ -7,7 +7,7 @@ from pytest_httpserver import HTTPServer
 
 from harborapi.client import HarborAsyncClient
 from harborapi.models import HarborVulnerabilityReport
-from harborapi.models.models import Tag
+from harborapi.models.models import Accessory, Tag
 
 from ..strategies.artifact import get_hbv_strategy
 
@@ -77,6 +77,31 @@ async def test_get_artifact_tags_mock(
         headers={"Content-Type": "application/json"},
     )
     async_client.url = httpserver.url_for("/api/v2.0")
-    tags = await async_client.get_artifact_tags("testproj", "testrepo", "latest")
-    for tag in tags:
+    tags_resp = await async_client.get_artifact_tags("testproj", "testrepo", "latest")
+    assert tags_resp == tags
+    for tag in tags_resp:
         assert isinstance(tag, Tag)
+
+
+@pytest.mark.asyncio
+@given(st.lists(st.builds(Accessory)))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+async def test_get_artifact_accessories_mock(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+    accessories: List[Accessory],
+):
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/accessories",
+        method="GET",
+    ).respond_with_data(
+        "[" + ",".join(a.json() for a in accessories) + "]",
+        headers={"Content-Type": "application/json"},
+    )
+    async_client.url = httpserver.url_for("/api/v2.0")
+    accessories_resp = await async_client.get_artifact_accessories(
+        "testproj", "testrepo", "latest"
+    )
+    assert accessories_resp == accessories
+    for accessory in accessories_resp:
+        assert isinstance(accessory, Accessory)
