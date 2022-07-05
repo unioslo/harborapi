@@ -338,11 +338,14 @@ class HarborAsyncClient(_HarborClientBase):
     # CATEGORY: projectMetadata
     # CATEGORY: auditlog
 
-    def _get_headers(self) -> Dict[str, str]:
-        return {
+    def _get_headers(self, headers: Optional[Dict[str, str]] = None) -> Dict[str, str]:
+        headers = headers or {}
+        base_headers = {
             "Authorization": "Basic " + self.token,
-            "accept": "application/json",
+            "Accept": "application/json",
         }
+        base_headers.update(headers)  # Override defaults with provided headers
+        return base_headers
 
     @backoff.on_exception(backoff.expo, RequestError, max_time=30)
     async def get(
@@ -401,16 +404,13 @@ class HarborAsyncClient(_HarborClientBase):
         JSONType
             JSON data returned by the API
         """
-        headers = headers or {}
-        headers.update(self._get_headers())
-
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(
-                self.url + path,
-                params=params,
-                headers=headers,
-            )
-            check_response_status(resp)
+        # async with httpx.AsyncClient() as client:
+        resp = await self.client.get(
+            self.url + path,
+            params=params,
+            headers=self._get_headers(headers),
+        )
+        check_response_status(resp)
         j = handle_optional_json_response(resp)
         if j is None:
             return resp.text  # type: ignore # FIXME: resolve this ASAP (use overload?)
@@ -441,64 +441,132 @@ class HarborAsyncClient(_HarborClientBase):
     # TODO: fix abstraction of post/_post. Put everything into _post?
     @backoff.on_exception(backoff.expo, RequestError, max_tries=1)
     async def post(
-        self, path: str, json: Optional[Union[BaseModel, JSONType]] = None
+        self,
+        path: str,
+        json: Optional[Union[BaseModel, JSONType]] = None,
+        headers: Optional[Dict[str, str]] = None,
     ) -> Response:
         """Sends a POST request to a path, optionally with a JSON body."""
-        return await self._post(path, json)
+        return await self._post(
+            path,
+            json=json,
+            headers=headers,
+        )
 
     async def _post(
-        self, path: str, json: Optional[Union[BaseModel, JSONType]] = None
+        self,
+        path: str,
+        json: Optional[Union[BaseModel, JSONType]] = None,
+        headers: Optional[Dict[str, str]] = None,
     ) -> Response:
         if isinstance(json, BaseModel):
             json = json.dict()
         async with httpx.AsyncClient() as client:
-            resp = await client.post(self.url + path, json=json)
+            resp = await client.post(
+                self.url + path,
+                json=json,
+                headers=self._get_headers(headers),
+            )
             check_response_status(resp)
         return resp
 
     @backoff.on_exception(backoff.expo, RequestError, max_time=30)
     async def put(
-        self, path: str, json: Union[BaseModel, JSONType]
+        self,
+        path: str,
+        json: Union[BaseModel, JSONType],
+        headers: Optional[Dict[str, str]] = None,
+        **kwargs,
     ) -> Optional[JSONType]:
-        resp = await self._put(path, json)
+        resp = await self._put(
+            path,
+            json=json,
+            headers=headers,
+            **kwargs,
+        )
         return handle_optional_json_response(resp)
 
-    async def _put(self, path: str, json: Union[BaseModel, JSONType]) -> Response:
+    async def _put(
+        self,
+        path: str,
+        json: Union[BaseModel, JSONType],
+        headers: Optional[Dict[str, str]] = None,
+        **kwargs,
+    ) -> Response:
         if isinstance(json, BaseModel):
             json = json.dict()
         async with httpx.AsyncClient() as client:
             resp = await client.put(
-                self.url + path, json=json, headers=self._get_headers()
+                self.url + path,
+                json=json,
+                headers=self._get_headers(headers),
+                **kwargs,
             )
             check_response_status(resp)
         return resp
 
     @backoff.on_exception(backoff.expo, RequestError, max_time=30)
     async def patch(
-        self, path: str, json: Union[BaseModel, JSONType]
+        self,
+        path: str,
+        json: Union[BaseModel, JSONType],
+        headers: Optional[Dict[str, str]] = None,
+        **kwargs,
     ) -> Optional[JSONType]:
-        resp = await self._patch(path, json)
+        resp = await self._patch(
+            path,
+            json=json,
+            headers=headers,
+            **kwargs,
+        )
         return handle_optional_json_response(resp)
 
-    async def _patch(self, path: str, json: Union[BaseModel, JSONType]) -> Response:
+    async def _patch(
+        self,
+        path: str,
+        json: Union[BaseModel, JSONType],
+        headers: Optional[Dict[str, str]] = None,
+        **kwargs,
+    ) -> Response:
         if isinstance(json, BaseModel):
             json = json.dict()
 
         async with httpx.AsyncClient() as client:
             resp = await client.patch(
-                self.url + path, json=json, headers=self._get_headers()
+                self.url + path,
+                json=json,
+                headers=self._get_headers(headers),
+                **kwargs,
             )
             check_response_status(resp)
         return resp
 
     @backoff.on_exception(backoff.expo, RequestError, max_time=30)
-    async def delete(self, path: str, **kwargs) -> Optional[JSONType]:
-        resp = await self._delete(path, **kwargs)
+    async def delete(
+        self,
+        path: str,
+        headers: Optional[Dict[str, str]] = None,
+        **kwargs,
+    ) -> Optional[JSONType]:
+        resp = await self._delete(
+            path,
+            headers=headers,
+            **kwargs,
+        )
         return handle_optional_json_response(resp)
 
-    async def _delete(self, path: str, **kwargs) -> Response:
+    async def _delete(
+        self,
+        path: str,
+        headers: Optional[Dict[str, str]] = None,
+        **kwargs,
+    ) -> Response:
         async with httpx.AsyncClient() as client:
-            resp = await client.delete(self.url + path, headers=self._get_headers())
+            resp = await client.delete(
+                self.url + path,
+                headers=self._get_headers(headers),
+                **kwargs,
+            )
             check_response_status(resp)
         return resp
 
