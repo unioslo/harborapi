@@ -7,7 +7,6 @@ from httpx import RequestError, Response
 from loguru import logger
 from pydantic import BaseModel, ValidationError
 
-from harborapi.models.models import Tag
 
 from .exceptions import HarborAPIException, check_response_status
 from .models import (
@@ -24,6 +23,8 @@ from .models import (
     Stats,
     UserResp,
     UserSearchRespItem,
+    Accessory,
+    Tag,
 )
 from .types import JSONType
 from .utils import get_artifact_path, get_token, handle_optional_json_response
@@ -273,6 +274,10 @@ class HarborAsyncClient(_HarborClientBase):
         with_immutable_status : bool
             Whether to include the immutable status of the tag in the response
 
+        Returns
+        -------
+        List[Tag]
+            A list of Tag objects for the artifact.
         """
         path = get_artifact_path(project_name, repository_name, reference)
         params = {
@@ -287,6 +292,79 @@ class HarborAsyncClient(_HarborClientBase):
             params["sort"] = sort
         resp = await self.get(f"{path}/tags")
         return [construct_model(Tag, t) for t in resp]
+
+    # GET /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags
+    async def get_artifact_accessories(
+        self,
+        project_name: str,
+        repository_name: str,
+        reference: str,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 10,
+    ) -> List[Accessory]:
+        """Get the tags for an artifact.
+
+        Parameters
+        ----------
+        project_name : str
+            The name of the project
+        repository_name : str
+            The name of the repository
+        reference : str
+            The reference of the artifact, can be digest or tag
+        query : Optional[str]
+            A query string to filter the tags
+        sort : Optional[str]
+            The sort order of the tags.
+        page : int
+            The page of results to return, default 1
+        page_size : int
+            The number of results to return per page, default 10
+
+        Returns
+        -------
+        List[Accessory]
+            A list of Accessory objects for the artifact.
+        """
+        path = get_artifact_path(project_name, repository_name, reference)
+        params = {
+            "page": page,
+            "page_size": page_size,
+        }  # type: Dict[str, Any]
+        if query:
+            params["q"] = query
+        if sort:
+            params["sort"] = sort
+        resp = await self.get(f"{path}/accessories")
+        return [construct_model(Accessory, a) for a in resp]
+
+    # DELETE /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags
+    async def delete_artifact_tag(
+        self,
+        project_name: str,
+        repository_name: str,
+        reference: str,
+        tag_name: str,
+        missing_ok: bool = False,
+    ) -> None:
+        """Get the tags for an artifact.
+
+        Parameters
+        ----------
+        project_name : str
+            The name of the project
+        repository_name : str
+            The name of the repository
+        reference : str
+            The reference of the artifact, can be digest or tag
+        tag_name : str
+            The name of the tag to delete
+        """
+        path = get_artifact_path(project_name, repository_name, reference)
+        # TODO: implement missing_ok for all delete methods
+        await self.delete(f"{path}/{tag_name}", missing_ok=missing_ok)
 
     # GET /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/vulnerabilities
     async def get_artifact_vulnerabilities(
