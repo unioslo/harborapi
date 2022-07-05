@@ -9,7 +9,7 @@ from pydantic import BaseModel, ValidationError
 
 from harborapi.models.models import Tag
 
-from .exceptions import HarborAPIException, StatusError, check_response_status
+from .exceptions import HarborAPIException, check_response_status
 from .models import (
     CVEAllowlist,
     HarborVulnerabilityReport,
@@ -345,11 +345,20 @@ class HarborAsyncClient(_HarborClientBase):
 
     # DELETE /scanners/{registration_id}
     async def delete_scanner(
-        self, registration_id: Union[int, str]
-    ) -> ScannerRegistration:
-        scanner = await self.delete(f"/scanners/{registration_id}")
+        self,
+        registration_id: Union[int, str],
+        missing_ok: bool = False,
+    ) -> Optional[ScannerRegistration]:
+        scanner = await self.delete(
+            f"/scanners/{registration_id}", missing_ok=missing_ok
+        )
+        # TODO: differentiate between 404 and no return value (how?)
         if not scanner:
-            raise HarborAPIException("Deletion request returned no data")
+            if missing_ok:
+                return None
+            raise HarborAPIException(
+                "Deletion request returned no data. Is the scanner registered?"
+            )
         return construct_model(ScannerRegistration, scanner)
 
     # PATCH /scanners/{registration_id}
@@ -614,11 +623,13 @@ class HarborAsyncClient(_HarborClientBase):
         self,
         path: str,
         headers: Optional[Dict[str, str]] = None,
+        missing_ok: bool = False,
         **kwargs,
     ) -> Optional[JSONType]:
         resp = await self._delete(
             path,
             headers=headers,
+            missing_ok=missing_ok,
             **kwargs,
         )
         return handle_optional_json_response(resp)
@@ -627,15 +638,15 @@ class HarborAsyncClient(_HarborClientBase):
         self,
         path: str,
         headers: Optional[Dict[str, str]] = None,
+        missing_ok: bool = False,
         **kwargs,
     ) -> Response:
-        async with httpx.AsyncClient() as client:
-            resp = await client.delete(
-                self.url + path,
-                headers=self._get_headers(headers),
-                **kwargs,
-            )
-            check_response_status(resp)
+        resp = await self.client.delete(
+            self.url + path,
+            headers=self._get_headers(headers),
+            **kwargs,
+        )
+        check_response_status(resp, missing_ok=missing_ok)
         return resp
 
     # TODO: add on_giveup callback for all backoff methods
