@@ -33,7 +33,7 @@ def check_response_status(response: Response) -> None:
             response.url,
         )
         # TODO: add error handling for different status codes
-        raise StatusError(errors)
+        raise StatusError(errors) from e
 
 
 def try_parse_errors(response: Response) -> Optional[Errors]:

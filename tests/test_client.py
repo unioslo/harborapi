@@ -1,4 +1,5 @@
 import asyncio
+from httpx import HTTPStatusError
 
 import pytest
 from hypothesis import HealthCheck, given, settings
@@ -196,14 +197,20 @@ async def test_get_errors(
     )
 
     async_client.url = httpserver.url_for("/api/v2.0")
-    with pytest.raises(StatusError) as e:
+    with pytest.raises(StatusError) as exc_info:
         await async_client.get("/errorpath")
-    assert e is not None
-    assert isinstance(e.value, StatusError)
-    assert isinstance(e.value.errors, Errors)
-    if e.value.errors.errors:
-        for error in e.value.errors.errors:
+    assert exc_info is not None
+
+    e = exc_info.value
+    assert isinstance(e, StatusError)
+    assert isinstance(e.errors, Errors)
+    if e.errors.errors:
+        for error in e.errors.errors:
             assert isinstance(error, Error)
+
+    assert isinstance(e.__cause__, HTTPStatusError)
+    assert e.__cause__.request.url == async_client.url + "/errorpath"
+    assert e.__cause__.response.status_code == 500
 
 
 @pytest.mark.asyncio
