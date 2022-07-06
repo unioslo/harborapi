@@ -26,7 +26,7 @@ from .models import (
     UserSearchRespItem,
 )
 from .types import JSONType
-from .utils import get_artifact_path, get_token, handle_optional_json_response
+from .utils import get_artifact_path, get_credentials, handle_optional_json_response
 
 __all__ = ["HarborAsyncClient"]
 
@@ -51,17 +51,17 @@ class _HarborClientBase:
         url: str,
         username: str = None,
         secret: str = None,
-        token: str = None,
+        credentials: str = None,
         config: Optional[Any] = None,
         version: str = "v2.0",
     ) -> None:
         self.username = username
         if username and secret:
-            self.token = get_token(username, secret)
-        elif token:
-            self.token = token
+            self.credentials = get_credentials(username, secret)
+        elif credentials:
+            self.credentials = credentials
         else:
-            raise ValueError("Must provide either username and secret or token")
+            raise ValueError("Must provide either username and secret or credentials")
 
         # TODO: add URL regex and improve parsing OR don't police this at all
         url = url.strip("/")  # remove trailing slash
@@ -81,10 +81,10 @@ class HarborAsyncClient(_HarborClientBase):
         url: str,
         username: str = None,
         secret: str = None,
-        token: str = None,
+        credentials: str = None,
         **kwargs: Any,
     ) -> None:
-        super().__init__(url, username, secret, token, **kwargs)
+        super().__init__(url, username, secret, credentials, **kwargs)
         self.client = httpx.AsyncClient()
 
     def __del__(self) -> None:
@@ -557,7 +557,7 @@ class HarborAsyncClient(_HarborClientBase):
     def _get_headers(self, headers: Optional[Dict[str, str]] = None) -> Dict[str, str]:
         headers = headers or {}
         base_headers = {
-            "Authorization": "Basic " + self.token,
+            "Authorization": "Basic " + self.credentials,
             "Accept": "application/json",
         }
         base_headers.update(headers)  # Override defaults with provided headers

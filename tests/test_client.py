@@ -10,7 +10,7 @@ from pytest_httpserver import HTTPServer
 from harborapi.client import HarborAsyncClient, construct_model
 from harborapi.exceptions import StatusError
 from harborapi.models import Error, Errors, UserResp
-from harborapi.utils import get_token
+from harborapi.utils import get_credentials
 
 from .strategies import errors_strategy
 
@@ -41,7 +41,7 @@ def test_client_init_sanity():
     )
     assert client.url == "https://harbor.example.com/api/v2.0"
     assert client.username == "username"
-    assert client.token is not None  # TODO: check token validity?
+    assert client.credentials is not None  # TODO: check credentials validity?
 
 
 @pytest.mark.asyncio
@@ -227,16 +227,16 @@ async def test_get_errors(
     ],
 )
 @pytest.mark.parametrize(
-    "username,secret,token",
+    "username,secret,credentials",
     [
         ("user", "secret", ""),
-        ("", "", "token"),
-        ("user", "secret", "token"),
+        ("", "", "credentials"),
+        ("user", "secret", "credentials"),
         # ("", "", ""), # TODO: handle empty
     ],
 )
 async def test_authentication(
-    httpserver: HTTPServer, method: str, username: str, secret: str, token: str
+    httpserver: HTTPServer, method: str, username: str, secret: str, credentials: str
 ):
     """Tests handling of data from the server that does not match the schema."""
 
@@ -244,21 +244,21 @@ async def test_authentication(
         url=httpserver.url_for("/api/v2.0"),
         username=username,
         secret=secret,
-        token=token,
+        credentials=credentials,
     )
 
-    # username/password takes precedence over token
+    # username/password takes precedence over credentials
     if username and secret:
-        expect_token = get_token(username, secret)
+        expect_credentials = get_credentials(username, secret)
     else:
-        expect_token = token
-    assert client.token == expect_token
+        expect_credentials = credentials
+    assert client.credentials == expect_credentials
 
     # Set up HTTP server to expect a certain set of headers and a method
     httpserver.expect_request(
         "/api/v2.0/foo",
         headers={
-            "Authorization": f"Basic {expect_token}",
+            "Authorization": f"Basic {expect_credentials}",
             "Accept": "application/json",
         },
         method=method,

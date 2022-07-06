@@ -34,6 +34,6 @@ def get_artifact_path(project_name: str, repository_name: str, reference: str) -
     return f"/projects/{project_name}/repositories/{repo_name}/artifacts/{reference}"
 
 
-def get_token(username: str, secret: str) -> str:
-    """Get token given a username and a secret"""
+def get_credentials(username: str, secret: str) -> str:
+    """Get HTTP basic access authentication credentials given a username and a secret"""
     return b64encode(f"{username}:{secret}".encode("utf-8")).decode("utf-8")
