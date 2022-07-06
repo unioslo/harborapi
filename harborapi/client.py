@@ -211,20 +211,28 @@ class HarborAsyncClient(_HarborClientBase):
                 resp.status_code,
             )
 
-    async def get_scan_report_log(
+    # GET /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan/{report_id}/log
+    async def get_artifact_scan_report_log(
         self, project_name: str, repository_name: str, reference: str, report_id: str
     ) -> str:
         """Get the log of a scan report."""
         # TODO: investigate what exactly this endpoint returns
         path = get_artifact_path(project_name, repository_name, reference)
-        return await self.get_text(f"{path}/scan/{report_id}")
+        return await self.get_text(f"{path}/scan/{report_id}/log")
 
+    # # POST /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan/stop
     async def stop_artifact_scan(
         self, project_name: str, repository_name: str, reference: str
     ) -> None:
         """Stop a scan for a particular artifact."""
         path = get_artifact_path(project_name, repository_name, reference)
-        await self.post(f"{path}/scan/stop")
+        resp = await self.post(f"{path}/scan/stop")
+        if resp.status_code != 202:
+            logger.warning(
+                "Stop scan request for {} returned status code {}, expected 202",
+                path,
+                resp.status_code,
+            )
 
     # CATEGORY: member
     # CATEGORY: ldap
