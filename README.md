@@ -13,7 +13,8 @@ from harborapi import HarborAsyncClient
 
 client = HarborAsyncClient(
     url="https://your-harbor-instance.com/api/v2.0",
-    credentials="base64_string_here",
+    username="username",
+    secret="secret",
 )
 ```
 
@@ -24,11 +25,9 @@ from harborapi import HarborAsyncClient
 
 client = HarborAsyncClient(
     url="https://your-harbor-instance.com/api/v2.0",
-    username="username",
-    secret="secret",
+    credentials="base64_string_here",
 )
 ```
-
 
 
 ## Examples
