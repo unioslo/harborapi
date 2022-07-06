@@ -632,12 +632,14 @@ class HarborAsyncClient(_HarborClientBase):
         self,
         path: str,
         json: Optional[Union[BaseModel, JSONType]] = None,
+        params: Optional[dict] = None,
         headers: Optional[Dict[str, str]] = None,
     ) -> Response:
         """Sends a POST request to a path, optionally with a JSON body."""
         return await self._post(
             path,
             json=json,
+            params=params,
             headers=headers,
         )
 
@@ -645,6 +647,7 @@ class HarborAsyncClient(_HarborClientBase):
         self,
         path: str,
         json: Optional[Union[BaseModel, JSONType]] = None,
+        params: Optional[dict] = None,
         headers: Optional[Dict[str, str]] = None,
     ) -> Response:
         if isinstance(json, BaseModel):
@@ -652,6 +655,7 @@ class HarborAsyncClient(_HarborClientBase):
         resp = await self.client.post(
             self.url + path,
             json=json,
+            params=params,
             headers=self._get_headers(headers),
         )
         check_response_status(resp)
@@ -662,12 +666,14 @@ class HarborAsyncClient(_HarborClientBase):
         self,
         path: str,
         json: Union[BaseModel, JSONType],
+        params: Optional[dict] = None,
         headers: Optional[Dict[str, str]] = None,
         **kwargs,
     ) -> Optional[JSONType]:
         resp = await self._put(
             path,
             json=json,
+            params=params,
             headers=headers,
             **kwargs,
         )
@@ -677,6 +683,7 @@ class HarborAsyncClient(_HarborClientBase):
         self,
         path: str,
         json: Union[BaseModel, JSONType],
+        params: Optional[dict] = None,
         headers: Optional[Dict[str, str]] = None,
         **kwargs,
     ) -> Response:
@@ -685,6 +692,7 @@ class HarborAsyncClient(_HarborClientBase):
         resp = await self.client.put(
             self.url + path,
             json=json,
+            params=params,
             headers=self._get_headers(headers),
             **kwargs,
         )
@@ -696,6 +704,7 @@ class HarborAsyncClient(_HarborClientBase):
         self,
         path: str,
         json: Union[BaseModel, JSONType],
+        params: Optional[dict] = None,
         headers: Optional[Dict[str, str]] = None,
         **kwargs,
     ) -> Optional[JSONType]:
@@ -703,6 +712,7 @@ class HarborAsyncClient(_HarborClientBase):
             path,
             json=json,
             headers=headers,
+            params=params,
             **kwargs,
         )
         return handle_optional_json_response(resp)
@@ -711,6 +721,7 @@ class HarborAsyncClient(_HarborClientBase):
         self,
         path: str,
         json: Union[BaseModel, JSONType],
+        params: Optional[dict] = None,
         headers: Optional[Dict[str, str]] = None,
         **kwargs,
     ) -> Response:
@@ -720,6 +731,7 @@ class HarborAsyncClient(_HarborClientBase):
         resp = await self.client.patch(
             self.url + path,
             json=json,
+            params=params,
             headers=self._get_headers(headers),
             **kwargs,
         )
@@ -730,6 +742,7 @@ class HarborAsyncClient(_HarborClientBase):
     async def delete(
         self,
         path: str,
+        params: Optional[dict] = None,
         headers: Optional[Dict[str, str]] = None,
         missing_ok: bool = False,
         **kwargs,
@@ -737,6 +750,7 @@ class HarborAsyncClient(_HarborClientBase):
         resp = await self._delete(
             path,
             headers=headers,
+            params=params,
             missing_ok=missing_ok,
             **kwargs,
         )
@@ -746,11 +760,13 @@ class HarborAsyncClient(_HarborClientBase):
         self,
         path: str,
         headers: Optional[Dict[str, str]] = None,
+        params: Optional[dict] = None,
         missing_ok: bool = False,
         **kwargs,
     ) -> Response:
         resp = await self.client.delete(
             self.url + path,
+            params=params,
             headers=self._get_headers(headers),
             **kwargs,
         )
