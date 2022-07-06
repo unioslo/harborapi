@@ -1,46 +1,32 @@
-from json import JSONDecodeError
-from typing import Any, Optional, Union
+import asyncio
+import inspect
+from typing import Any
 
-import backoff
-import httpx
-from httpx import HTTPStatusError, RequestError, Response
-from loguru import logger
-from pydantic import BaseModel
-
-from .exceptions import HarborAPIException, StatusError
-from .types import JSONType
+from .client import HarborAsyncClient
 
 
-class _HarborClientBase:
-    """Base class used by both the AsyncClient and the Client classes."""
+class HarborClient(HarborAsyncClient):
+    """Extremely hacky non-async client implementation."""
 
-    def __init__(self, token: str, url: str, config: Optional[Any] = None):
-        self.token = token
-        if url.endswith("/"):
-            url = url[:-1]
-        self.url = url
-        self.config = config
+    def __init__(self, loop, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.loop = loop
+        asyncio.set_event_loop(loop)
 
+    def __getattribute__(self, name: str) -> Any:
+        attr = super().__getattribute__(name)
+        name = name.lower()
+        if name.startswith("_") or any(
+            name == http_method
+            for http_method in ("get", "post", "put", "patch", "delete")
+        ):
+            return attr
+        if inspect.iscoroutinefunction(attr):
+            return self._wrap_coro(attr)
+        return attr
 
-class HarborClient(_HarborClientBase):
-    def __init__(self, token: str, url: str):
-        super().__init__(token, url)
-        self.client = httpx.Client(base_url=self.url)
+    def _wrap_coro(self, coro: Any) -> Any:
+        def wrapper(*args, **kwargs):
+            return self.loop.run_until_complete(coro(*args, **kwargs))
 
-    @backoff.on_exception(backoff.expo, RequestError, max_tries=3)
-    def _get(self, path: str, params: Optional[dict] = None) -> Response:
-        try:
-            with httpx.Client() as client:
-                resp = client.get(path, params=params)
-                resp.raise_for_status()
-        except HTTPStatusError as e:
-            raise StatusError(e)
-        return resp
-
-    def get(self, path: str, params: Optional[dict] = None) -> JSONType:
-        res = self._get(path, params)
-        try:
-            j = res.json()
-        except JSONDecodeError as e:
-            logger.error("Failed to parse JSON from {}{}: {}", self.url, path, e)
-        return j
+        return wrapper
