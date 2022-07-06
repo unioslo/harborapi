@@ -397,7 +397,7 @@ class HarborAsyncClient(_HarborClientBase):
         """
         path = get_artifact_path(project_name, repository_name, reference)
         # TODO: implement missing_ok for all delete methods
-        await self.delete(f"{path}/{tag_name}", missing_ok=missing_ok)
+        await self.delete(f"{path}/tags/{tag_name}", missing_ok=missing_ok)
 
     # GET /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/vulnerabilities
     async def get_artifact_vulnerabilities(
