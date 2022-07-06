@@ -9,7 +9,6 @@ from harborapi.client import HarborAsyncClient
 from harborapi.utils import get_artifact_path
 
 
-
 @pytest.mark.asyncio
 @pytest.mark.parametrize("status_code", [200, 202])
 async def test_scan_artifact_mock(
@@ -51,10 +50,13 @@ async def test_get_scan_report_log_mock(
         endpoint_path,
         method="GET",
     ).respond_with_data(f"foo: {report_id}")
-    
+
     async_client.url = httpserver.url_for("/api/v2.0")
-    resp = await async_client.get_artifact_scan_report_log(project, repository, artifact, report_id)
+    resp = await async_client.get_artifact_scan_report_log(
+        project, repository, artifact, report_id
+    )
     assert resp == "foo: bar"
+
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("status_code", [200, 202])
