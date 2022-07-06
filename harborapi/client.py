@@ -245,6 +245,31 @@ class HarborAsyncClient(_HarborClientBase):
     # CATEGORY: artifact
 
     # POST /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags
+    async def create_artifact_tag(
+        self, project_name: str, repository_name: str, reference: str, tag: Tag
+    ) -> str:
+        """Create a tag for an artifact.
+
+        Parameters
+        ----------
+        project_name : str
+            The name of the project
+        repository_name : str
+            The name of the repository
+        reference : str
+            The reference of the artifact, can be digest or tag
+        tag : Tag
+            The tag to create
+        """
+        path = get_artifact_path(project_name, repository_name, reference)
+        resp = await self.post(f"{path}/tags", json=tag)
+        if resp.status_code != 201:
+            logger.warning(
+                "Create tag request for {} returned status code {}, expected 201",
+                path,
+                resp.status_code,
+            )
+        return resp.headers.get("Location")
 
     # GET /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags
     async def get_artifact_tags(

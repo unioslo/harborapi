@@ -11,6 +11,33 @@ from harborapi.models.models import Accessory, Tag
 
 from ..strategies.artifact import get_hbv_strategy
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize("status_code", [200, 201])
+@given(st.builds(Tag))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+async def test_create_artifact_tag_mock(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+    caplog: pytest.LogCaptureFixture,
+    status_code: int,
+    tag: Tag,
+):
+    async_client.url = httpserver.url_for("/api/v2.0")
+    expect_location = async_client.url + "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/tags/123"
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/tags",
+        method="POST",
+        json=tag.dict(),
+    ).respond_with_data(
+        headers={"Location": expect_location},
+        status=status_code,
+    )
+    location = await async_client.create_artifact_tag("testproj", "testrepo", "latest", tag)
+    assert location == expect_location
+    if status_code == 200:
+        assert "expected 201" in caplog.text
+
+
 
 @pytest.mark.asyncio
 @given(get_hbv_strategy())
@@ -78,6 +105,7 @@ async def test_get_artifact_tags_mock(
     )
     async_client.url = httpserver.url_for("/api/v2.0")
     tags_resp = await async_client.get_artifact_tags("testproj", "testrepo", "latest")
+    # TODO: test params
     assert tags_resp == tags
     for tag in tags_resp:
         assert isinstance(tag, Tag)
