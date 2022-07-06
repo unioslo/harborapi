@@ -1,3 +1,4 @@
+from contextlib import nullcontext
 from typing import List
 
 import pytest
@@ -6,10 +7,12 @@ from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
 from harborapi.client import HarborAsyncClient
+from harborapi.exceptions import StatusError
 from harborapi.models import HarborVulnerabilityReport
 from harborapi.models.models import Accessory, Tag
 
 from ..strategies.artifact import get_hbv_strategy
+
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("status_code", [200, 201])
@@ -23,7 +26,10 @@ async def test_create_artifact_tag_mock(
     tag: Tag,
 ):
     async_client.url = httpserver.url_for("/api/v2.0")
-    expect_location = async_client.url + "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/tags/123"
+    expect_location = (
+        async_client.url
+        + "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/tags/123"
+    )
     httpserver.expect_oneshot_request(
         "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/tags",
         method="POST",
@@ -32,11 +38,12 @@ async def test_create_artifact_tag_mock(
         headers={"Location": expect_location},
         status=status_code,
     )
-    location = await async_client.create_artifact_tag("testproj", "testrepo", "latest", tag)
+    location = await async_client.create_artifact_tag(
+        "testproj", "testrepo", "latest", tag
+    )
     assert location == expect_location
     if status_code == 200:
         assert "expected 201" in caplog.text
-
 
 
 @pytest.mark.asyncio
@@ -159,3 +166,21 @@ async def test_delete_artifact_tag(
         )
 
 
+@pytest.mark.asyncio
+async def test_copy_artifact(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+):
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/projects/testproj/repositories/testrepo/artifacts",
+        query_string={"from": "oldproj/oldrepo:oldtag"},
+        method="POST",
+    ).respond_with_data(status=201, headers={"Location": "/api/v2.0/artifacts/123"})
+    async_client.url = httpserver.url_for("/api/v2.0")
+
+    location = await async_client.copy_artifact(
+        "testproj",
+        "testrepo",
+        "oldproj/oldrepo:oldtag",
+    )
+    assert location == "/api/v2.0/artifacts/123"

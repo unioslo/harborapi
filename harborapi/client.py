@@ -396,6 +396,37 @@ class HarborAsyncClient(_HarborClientBase):
         # TODO: implement missing_ok for all delete methods
         await self.delete(f"{path}/tags/{tag_name}", missing_ok=missing_ok)
 
+    # POST /projects/{project_name}/repositories/{repository_name}/artifacts
+    async def copy_artifact(
+        self, project_name: str, repository_name: str, source: str
+    ) -> Optional[str]:
+        """Copy an artifact.
+
+        Parameters
+        ----------
+        project_name : str
+            Name of new artifact's project
+        repository_name : str
+            Name of new artifact's repository
+        source : str
+            The source artifact to copy from in the form of
+            `"project/repository:tag"` or `"project/repository@digest"`
+
+        Returns
+        -------
+        Optional[str]
+            The location of the new artifact
+        """
+        path = f"/projects/{project_name}/repositories/{repository_name}/artifacts"
+        resp = await self.post(f"{path}", params={"from": source})
+        if resp.status_code != 201:
+            logger.warning(
+                "Copy artifact request for {} returned status code {}, expected 201",
+                path,
+                resp.status_code,
+            )
+        return resp.headers.get("Location")
+
     # GET /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/vulnerabilities
     async def get_artifact_vulnerabilities(
         self,
