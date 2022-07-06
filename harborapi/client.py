@@ -29,6 +29,10 @@ from .models import (
 from .types import JSONType
 from .utils import get_artifact_path, get_token, handle_optional_json_response
 
+__all__ = [
+    "HarborAsyncClient"
+]
+
 T = TypeVar("T", bound=BaseModel)
 
 
