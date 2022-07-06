@@ -25,10 +25,8 @@ jobs:
         with:
           poetry-version: ${{ matrix.poetry-version }}
       - name: Poetry install
-        working-directory: ./${{ matrix.service }}
         run: poetry install
       - name: Run tests
-        working-directory: ./${{ matrix.service }}
         run: poetry run pytest -vv
         env:
           HYPOTHESIS_PROFILE: debug
