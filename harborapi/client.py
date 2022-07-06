@@ -87,13 +87,7 @@ class HarborAsyncClient(_HarborClientBase):
         super().__init__(url, username, secret, credentials, **kwargs)
         self.client = httpx.AsyncClient()
 
-    def __del__(self) -> None:
-        try:
-            loop = asyncio.get_running_loop()
-        except RuntimeError:
-            loop = asyncio.get_event_loop()
-        loop.run_until_complete(self.client.aclose())
-        # self.loop.close() # we might not want this?
+    # NOTE: add destructor that closes client?
 
     # CATEGORY: user
 
