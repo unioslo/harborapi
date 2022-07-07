@@ -234,3 +234,26 @@ async def test_add_artifact_label_mock(
     )
 
 
+@pytest.mark.asyncio
+@given(st.builds(Artifact))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+async def test_get_artifact(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+    artifact: Artifact,
+):
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest",
+        method="GET",
+    ).respond_with_data(
+        artifact.json(),
+        headers={"Content-Type": "application/json"},
+    )
+    async_client.url = httpserver.url_for("/api/v2.0")
+    # TODO: test params
+    resp = await async_client.get_artifact(
+        "testproj",
+        "testrepo",
+        "latest",
+    )
+    assert resp == artifact

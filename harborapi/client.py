@@ -538,6 +538,72 @@ class HarborAsyncClient(_HarborClientBase):
         # response should have status code 201, but API spec says it's 200
         # so we don't check it
 
+    async def get_artifact(
+        self,
+        project_name: str,
+        repository_name: str,
+        reference: str,
+        page: int = 1,
+        page_size: int = 10,
+        with_tag: bool = True,
+        with_label: bool = False,
+        with_scan_overview: bool = False,
+        with_signature: bool = False,
+        with_immutable_status: bool = False,
+        with_accessory: bool = False,
+        mime_type: str = "application/vnd.security.vulnerability.report; version=1.1",
+    ) -> Artifact:
+        """Get an artifact.
+
+        Parameters
+        ----------
+        project_name : str
+            The name of the project
+        repository_name : str
+            The name of the repository
+        reference : str
+            The reference of the artifact, can be digest or tag
+        page : int
+            The page of results to return, default 1
+        page_size : int
+            The number of results to return per page, default 10
+        with_tag : bool
+            Whether to include the tags of the artifact in the response
+        with_label : bool
+            Whether to include the labels of the artifact in the response
+        with_scan_overview : bool
+            Whether to include the scan overview of the artifact in the response
+        with_signature : bool
+            Whether the signature is included inside the tags of the returning artifact.
+            Only works when setting `with_tag==True`.
+        with_immutable_status : bool
+            Whether the immutable status is included inside the tags of the returning artifact.
+        with_accessory : bool
+            Whether the accessories are included of the returning artifact.
+        mime_type : str
+            A comma-separated lists of MIME types for the scan report or scan summary.
+            The first mime type will be used when the report found for it.
+            Currently the mime type supports:
+            * `'application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0'`
+            * `'application/vnd.security.vulnerability.report; version=1.1'`
+        """
+        path = get_artifact_path(project_name, repository_name, reference)
+        resp = await self.get(
+            f"{path}",
+            params={
+                "page": page,
+                "page_size": page_size,
+                "with_tag": with_tag,
+                "with_label": with_label,
+                "with_scan_overview": with_scan_overview,
+                "with_signature": with_signature,
+                "with_immutable_status": with_immutable_status,
+                "with_accessory": with_accessory,
+            },
+            headers={"X-Accept-Vulnerabilities": mime_type},
+        )
+        return construct_model(Artifact, resp)
+
     # GET /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/vulnerabilities
     async def get_artifact_vulnerabilities(
         self,
