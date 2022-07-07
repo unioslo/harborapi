@@ -190,33 +190,39 @@ class Scanner(BaseModel):
 
 
 class ScanOverview(BaseModel):
-    pass
+    """Constructs a scan overview from a dict of `mime_type:scan_overview`
 
+    The API spec does not specify the contents of the scan overview, but from
+    investigating the behavior of the API, it seems to return a dict that looks like this:
+
+    ```py
+    {
+        "application/vnd.security.vulnerability.report; version=1.1": {
+            "key": "value",
+            ...
+        }
+    }
+    ```
+
+    The `__new__` method constructs a `NativeReportSummary` object and returns it
+    if the MIME type is one of the two MIME types specified in the spec.
+
+    If the MIME type is not recognized, `__new__` returns a `ScanOverview` object
+    with the dict assigned as an extra attribute. This behavior is not specified.
+    """
+
+    def __new__(cls, *args, **kwargs):
+        mime_types = (
+            "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0",
+            "application/vnd.security.vulnerability.report; version=1.1",
+        )
+        for k, v in kwargs.items():
+            if k in mime_types:
+                return NativeReportSummary(**v)
+        # add logging call here
+        return cls(ScanOverview)
     class Config:
         extra = Extra.allow
-
-
-# class VulnerabilitySummaryBreakdown(BaseModel):
-#     critical: int = Field(
-#         0,
-#         alias="Critical",
-#         description="The number of critical vulnerabilities detected.",
-#     )
-#     high: int = Field(
-#         0, alias="High", description="The number of critical vulnerabilities detected."
-#     )
-#     medium: int = Field(
-#         0,
-#         alias="Medium",
-#         description="The number of critical vulnerabilities detected.",
-#     )
-#     low: int = Field(
-#         0, alias="Low", description="The number of critical vulnerabilities detected."
-#     )
-
-#     class Config:
-#         extra = Extra.allow
-#         allow_population_by_field_name = True  # TODO: investigate if this is necessary
 
 
 class VulnerabilitySummary(BaseModel):
