@@ -198,7 +198,7 @@ class ScanOverview(BaseModel):
     ```py
     {
         "application/vnd.security.vulnerability.report; version=1.1": {
-            "key": "value",
+            # dict that conforms to NativeReportSummary spec
             ...
         }
     }
