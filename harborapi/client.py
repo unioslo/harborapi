@@ -7,6 +7,8 @@ from httpx import RequestError, Response
 from loguru import logger
 from pydantic import BaseModel, ValidationError
 
+from harborapi.models.models import Artifact
+
 from .exceptions import HarborAPIException, check_response_status
 from .models import (
     Accessory,
@@ -45,6 +47,11 @@ def construct_model(cls: Type[T], data: Any) -> T:
 
 class _HarborClientBase:
     """Base class used by both the AsyncClient and the Client classes."""
+
+    # NOTE: Async and sync clients were originally intended to be implemented
+    #       as separate classes that both inherit from this class.
+    #       However, given the way the sync client ended up being implemented,
+    #       the functionality of this class should be baked into the async client.
 
     def __init__(
         self,
@@ -420,6 +427,87 @@ class HarborAsyncClient(_HarborClientBase):
                 resp.status_code,
             )
         return resp.headers.get("Location")
+
+    # GET /projects/{project_name}/repositories/{repository_name}/artifacts
+    async def get_artifacts(
+        self,
+        project_name: str,
+        repository_name: str,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 10,
+        with_tag: bool = True,
+        with_label: bool = False,
+        with_scan_overview: bool = False,
+        with_signature: bool = False,
+        with_immutable_status: bool = False,
+        with_accessory: bool = False,
+        mime_type: str = "application/vnd.security.vulnerability.report; version=1.1",
+    ) -> List[Artifact]:
+        """Get the artifacts for a repository.
+
+        Parameters
+        ----------
+        project_name : str
+            The name of the project
+        repository_name : str
+            The name of the repository
+        query : Optional[str]
+            A query string to filter the artifacts
+
+            Except the basic properties, the other supported queries includes:
+            * `"tags=*"` to list only tagged artifacts
+            * `"tags=nil"` to list only untagged artifacts
+            * `"tags=~v"` to list artifacts whose tag fuzzy matches "v"
+            * `"tags=v"` to list artifact whose tag exactly matches "v"
+            * `"labels=(id1, id2)"` to list artifacts that both labels with id1 and id2 are added to
+
+        sort : Optional[str]
+            The sort order of the artifacts.
+        page : int
+            The page of results to return, default 1
+        page_size : int
+            The number of results to return per page, default 10
+        with_tag : bool
+            Whether to include the tags of the artifact in the response
+        with_label : bool
+            Whether to include the labels of the artifact in the response
+        with_scan_overview : bool
+            Whether to include the scan overview of the artifact in the response
+        with_signature : bool
+            Whether the signature is included inside the tags of the returning artifacts.
+            Only works when setting `with_tag==True`.
+        with_immutable_status : bool
+            Whether the immutable status is included inside the tags of the returning artifacts.
+        with_accessory : bool
+            Whether the accessories are included of the returning artifacts.
+        mime_type : str
+            A comma-separated lists of MIME types for the scan report or scan summary.
+            The first mime type will be used when the report found for it.
+            Currently the mime type supports:
+            * `'application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0'`
+            * `'application/vnd.security.vulnerability.report; version=1.1'`
+        """
+        path = f"/projects/{project_name}/repositories/{repository_name}/artifacts"
+        params = {
+            "page": page,
+            "page_size": page_size,
+            "with_tag": with_tag,
+            "with_label": with_label,
+            "with_scan_overview": with_scan_overview,
+            "with_signature": with_signature,
+            "with_immutable_status": with_immutable_status,
+            "with_accessory": with_accessory,
+        }  # type: Dict[str, Union[str, int, bool]]
+        if query:
+            params["q"] = query
+        if sort:
+            params["sort"] = sort
+        resp = await self.get(
+            f"{path}", params=params, headers={"X-Accept-Vulnerabilities": mime_type}
+        )
+        return [construct_model(Artifact, a) for a in resp]
 
     # GET /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/vulnerabilities
     async def get_artifact_vulnerabilities(

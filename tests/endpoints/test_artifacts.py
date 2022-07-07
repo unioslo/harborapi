@@ -9,7 +9,7 @@ from pytest_httpserver import HTTPServer
 from harborapi.client import HarborAsyncClient
 from harborapi.exceptions import StatusError
 from harborapi.models import HarborVulnerabilityReport
-from harborapi.models.models import Accessory, Tag
+from harborapi.models.models import Accessory, Artifact, Tag
 
 from ..strategies.artifact import get_hbv_strategy
 
@@ -184,3 +184,29 @@ async def test_copy_artifact(
         "oldproj/oldrepo:oldtag",
     )
     assert location == "/api/v2.0/artifacts/123"
+
+
+@pytest.mark.asyncio
+@given(st.lists(st.builds(Artifact)))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+async def test_get_artifacts_mock(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+    artifacts: List[Artifact],
+):
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/projects/testproj/repositories/testrepo/artifacts",
+        method="GET",
+    ).respond_with_data(
+        "[" + ",".join(a.json() for a in artifacts) + "]",
+        headers={"Content-Type": "application/json"},
+    )
+    async_client.url = httpserver.url_for("/api/v2.0")
+    accessories_resp = await async_client.get_artifacts(
+        "testproj",
+        "testrepo",
+    )
+    # TODO: add params tests
+    assert accessories_resp == artifacts
+    for accessory in accessories_resp:
+        assert isinstance(accessory, Artifact)
