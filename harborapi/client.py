@@ -18,6 +18,8 @@ from .models import (
     Label,
     OverallHealthStatus,
     Permission,
+    Quota,
+    QuotaUpdateReq,
     ScannerAdapterMetadata,
     ScannerRegistration,
     ScannerRegistrationReq,
@@ -775,6 +777,77 @@ class HarborAsyncClient(_HarborClientBase):
         return construct_model(Statistic, stats)
 
     # CATEGORY: quota
+    async def get_quotas(
+        self,
+        reference: Optional[str] = None,
+        reference_id: Optional[str] = None,
+        sort: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 10,
+    ) -> List[Quota]:
+        """Get quotas.
+
+        Parameters
+        ----------
+        reference : str
+            The reference type of the quota.
+            TODO: document what these values can be.
+        reference_id : str
+            The reference id of the quota
+        sort : str
+            Sort method.
+            Valid values include:
+            - `"hard.resource_name"`
+            - `"-hard.resource_name"`
+            - `"used.resource_name"`
+            - `"-used.resource_name"`
+
+            `"-"` denotes descending order, resource_name should be the real
+            resource name of the quota
+        """
+        params = {
+            "reference": reference,
+            "reference_id": reference_id,
+            "sort": sort,
+            "page": page,
+            "page_size": page_size,
+        }
+        params = {k: v for k, v in params.items() if v is not None}
+        quotas = await self.get("/quotas", params=params)
+        return [construct_model(Quota, q) for q in quotas]
+
+    async def update_quota(self, id: int, quota: QuotaUpdateReq) -> None:
+        """Update a quota.
+
+        Parameters
+        ----------
+        id : int
+            The id of the quota to update.
+        quota : QuotaUpdateReq
+            The new quota values.
+            `QuotaUpdateReq.hard` allows assignment of any attribute with
+            an `int` value.
+
+            Example:
+            ```py
+            QuotaUpdateReq(
+                hard={"storage": 100000, "other_property": 1234}
+            )
+            ```
+        """
+        await self.put(f"/quotas/{id}", json=quota)
+
+    async def get_quota(self, id: int) -> Quota:
+        """Get a quota by id.
+
+        Parameters
+        ----------
+        id : int
+            The id of the quota to get.
+        """
+        quota = await self.get(f"/quotas/{id}")
+        return construct_model(Quota, quota)
+
     # CATEGORY: repository
 
     # CATEGORY: ping

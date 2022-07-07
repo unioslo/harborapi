@@ -4,7 +4,7 @@ Python async API wrapper for the Harbor v2.0 REST API.
 
 ## Implemented endpoints
 
-- [ ] user*
+- [x] user*
 - [ ] gc
 - [ ] scanAll
 - [ ] configure
@@ -26,9 +26,9 @@ Python async API wrapper for the Harbor v2.0 REST API.
 - [ ] immutable
 - [ ] retention
 - [x] scanner
-- [ ] systeminfo
+- [x] systeminfo*
 - [x] statistic
-- [ ] quota
+- [x] quota
 - [ ] repository
 - [x] ping
 - [ ] oidc
@@ -104,15 +104,15 @@ Produces:
 
 ```py
 UserResp(
-    email=None, 
-    realname='Firstname Lastname', 
-    comment='from LDAP.', 
-    user_id=123, 
-    username='firstname-lastname', 
-    sysadmin_flag=False, 
-    admin_role_in_auth=True, 
-    oidc_user_meta=None, 
-    creation_time=datetime.datetime(2022, 7, 1, 13, 19, 36, 26000, tzinfo=datetime.timezone.utc), 
+    email=None,
+    realname='Firstname Lastname',
+    comment='from LDAP.',
+    user_id=123,
+    username='firstname-lastname',
+    sysadmin_flag=False,
+    admin_role_in_auth=True,
+    oidc_user_meta=None,
+    creation_time=datetime.datetime(2022, 7, 1, 13, 19, 36, 26000, tzinfo=datetime.timezone.utc),
     update_time=datetime.datetime(2022, 7, 1, 13, 19, 36, 26000, tzinfo=datetime.timezone.utc)
 )
 ```
