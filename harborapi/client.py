@@ -12,6 +12,7 @@ from .models import (
     Accessory,
     Artifact,
     CVEAllowlist,
+    GeneralInfo,
     HarborVulnerabilityReport,
     IsDefault,
     Label,
@@ -24,6 +25,7 @@ from .models import (
     Schedule,
     Statistic,
     Stats,
+    SystemInfo,
     Tag,
     UserResp,
     UserSearchRespItem,
@@ -748,6 +750,24 @@ class HarborAsyncClient(_HarborClientBase):
         return construct_model(ScannerAdapterMetadata, scanner)
 
     # CATEGORY: systeminfo
+
+    # GET /systeminfo/volumes
+    async def get_system_volume_info(self) -> SystemInfo:
+        """Get info about the system's volumes."""
+        resp = await self.get("/systeminfo/volumes")
+        return construct_model(SystemInfo, resp)
+
+    # GET /systeminfo/getcert
+    # async def get_system_certificate(self) -> str:
+    #     """Get the certificate for the system."""
+    #     raise NotImplementedError("File download not yet implemented")
+
+    # GET /systeminfo
+    async def get_system_info(self) -> GeneralInfo:
+        """Get info about the system."""
+        resp = await self.get("/systeminfo")
+        return construct_model(GeneralInfo, resp)
+
     # CATEGORY: statistic
     async def get_statistics(self) -> Statistic:
         """Get the statistics of the Harbor server."""
