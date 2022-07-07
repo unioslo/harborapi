@@ -57,7 +57,18 @@ asyncio.run(main())
 Displays:
 
 ```py
-UserResp(email=None, realname='Firstname Lastname', comment='from LDAP.', user_id=123, username='firstname-lastname', sysadmin_flag=False, admin_role_in_auth=True, oidc_user_meta=None, creation_time=datetime.datetime(2022, 7, 1, 13, 19, 36, 26000, tzinfo=datetime.timezone.utc), update_time=datetime.datetime(2022, 7, 1, 13, 19, 36, 26000, tzinfo=datetime.timezone.utc))
+UserResp(
+    email=None, 
+    realname='Firstname Lastname', 
+    comment='from LDAP.', 
+    user_id=123, 
+    username='firstname-lastname', 
+    sysadmin_flag=False, 
+    admin_role_in_auth=True, 
+    oidc_user_meta=None, 
+    creation_time=datetime.datetime(2022, 7, 1, 13, 19, 36, 26000, tzinfo=datetime.timezone.utc), 
+    update_time=datetime.datetime(2022, 7, 1, 13, 19, 36, 26000, tzinfo=datetime.timezone.utc)
+)
 ```
 
 ## Non-Async Client (Blocking)
