@@ -2,6 +2,52 @@
 
 Python async API wrapper for the Harbor v2.0 REST API.
 
+## Implemented endpoints
+
+- [ ] user*
+- [ ] gc
+- [ ] scanAll
+- [ ] configure
+- [ ] usergroup
+- [ ] preheat
+- [ ] replication
+- [ ] label
+- [ ] robot
+- [ ] webhookjob
+- [ ] icon
+- [ ] project
+- [ ] webhook
+- [x] scan
+- [ ] member
+- [ ] ldap
+- [ ] registry
+- [ ] search
+- [x] artifact
+- [ ] immutable
+- [ ] retention
+- [x] scanner
+- [ ] systeminfo
+- [ ] statistic
+- [ ] quota
+- [ ] repository
+- [x] ping
+- [ ] oidc
+- [x] SystemCVEAllowlist
+- [x] Health
+- [ ] robotv1
+- [ ] projectMetadata
+- [ ] auditlog
+
+\* partially implemented
+
+## Features
+
+- Async API
+- Data validation with [Pydantic](https://pydantic-docs.helpmanual.io/)
+- HTTP handled by [HTTPX](https://www.python-httpx.org/)
+- Extensive test coverage powered by [Hypothesis](https://hypothesis.works/)
+
+
 ## Usage
 
 The client can be instatiated with either a username and password, or a base64-encoded [HTTP Basic Access Authentication](https://en.wikipedia.org/wiki/Basic_access_authentication) credential string.
@@ -129,13 +175,9 @@ Artifact(
         ),
         start_time=datetime.datetime(2022, 7, 4, 8, 18, 58, tzinfo=datetime.timezone.utc),
         end_time=datetime.datetime(2022, 7, 4, 8, 19, 18, tzinfo=datetime.timezone.utc),
-        complete_percent=100,
-        scanner=Scanner(
-            name='Trivy', 
-            vendor='Aqua Security', 
+        complete_percent=100,>
             version='v0.29.2'
-        ),
-    )
+    ),
 )
 ```
 
