@@ -62,12 +62,11 @@ UserResp(email=None, realname='Firstname Lastname', comment='from LDAP.', user_i
 
 ## Non-Async Client (Blocking)
 
-In order to support use cases where users are uncomfortable with asyncio or simply do not
-want to use the async client, a non-async client exists in the form of `HarborClient`.
+In order to support use cases where users do not want to use the async client, a non-async client exists in the form of `HarborClient`.
 
-All methods are invoked identically to the async client, with `await` omitted.
+All methods should be invoked identically to the async client, with `await` omitted.
 
-**NOTE:** The implementation of `HarborClient` is extremely hacky, and it is _highly_ recommended to use the async client.
+**NOTE:** The implementation of `HarborClient` is extremely hacky, and it is _highly_ recommended to use the async client whenever possible.
 
 ### Example
 
@@ -76,7 +75,7 @@ import asyncio
 from harborapi import HarborClient
 
 client = HarborClient(
-    loop=asyncio.new_event_loop(),
+    loop=asyncio.new_event_loop(), # pass a new event loop from main thread
     url="https://your-harbor-instance.com/api/v2.0",
     username="username",
     secret="secret",
