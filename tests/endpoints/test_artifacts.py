@@ -9,7 +9,7 @@ from pytest_httpserver import HTTPServer
 from harborapi.client import HarborAsyncClient
 from harborapi.exceptions import StatusError
 from harborapi.models import HarborVulnerabilityReport
-from harborapi.models.models import Accessory, Artifact, Tag
+from harborapi.models.models import Accessory, Artifact, Label, Tag
 
 from ..strategies.artifact import get_hbv_strategy
 
@@ -210,3 +210,27 @@ async def test_get_artifacts_mock(
     assert accessories_resp == artifacts
     for accessory in accessories_resp:
         assert isinstance(accessory, Artifact)
+
+
+@pytest.mark.asyncio
+@given(st.builds(Label))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+async def test_add_artifact_label_mock(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+    label: Label,
+):
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/labels",
+        method="POST",
+        json=label.dict(),
+    ).respond_with_data()
+    async_client.url = httpserver.url_for("/api/v2.0")
+    await async_client.add_artifact_label(
+        "testproj",
+        "testrepo",
+        "latest",
+        label,
+    )
+
+

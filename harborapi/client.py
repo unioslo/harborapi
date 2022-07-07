@@ -7,7 +7,7 @@ from httpx import RequestError, Response
 from loguru import logger
 from pydantic import BaseModel, ValidationError
 
-from harborapi.models.models import Artifact
+from harborapi.models.models import Artifact, Label
 
 from .exceptions import HarborAPIException, check_response_status
 from .models import (
@@ -508,6 +508,35 @@ class HarborAsyncClient(_HarborClientBase):
             f"{path}", params=params, headers={"X-Accept-Vulnerabilities": mime_type}
         )
         return [construct_model(Artifact, a) for a in resp]
+
+    # POST /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/labels
+    async def add_artifact_label(
+        self,
+        project_name: str,
+        repository_name: str,
+        reference: str,
+        label: Label,
+    ) -> None:
+        """Add a label to an artifact.
+
+        Parameters
+        ----------
+        project_name : str
+            The name of the project
+        repository_name : str
+            The name of the repository
+        reference : str
+            The reference of the artifact, can be digest or tag
+        label : Label
+            The label to add
+        """
+        path = get_artifact_path(project_name, repository_name, reference)
+        await self.post(
+            f"{path}/labels",
+            json=label,
+        )
+        # response should have status code 201, but API spec says it's 200
+        # so we don't check it
 
     # GET /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/vulnerabilities
     async def get_artifact_vulnerabilities(
