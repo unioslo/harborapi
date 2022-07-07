@@ -108,31 +108,34 @@ Produces:
 ]
 ```
 
-Passing `with_scan_overview=True` will also return a `NativeReportSummary` if possible (otherwise `ScanOverview`) along with the artifact if the artifact has a scan report associated with it.
+Passing `with_scan_overview=True` will also include a `NativeReportSummary` if possible (otherwise `ScanOverview`) along with the artifact if the artifact has a scan report associated with it.
 
 ```py
-NativeReportSummary(
-    report_id='a0c40f3b-0403-441b-72e6-38cc725e3bfb',
-    scan_status='Success',
-    severity='Critical',
-    duration=20,
-    summary=VulnerabilitySummary(
-        total=1179,
-        fixable=394,
-        critical=3,
-        high=50,
-        medium=615,
-        low=511,
-        summary={'Critical': 3, 'High': 50, 'Low': 511, 'Medium': 615},
-    ),
-    start_time=datetime.datetime(2022, 7, 4, 8, 18, 58, tzinfo=datetime.timezone.utc),
-    end_time=datetime.datetime(2022, 7, 4, 8, 19, 18, tzinfo=datetime.timezone.utc),
-    complete_percent=100,
-    scanner=Scanner(
-        name='Trivy', 
-        vendor='Aqua Security', 
-        version='v0.29.2'
-    ),
+Artifact(
+    ...,
+    scan_overview=NativeReportSummary(
+        report_id='a0c40f3b-0403-441b-72e6-38cc725e3bfb',
+        scan_status='Success',
+        severity='Critical',
+        duration=20,
+        summary=VulnerabilitySummary(
+            total=1179,
+            fixable=394,
+            critical=3,
+            high=50,
+            medium=615,
+            low=511,
+            summary={'Critical': 3, 'High': 50, 'Low': 511, 'Medium': 615},
+        ),
+        start_time=datetime.datetime(2022, 7, 4, 8, 18, 58, tzinfo=datetime.timezone.utc),
+        end_time=datetime.datetime(2022, 7, 4, 8, 19, 18, tzinfo=datetime.timezone.utc),
+        complete_percent=100,
+        scanner=Scanner(
+            name='Trivy', 
+            vendor='Aqua Security', 
+            version='v0.29.2'
+        ),
+    )
 )
 ```
 
