@@ -20,6 +20,7 @@ from .models import (
     Permission,
     Quota,
     QuotaUpdateReq,
+    Repository,
     ScannerAdapterMetadata,
     ScannerRegistration,
     ScannerRegistrationReq,
@@ -849,6 +850,115 @@ class HarborAsyncClient(_HarborClientBase):
         return construct_model(Quota, quota)
 
     # CATEGORY: repository
+
+    # GET /projects/{project_name}/repositories/{repository_name}
+    async def get_repository(
+        self,
+        project_id: str,
+        repository_name: str,
+    ) -> Repository:
+        """Get a repository.
+
+        Parameters
+        ----------
+        project_id : int
+            The id of the project the repository belongs to.
+        repository_name : str
+            The name of the repository.
+
+        Returns
+        -------
+        Repository
+            The repository.
+        """
+        resp = await self.get(f"/projects/{project_id}/repositories/{repository_name}")
+        return construct_model(Repository, resp)
+
+    # PUT /projects/{project_name}/repositories/{repository_name}
+    async def update_repository(
+        self,
+        project_name: str,
+        repository_name: str,
+        repository: Repository,
+    ) -> None:
+        """Get a repository.
+
+        Parameters
+        ----------
+        project_id : int
+            The name of the project the repository belongs to.
+        repository_name : str
+            The name of the repository.
+        """
+        url = f"/projects/{project_name}/repositories/{repository_name}"
+        await self.put(url, json=repository)
+
+    # DELETE /projects/{project_name}/repositories/{repository_name}
+    async def delete_repository(
+        self,
+        project_id: str,
+        repository_name: str,
+        missing_ok: bool = False,
+    ) -> None:
+        """Get a repository.
+
+        Parameters
+        ----------
+        project_id : int
+            The id of the project the repository belongs to.
+        repository_name : str
+            The name of the repository.
+        missing_ok : bool
+            If true, do not raise an error if the repository does not exist.
+        """
+        await self.delete(
+            f"/projects/{project_id}/repositories/{repository_name}",
+            missing_ok=True,
+        )
+
+    # GET /projects/{project_name}/repositories
+    # &
+    # GET /repositories
+    async def get_repositories(
+        self,
+        project_name: Optional[str] = None,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 10,
+    ) -> List[Repository]:
+        """Get a list of repositories
+
+        Parameters
+        ----------
+        project_name : str
+            The name of the project.
+        query : str
+            The query string.
+            Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max]
+
+            TODO: format query documentation
+        sort : str
+            The sort method.
+            TODO: add boilerplate sort documentation
+        page : int
+            The page number.
+        page_size : int
+            The page size.
+        """
+        params = {
+            "query": query,
+            "sort": sort,
+            "page": page,
+            "page_size": page_size,
+        }
+        params = {k: v for k, v in params.items() if v is not None}
+        if project_name:
+            url = f"/projects/{project_name}/repositories"
+        else:
+            url = "/repositories"
+        resp = await self.get(url, params=params)
+        return [construct_model(Repository, r) for r in resp]
 
     # CATEGORY: ping
     # GET /ping

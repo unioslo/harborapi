@@ -29,7 +29,7 @@ Python async API wrapper for the Harbor v2.0 REST API.
 - [x] systeminfo*
 - [x] statistic
 - [x] quota
-- [ ] repository
+- [x] repository
 - [x] ping
 - [ ] oidc
 - [x] SystemCVEAllowlist
