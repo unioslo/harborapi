@@ -7,14 +7,14 @@ from httpx import RequestError, Response
 from loguru import logger
 from pydantic import BaseModel, ValidationError
 
-from harborapi.models.models import Artifact, Label
-
 from .exceptions import HarborAPIException, check_response_status
 from .models import (
     Accessory,
+    Artifact,
     CVEAllowlist,
     HarborVulnerabilityReport,
     IsDefault,
+    Label,
     OverallHealthStatus,
     Permission,
     ScannerAdapterMetadata,
@@ -22,6 +22,7 @@ from .models import (
     ScannerRegistrationReq,
     ScannerRegistrationSettings,
     Schedule,
+    Statistic,
     Stats,
     Tag,
     UserResp,
@@ -748,6 +749,11 @@ class HarborAsyncClient(_HarborClientBase):
 
     # CATEGORY: systeminfo
     # CATEGORY: statistic
+    async def get_statistics(self) -> Statistic:
+        """Get the statistics of the Harbor server."""
+        stats = await self.get("/statistics")
+        return construct_model(Statistic, stats)
+
     # CATEGORY: quota
     # CATEGORY: repository
 

@@ -27,7 +27,7 @@ Python async API wrapper for the Harbor v2.0 REST API.
 - [ ] retention
 - [x] scanner
 - [ ] systeminfo
-- [ ] statistic
+- [x] statistic
 - [ ] quota
 - [ ] repository
 - [x] ping
