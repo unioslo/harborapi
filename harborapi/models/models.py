@@ -221,6 +221,7 @@ class ScanOverview(BaseModel):
                 return NativeReportSummary(**v)
         # add logging call here
         return cls(ScanOverview)
+
     class Config:
         extra = Extra.allow
 
@@ -2052,7 +2053,7 @@ class Artifact(BaseModel):
     labels: Optional[List[Label]] = None
     scan_overview: Optional[ScanOverview] = Field(
         None, description="The overview of the scan result."
-    )
+    )  # TODO: change type to Optional[Union[ScanOverview, NativeReportSummary]]
     accessories: Optional[List[Accessory]] = None
 
 
