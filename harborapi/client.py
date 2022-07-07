@@ -604,6 +604,29 @@ class HarborAsyncClient(_HarborClientBase):
         )
         return construct_model(Artifact, resp)
 
+    async def delete_artifact(
+        self,
+        project_name: str,
+        repository_name: str,
+        reference: str,
+        missing_ok: bool = False,
+    ) -> None:
+        """Delete an artifact.
+
+        Parameters
+        ----------
+        project_name : str
+            The name of the project
+        repository_name : str
+            The name of the repository
+        reference : str
+            The reference of the artifact, can be digest or tag
+        missing_ok : bool
+            Whether to ignore 404 error when deleting the artifact
+        """
+        path = get_artifact_path(project_name, repository_name, reference)
+        await self.delete(path, missing_ok=missing_ok)
+
     # GET /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/vulnerabilities
     async def get_artifact_vulnerabilities(
         self,

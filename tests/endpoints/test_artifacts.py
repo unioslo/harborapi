@@ -237,7 +237,7 @@ async def test_add_artifact_label_mock(
 @pytest.mark.asyncio
 @given(st.builds(Artifact))
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-async def test_get_artifact(
+async def test_get_artifact_mock(
     async_client: HarborAsyncClient,
     httpserver: HTTPServer,
     artifact: Artifact,
@@ -257,3 +257,32 @@ async def test_get_artifact(
         "latest",
     )
     assert resp == artifact
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("missing_ok", [True, False])
+@pytest.mark.parametrize("status_code", [200, 404])
+async def test_delete_artifact_mock(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+    missing_ok: bool,
+    status_code: int,
+):
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest",
+        method="DELETE",
+    ).respond_with_data(
+        status=status_code,
+    )
+
+    async_client.url = httpserver.url_for("/api/v2.0")
+    if status_code == 404 and not missing_ok:
+        ctx = pytest.raises(StatusError)
+    else:
+        ctx = nullcontext()  # type: ignore
+    with ctx:
+        await async_client.delete_artifact(
+            "testproj", "testrepo", "latest", missing_ok=missing_ok
+        )
+
+
