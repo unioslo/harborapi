@@ -108,7 +108,7 @@ Produces:
 ]
 ```
 
-Passing `with_scan_overview=True` will also return a `ScanOverview` along with the artifact if it has one:
+Passing `with_scan_overview=True` will also return a `NativeReportSummary` if possible (otherwise `ScanOverview`) along with the artifact if the artifact has a scan report associated with it.
 
 ```py
 NativeReportSummary(
