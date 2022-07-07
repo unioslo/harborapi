@@ -232,15 +232,42 @@ class VulnerabilitySummary(BaseModel):
     fixable: Optional[int] = Field(
         None, description="The number of the fixable vulnerabilities", example=100
     )
+
+    # These severity fields are not native to the API spec,
+    # but are added to make the API more user friendly by making
+    # the severity fields accessible directly instead of through the summary field.
+    # See root validator for more details.
+    critical: int = Field(
+        0,
+        alias="Critical",
+        description="The number of critical vulnerabilities detected.",
+    )
+    high: int = Field(
+        0, alias="High", description="The number of critical vulnerabilities detected."
+    )
+    medium: int = Field(
+        0,
+        alias="Medium",
+        description="The number of critical vulnerabilities detected.",
+    )
+    low: int = Field(
+        0, alias="Low", description="The number of critical vulnerabilities detected."
+    )
+
+    # The original summary field (prefer using the severity fields above)
+    # The field is kept to not remove anything native to the API spec.
     summary: Optional[Dict[str, int]] = Field(
         None,
         description="Numbers of the vulnerabilities with different severity",
         example={"Critical": 5, "High": 5},
     )
-    # summary: VulnerabilitySummary = Field(
-    #     default_factory=VulnerabilitySummaryBreakdown,
-    #     description="Number of vulnerabilities by severity."
-    # )
+
+    @root_validator(pre=True)
+    def assign_severity_breakdown(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        summary = values.get("summary", {})
+        if not isinstance(summary, dict):
+            raise ValueError("'summary' must be a dict")
+        return {**values, **summary}
 
 
 class AuditLog(BaseModel):
