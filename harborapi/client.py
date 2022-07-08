@@ -288,6 +288,7 @@ class HarborAsyncClient(_HarborClientBase):
         page_size: int = 10,
         with_signature: bool = False,
         with_immutable_status: bool = False,
+        retrieve_all: bool = True,
     ) -> List[Tag]:
         """Get the tags for an artifact.
 
@@ -311,6 +312,9 @@ class HarborAsyncClient(_HarborClientBase):
             Whether to include the signature of the tag in the response
         with_immutable_status : bool
             Whether to include the immutable status of the tag in the response
+        retrieve_all: bool
+            If true, retrieve all the resources,
+            otherwise, retrieve only the number of resources specified by `page_size`.
 
         Returns
         -------
@@ -328,7 +332,7 @@ class HarborAsyncClient(_HarborClientBase):
             params["q"] = query
         if sort:
             params["sort"] = sort
-        resp = await self.get(f"{path}/tags")
+        resp = await self.get(f"{path}/tags", follow_links=retrieve_all)
         return [construct_model(Tag, t) for t in resp]
 
     # GET /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags
@@ -341,6 +345,7 @@ class HarborAsyncClient(_HarborClientBase):
         sort: Optional[str] = None,
         page: int = 1,
         page_size: int = 10,
+        retrieve_all: bool = True,
     ) -> List[Accessory]:
         """Get the tags for an artifact.
 
@@ -360,6 +365,9 @@ class HarborAsyncClient(_HarborClientBase):
             The page of results to return, default 1
         page_size : int
             The number of results to return per page, default 10
+        retrieve_all: bool
+            If true, retrieve all the resources,
+            otherwise, retrieve only the number of resources specified by `page_size`.
 
         Returns
         -------
@@ -375,7 +383,7 @@ class HarborAsyncClient(_HarborClientBase):
             params["q"] = query
         if sort:
             params["sort"] = sort
-        resp = await self.get(f"{path}/accessories")
+        resp = await self.get(f"{path}/accessories", follow_links=retrieve_all)
         return [construct_model(Accessory, a) for a in resp]
 
     # DELETE /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags
@@ -451,6 +459,7 @@ class HarborAsyncClient(_HarborClientBase):
         with_immutable_status: bool = False,
         with_accessory: bool = False,
         mime_type: str = "application/vnd.security.vulnerability.report; version=1.1",
+        retrieve_all: bool = True,
     ) -> List[Artifact]:
         """Get the artifacts for a repository.
 
@@ -495,6 +504,9 @@ class HarborAsyncClient(_HarborClientBase):
             Currently the mime type supports:
             * `'application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0'`
             * `'application/vnd.security.vulnerability.report; version=1.1'`
+        retrieve_all: bool
+            If true, retrieve all the resources,
+            otherwise, retrieve only the number of resources specified by `page_size`.
         """
         path = f"/projects/{project_name}/repositories/{repository_name}/artifacts"
         params = {
@@ -512,7 +524,10 @@ class HarborAsyncClient(_HarborClientBase):
         if sort:
             params["sort"] = sort
         resp = await self.get(
-            f"{path}", params=params, headers={"X-Accept-Vulnerabilities": mime_type}
+            f"{path}",
+            params=params,
+            headers={"X-Accept-Vulnerabilities": mime_type},
+            follow_links=retrieve_all,
         )
         return [construct_model(Artifact, a) for a in resp]
 
@@ -572,8 +587,10 @@ class HarborAsyncClient(_HarborClientBase):
             The reference of the artifact, can be digest or tag
         page : int
             The page of results to return, default 1
+            NOTE: unclear if this has an effect, even though it's in the API spec
         page_size : int
             The number of results to return per page, default 10
+            NOTE: unclear if this has an effect, even though it's in the API spec
         with_tag : bool
             Whether to include the tags of the artifact in the response
         with_label : bool
@@ -786,6 +803,7 @@ class HarborAsyncClient(_HarborClientBase):
         sort: Optional[str] = None,
         page: int = 1,
         page_size: int = 10,
+        retrieve_all: bool = True,
     ) -> List[Quota]:
         """Get quotas.
 
@@ -806,6 +824,13 @@ class HarborAsyncClient(_HarborClientBase):
 
             `"-"` denotes descending order, resource_name should be the real
             resource name of the quota
+        page: int
+            The page number to retrieve resources from.
+        page_size: int
+            The number of resources to retrieve per page.
+        retrieve_all: bool
+            If true, retrieve all the resources,
+            otherwise, retrieve only the number of resources specified by `page_size`.
         """
         params = {
             "reference": reference,
@@ -815,7 +840,7 @@ class HarborAsyncClient(_HarborClientBase):
             "page_size": page_size,
         }
         params = {k: v for k, v in params.items() if v is not None}
-        quotas = await self.get("/quotas", params=params)
+        quotas = await self.get("/quotas", params=params, follow_links=retrieve_all)
         return [construct_model(Quota, q) for q in quotas]
 
     async def update_quota(self, id: int, quota: QuotaUpdateReq) -> None:
@@ -927,6 +952,7 @@ class HarborAsyncClient(_HarborClientBase):
         sort: Optional[str] = None,
         page: int = 1,
         page_size: int = 10,
+        retrieve_all: bool = True,
     ) -> List[Repository]:
         """Get a list of repositories
 
@@ -946,6 +972,9 @@ class HarborAsyncClient(_HarborClientBase):
             The page number.
         page_size : int
             The page size.
+        retrieve_all : bool
+            If true, retrieve all the resources,
+            otherwise, retrieve only the number of resources specified by `page_size`.
         """
         params = {
             "query": query,
@@ -958,7 +987,7 @@ class HarborAsyncClient(_HarborClientBase):
             url = f"/projects/{project_name}/repositories"
         else:
             url = "/repositories"
-        resp = await self.get(url, params=params)
+        resp = await self.get(url, params=params, follow_links=retrieve_all)
         return [construct_model(Repository, r) for r in resp]
 
     # CATEGORY: ping
