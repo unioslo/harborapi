@@ -186,6 +186,8 @@ Artifact(
 
 All methods raise `harborapi.exceptions.StatusError` for responses with non-2xx status codes unless otherwise specified.
 
+### Status Code
+
 ```py
 try:
     await client.delete_artifact("project", "repository", "latest")
@@ -193,6 +195,18 @@ except StatusError as e:
     print(e.status_code)
 ```
 
+### Inspecting Errors
+
+The `StatusError.errors` attribute contains a list of `Error` objects that contain
+more detailed information about the error(s) that have occured.
+
+```py
+try:
+    await client.delete_artifact("project", "repository", "latest")
+except StatusError as e:
+    for error in e.errors:
+        print(error.code, error.message)
+```
 
 ## Non-Async Client (Blocking)
 
