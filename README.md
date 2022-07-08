@@ -2,6 +2,13 @@
 
 Python async API wrapper for the Harbor v2.0 REST API.
 
+## Features
+
+- Async API
+- Data validation with [Pydantic](https://pydantic-docs.helpmanual.io/)
+- HTTP handled by [HTTPX](https://www.python-httpx.org/)
+- Extensive test coverage powered by [Hypothesis](https://hypothesis.works/)
+
 ## Implemented endpoints
 
 - [x] user*
@@ -26,7 +33,7 @@ Python async API wrapper for the Harbor v2.0 REST API.
 - [ ] immutable
 - [ ] retention
 - [x] scanner
-- [x] systeminfo*
+- [x] systeminfo**
 - [x] statistic
 - [x] quota
 - [x] repository
@@ -40,12 +47,7 @@ Python async API wrapper for the Harbor v2.0 REST API.
 
 \* partially implemented
 
-## Features
-
-- Async API
-- Data validation with [Pydantic](https://pydantic-docs.helpmanual.io/)
-- HTTP handled by [HTTPX](https://www.python-httpx.org/)
-- Extensive test coverage powered by [Hypothesis](https://hypothesis.works/)
+\*\* `/systeminfo/getcert` NYI
 
 
 ## Usage
