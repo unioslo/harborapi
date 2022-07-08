@@ -20,7 +20,7 @@ Python async API wrapper for the Harbor v2.0 REST API.
 - [x] scan
 - [ ] member
 - [ ] ldap
-- [ ] registry
+- [x] registry
 - [ ] search
 - [x] artifact
 - [ ] immutable

@@ -22,6 +22,11 @@ from .models import (
     Permission,
     Quota,
     QuotaUpdateReq,
+    Registry,
+    RegistryInfo,
+    RegistryPing,
+    RegistryProviderInfo,
+    RegistryUpdate,
     Repository,
     ScannerAdapterMetadata,
     ScannerRegistration,
@@ -246,7 +251,145 @@ class HarborAsyncClient(_HarborClientBase):
 
     # CATEGORY: member
     # CATEGORY: ldap
+
     # CATEGORY: registry
+    # POST /registries/ping
+    async def check_registry_status(self, ping: RegistryPing) -> None:
+        """Check the status of the registry."""
+        await self.post("/registries/ping", json=ping)
+
+    # GET /replication/adapters
+    async def get_registry_adapters(self) -> List[str]:
+        """Get the list of available registry adapters."""
+        resp = await self.get("/replication/adapters")
+        return resp  # type: ignore # we know this is a list of strings
+
+    # GET /registries/{id}/info
+    async def get_registry_info(self, id: int) -> RegistryInfo:
+        """Get the info of a registry."""
+        resp = await self.get(f"/registries/{id}/info")
+        return construct_model(RegistryInfo, resp)
+
+    # GET /replication/adapterinfos
+    async def get_registry_providers(self) -> List[RegistryProviderInfo]:
+        """Get all registered registry provider information.
+
+        Returns
+        -------
+        List[RegistryProviderInfo]
+            A list of RegistryProviderInfo objects.
+        """
+        resp = await self.get("/replication/adapterinfos")
+        return [construct_model(RegistryProviderInfo, p) for p in resp]
+
+    # PUT /registries/{id}
+    async def update_registry(self, id: int, registry: RegistryUpdate) -> None:
+        """Update a registry.
+
+        Parameters
+        ----------
+        id : int
+            The ID of the registry
+        registry : RegistryUpdate
+            The updated registry values.
+        """
+        await self.put(f"/registries/{id}", json=registry)
+
+    # GET /registries/{id}
+    async def get_registry(self, id: int) -> Registry:
+        """Get a registry.
+
+        Parameters
+        ----------
+        id : int
+            The ID of the registry
+        """
+        resp = await self.get(f"/registries/{id}")
+        return construct_model(Registry, resp)
+
+    # DELETE /registries/{id}
+    async def delete_registry(self, id: int, missing_ok: bool = False) -> None:
+        """Delete a registry.
+
+        Parameters
+        ----------
+        id : int
+            The ID of the registry
+        missing_ok : bool
+            If True, don't raise an exception if the registry doesn't exist.
+        """
+        await self.delete(f"/registries/{id}", missing_ok=missing_ok)
+
+    # POST /registries
+    async def create_registry(self, registry: Registry) -> Optional[str]:
+        """Create a new registry.
+
+        Parameters
+        ----------
+        registry : Registry
+            The new registry values.
+
+        Returns
+        -------
+        Optional[str]
+            The ID of the new registry if it exists.
+            This value should probably never be `None`.
+        """
+        resp = await self.post("/registries", json=registry)
+        return resp.headers.get("Location")
+
+    # GET /registries
+    async def get_registries(
+        self,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 10,
+        name: Optional[str] = None,
+        retrieve_all: bool = True,
+    ) -> List[Registry]:
+        """Get all registries.
+
+        Parameters
+        ----------
+        query : Optional[str]
+            A query string to filter the artifacts
+
+            Except the basic properties, the other supported queries includes:
+            * `"tags=*"` to list only tagged artifacts
+            * `"tags=nil"` to list only untagged artifacts
+            * `"tags=~v"` to list artifacts whose tag fuzzy matches "v"
+            * `"tags=v"` to list artifact whose tag exactly matches "v"
+            * `"labels=(id1, id2)"` to list artifacts that both labels with id1 and id2 are added to
+
+        sort : Optional[str]
+            The sort order of the artifacts.
+        page : int
+            The page of results to return, default 1
+        page_size : int
+            The number of results to return per page, default 10
+        name: str: Optional[str]
+            The name of the registry (deprecated, use `query` instead)
+        retrieve_all: bool
+            If true, retrieve all the resources,
+            otherwise, retrieve only the number of resources specified by `page_size`.
+
+        Returns
+        -------
+        List[Registry]
+            A list of Registry objects.
+        """
+        params = {
+            "query": query,
+            "sort": sort,
+            "page": page,
+            "page_size": page_size,
+            "name": name,
+        }
+        params = {k: v for k, v in params.items() if v is not None}
+        resp = await self.get("/registries", params=params, follow_links=retrieve_all)
+        return [construct_model(Registry, r) for r in resp]
+
     # CATEGORY: search
     # CATEGORY: artifact
 
