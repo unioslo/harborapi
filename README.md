@@ -21,7 +21,7 @@ Python async API wrapper for the Harbor v2.0 REST API.
 - [ ] member
 - [ ] ldap
 - [x] registry
-- [ ] search
+- [x] search
 - [x] artifact
 - [ ] immutable
 - [ ] retention

@@ -33,6 +33,7 @@ from .models import (
     ScannerRegistrationReq,
     ScannerRegistrationSettings,
     Schedule,
+    Search,
     Statistic,
     Stats,
     SystemInfo,
@@ -391,6 +392,24 @@ class HarborAsyncClient(_HarborClientBase):
         return [construct_model(Registry, r) for r in resp]
 
     # CATEGORY: search
+    # GET /search
+    async def search(self, query: str) -> Search:
+        """Search for projects, repositories and helm charts that the user has access to.
+
+        WARNING
+        -------
+        This method's API is highly likely to change in the future.
+        Right now we just copy the API spec, which requires a query string.
+
+        Parameters
+        ----------
+        query : str
+            Search parameters for project and repository name.
+            NOTE: API docs do not mention helm charts here. Oversight?
+        """
+        resp = await self.get("/search", params={"q": query})
+        return construct_model(Search, resp)
+
     # CATEGORY: artifact
 
     # POST /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags
