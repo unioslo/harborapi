@@ -1,11 +1,11 @@
-from typing import Optional
+from typing import List, Optional
 
 from httpx import HTTPStatusError, Response
 from loguru import logger
 
 from harborapi.utils import is_json
 
-from .models import Errors
+from .models import Error, Errors
 
 
 class HarborAPIException(Exception):
@@ -15,11 +15,12 @@ class HarborAPIException(Exception):
 # FIXME: this SUCKS
 class StatusError(HarborAPIException):
     __cause__: Optional[HTTPStatusError]
+    errors: List[Error]
 
     def __init__(self, errors: Optional[Errors] = None, *args, **kwargs):
-        self.errors = None
-        if isinstance(errors, Errors):
-            self.errors = errors
+        self.errors = []
+        if isinstance(errors, Errors) and errors.errors:
+            self.errors = errors.errors
         super().__init__(*args, **kwargs)
 
     @property

@@ -203,9 +203,9 @@ async def test_get_errors(
 
     e = exc_info.value
     assert isinstance(e, StatusError)
-    assert isinstance(e.errors, Errors)
-    if e.errors.errors:
-        for error in e.errors.errors:
+    assert isinstance(e.errors, list)
+    if e.errors:
+        for error in e.errors:
             assert isinstance(error, Error)
 
     assert isinstance(e.__cause__, HTTPStatusError)
