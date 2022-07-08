@@ -59,6 +59,8 @@ class HarborClient(HarborAsyncClient):
         Callable[[Any], Any]
             A function that runs the coroutine in the event loop.
         """
+
         def wrapper(*args, **kwargs):
             return self.loop.run_until_complete(coro(*args, **kwargs))
+
         return wrapper
