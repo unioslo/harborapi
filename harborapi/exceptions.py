@@ -1,6 +1,6 @@
 from typing import Optional
 
-from httpx import HTTPStatusError, InvalidURL, Response
+from httpx import HTTPStatusError, Response
 from loguru import logger
 
 from harborapi.utils import is_json
@@ -14,11 +14,20 @@ class HarborAPIException(Exception):
 
 # FIXME: this SUCKS
 class StatusError(HarborAPIException):
+    __cause__: Optional[HTTPStatusError]
+
     def __init__(self, errors: Optional[Errors] = None, *args, **kwargs):
         self.errors = None
         if isinstance(errors, Errors):
             self.errors = errors
         super().__init__(*args, **kwargs)
+
+    @property
+    def status_code(self) -> Optional[int]:
+        try:
+            return self.__cause__.response.status_code  # type: ignore
+        except:
+            return None
 
 
 # NOTE: should this function be async?
@@ -27,6 +36,12 @@ def check_response_status(response: Response, missing_ok: bool = False) -> None:
 
     Exceptions are wrapped in a `StatusError` if the response contains errors.
 
+    Parameters
+    ----------
+    response : Response
+        The response to check.
+    missing_ok : bool, optional
+        If `True`, do not raise an exception if the status is 404.
     """
     try:
         response.raise_for_status()
@@ -47,17 +62,16 @@ def check_response_status(response: Response, missing_ok: bool = False) -> None:
 def try_parse_errors(response: Response) -> Optional[Errors]:
     """Attempts to return the errors from a response.
 
-    See: `models.Errors`
+        See: `models.Errors`
 
-    Parameters
-    ----------
-    response : Response
-        The httpx response to parse.
-
-    Returns
-    -------
-    Optional[Errors]
-        The errors from the response.
+        Parameters
+        ----------
+        response : Response
+    ):
+        Returns
+        -------
+        Optional[Errors]
+            The errors from the response.
     """
     if is_json(response):
         try:

@@ -181,6 +181,18 @@ Artifact(
 )
 ```
 
+## Exception Handling (WIP)
+
+All methods raise `harborapi.exceptions.StatusError` for responses with non-2xx status codes unless otherwise specified.
+
+```py
+try:
+    await client.delete_artifact("project", "repository", "latest")
+except StatusError as e:
+    print(e.status_code)
+```
+
+
 ## Non-Async Client (Blocking)
 
 In order to support use cases where users do not want to use the async client, a non-async client exists in the form of `HarborClient`.
