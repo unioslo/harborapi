@@ -1,6 +1,7 @@
 from . import scanner
 from .buildhistory import *
 from .models import *
+from .oidc import *
 from .scanner import Artifact as ScanArtifact
 from .scanner import Error as ScanError
 from .scanner import HarborVulnerabilityReport

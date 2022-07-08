@@ -31,7 +31,7 @@ Python async API wrapper for the Harbor v2.0 REST API.
 - [x] quota
 - [x] repository
 - [x] ping
-- [ ] oidc
+- [x] oidc
 - [x] SystemCVEAllowlist
 - [x] Health
 - [ ] robotv1
@@ -74,6 +74,7 @@ client = HarborAsyncClient(
     credentials="base64_string_here",
 )
 ```
+
 
 
 ## Examples

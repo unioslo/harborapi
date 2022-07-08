@@ -16,6 +16,7 @@ from .models import (
     HarborVulnerabilityReport,
     IsDefault,
     Label,
+    OIDCTestReq,
     OverallHealthStatus,
     Permission,
     Quota,
@@ -964,10 +965,21 @@ class HarborAsyncClient(_HarborClientBase):
     # GET /ping
     async def ping_harbor_api(self) -> str:
         """Pings the Harbor API to check if it is alive."""
-        # TODO: add plaintext GET method so we don't have to do this here
         return await self.get_text("/ping")
 
     # CATEGORY: oidc
+    # POST /system/oidc/ping
+    async def test_oidc(self, oidcreq: OIDCTestReq) -> None:
+        """Tests an OIDC endpoint. Can only be called by system admin.
+
+        Raises `StatusError` if endpoint is unreachable.
+
+        Parameters
+        ----------
+        oidctest : OIDCTestReq
+            The OIDC test request.
+        """
+        await self.post("/system/oidc/ping", json=oidcreq)
 
     # CATEGORY: SystemCVEAllowlist
     # PUT /system/CVEAllowlist
