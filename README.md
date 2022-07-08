@@ -36,7 +36,7 @@ Python async API wrapper for the Harbor v2.0 REST API.
 - [x] Health
 - [ ] robotv1
 - [ ] projectMetadata
-- [ ] auditlog
+- [x] auditlog
 
 \* partially implemented
 

@@ -11,6 +11,7 @@ from .exceptions import HarborAPIException, check_response_status
 from .models import (
     Accessory,
     Artifact,
+    AuditLog,
     CVEAllowlist,
     GeneralInfo,
     HarborVulnerabilityReport,
@@ -1030,6 +1031,65 @@ class HarborAsyncClient(_HarborClientBase):
     # CATEGORY: robotv1
     # CATEGORY: projectMetadata
     # CATEGORY: auditlog
+    # GET /audit-logs
+    async def get_audit_logs(
+        self,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 10,
+        retrieve_all: bool = False,
+    ) -> List[AuditLog]:
+        """Get a list of audit logs for the projects the user is a member of.
+
+        NOTE
+        ----
+        Set `retrieve_all` to `True` to retrieve the entire audit log for all projects.
+
+        Parameters
+        ----------
+        query: Optional[str]
+            Query string to query resources.
+
+            Supported query patterns are
+            * exact match(`"k=v"`)
+            * fuzzy match(`"k=~v"`)
+            * range(`"k=[min~max]"`)
+            * list with union releationship(`"k={v1 v2 v3}"`)
+            * list with intersection relationship(`"k=(v1 v2 v3)"`).
+
+            The value of range and list can be
+            * string(enclosed by `"` or `'`)
+            * integer
+            * time(in format `"2020-04-09 02:36:00"`)
+
+            All of these query patterns should be put in the query string and separated by `","`.
+            e.g. `"k1=v1,k2=~v2,k3=[min~max]"`
+        sort: Optional[str]
+            Sort the resource list in ascending or descending order.
+            e.g. sort by field1 in ascending order and field2 in descending order with `"sort=field1,-field2"`
+        page: int
+            The page number to fetch resources from.
+        page_size: int
+            The number of resources to fetch per page.
+        retrieve_all: bool
+            If true, retrieve all the resources,
+            otherwise, retrieve only the number of resources specified by `page_size`.
+
+        Returns
+        -------
+        List[AuditLog]
+            The list of audit logs.
+        """
+        params = {
+            "query": query,
+            "sort": sort,
+            "page": page,
+            "page_size": page_size,
+        }
+        params = {k: v for k, v in params.items() if v is not None}
+        resp = await self.get("/audit-logs", params=params, follow_links=retrieve_all)
+        return [construct_model(AuditLog, r) for r in resp]
 
     def _get_headers(self, headers: Optional[Dict[str, str]] = None) -> Dict[str, str]:
         headers = headers or {}
