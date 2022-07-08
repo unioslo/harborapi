@@ -11,7 +11,7 @@ Python async API wrapper for the Harbor v2.0 REST API.
 
 ## Implemented endpoints
 
-- [x] user*
+- [x] user
 - [ ] gc
 - [x] scanAll
 - [ ] configure
@@ -44,8 +44,6 @@ Python async API wrapper for the Harbor v2.0 REST API.
 - [ ] robotv1
 - [ ] projectMetadata
 - [x] auditlog
-
-\* partially implemented
 
 \*\* `/systeminfo/getcert` NYI
 

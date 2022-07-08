@@ -7,7 +7,7 @@ from httpx import RequestError, Response
 from loguru import logger
 from pydantic import BaseModel, ValidationError
 
-from .exceptions import HarborAPIException, check_response_status
+from .exceptions import BadRequest, HarborAPIException, check_response_status
 from .models import (
     Accessory,
     Artifact,
@@ -19,6 +19,7 @@ from .models import (
     Label,
     OIDCTestReq,
     OverallHealthStatus,
+    PasswordReq,
     Permission,
     Quota,
     QuotaUpdateReq,
@@ -38,8 +39,11 @@ from .models import (
     Stats,
     SystemInfo,
     Tag,
+    UserCreationReq,
+    UserProfile,
     UserResp,
     UserSearchRespItem,
+    UserSysAdminFlag,
 )
 from .types import JSONType
 from .utils import get_artifact_path, get_credentials, handle_optional_json_response
@@ -111,33 +115,68 @@ class HarborAsyncClient(_HarborClientBase):
     # NOTE: add destructor that closes client?
 
     # CATEGORY: user
+    # PUT /users/{user_id}/cli_secret
+    async def set_user_cli_secret(
+        self,
+        user_id: int,
+        secret: str,
+    ) -> None:
+        """Set the CLI secret for a user.
 
-    # GET /users/search?username=<username>
+        Parameters
+        ----------
+        user_id : int
+            The ID of the user to set the secret for
+        secret : str
+            The secret to set for the user
+
+        Raises
+        ------
+        BadRequest
+            Invalid user ID.
+            Or user is not onboarded via OIDC authentication.
+            Or the secret does not meet the standard.
+            (This is a Harbor API implementation detail.)
+        """
+        try:
+            await self.put(f"/users/{user_id}/cli_secret", json={"secret": secret})
+        except BadRequest as e:
+            logger.error(e.__cause__.response.text if e.__cause__ else e.__str__())
+            # TODO: do anything else here? Raise a more specific exception?
+            raise
+
+    # GET /users/search
     async def get_users_by_username(
-        self, username: str, **kwargs: Any
+        self,
+        username: str,
+        page: int = 1,
+        page_size: int = 100,
+        retrieve_all: bool = True,
     ) -> List[UserSearchRespItem]:
+        """Search for users by username.
+
+        Parameters
+        ----------
+        username : str
+            The username to search for
+        page : int
+            The page of results to return
+        page_size : int
+            The number of results to return per page
+        retrieve_all : bool
+            If True, retrieve all results, otherwise, retrieve only the first page
+        """
+        params = {"username": username, "page": page, "page_size": page_size}
         users_resp = await self.get(
             "/users/search",
-            params={"username": username, **kwargs},
+            params=params,
+            follow_links=retrieve_all,
         )
         return [construct_model(UserSearchRespItem, u) for u in users_resp]
 
-    # GET /users
-    async def get_users(self, sort: Optional[str] = None, **kwargs) -> List[UserResp]:
-        params = {**kwargs}
-        if sort:
-            params["sort"] = sort
-        users_resp = await self.get("/users", params=params)
-        return [construct_model(UserResp, u) for u in users_resp]
-
-    # GET /users/current
-    async def get_current_user(self) -> UserResp:
-        user_resp = await self.get("/users/current")
-        return construct_model(UserResp, user_resp)
-
     # GET /users/current/permissions
     async def get_current_user_permissions(
-        self, scope: Optional[str], relative: bool = False
+        self, scope: Optional[str] = None, relative: bool = False
     ) -> List[Permission]:
         """Get current user permissions.
 
@@ -158,8 +197,111 @@ class HarborAsyncClient(_HarborClientBase):
         if scope:
             params["scope"] = scope
             params["relative"] = relative
-        resp = await self.get("/api/users/current/permissions", params=params)
+        resp = await self.get("/users/current/permissions", params=params)
         return [construct_model(Permission, p) for p in resp]
+
+    # GET /users/current
+    async def get_current_user(self) -> UserResp:
+        user_resp = await self.get("/users/current")
+        return construct_model(UserResp, user_resp)
+
+    # PUT /users/{user_id}/sysadmin
+    async def set_user_admin(self, user_id: int, is_admin: bool) -> None:
+        """Set a user's admin status.
+
+        Parameters
+        ----------
+        user_id : int
+            The ID of the user to set the admin status for
+        is_admin : bool
+            Whether the user should be an admin or not
+        """
+        await self.put(
+            f"/users/{user_id}/sysadmin", json=UserSysAdminFlag(sysadmin_flag=is_admin)
+        )
+
+    # PUT /users/{user_id}/password
+    async def set_user_password(
+        self, user_id: int, new_password: str, old_password: Optional[str]
+    ) -> None:
+        """Set a user's password.
+        Admin users can change any user's password.
+        Non-admin users can only change their own password.
+
+        Parameters
+        ----------
+        user_id : int
+            The ID of the user to set the password for
+        new_password : str
+            The new password to set for the user
+        old_password : str
+            The old password for the user, not required if API user is admin.
+
+        Raises
+        ------
+        BadRequest
+            Raised for any of the following reasons:
+            * Invalid user ID
+            * Password does not meet requirement
+            * Old password is incorrect
+        """
+        try:
+            await self.put(
+                f"/users/{user_id}/password",
+                json=PasswordReq(old_password=old_password, new_password=new_password),
+            )
+        except BadRequest as e:
+            logger.error(e.__cause__.response.text if e.__cause__ else e.__str__())
+            raise
+
+    # POST /users
+    async def create_user(self, user: UserCreationReq) -> Optional[str]:
+        """Create a new user.
+        Can only be used when the authentication mode is for local DB,
+        when self registration is disabled.
+
+        Parameters
+        ----------
+        user : UserCreationReq
+            The user to create
+
+        Returns
+        -------
+        Optional[str]
+            The location of the created user
+        """
+        resp = await self.post("/users", json=user)
+        return resp.headers.get("Location")
+
+    # GET /users
+    async def get_users(self, sort: Optional[str] = None, **kwargs) -> List[UserResp]:
+        params = {**kwargs}
+        if sort:
+            params["sort"] = sort
+        users_resp = await self.get("/users", params=params)
+        return [construct_model(UserResp, u) for u in users_resp]
+
+    # PUT /users/{user_id}
+    async def update_user_profile(self, user_id: int, user: UserProfile) -> None:
+        """Update a user's profile.
+
+        Parameters
+        ----------
+        user_id : int
+            The ID of the user to update
+        user : UserProfile
+            The user profile to update
+        """
+        await self.put(f"/users/{user_id}", json=user)
+
+    # GET /users/{user_id}
+    async def get_user(self, user_id: int) -> UserResp:
+        user_resp = await self.get(f"/users/{user_id}")
+        return construct_model(UserResp, user_resp)
+
+    # DELETE /users/{user_id}
+    async def delete_user(self, user_id: int, missing_ok: bool = False) -> None:
+        await self.delete(f"/users/{user_id}", missing_ok=missing_ok)
 
     # CATEGORY: gc
 
