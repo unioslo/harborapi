@@ -12,6 +12,7 @@ from harborapi.models import HarborVulnerabilityReport
 from harborapi.models.models import Accessory, Artifact, Label, Tag
 
 from ..strategies.artifact import get_hbv_strategy
+from ..utils import json_from_list
 
 
 @pytest.mark.asyncio
@@ -107,7 +108,7 @@ async def test_get_artifact_tags_mock(
         "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/tags",
         method="GET",
     ).respond_with_data(
-        "[" + ",".join(t.json() for t in tags) + "]",
+        json_from_list(tags),
         headers={"Content-Type": "application/json"},
     )
     async_client.url = httpserver.url_for("/api/v2.0")
@@ -130,7 +131,7 @@ async def test_get_artifact_accessories_mock(
         "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/accessories",
         method="GET",
     ).respond_with_data(
-        "[" + ",".join(a.json() for a in accessories) + "]",
+        json_from_list(accessories),
         headers={"Content-Type": "application/json"},
     )
     async_client.url = httpserver.url_for("/api/v2.0")
@@ -198,7 +199,7 @@ async def test_get_artifacts_mock(
         "/api/v2.0/projects/testproj/repositories/testrepo/artifacts",
         method="GET",
     ).respond_with_data(
-        "[" + ",".join(a.json() for a in artifacts) + "]",
+        json_from_list(artifacts),
         headers={"Content-Type": "application/json"},
     )
     async_client.url = httpserver.url_for("/api/v2.0")

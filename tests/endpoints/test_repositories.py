@@ -8,6 +8,8 @@ from pytest_httpserver import HTTPServer
 from harborapi.client import HarborAsyncClient
 from harborapi.models import Repository
 
+from ..utils import json_from_list
+
 
 @pytest.mark.asyncio
 @given(st.builds(Repository))
@@ -76,7 +78,7 @@ async def test_get_repositories_mock(
     repositories: List[Repository],
 ):
     httpserver.expect_oneshot_request(expected_url, method="GET").respond_with_data(
-        "[" + ",".join(r.json() for r in repositories) + "]",
+        json_from_list(repositories),
         headers={"Content-Type": "application/json"},
     )
     async_client.url = httpserver.url_for("/api/v2.0")
