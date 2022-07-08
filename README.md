@@ -6,7 +6,7 @@ Python async API wrapper for the Harbor v2.0 REST API.
 
 - [x] user*
 - [ ] gc
-- [ ] scanAll
+- [x] scanAll
 - [ ] configure
 - [ ] usergroup
 - [ ] preheat
