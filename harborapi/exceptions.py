@@ -25,10 +25,35 @@ class StatusError(HarborAPIException):
 
     @property
     def status_code(self) -> Optional[int]:
+        # should always return int, but we can't guarantee it
         try:
             return self.__cause__.response.status_code  # type: ignore
         except:
             return None
+
+
+class BadRequest(StatusError):
+    pass
+
+
+class Unauthorized(StatusError):
+    pass
+
+
+class Forbidden(StatusError):
+    pass
+
+
+class NotFound(StatusError):
+    pass
+
+
+class PreconditionFailed(StatusError):
+    pass
+
+
+class InternalServerError(StatusError):
+    pass
 
 
 # NOTE: should this function be async?
@@ -47,7 +72,8 @@ def check_response_status(response: Response, missing_ok: bool = False) -> None:
     try:
         response.raise_for_status()
     except HTTPStatusError as e:
-        if missing_ok and response.status_code == 404:
+        status_code = response.status_code
+        if missing_ok and status_code == 404:
             logger.debug("{} not found", response.request.url)
             return
         errors = try_parse_errors(response)
@@ -56,7 +82,18 @@ def check_response_status(response: Response, missing_ok: bool = False) -> None:
             response.status_code,
             response.url,
         )
-        # TODO: add error handling for different status codes
+        if status_code == 400:
+            raise BadRequest from e
+        elif status_code == 401:
+            raise Unauthorized from e
+        elif status_code == 403:
+            raise Forbidden from e
+        elif status_code == 404:
+            raise NotFound from e
+        elif status_code == 412:
+            raise PreconditionFailed from e
+        elif status_code == 500:
+            raise InternalServerError from e
         raise StatusError(errors) from e
 
 

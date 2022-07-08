@@ -8,7 +8,15 @@ from pydantic import ValidationError
 from pytest_httpserver import HTTPServer
 
 from harborapi.client import HarborAsyncClient, construct_model
-from harborapi.exceptions import StatusError
+from harborapi.exceptions import (
+    BadRequest,
+    Forbidden,
+    InternalServerError,
+    NotFound,
+    PreconditionFailed,
+    StatusError,
+    Unauthorized,
+)
 from harborapi.models import Error, Errors, UserResp
 from harborapi.utils import get_credentials
 
@@ -274,3 +282,53 @@ async def test_authentication(
         await client.patch("/foo", json={"foo": "bar"})
     elif method == "DELETE":
         await client.delete("/foo")
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "status_code",
+    [400, 401, 403, 404, 412, 500],
+)
+@pytest.mark.parametrize(
+    "method",
+    [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE",
+        # "HEAD"
+        # "OPTIONS"
+    ],
+)
+async def test_exceptions(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+    status_code: int,
+    method: str,
+):
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/exceptions", method=method
+    ).respond_with_data(status=status_code)
+
+    async_client.url = httpserver.url_for("/api/v2.0")
+    exceptions = {
+        400: BadRequest,
+        401: Unauthorized,
+        403: Forbidden,
+        404: NotFound,
+        412: PreconditionFailed,
+        500: InternalServerError,
+    }
+    with pytest.raises(exceptions[status_code]) as exc_info:
+        if method == "GET":
+            await async_client.get("/exceptions")
+        elif method == "POST":
+            await async_client.post("/exceptions", json={"foo": "bar"})
+        elif method == "PUT":
+            await async_client.put("/exceptions", json={"foo": "bar"})
+        elif method == "PATCH":
+            await async_client.patch("/exceptions", json={"foo": "bar"})
+        elif method == "DELETE":
+            await async_client.delete("/exceptions")
+    assert exc_info.value.status_code == status_code
