@@ -82,19 +82,16 @@ def check_response_status(response: Response, missing_ok: bool = False) -> None:
             response.status_code,
             response.url,
         )
-        if status_code == 400:
-            raise BadRequest from e
-        elif status_code == 401:
-            raise Unauthorized from e
-        elif status_code == 403:
-            raise Forbidden from e
-        elif status_code == 404:
-            raise NotFound from e
-        elif status_code == 412:
-            raise PreconditionFailed from e
-        elif status_code == 500:
-            raise InternalServerError from e
-        raise StatusError(errors) from e
+        exceptions = {
+            400: BadRequest,
+            401: Unauthorized,
+            403: Forbidden,
+            404: NotFound,
+            412: PreconditionFailed,
+            500: InternalServerError,
+        }
+        exc = exceptions.get(status_code, StatusError)
+        raise exc from e
 
 
 def try_parse_errors(response: Response) -> Optional[Errors]:
