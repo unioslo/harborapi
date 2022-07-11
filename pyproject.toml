@@ -34,3 +34,6 @@ use-schema-description = false # bad docs coverage and numerous spelling errors 
 
 [tool.isort]
 profile = "black"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
