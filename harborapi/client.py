@@ -1398,7 +1398,7 @@ class HarborAsyncClient(_HarborClientBase):
         resp = await self.get("/audit-logs", params=params, follow_links=retrieve_all)
         return [construct_model(AuditLog, r) for r in resp]
 
-    def _get_headers(self, headers: Optional[Dict[str, str]] = None) -> Dict[str, str]:
+    def _get_headers(self, headers: Optional[Dict[str, Any]] = None) -> Dict[str, str]:
         headers = headers or {}
         base_headers = {
             "Authorization": "Basic " + self.credentials,
@@ -1411,8 +1411,8 @@ class HarborAsyncClient(_HarborClientBase):
     async def get(
         self,
         path: str,
-        params: Optional[dict] = None,
-        headers: Optional[dict] = None,
+        params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, Any]] = None,
         follow_links: bool = True,
         **kwargs,
     ) -> JSONType:
@@ -1428,8 +1428,8 @@ class HarborAsyncClient(_HarborClientBase):
     async def get_text(
         self,
         path: str,
-        params: Optional[dict] = None,
-        headers: Optional[dict] = None,
+        params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, Any]] = None,
         **kwargs,
     ) -> str:
         """Bad workaround in order to have a cleaner API for text/plain responses."""
@@ -1440,8 +1440,8 @@ class HarborAsyncClient(_HarborClientBase):
     async def _get(
         self,
         path: str,
-        params: Optional[dict] = None,
-        headers: Optional[dict] = None,
+        params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, Any]] = None,
         follow_links: bool = True,
         **kwargs,
     ) -> JSONType:
@@ -1504,8 +1504,8 @@ class HarborAsyncClient(_HarborClientBase):
         self,
         path: str,
         json: Optional[Union[BaseModel, JSONType]] = None,
-        params: Optional[dict] = None,
-        headers: Optional[Dict[str, str]] = None,
+        params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, Any]] = None,
     ) -> Response:
         """Sends a POST request to a path, optionally with a JSON body."""
         return await self._post(
@@ -1519,8 +1519,8 @@ class HarborAsyncClient(_HarborClientBase):
         self,
         path: str,
         json: Optional[Union[BaseModel, JSONType]] = None,
-        params: Optional[dict] = None,
-        headers: Optional[Dict[str, str]] = None,
+        params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, Any]] = None,
     ) -> Response:
         if isinstance(json, BaseModel):
             json = json.dict()
@@ -1538,8 +1538,8 @@ class HarborAsyncClient(_HarborClientBase):
         self,
         path: str,
         json: Union[BaseModel, JSONType],
-        params: Optional[dict] = None,
-        headers: Optional[Dict[str, str]] = None,
+        params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, Any]] = None,
         **kwargs,
     ) -> Optional[JSONType]:
         resp = await self._put(
@@ -1555,8 +1555,8 @@ class HarborAsyncClient(_HarborClientBase):
         self,
         path: str,
         json: Union[BaseModel, JSONType],
-        params: Optional[dict] = None,
-        headers: Optional[Dict[str, str]] = None,
+        params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, Any]] = None,
         **kwargs,
     ) -> Response:
         if isinstance(json, BaseModel):
@@ -1576,8 +1576,8 @@ class HarborAsyncClient(_HarborClientBase):
         self,
         path: str,
         json: Union[BaseModel, JSONType],
-        params: Optional[dict] = None,
-        headers: Optional[Dict[str, str]] = None,
+        params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, Any]] = None,
         **kwargs,
     ) -> Optional[JSONType]:
         resp = await self._patch(
@@ -1593,8 +1593,8 @@ class HarborAsyncClient(_HarborClientBase):
         self,
         path: str,
         json: Union[BaseModel, JSONType],
-        params: Optional[dict] = None,
-        headers: Optional[Dict[str, str]] = None,
+        params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, Any]] = None,
         **kwargs,
     ) -> Response:
         if isinstance(json, BaseModel):
@@ -1614,8 +1614,8 @@ class HarborAsyncClient(_HarborClientBase):
     async def delete(
         self,
         path: str,
-        params: Optional[dict] = None,
-        headers: Optional[Dict[str, str]] = None,
+        params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, Any]] = None,
         missing_ok: bool = False,
         **kwargs,
     ) -> Optional[JSONType]:
@@ -1631,8 +1631,8 @@ class HarborAsyncClient(_HarborClientBase):
     async def _delete(
         self,
         path: str,
-        headers: Optional[Dict[str, str]] = None,
-        params: Optional[dict] = None,
+        headers: Optional[Dict[str, Any]] = None,
+        params: Optional[Dict[str, Any]] = None,
         missing_ok: bool = False,
         **kwargs,
     ) -> Response:
