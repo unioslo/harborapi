@@ -1,7 +1,8 @@
 [tool.poetry]
 name = "harborapi"
-version = "0.1.0"
-description = ""
+version = "0.1.1"
+description = "Async Harbor API v2.0 wrapper"
+readme = "README.md"
 authors = ["Peder Hovdan Andresen <pederhan@usit.uio.no>"]
 
 [tool.poetry.dependencies]
@@ -9,13 +10,13 @@ python = "^3.8"
 httpx = "^0.23.0"
 pydantic = "^1.9.1"
 backoff = "^2.1.2"
+loguru = "^0.6.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "7.1.2"
 mypy = "^0.961"
 black = "^22.6.0"
 pre-commit = "^2.19.0"
-loguru = "^0.6.0"
 pytest-cov = "^3.0.0"
 hypothesis = "^6.48.1"
 pytest-asyncio = "^0.18.3"
