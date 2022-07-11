@@ -5,6 +5,7 @@ Python async API wrapper for the Harbor v2.0 REST API.
 ## Features
 
 - Async API
+- Fully typed
 - Data validation with [Pydantic](https://pydantic-docs.helpmanual.io/)
 - HTTP handled by [HTTPX](https://www.python-httpx.org/)
 - Extensive test coverage powered by [Hypothesis](https://hypothesis.works/)
@@ -176,15 +177,15 @@ Artifact(
         ),
         start_time=datetime.datetime(2022, 7, 4, 8, 18, 58, tzinfo=datetime.timezone.utc),
         end_time=datetime.datetime(2022, 7, 4, 8, 19, 18, tzinfo=datetime.timezone.utc),
-        complete_percent=100,>
-            version='v0.29.2'
+        complete_percent=100,
+        version='v0.29.2'
     ),
 )
 ```
 
 ## Exception Handling (WIP)
 
-All methods raise `harborapi.exceptions.StatusError` for responses with non-2xx status codes unless otherwise specified.
+All methods raise exceptions derived from `harborapi.exceptions.StatusError` for responses with non-2xx status codes unless otherwise specified.
 
 ### Status Code
 
@@ -207,6 +208,16 @@ except StatusError as e:
     for error in e.errors:
         print(error.code, error.message)
 ```
+
+An `Error` object has the following structure
+
+```py
+class Error(BaseModel):
+    code: Optional[str] = Field(None, description="The error code")
+    message: Optional[str] = Field(None, description="The error message")
+```
+
+(It is likely that `code` and `message` are both not `None` on runtime, but the API specification states that both these fields are optional.)
 
 ## Non-Async Client (Blocking)
 
