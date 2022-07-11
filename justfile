@@ -1,3 +1,26 @@
+# Coverage in terminal
+_cov:
+    -coverage run --source=. -m pytest
+
+# Test
+test:
+    pytest -vv
+
+# Test and display coverage in terminal
+testcov: _cov
+    coverage report -m
+
+# Test and display coverage in browser
+testhtml: _cov
+    coverage html && google-chrome htmlcov/index.html
+
+# Run pre-commit hooks on all files
+pcrun:
+    pre-commit run --all-files
+
+
+# Recipes for generating Pydantic models from Swagger API schemas
+
 default_scanner_version := "1.1"
 
 # Fetch newest swagger.yaml from Harbor repo
@@ -7,10 +30,6 @@ _fetchswagger:
 # Generate models from swagger.yaml
 _codegen:
     datamodel-codegen --input codegen/swagger.yaml --output codegen/model.py
-
-# Fetch swagger.yaml and generate models
-fetchgen: _fetchswagger _codegen
-    # Finished fetching new definitions and generating models
 
 _fetchswagger_scanner_1_0:
     mkdir -p codgen && curl https://raw.githubusercontent.com/goharbor/pluggable-scanner-spec/master/api/spec/scanner-adapter-openapi-v1.0.yaml --output codegen/scanner-adapter-openapi-v1.0.yaml
@@ -26,24 +45,10 @@ _codegen_scanner version:
     @echo "Creating Pluggable Scanner Models"
     datamodel-codegen --input codegen/scanner-adapter-openapi-v{{version}}.yaml --input-file-type openapi --output codegen/model_scanner.{{version}}.py
 
-fetchgenscanner version=default_scanner_version: (_fetchswagger_scanner version) (_codegen_scanner version)
-    # Finished fetching new definitions and generating models
+# Generate new Harbor API models
+genapimodels: _fetchswagger _codegen
+    # Finished fetching new definitions and generating models for the Harbor API
 
-
-# Test
-test:
-    pytest -vv
-
-# Coverage in terminal
-_cov:
-    coverage run --source=. -m pytest
-
-testcov: _cov
-    coverage report -m
-
-testhtml: _cov
-    coverage html && google-chrome htmlcov/index.html
-
-# Run pre-commit hooks on all files
-pcrun:
-    pre-commit run --all-files
+# Generate new Scanner API models
+genscannermodels version=default_scanner_version: (_fetchswagger_scanner version) (_codegen_scanner version)
+    # Finished fetching new definitions and generating models for the Harbor Pluggable Scanner API
