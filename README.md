@@ -159,6 +159,10 @@ Produces:
 Passing `with_scan_overview=True` will also include a `NativeReportSummary` if possible (otherwise `ScanOverview`) along with the artifact if the artifact has a scan report associated with it.
 
 ```py
+await client.get_artifacts("project", "repository", with_scan_overview=True)
+```
+
+```py
 Artifact(
     ...,
     scan_overview=NativeReportSummary(
@@ -194,6 +198,31 @@ try:
     await client.delete_artifact("project", "repository", "latest")
 except StatusError as e:
     print(e.status_code)
+```
+
+### Granular Exception Handling
+
+If more granular exception handling is required, all documented HTTP exceptions in the API spec are implemented as discrete classes derived from `StatusError`
+
+```py
+from harborapi.exceptions import (
+    BadRequest,
+    Forbidden,
+    NotFound,
+    Unauthorized,
+    PreconditionFailed,
+    InternalServerError,
+    StatusError
+)
+
+project, repo, tag = "testproj", "testrepo", "latest"
+
+try:
+    await client.delete_artifact(project, repo, tag)
+except NotFound as e:
+    print(f"'{repo}:{tag}' not found for project '{project}'")
+except StatusError as e:
+    # catch all other HTTP exceptions
 ```
 
 ### Inspecting Errors
