@@ -1476,10 +1476,11 @@ class HarborAsyncClient(_HarborClientBase):
             return resp.text  # type: ignore # FIXME: resolve this ASAP (use overload?)
 
         # If we have "Link" in headers, we need to handle paginated results
-        if (link := resp.headers.get("link")) and follow_links:
-            logger.debug("Handling paginated results. URL: {}", link)
-            j = await self._handle_pagination(j, link)  # recursion (refactor?)
-
+        if (link := resp.headers.get("link")) and 'rel="next"' in link and follow_links:
+            logger.debug("Handling paginated results. Header value: {}", link)
+            # Parse the link header value
+            next_url = parse_pagination_url(link)
+            j = await self._handle_pagination(j, next_url)  # recursion (refactor?)
         return j
 
     async def _handle_pagination(self, data: JSONType, link: str) -> JSONType:

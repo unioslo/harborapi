@@ -37,3 +37,11 @@ def get_artifact_path(project_name: str, repository_name: str, reference: str) -
 def get_credentials(username: str, secret: str) -> str:
     """Get HTTP basic access authentication credentials given a username and a secret"""
     return b64encode(f"{username}:{secret}".encode("utf-8")).decode("utf-8")
+
+
+def parse_pagination_url(url: str) -> str:
+    """Parse pagination URL and return the next URL"""
+    # Formatting: '</api/v2.0/endpoint?page=X&page_size=Y>; rel="next"'
+    url = url.split(";")[0].strip("><")
+    u = url.split("/", 3)  # remove /api/v2.0/
+    return "/" + u[-1]  # last segment is the next URL
