@@ -222,7 +222,10 @@ class HarborAsyncClient(_HarborClientBase):
 
     # PUT /users/{user_id}/password
     async def set_user_password(
-        self, user_id: int, new_password: str, old_password: Optional[str]
+        self,
+        user_id: int,
+        new_password: str,
+        old_password: Optional[str] = None,
     ) -> None:
         """Set a user's password.
         Admin users can change any user's password.
