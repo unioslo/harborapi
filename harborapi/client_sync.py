@@ -36,6 +36,8 @@ class HarborClient(HarborAsyncClient):
                 "put",
                 "patch",
                 "delete",
+                "head",
+                "options",
             )
         ):
             return attr
