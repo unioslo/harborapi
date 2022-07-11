@@ -7,6 +7,12 @@ from loguru import logger
 
 from harborapi.client import HarborAsyncClient
 
+from .strategies import init_strategies
+
+# Init custom hypothesis strategies
+init_strategies()
+
+# Hypothesis profiles
 settings.register_profile("ci", settings(max_examples=1000))
 settings.register_profile(
     "debug",

@@ -12,25 +12,19 @@ from harborapi.models import (
 
 
 @pytest.mark.asyncio
-# @given(st.builds(ScannerRegistrationReq))
-# @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@given(st.builds(ScannerRegistrationReq))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 async def test_create_scanner_mock(
     async_client: HarborAsyncClient,
     httpserver: HTTPServer,
-    # scanner: ScannerRegistrationReq,
+    scanner: ScannerRegistrationReq,
 ):
-    # TODO: find out why Hypothesis has no pydantic.networks.AnyUrl strategy
-    scanner = ScannerRegistrationReq(
-        name="test-scanner",
-        description="test scanner",
-        url="http://localhost:8080/api/v2.0/scanner",
-    )
     httpserver.expect_request("/api/v2.0/scanners", method="POST").respond_with_data(
         status=201, headers={"Location": "/scanners/1234"}
     )
     async_client.url = httpserver.url_for("/api/v2.0")
-    location = await async_client.create_scanner(scanner)
-    assert location == "/scanners/1234"
+    resp = await async_client.create_scanner(scanner)
+    assert resp == "/scanners/1234"
 
 
 @pytest.mark.asyncio
