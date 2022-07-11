@@ -23,7 +23,7 @@ Python async API wrapper for the Harbor v2.0 REST API.
 - [ ] robot
 - [ ] webhookjob
 - [ ] icon
-- [ ] project
+- [x] project
 - [ ] webhook
 - [x] scan
 - [ ] member
