@@ -7,7 +7,7 @@ from httpx import RequestError, Response
 from loguru import logger
 from pydantic import BaseModel, ValidationError
 
-from .exceptions import BadRequest, HarborAPIException, check_response_status
+from .exceptions import BadRequest, HarborAPIException, NotFound, check_response_status
 from .models import (
     Accessory,
     Artifact,
@@ -21,6 +21,11 @@ from .models import (
     OverallHealthStatus,
     PasswordReq,
     Permission,
+    Project,
+    ProjectDeletable,
+    ProjectReq,
+    ProjectScanner,
+    ProjectSummary,
     Quota,
     QuotaUpdateReq,
     Registry,
@@ -46,7 +51,13 @@ from .models import (
     UserSysAdminFlag,
 )
 from .types import JSONType
-from .utils import get_artifact_path, get_credentials, handle_optional_json_response
+from .utils import (
+    get_artifact_path,
+    get_credentials,
+    get_project_headers,
+    handle_optional_json_response,
+    parse_pagination_url,
+)
 
 __all__ = ["HarborAsyncClient"]
 
@@ -343,7 +354,350 @@ class HarborAsyncClient(_HarborClientBase):
     # CATEGORY: robot
     # CATEGORY: webhookjob
     # CATEGORY: icon
+
     # CATEGORY: project
+
+    # PUT /projects/{project_name_or_id}/scanner
+    async def set_project_scanner(
+        self, project_name_or_id: str, scanner_uuid: str
+    ) -> None:
+        """Set one of the system configured scanner registration as the indepndent scanner of the specified project.
+
+        Parameters
+        ----------
+        project_name: Union[str, int]
+            The name or ID of the project
+            * String arguments are treated as project names.
+            * Integer arguments are treated as project IDs.
+
+            Strings arguments set the `"X-Is-Resource-Name"` header to `true`.
+        scanner_uuid: str
+            The UUID of the scanner to set as the independent scanner of the project
+        """
+        headers = get_project_headers(project_name_or_id)
+        await self.put(
+            f"/projects/{project_name_or_id}/scanner",
+            json=ProjectScanner(uuid=scanner_uuid),
+            headers=headers,
+        )
+
+    # GET /projects/{project_name_or_id}/scanner
+    async def get_project_scanner(self, project_name_or_id: str) -> ScannerRegistration:
+        """Get the scanner registration of the specified project.
+        If no scanner registration is configured for the specified project, the system default scanner registration will be returned.
+
+        Parameters
+        ----------
+        project_name: Union[str, int]
+            The name or ID of the project
+            * String arguments are treated as project names.
+            * Integer arguments are treated as project IDs.
+
+            Strings arguments set the `"X-Is-Resource-Name"` header to `true`.
+
+        Returns
+        -------
+        ScannerRegistration
+            The scanner registration of the specified project
+        """
+        headers = get_project_headers(project_name_or_id)
+        resp = await self.get(
+            f"/projects/{project_name_or_id}/scanner", headers=headers
+        )
+        return construct_model(ScannerRegistration, resp)
+
+    # GET /projects/{project_name}/logs
+    # Get recent logs of the projects
+    async def get_project_logs(
+        self,
+        project_name: str,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 10,
+        retrieve_all: bool = False,
+    ) -> List[AuditLog]:
+        """
+        Parameters
+        ----------
+        project_name: str
+            The name of the project
+        query : Optional[str]
+            A query string to filter the artifacts
+
+            Except the basic properties, the other supported queries includes:
+            * `"tags=*"` to list only tagged artifacts
+            * `"tags=nil"` to list only untagged artifacts
+            * `"tags=~v"` to list artifacts whose tag fuzzy matches "v"
+            * `"tags=v"` to list artifact whose tag exactly matches "v"
+            * `"labels=(id1, id2)"` to list artifacts that both labels with id1 and id2 are added to
+
+        sort : Optional[str]
+            The sort order of the artifacts.
+        page : int
+            The page of results to return, default 1
+        page_size : int
+            The number of results to return per page, default 10
+        retrieve_all: bool
+            If true, retrieve all the resources,
+            otherwise, retrieve only the number of resources specified by `page_size`.
+        """
+        params = {
+            "query": query,
+            "sort": sort,
+            "page": page,
+            "page_size": page_size,
+        }
+        params = {k: v for k, v in params.items() if v is not None}
+        logs = await self.get(
+            f"/projects/{project_name}/logs", params=params, follow_links=retrieve_all
+        )
+        return [construct_model(AuditLog, l) for l in logs]
+
+    # HEAD /projects
+    async def project_exists(self, project_name: str) -> bool:
+        """Check if a project exists.
+
+        Parameters
+        ----------
+        project_name: str
+            The name of the project
+        """
+        try:
+            await self.head(f"/projects", params={"project_name": project_name})
+        except NotFound:
+            return False
+        return True
+
+    # POST /projects
+    async def create_project(self, project: ProjectReq) -> Optional[str]:
+        """Create a new project. Returns location of the created project."""
+        resp = await self.post(
+            "/projects", json=project, headers={"X-Resource-Name-In-Location": True}
+        )
+        return resp.headers.get("Location")
+
+    # GET /projects
+
+    async def get_projects(
+        self,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        name: Optional[str] = None,
+        public: Optional[bool] = None,
+        owner: Optional[str] = None,
+        with_detail: bool = True,
+        page: int = 1,
+        page_size: int = 10,
+        retrieve_all: bool = True,
+    ) -> List[Project]:
+        """Get the artifacts for a repository.
+
+        Parameters
+        ----------
+        query: Optional[str]
+            Query string to query resources.
+
+            Supported query patterns are
+            * exact match(`"k=v"`)
+            * fuzzy match(`"k=~v"`)
+            * range(`"k=[min~max]"`)
+            * list with union releationship(`"k={v1 v2 v3}"`)
+            * list with intersection relationship(`"k=(v1 v2 v3)"`).
+
+            The value of range and list can be
+            * string(enclosed by `"` or `'`)
+            * integer
+            * time(in format `"2020-04-09 02:36:00"`)
+
+            All of these query patterns should be put in the query string and separated by `","`.
+            e.g. `"k1=v1,k2=~v2,k3=[min~max]"`
+        sort : Optional[str]
+            The sort order of the projects.
+        name: str
+            The name of the project.
+        public: bool
+            Only fetch public projects.
+        owner: str
+            The owner of the project.
+        with_detail : bool
+            Return detailed information about the project.
+        page : int
+            The page of results to return, default 1
+        page_size : int
+            The number of results to return per page, default 10
+        retrieve_all: bool
+            If true, retrieve all the resources,
+            otherwise, retrieve only the number of resources specified by `page_size`.
+        """
+        params = {
+            "query": query,
+            "sort": sort,
+            "name": name,
+            "public": public,
+            "owner": owner,
+            "with_detail": with_detail,
+            "page": page,
+            "page_size": page_size,
+        }
+        params = {k: v for k, v in params.items() if v is not None}
+        projects = await self.get("/projects", params=params, follow_links=retrieve_all)
+        return [construct_model(Project, p) for p in projects]
+
+    # PUT /projects/{project_name_or_id}
+    async def update_project(
+        self, project_name_or_id: Union[str, int], project: ProjectReq
+    ) -> None:
+        """Update a project.
+
+        Parameters
+        ----------
+        project_name_or_id: str
+            The name or ID of the project
+            * String arguments are treated as project names.
+            * Integer arguments are treated as project IDs.
+        project: ProjectReq
+            The updated project
+        """
+        headers = get_project_headers(project_name_or_id)
+        await self.put(f"/projects/{project_name_or_id}", json=project, headers=headers)
+
+    # GET /projects/{project_name_or_id}
+    async def get_project(self, project_name_or_id: Union[str, int]) -> Project:
+        """Fetch a project given its name or ID.
+
+        Parameters
+        ----------
+        project_name_or_id: str
+            The name or ID of the project
+            * String arguments are treated as project names.
+            * Integer arguments are treated as project IDs.
+        """
+        headers = get_project_headers(project_name_or_id)
+        project = await self.get(f"/projects/{project_name_or_id}", headers=headers)
+        return construct_model(Project, project)
+
+    # DELETE /projects/{project_name_or_id}
+    async def delete_project(
+        self, project_name_or_id: Union[str, int], missing_ok: bool = False
+    ) -> None:
+        """Delete a project given its name or ID.
+
+        Parameters
+        ----------
+        project_name_or_id: str
+            The name or ID of the project
+            * String arguments are treated as project names.
+            * Integer arguments are treated as project IDs.
+        missing_ok: bool
+            If true, ignore 404 error when the project is not found.
+        """
+        headers = get_project_headers(project_name_or_id)
+        await self.delete(
+            f"/projects/{project_name_or_id}", headers=headers, missing_ok=missing_ok
+        )
+
+    # GET /projects/{project_name_or_id}/scanner/candidates
+    async def get_project_scanner_candidates(
+        self,
+        project_name_or_id: Union[str, int],
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 10,
+    ) -> List[ScannerRegistration]:
+        """Get the scanner candidates for a project.
+
+        Parameters
+        ----------
+        project_name_or_id: str
+            The name or ID of the project
+            * String arguments are treated as project names.
+            * Integer arguments are treated as project IDs.
+        query: Optional[str]
+            Query string to query resources.
+
+            Supported query patterns are
+            * exact match(`"k=v"`)
+            * fuzzy match(`"k=~v"`)
+            * range(`"k=[min~max]"`)
+            * list with union releationship(`"k={v1 v2 v3}"`)
+            * list with intersection relationship(`"k=(v1 v2 v3)"`).
+
+            The value of range and list can be
+            * string(enclosed by `"` or `'`)
+            * integer
+            * time(in format `"2020-04-09 02:36:00"`)
+
+            All of these query patterns should be put in the query string and separated by `","`.
+            e.g. `"k1=v1,k2=~v2,k3=[min~max]"`
+        sort : Optional[str]
+            The sort order of the scanners.
+        page : int
+            The page of results to return, default 1
+        page_size : int
+            The number of results to return per page, default 10
+        """
+        headers = get_project_headers(project_name_or_id)
+        params = {
+            "query": query,
+            "sort": sort,
+            "page": page,
+            "page_size": page_size,
+        }
+        params = {k: v for k, v in params.items() if v is not None}
+        candidates = await self.get(
+            f"/projects/{project_name_or_id}/scanner/candidates",
+            params=params,
+            headers=headers,
+        )
+        return [construct_model(ScannerRegistration, c) for c in candidates]
+
+    # GET /projects/{project_name_or_id}/summary
+    async def get_project_summary(
+        self, project_name_or_id: Union[str, int]
+    ) -> ProjectSummary:
+        """Get the summary of a project.
+
+        Parameters
+        ----------
+        project_name_or_id: str
+            The name or ID of the project
+            * String arguments are treated as project names.
+            * Integer arguments are treated as project IDs.
+        """
+        headers = get_project_headers(project_name_or_id)
+        summary = await self.get(
+            f"/projects/{project_name_or_id}/summary", headers=headers
+        )
+        return construct_model(ProjectSummary, summary)
+
+    # GET /projects/{project_name_or_id}/_deletable
+    async def get_project_deletable(
+        self, project_name_or_id: Union[str, int]
+    ) -> ProjectDeletable:
+        """Get the deletable status of a project.
+
+        Parameters
+        ----------
+        project_name_or_id: str
+            The name or ID of the project
+            * String arguments are treated as project names.
+            * Integer arguments are treated as project IDs.
+
+        Returns
+        -------
+        ProjectDeletable
+            The deletable status of a project.
+            If `.deletable` is `None`, the project is not deletable.
+            This is an implementation detail, and might change in the future.
+        """
+        headers = get_project_headers(project_name_or_id)
+        deletable = await self.get(
+            f"/projects/{project_name_or_id}/_deletable", headers=headers
+        )
+        return construct_model(ProjectDeletable, deletable)
+
     # CATEGORY: webhook
 
     # CATEGORY: scan
@@ -1638,6 +1992,41 @@ class HarborAsyncClient(_HarborClientBase):
         **kwargs,
     ) -> Response:
         resp = await self.client.delete(
+            self.url + path,
+            params=params,
+            headers=self._get_headers(headers),
+            **kwargs,
+        )
+        check_response_status(resp, missing_ok=missing_ok)
+        return resp
+
+    @backoff.on_exception(backoff.expo, RequestError, max_time=30)
+    async def head(
+        self,
+        path: str,
+        params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, Any]] = None,
+        missing_ok: bool = False,
+        **kwargs,
+    ) -> Response:
+        resp = await self._head(
+            path,
+            headers=headers,
+            params=params,
+            missing_ok=missing_ok,
+            **kwargs,
+        )
+        return resp
+
+    async def _head(
+        self,
+        path: str,
+        headers: Optional[Dict[str, Any]] = None,
+        params: Optional[Dict[str, Any]] = None,
+        missing_ok: bool = False,
+        **kwargs,
+    ) -> Response:
+        resp = await self.client.head(
             self.url + path,
             params=params,
             headers=self._get_headers(headers),

@@ -1,6 +1,6 @@
 from base64 import b64encode
 from json import JSONDecodeError
-from typing import Optional
+from typing import Dict, Optional, Union
 from urllib.parse import quote
 
 from httpx import Response
@@ -45,3 +45,15 @@ def parse_pagination_url(url: str) -> str:
     url = url.split(";")[0].strip("><")
     u = url.split("/", 3)  # remove /api/v2.0/
     return "/" + u[-1]  # last segment is the next URL
+
+
+def get_project_headers(project_name_or_id: Union[str, int]) -> Dict[str, str]:
+    """Get HTTP headers given a project name or ID.
+
+    If the project name or ID is an integer, it is assumed to be the project ID.
+    Otherwise, it is assumed to be the project name.
+    This determines the value of the `X-Is-Resource-Name` header.
+
+    `True` means the value is a project name, `False` means the value is a project ID.
+    """
+    return {"X-Is-Resource-Name": str(isinstance(project_name_or_id, str)).lower()}
