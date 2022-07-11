@@ -24,7 +24,7 @@ async def test_scan_artifact_mock(
 
     artifact_path = get_artifact_path(project, repository, artifact)
     endpoint_path = f"/api/v2.0{artifact_path}/scan"
-    httpserver.expect_request(
+    httpserver.expect_oneshot_request(
         endpoint_path,
         method="POST",
     ).respond_with_data("foo", status=status_code)
@@ -46,7 +46,7 @@ async def test_get_scan_report_log_mock(
 
     artifact_path = get_artifact_path(project, repository, artifact)
     endpoint_path = f"/api/v2.0{artifact_path}/scan/{report_id}/log"
-    httpserver.expect_request(
+    httpserver.expect_oneshot_request(
         endpoint_path,
         method="GET",
     ).respond_with_data(f"foo: {report_id}")
@@ -73,7 +73,7 @@ async def test_stop_artifact_scan_mock(
 
     artifact_path = get_artifact_path(project, repository, artifact)
     endpoint_path = f"/api/v2.0{artifact_path}/scan/stop"
-    httpserver.expect_request(
+    httpserver.expect_oneshot_request(
         endpoint_path,
         method="POST",
     ).respond_with_data("foo", status=status_code)

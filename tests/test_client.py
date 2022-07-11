@@ -61,7 +61,7 @@ async def test_get_pagination_mock(
         [{"username": "user1"}, {"username": "user2"}],
         headers={"link": "/users?page=2"},
     )
-    httpserver.expect_request(
+    httpserver.expect_oneshot_request(
         "/api/v2.0/users", query_string="page=2"
     ).respond_with_json([{"username": "user3"}, {"username": "user4"}])
     async_client.url = httpserver.url_for("/api/v2.0")
@@ -128,7 +128,7 @@ async def test_get_pagination_invalid_mock(
         headers={"link": "/users?page=2"},
     )
     # Next page does not return a list, so we ignore it
-    httpserver.expect_request(
+    httpserver.expect_oneshot_request(
         "/api/v2.0/users", query_string="page=2"
     ).respond_with_json({"username": "user3"})
     async_client.url = httpserver.url_for("/api/v2.0")
@@ -153,7 +153,7 @@ async def test_get_retry_mock(async_client: HarborAsyncClient, httpserver: HTTPS
 
     asyncio.create_task(start_server())
 
-    httpserver.expect_request("/api/v2.0/users").respond_with_json(
+    httpserver.expect_oneshot_request("/api/v2.0/users").respond_with_json(
         [{"username": "user1"}, {"username": "user2"}],
     )
 
@@ -182,7 +182,7 @@ async def test_get_invalid_data(
     async_client: HarborAsyncClient, httpserver: HTTPServer
 ):
     """Tests handling of data from the server that does not match the schema."""
-    httpserver.expect_request("/api/v2.0/users").respond_with_json(
+    httpserver.expect_oneshot_request("/api/v2.0/users").respond_with_json(
         [{"username": {}}, {"username": "user2"}],
     )
 
@@ -200,7 +200,7 @@ async def test_get_errors(
     async_client: HarborAsyncClient, httpserver: HTTPServer, errors: Errors
 ):
     """Tests handling of data from the server that does not match the schema."""
-    httpserver.expect_request("/api/v2.0/errorpath").respond_with_json(
+    httpserver.expect_oneshot_request("/api/v2.0/errorpath").respond_with_json(
         errors.dict(), status=500
     )
 
@@ -263,7 +263,7 @@ async def test_authentication(
     assert client.credentials == expect_credentials
 
     # Set up HTTP server to expect a certain set of headers and a method
-    httpserver.expect_request(
+    httpserver.expect_oneshot_request(
         "/api/v2.0/foo",
         headers={
             "Authorization": f"Basic {expect_credentials}",

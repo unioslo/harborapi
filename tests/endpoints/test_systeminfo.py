@@ -16,7 +16,7 @@ async def test_get_system_volume_info_mock(
     httpserver: HTTPServer,
     systeminfo: SystemInfo,
 ):
-    httpserver.expect_request(
+    httpserver.expect_oneshot_request(
         "/api/v2.0/systeminfo/volumes", method="GET"
     ).respond_with_json(systeminfo.dict())
     async_client.url = httpserver.url_for("/api/v2.0")
@@ -32,9 +32,9 @@ async def test_get_system_info_mock(
     httpserver: HTTPServer,
     generalinfo: GeneralInfo,
 ):
-    httpserver.expect_request("/api/v2.0/systeminfo", method="GET").respond_with_json(
-        generalinfo.dict()
-    )
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/systeminfo", method="GET"
+    ).respond_with_json(generalinfo.dict())
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_system_info()
     assert resp == generalinfo

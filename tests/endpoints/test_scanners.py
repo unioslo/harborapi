@@ -21,9 +21,9 @@ async def test_create_scanner_mock(
     httpserver: HTTPServer,
     scanner: ScannerRegistrationReq,
 ):
-    httpserver.expect_request("/api/v2.0/scanners", method="POST").respond_with_data(
-        status=201, headers={"Location": "/scanners/1234"}
-    )
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/scanners", method="POST"
+    ).respond_with_data(status=201, headers={"Location": "/scanners/1234"})
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.create_scanner(scanner)
     assert resp == "/scanners/1234"
@@ -39,7 +39,7 @@ async def test_get_scanners_mock(
     scanner2: ScannerRegistration,
 ):
     # TODO: use st.lists(st.builds(ScannerRegistration)) to generate a list of scanners
-    httpserver.expect_request("/api/v2.0/scanners").respond_with_json(
+    httpserver.expect_oneshot_request("/api/v2.0/scanners").respond_with_json(
         [scanner1.dict(), scanner2.dict()]
     )
     async_client.url = httpserver.url_for("/api/v2.0")
@@ -57,7 +57,7 @@ async def test_get_scanner_mock(
     httpserver: HTTPServer,
     scanner: ScannerRegistration,
 ):
-    httpserver.expect_request("/api/v2.0/scanners/1234").respond_with_json(
+    httpserver.expect_oneshot_request("/api/v2.0/scanners/1234").respond_with_json(
         scanner.dict()
     )
     async_client.url = httpserver.url_for("/api/v2.0")
@@ -73,9 +73,9 @@ async def test_get_scanner_metadata_mock(
     httpserver: HTTPServer,
     scannermeta: ScannerAdapterMetadata,
 ):
-    httpserver.expect_request("/api/v2.0/scanners/1234/metadata").respond_with_json(
-        scannermeta.dict()
-    )
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/scanners/1234/metadata"
+    ).respond_with_json(scannermeta.dict())
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_scanner_metadata(registration_id=1234)
     assert resp == scannermeta

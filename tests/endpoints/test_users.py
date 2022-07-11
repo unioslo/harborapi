@@ -45,7 +45,7 @@ async def test_set_user_cli_secret_mock(
     async_client: HarborAsyncClient,
     httpserver: HTTPServer,
 ):
-    httpserver.expect_request(
+    httpserver.expect_oneshot_request(
         "/api/v2.0/users/1234/cli_secret", method="PUT", json={"secret": "secret1234"}
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")

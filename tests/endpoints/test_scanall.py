@@ -15,7 +15,7 @@ async def test_get_scan_all_metrics_mock(
     httpserver: HTTPServer,
     stats: Stats,
 ):
-    httpserver.expect_request(
+    httpserver.expect_oneshot_request(
         "/api/v2.0/scans/all/metrics", method="GET"
     ).respond_with_json(stats.dict())
     async_client.url = httpserver.url_for("/api/v2.0")
@@ -32,7 +32,7 @@ async def test_update_scan_all_schedule_mock(
     schedule: Schedule,
 ):
     # TODO: use st.lists(st.builds(ScannerRegistration)) to generate a list of scanners
-    httpserver.expect_request(
+    httpserver.expect_oneshot_request(
         "/api/v2.0/system/scanAll/schedule", method="PUT"
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
@@ -50,7 +50,7 @@ async def test_create_scan_all_schedule_mock(
     schedule: Schedule,
 ):
     # TODO: use st.lists(st.builds(ScannerRegistration)) to generate a list of scanners
-    httpserver.expect_request(
+    httpserver.expect_oneshot_request(
         "/api/v2.0/system/scanAll/schedule", method="POST"
     ).respond_with_data(
         status=201, headers={"Location": "/system/scanAll/schedules/1234"}
@@ -69,7 +69,7 @@ async def test_get_scan_all_schedule(
     schedule: Schedule,
 ):
     # TODO: use st.lists(st.builds(ScannerRegistration)) to generate a list of scanners
-    httpserver.expect_request(
+    httpserver.expect_oneshot_request(
         "/api/v2.0/system/scanAll/schedule", method="GET"
     ).respond_with_json(schedule.dict())
     async_client.url = httpserver.url_for("/api/v2.0")
@@ -81,7 +81,7 @@ async def test_get_scan_all_schedule(
 async def test_stop_scan_all_job(
     async_client: HarborAsyncClient, httpserver: HTTPServer
 ):
-    httpserver.expect_request(
+    httpserver.expect_oneshot_request(
         "/api/v2.0/system/scanAll/stop", method="POST"
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")

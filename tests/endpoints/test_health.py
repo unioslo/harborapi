@@ -15,9 +15,9 @@ async def test_health_check(
     httpserver: HTTPServer,
     healthstatus: OverallHealthStatus,
 ):
-    httpserver.expect_request("/api/v2.0/health", method="GET").respond_with_json(
-        healthstatus.dict()
-    )
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/health", method="GET"
+    ).respond_with_json(healthstatus.dict())
     async_client.url = httpserver.url_for("/api/v2.0")
     health = await async_client.health_check()
     assert health == healthstatus
