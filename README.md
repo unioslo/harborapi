@@ -263,7 +263,6 @@ import asyncio
 from harborapi import HarborClient
 
 client = HarborClient(
-    loop=asyncio.new_event_loop(), # pass a new event loop from main thread
     url="https://your-harbor-instance.com/api/v2.0",
     username="username",
     secret="secret",

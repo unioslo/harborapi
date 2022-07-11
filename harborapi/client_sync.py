@@ -1,17 +1,19 @@
 import asyncio
 import inspect
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 from .client import HarborAsyncClient
 
 
 class HarborClient(HarborAsyncClient):
-    """Extremely hacky non-async client implementation."""
+    """Non-async Harbor API client."""
 
-    def __init__(self, loop: asyncio.AbstractEventLoop, *args, **kwargs):
+    def __init__(
+        self, loop: Optional[asyncio.AbstractEventLoop] = None, *args, **kwargs
+    ):
         super().__init__(*args, **kwargs)
-        self.loop = loop
-        asyncio.set_event_loop(loop)
+        self.loop = loop or asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
 
     def __getattribute__(self, name: str) -> Any:
         """Overrides the `__getattribute__` method to wrap coroutine functions
