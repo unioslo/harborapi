@@ -57,6 +57,7 @@ from .utils import (
     get_project_headers,
     handle_optional_json_response,
     parse_pagination_url,
+    urldecode_header,
 )
 
 __all__ = ["HarborAsyncClient"]
@@ -262,7 +263,7 @@ class HarborAsyncClient:
             raise
 
     # POST /users
-    async def create_user(self, user: UserCreationReq) -> Optional[str]:
+    async def create_user(self, user: UserCreationReq) -> str:
         """Create a new user.
         Can only be used when the authentication mode is for local DB,
         when self registration is disabled.
@@ -274,11 +275,11 @@ class HarborAsyncClient:
 
         Returns
         -------
-        Optional[str]
+        str
             The location of the created user
         """
         resp = await self.post("/users", json=user)
-        return resp.headers.get("Location")
+        return urldecode_header(resp, "Location")
 
     # GET /users
     async def get_users(self, sort: Optional[str] = None, **kwargs) -> List[UserResp]:
@@ -328,7 +329,7 @@ class HarborAsyncClient:
     async def create_scan_all_schedule(self, schedule: Schedule) -> str:
         """Create a new scan all job schedule. Returns location of the created schedule."""
         resp = await self.post("/system/scanAll/schedule", json=schedule)
-        return resp.headers.get("Location")
+        return urldecode_header(resp, "Location")
 
     # GET /system/scanAll/schedule
     async def get_scan_all_schedule(self) -> Schedule:
@@ -463,12 +464,12 @@ class HarborAsyncClient:
         return True
 
     # POST /projects
-    async def create_project(self, project: ProjectReq) -> Optional[str]:
+    async def create_project(self, project: ProjectReq) -> str:
         """Create a new project. Returns location of the created project."""
         resp = await self.post(
             "/projects", json=project, headers={"X-Resource-Name-In-Location": True}
         )
-        return resp.headers.get("Location")
+        return urldecode_header(resp, "Location")
 
     # GET /projects
 
@@ -814,7 +815,7 @@ class HarborAsyncClient:
         await self.delete(f"/registries/{id}", missing_ok=missing_ok)
 
     # POST /registries
-    async def create_registry(self, registry: Registry) -> Optional[str]:
+    async def create_registry(self, registry: Registry) -> str:
         """Create a new registry.
 
         Parameters
@@ -824,12 +825,11 @@ class HarborAsyncClient:
 
         Returns
         -------
-        Optional[str]
-            The ID of the new registry if it exists.
-            This value should probably never be `None`.
+        str
+            The location of the created registry.
         """
         resp = await self.post("/registries", json=registry)
-        return resp.headers.get("Location")
+        return urldecode_header(resp, "Location")
 
     # GET /registries
     async def get_registries(
@@ -920,6 +920,11 @@ class HarborAsyncClient:
             The reference of the artifact, can be digest or tag
         tag : Tag
             The tag to create
+
+        Returns
+        -------
+        str
+            The location of the created tag
         """
         path = get_artifact_path(project_name, repository_name, reference)
         resp = await self.post(f"{path}/tags", json=tag)
@@ -929,7 +934,7 @@ class HarborAsyncClient:
                 path,
                 resp.status_code,
             )
-        return resp.headers.get("Location")
+        return urldecode_header(resp, "Location")
 
     # GET /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags
     async def get_artifact_tags(
@@ -1070,7 +1075,7 @@ class HarborAsyncClient:
     # POST /projects/{project_name}/repositories/{repository_name}/artifacts
     async def copy_artifact(
         self, project_name: str, repository_name: str, source: str
-    ) -> Optional[str]:
+    ) -> str:
         """Copy an artifact.
 
         Parameters
@@ -1085,7 +1090,7 @@ class HarborAsyncClient:
 
         Returns
         -------
-        Optional[str]
+        str
             The location of the new artifact
         """
         path = f"/projects/{project_name}/repositories/{repository_name}/artifacts"
@@ -1096,7 +1101,7 @@ class HarborAsyncClient:
                 path,
                 resp.status_code,
             )
-        return resp.headers.get("Location")
+        return urldecode_header(resp, "Location")
 
     # GET /projects/{project_name}/repositories/{repository_name}/artifacts
     async def get_artifacts(
@@ -1368,7 +1373,7 @@ class HarborAsyncClient:
     async def create_scanner(self, scanner: ScannerRegistrationReq) -> str:
         """Creates a new scanner. Returns location of the created scanner."""
         resp = await self.post("/scanners", json=scanner)
-        return resp.headers.get("Location")
+        return urldecode_header(resp, "Location")
 
     # GET /scanners
     async def get_scanners(self, *args, **kwargs) -> List[ScannerRegistration]:
