@@ -220,7 +220,7 @@ class ScanOverview(BaseModel):
             if k in mime_types:
                 return NativeReportSummary(**v)
         # add logging call here
-        return cls(ScanOverview)
+        return super().__new__(cls)
 
     class Config:
         extra = Extra.allow
