@@ -1,4 +1,4 @@
-# Scan All
+# Scanners
 
 ::: harborapi.client.HarborAsyncClient
     options:

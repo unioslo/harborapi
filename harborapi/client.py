@@ -208,6 +208,13 @@ class HarborAsyncClient:
 
     # GET /users/current
     async def get_current_user(self) -> UserResp:
+        """Get information about the current user.
+
+        Returns
+        -------
+        UserResp
+            Information about the current user.
+        """
         user_resp = await self.get("/users/current")
         return construct_model(UserResp, user_resp)
 
@@ -284,6 +291,18 @@ class HarborAsyncClient:
 
     # GET /users
     async def get_users(self, sort: Optional[str] = None, **kwargs) -> List[UserResp]:
+        """Get all users.
+
+        Parameters
+        ----------
+        sort : Optional[str]
+            The sort order for the results.
+
+        Returns
+        -------
+        List[UserResp]
+            A list of users.
+        """
         params = {**kwargs}
         if sort:
             params["sort"] = sort
