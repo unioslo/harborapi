@@ -1145,7 +1145,7 @@ class HarborAsyncClient:
         """
         # We have to encode the destination repo name, but NOT the source repo name.
         path = get_repo_path(project_name, repository_name)
-        resp = await self.post(f"{path}", params={"from": source})
+        resp = await self.post(f"{path}/artifacts", params={"from": source})
         if resp.status_code != 201:
             logger.warning(
                 "Copy artifact request for {} returned status code {}, expected 201",
