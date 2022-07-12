@@ -18,8 +18,8 @@ async def test_search_mock(
     search: Search,
 ):
     httpserver.expect_oneshot_request(
-        "/api/v2.0/search", method="GET", query_string={"q": "repo=test"}
+        "/api/v2.0/search", method="GET", query_string={"q": "testproj"}
     ).respond_with_data(search.json(), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
-    resp = await async_client.search("repo=test")
+    resp = await async_client.search("testproj")
     assert resp == search

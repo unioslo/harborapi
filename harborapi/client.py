@@ -891,14 +891,18 @@ class HarborAsyncClient:
 
         WARNING
         -------
-        This method's API is highly likely to change in the future.
-        Right now we just copy the API spec, which requires a query string.
+        This method's API seems immature and may change in the future.
+        Right now we just copy the API spec, which only takes a query string.
 
         Parameters
         ----------
         query : str
-            Search parameters for project and repository name.
-            NOTE: API docs do not mention helm charts here. Oversight?
+            Project and/or repository name to search for.
+
+        Returns
+        -------
+        Search
+            The search results.
         """
         resp = await self.get("/search", params={"q": query})
         return construct_model(Search, resp)
