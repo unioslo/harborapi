@@ -13,7 +13,7 @@ jobs:
           - "3.8"
           - "3.9"
           - "3.10"
-          - "3.11.0-beta.4"
+          - "3.11.0-beta.3"
         poetry-version: ["1.1.11"]
     runs-on: ${{ matrix.os }}
     steps:
