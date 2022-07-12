@@ -3,6 +3,7 @@ on:
   push:
     paths-ignore:
       - "**/README.md"
+      - "docs/*"
 jobs:
   unit_tests:
     strategy:
