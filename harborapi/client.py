@@ -402,7 +402,6 @@ class HarborAsyncClient:
         return construct_model(ScannerRegistration, resp)
 
     # GET /projects/{project_name}/logs
-    # Get recent logs of the projects
     async def get_project_logs(
         self,
         project_name: str,
@@ -413,20 +412,29 @@ class HarborAsyncClient:
         retrieve_all: bool = False,
     ) -> List[AuditLog]:
         """
+        Get the audit logs of the specified project.
+
         Parameters
         ----------
         project_name: str
             The name of the project
         query : Optional[str]
-            A query string to filter the artifacts
+            Query string to filter the logs.
 
-            Except the basic properties, the other supported queries includes:
-            * `"tags=*"` to list only tagged artifacts
-            * `"tags=nil"` to list only untagged artifacts
-            * `"tags=~v"` to list artifacts whose tag fuzzy matches "v"
-            * `"tags=v"` to list artifact whose tag exactly matches "v"
-            * `"labels=(id1, id2)"` to list artifacts that both labels with id1 and id2 are added to
+            Supported query patterns are:
+            * exact match(`"k=v"`)
+            * fuzzy match(`"k=~v"`)
+            * range(`"k=[min~max]"`)
+            * list with union releationship(`"k={v1 v2 v3}"`)
+            * list with intersection relationship(`"k=(v1 v2 v3)"`).
 
+            The value of range and list can be:
+            * string(enclosed by `"` or `'`)
+            * integer
+            * time(in format `"2020-04-09 02:36:00"`)
+
+            All of these query patterns should be put in the query string and separated by `","`.
+            e.g. `"k1=v1,k2=~v2,k3=[min~max]"`
         sort : Optional[str]
             The sort order of the artifacts.
         page : int
@@ -493,14 +501,14 @@ class HarborAsyncClient:
         query: Optional[str]
             Query string to query resources.
 
-            Supported query patterns are
+            Supported query patterns are:
             * exact match(`"k=v"`)
             * fuzzy match(`"k=~v"`)
             * range(`"k=[min~max]"`)
             * list with union releationship(`"k={v1 v2 v3}"`)
             * list with intersection relationship(`"k=(v1 v2 v3)"`).
 
-            The value of range and list can be
+            The value of range and list can be:
             * string(enclosed by `"` or `'`)
             * integer
             * time(in format `"2020-04-09 02:36:00"`)
@@ -612,14 +620,14 @@ class HarborAsyncClient:
         query: Optional[str]
             Query string to query resources.
 
-            Supported query patterns are
+            Supported query patterns are:
             * exact match(`"k=v"`)
             * fuzzy match(`"k=~v"`)
             * range(`"k=[min~max]"`)
             * list with union releationship(`"k={v1 v2 v3}"`)
             * list with intersection relationship(`"k=(v1 v2 v3)"`).
 
-            The value of range and list can be
+            The value of range and list can be:
             * string(enclosed by `"` or `'`)
             * integer
             * time(in format `"2020-04-09 02:36:00"`)
@@ -847,15 +855,22 @@ class HarborAsyncClient:
         Parameters
         ----------
         query : Optional[str]
-            A query string to filter the artifacts
+            A query string to filter the registries.
 
-            Except the basic properties, the other supported queries includes:
-            * `"tags=*"` to list only tagged artifacts
-            * `"tags=nil"` to list only untagged artifacts
-            * `"tags=~v"` to list artifacts whose tag fuzzy matches "v"
-            * `"tags=v"` to list artifact whose tag exactly matches "v"
-            * `"labels=(id1, id2)"` to list artifacts that both labels with id1 and id2 are added to
+            Supported query patterns are:
+            * exact match(`"k=v"`)
+            * fuzzy match(`"k=~v"`)
+            * range(`"k=[min~max]"`)
+            * list with union releationship(`"k={v1 v2 v3}"`)
+            * list with intersection relationship(`"k=(v1 v2 v3)"`).
 
+            The value of range and list can be:
+            * string(enclosed by `"` or `'`)
+            * integer
+            * time(in format `"2020-04-09 02:36:00"`)
+
+            All of these query patterns should be put in the query string
+            and separated by `","`. e.g. `"k1=v1,k2=~v2,k3=[min~max]"`
         sort : Optional[str]
             The sort order of the artifacts.
         page : int
@@ -967,6 +982,21 @@ class HarborAsyncClient:
             The reference of the artifact, can be digest or tag
         query : Optional[str]
             A query string to filter the tags
+
+            Supported query patterns are:
+            * exact match(`"k=v"`)
+            * fuzzy match(`"k=~v"`)
+            * range(`"k=[min~max]"`)
+            * list with union releationship(`"k={v1 v2 v3}"`)
+            * list with intersection relationship(`"k=(v1 v2 v3)"`).
+
+            The value of range and list can be:
+            * string(enclosed by `"` or `'`)
+            * integer
+            * time(in format `"2020-04-09 02:36:00"`)
+
+            All of these query patterns should be put in the query string
+            and separated by `","`. e.g. `"k1=v1,k2=~v2,k3=[min~max]"`
         sort : Optional[str]
             The sort order of the tags. TODO: document this parameter
         page : int
@@ -1023,7 +1053,22 @@ class HarborAsyncClient:
         reference : str
             The reference of the artifact, can be digest or tag
         query : Optional[str]
-            A query string to filter the tags
+            A query string to filter the accessories
+
+            Supported query patterns are:
+            * exact match(`"k=v"`)
+            * fuzzy match(`"k=~v"`)
+            * range(`"k=[min~max]"`)
+            * list with union releationship(`"k={v1 v2 v3}"`)
+            * list with intersection relationship(`"k=(v1 v2 v3)"`).
+
+            The value of range and list can be:
+            * string(enclosed by `"` or `'`)
+            * integer
+            * time(in format `"2020-04-09 02:36:00"`)
+
+            All of these query patterns should be put in the query string
+            and separated by `","`. e.g. `"k1=v1,k2=~v2,k3=[min~max]"`
         sort : Optional[str]
             The sort order of the tags.
         page : int
@@ -1145,6 +1190,13 @@ class HarborAsyncClient:
             * `"tags=v"` to list artifact whose tag exactly matches "v"
             * `"labels=(id1, id2)"` to list artifacts that both labels with id1 and id2 are added to
 
+            The value of range and list can be:
+            * string(enclosed by `"` or `'`)
+            * integer
+            * time(in format `"2020-04-09 02:36:00"`)
+
+            All of these query patterns should be put in the query string
+            and separated by `","`. e.g. `"k1=v1,k2=~v2,k3=[min~max]"`
         sort : Optional[str]
             The sort order of the artifacts.
         page : int
@@ -1629,10 +1681,22 @@ class HarborAsyncClient:
         project_name : str
             The name of the project.
         query : str
-            The query string.
-            Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max]
+            The query string to filter the repositories.
 
-            TODO: format query documentation
+            Supported query patterns are:
+            * exact match(`"k=v"`)
+            * fuzzy match(`"k=~v"`)
+            * range(`"k=[min~max]"`)
+            * list with union releationship(`"k={v1 v2 v3}"`)
+            * list with intersection relationship(`"k=(v1 v2 v3)"`).
+
+            The value of range and list can be:
+            * string(enclosed by `"` or `'`)
+            * integer
+            * time(in format `"2020-04-09 02:36:00"`)
+
+            All of these query patterns should be put in the query string
+            and separated by `","`. e.g. `"k1=v1,k2=~v2,k3=[min~max]"`
         sort : str
             The sort method.
             TODO: add boilerplate sort documentation
@@ -1718,14 +1782,14 @@ class HarborAsyncClient:
         query: Optional[str]
             Query string to query resources.
 
-            Supported query patterns are
+            Supported query patterns are:
             * exact match(`"k=v"`)
             * fuzzy match(`"k=~v"`)
             * range(`"k=[min~max]"`)
             * list with union releationship(`"k={v1 v2 v3}"`)
             * list with intersection relationship(`"k=(v1 v2 v3)"`).
 
-            The value of range and list can be
+            The value of range and list can be:
             * string(enclosed by `"` or `'`)
             * integer
             * time(in format `"2020-04-09 02:36:00"`)
