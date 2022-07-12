@@ -43,10 +43,16 @@ def urldecode_header(response: Response, key: str) -> str:
     return unquote_plus(response.headers.get(key, ""))
 
 
+def get_repo_path(project_name: str, repository_name: str) -> str:
+    """Get repository path given a project name and a repository name"""
+    repo_name = urlencode_repo(repository_name)
+    return f"/projects/{project_name}/repositories/{repo_name}"
+
+
 def get_artifact_path(project_name: str, repository_name: str, reference: str) -> str:
     """Get artifact path given a project name, repo name and a reference (tag or digest)"""
-    repo_name = urlencode_repo(repository_name)
-    return f"/projects/{project_name}/repositories/{repo_name}/artifacts/{reference}"
+    repo_path = get_repo_path(project_name, repository_name)
+    return f"{repo_path}/artifacts/{reference}"
 
 
 def get_credentials(username: str, secret: str) -> str:
