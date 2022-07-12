@@ -275,11 +275,29 @@ class HarborVulnerabilityReport(BaseModel):
     def __repr__(self):
         return f"HarborVulnerabilityReport(generated_at={self.generated_at}, artifact={self.artifact}, scanner={self.scanner}, severity={self.severity}, vulnerabilities=list(len={len(self.vulnerabilities)}))"
 
+    @property
     def fixable(self) -> List[VulnerabilityItem]:
         return [v for v in self.vulnerabilities if v.fix_version]
 
+    @property
     def unfixable(self) -> List[VulnerabilityItem]:
         return [v for v in self.vulnerabilities if not v.fix_version]
+
+    @property
+    def critical(self) -> List[VulnerabilityItem]:
+        return self.vulnerabilities_by_severity(Severity.critical)
+
+    @property
+    def high(self) -> List[VulnerabilityItem]:
+        return self.vulnerabilities_by_severity(Severity.high)
+
+    @property
+    def medium(self) -> List[VulnerabilityItem]:
+        return self.vulnerabilities_by_severity(Severity.medium)
+
+    @property
+    def low(self) -> List[VulnerabilityItem]:
+        return self.vulnerabilities_by_severity(Severity.low)
 
     def vulnerabilities_by_severity(
         self, severity: Severity
