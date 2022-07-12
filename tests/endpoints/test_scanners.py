@@ -131,3 +131,20 @@ async def test_ping_scanner_adapter_mock(
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.ping_scanner_adapter(settings)
+
+
+@pytest.mark.asyncio
+@given(st.builds(ScannerRegistrationReq))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+async def test_update_scanner_mock(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+    scanner: ScannerRegistrationReq,
+):
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/scanners/1234",
+        method="PUT",
+        json=scanner.dict(),
+    ).respond_with_data()
+    async_client.url = httpserver.url_for("/api/v2.0")
+    await async_client.update_scanner(1234, scanner)
