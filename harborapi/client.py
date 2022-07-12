@@ -476,7 +476,7 @@ class HarborAsyncClient:
     async def create_project(self, project: ProjectReq) -> str:
         """Create a new project. Returns location of the created project."""
         resp = await self.post(
-            "/projects", json=project, headers={"X-Resource-Name-In-Location": True}
+            "/projects", json=project, headers={"X-Resource-Name-In-Location": "true"}
         )
         return urldecode_header(resp, "Location")
 
