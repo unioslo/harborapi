@@ -1405,7 +1405,24 @@ class HarborAsyncClient:
         # TODO: support multiple mime types?
         mime_type: str = "application/vnd.security.vulnerability.report; version=1.1",
     ) -> Optional[HarborVulnerabilityReport]:
-        """Get the vulnerabilities for an artifact."""
+        """Get the vulnerabilities for an artifact.
+
+        Parameters
+        ----------
+        project_name : str
+            The name of the project
+        repository_name : str
+            The name of the repository
+        reference : str
+            The reference of the artifact, can be digest or tag
+        mime_type : str
+            A comma-separated lists of MIME types for the scan report or scan summary.
+
+        Returns
+        -------
+        Optional[HarborVulnerabilityReport]
+            The vulnerabilities for the artifact, or None if the artifact is not found
+        """
         path = get_artifact_path(project_name, repository_name, reference)
         url = f"{path}/additions/vulnerabilities"
         resp = await self.get(url, headers={"X-Accept-Vulnerabilities": mime_type})
