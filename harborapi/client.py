@@ -1831,23 +1831,26 @@ class HarborAsyncClient:
         # If we have "Link" in headers, we need to handle paginated results
         if (link := resp.headers.get("link")) and 'rel="next"' in link and follow_links:
             logger.debug("Handling paginated results. Header value: {}", link)
-            # Parse the link header value
-            next_url = parse_pagination_url(link)
-            j = await self._handle_pagination(j, next_url)  # recursion (refactor?)
+            j = await self._handle_pagination(j, link)  # recursion (refactor?)
         return j
 
     async def _handle_pagination(self, data: JSONType, link: str) -> JSONType:
         """Handles paginated results by recursing until all results are returned."""
-        # NOTE: can this be done more elegantly?
-        # TODO: re-use async client somehow
-        j = await self.get(link)  # ignoring params and only using the link
+        # Parse the link header value and get next page URL
+        next_url = parse_pagination_url(link)
+
+        # ignoring params and only using the next URL
+        # the next URL should contain the original params with page number adjusted
+        j = await self.get(next_url)
+
         if not isinstance(j, list) or not isinstance(data, list):
             logger.warning(
                 "Unable to handle paginated results, received non-list value. URL: {}",
-                link,
+                next_url,
             )
             # TODO: add more diagnostics info here
             return data
+
         data.extend(j)
         return data
 
