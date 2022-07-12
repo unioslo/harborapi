@@ -74,24 +74,18 @@ def construct_model(cls: Type[T], data: Any) -> T:
         raise e
 
 
-class _HarborClientBase:
-    """Base class used by both the AsyncClient and the Client classes."""
-
-    # NOTE: Async and sync clients were originally intended to be implemented
-    #       as separate classes that both inherit from this class.
-    #       However, given the way the sync client ended up being implemented,
-    #       the functionality of this class should be baked into the async client.
-
+class HarborAsyncClient:
     def __init__(
         self,
         url: str,
         username: str = None,
         secret: str = None,
         credentials: str = None,
-        config: Optional[Any] = None,
-        version: str = "v2.0",
+        logging: bool = False,
+        config: Optional[Any] = None,  # NYI
+        version: str = "2.0",
+        **kwargs: Any,
     ) -> None:
-        self.username = username
         if username and secret:
             self.credentials = get_credentials(username, secret)
         elif credentials:
@@ -102,26 +96,25 @@ class _HarborClientBase:
         # TODO: add URL regex and improve parsing OR don't police this at all
         url = url.strip("/")  # remove trailing slash
         if version and not "/api/v" in url:
+            version = str(version)
+            if "v" not in version:
+                version = f"v{version}"
             if "/api" in url:
                 url = url.strip("/") + "/" + version
             else:
                 url = url + "/api/" + version
+
         self.url = url.strip("/")  # make sure we haven't added a trailing slash again
-
         self.config = config
-
-
-class HarborAsyncClient(_HarborClientBase):
-    def __init__(
-        self,
-        url: str,
-        username: str = None,
-        secret: str = None,
-        credentials: str = None,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(url, username, secret, credentials, **kwargs)
         self.client = httpx.AsyncClient()
+
+        # NOTE: make env var?
+        if logging:
+            # we explicitly enable the logger here, because previous instantiations
+            # of the client may have disabled it.
+            logger.enable("harborapi")
+        else:
+            logger.disable("harborapi")
 
     # NOTE: add destructor that closes client?
 
