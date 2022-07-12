@@ -71,7 +71,7 @@ def construct_model(cls: Type[T], data: Any) -> T:
         return cls.parse_obj(data)
     except ValidationError as e:
         logger.error(
-            "Failed to validate {} given {}, error: {}", cls.__class__.__name__, data, e
+            "Failed to validate {} given {}, error: {}", str(cls.__class__), data, e
         )
         raise e
 
@@ -80,9 +80,9 @@ class HarborAsyncClient:
     def __init__(
         self,
         url: str,
-        username: str = None,
-        secret: str = None,
-        credentials: str = None,
+        username: Optional[str] = None,
+        secret: Optional[str] = None,
+        credentials: Optional[str] = None,
         logging: bool = False,
         config: Optional[Any] = None,  # NYI
         version: str = "2.0",
@@ -1770,7 +1770,7 @@ class HarborAsyncClient:
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, Any]] = None,
         follow_links: bool = True,
-        **kwargs,
+        **kwargs: Any,
     ) -> JSONType:
         return await self._get(
             path,
@@ -1786,7 +1786,7 @@ class HarborAsyncClient:
         path: str,
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, Any]] = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> str:
         """Bad workaround in order to have a cleaner API for text/plain responses."""
         resp = await self._get(path, params=params, headers=headers, **kwargs)
@@ -1799,7 +1799,7 @@ class HarborAsyncClient:
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, Any]] = None,
         follow_links: bool = True,
-        **kwargs,
+        **kwargs: Any,
     ) -> JSONType:
         """Sends a GET request to the Harbor API.
         Returns JSON unless the response is text/plain.
@@ -1900,7 +1900,7 @@ class HarborAsyncClient:
         json: Union[BaseModel, JSONType],
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, Any]] = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> Optional[JSONType]:
         resp = await self._put(
             path,
@@ -1917,7 +1917,7 @@ class HarborAsyncClient:
         json: Union[BaseModel, JSONType],
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, Any]] = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> Response:
         if isinstance(json, BaseModel):
             json = json.dict()
@@ -1938,7 +1938,7 @@ class HarborAsyncClient:
         json: Union[BaseModel, JSONType],
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, Any]] = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> Optional[JSONType]:
         resp = await self._patch(
             path,
@@ -1955,7 +1955,7 @@ class HarborAsyncClient:
         json: Union[BaseModel, JSONType],
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, Any]] = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> Response:
         if isinstance(json, BaseModel):
             json = json.dict()
@@ -1977,7 +1977,7 @@ class HarborAsyncClient:
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, Any]] = None,
         missing_ok: bool = False,
-        **kwargs,
+        **kwargs: Any,
     ) -> Optional[JSONType]:
         resp = await self._delete(
             path,
@@ -1994,7 +1994,7 @@ class HarborAsyncClient:
         headers: Optional[Dict[str, Any]] = None,
         params: Optional[Dict[str, Any]] = None,
         missing_ok: bool = False,
-        **kwargs,
+        **kwargs: Any,
     ) -> Response:
         resp = await self.client.delete(
             self.url + path,
@@ -2012,7 +2012,7 @@ class HarborAsyncClient:
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, Any]] = None,
         missing_ok: bool = False,
-        **kwargs,
+        **kwargs: Any,
     ) -> Response:
         resp = await self._head(
             path,
@@ -2029,7 +2029,7 @@ class HarborAsyncClient:
         headers: Optional[Dict[str, Any]] = None,
         params: Optional[Dict[str, Any]] = None,
         missing_ok: bool = False,
-        **kwargs,
+        **kwargs: Any,
     ) -> Response:
         resp = await self.client.head(
             self.url + path,

@@ -9,7 +9,10 @@ class HarborClient(HarborAsyncClient):
     """Non-async Harbor API client."""
 
     def __init__(
-        self, loop: Optional[asyncio.AbstractEventLoop] = None, *args, **kwargs
+        self,
+        loop: Optional[asyncio.AbstractEventLoop] = None,
+        *args: Any,
+        **kwargs: Any
     ):
         super().__init__(*args, **kwargs)
         self.loop = loop or asyncio.new_event_loop()
@@ -64,7 +67,7 @@ class HarborClient(HarborAsyncClient):
             A function that runs the coroutine in the event loop.
         """
 
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any):
             return self.loop.run_until_complete(coro(*args, **kwargs))
 
         return wrapper
