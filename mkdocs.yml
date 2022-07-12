@@ -15,3 +15,20 @@ plugins:
 nav:
   - reference.md
   - endpoints/artifacts.md
+  - endpoints/audit.md
+  - endpoints/cveallowlist.md
+  - endpoints/health.md
+  - endpoints/oidc.md
+  - endpoints/ping.md
+  - endpoints/projects.md
+  - endpoints/quota.md
+  - endpoints/registries.md
+  - endpoints/repositories.md
+  - endpoints/scan.md
+  - endpoints/scanall.md
+  - endpoints/scanners.md
+  - endpoints/search.md
+  - endpoints/statistics.md
+  - endpoints/systeminfo.md
+  - endpoints/users.md
+  - models/models.md
