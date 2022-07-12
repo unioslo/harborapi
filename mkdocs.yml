@@ -1,0 +1,17 @@
+site_name: My Docs
+theme:
+  name: "material"
+plugins:
+- mkdocstrings:
+    handlers:
+      python:
+        options:
+          docstring_style: numpy
+          members_order: source
+          # group_by_category: true
+          # show_category_heading: true
+          docstring_section_style: table
+
+nav:
+  - reference.md
+  - endpoints/artifacts.md
