@@ -1,7 +1,7 @@
 from base64 import b64encode
 from json import JSONDecodeError
 from typing import Dict, Optional, Union
-from urllib.parse import quote
+from urllib.parse import quote_plus, unquote_plus
 
 from httpx import Response
 from loguru import logger
@@ -28,9 +28,24 @@ def handle_optional_json_response(resp: Response) -> Optional[JSONType]:
     return j
 
 
+def urlencode_repo(repository_name: str) -> str:
+    """URL-encode a repository name.
+    The Harbor API requires names to be double URL-encoded for some reason.
+    """
+    return quote_plus(quote_plus(repository_name))
+
+
+def urldecode_header(response: Response, key: str) -> str:
+    """URL decode the location header of a response.
+
+    Returns the decoded value, or an empty string if the header is not present.
+    """
+    return unquote_plus(response.headers.get(key, ""))
+
+
 def get_artifact_path(project_name: str, repository_name: str, reference: str) -> str:
     """Get artifact path given a project name, repo name and a reference (tag or digest)"""
-    repo_name = quote(repository_name, safe="")  # URL-encode the repository name
+    repo_name = urlencode_repo(repository_name)
     return f"/projects/{project_name}/repositories/{repo_name}/artifacts/{reference}"
 
 
