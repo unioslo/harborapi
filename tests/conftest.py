@@ -25,10 +25,14 @@ settings.register_profile("dev", max_examples=10)
 settings.load_profile(os.getenv("HYPOTHESIS_PROFILE", "default"))
 
 
-@pytest.fixture(scope="session")
+# must be set to "function" to make sure logging is enabled for each test
+@pytest.fixture(scope="function")
 def async_client() -> HarborAsyncClient:
     return HarborAsyncClient(
-        username="username", secret="secret", url="http://localhost"
+        username="username",
+        secret="secret",
+        url="http://localhost",
+        logging=True,
     )
 
 
