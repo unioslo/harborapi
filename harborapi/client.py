@@ -55,6 +55,7 @@ from .utils import (
     get_artifact_path,
     get_credentials,
     get_project_headers,
+    get_repo_path,
     handle_optional_json_response,
     parse_pagination_url,
     urldecode_header,
@@ -1094,7 +1095,7 @@ class HarborAsyncClient:
             The location of the new artifact
         """
         # We have to encode the destination repo name, but NOT the source repo name.
-        path = get_artifact_path(project_name, repository_name, "").rstrip("/")
+        path = get_repo_path(project_name, repository_name)
         resp = await self.post(f"{path}", params={"from": source})
         if resp.status_code != 201:
             logger.warning(
@@ -1558,7 +1559,8 @@ class HarborAsyncClient:
         Repository
             The repository.
         """
-        resp = await self.get(f"/projects/{project_id}/repositories/{repository_name}")
+        path = get_repo_path(project_id, repository_name)
+        resp = await self.get(path)
         return construct_model(Repository, resp)
 
     # PUT /projects/{project_name}/repositories/{repository_name}
@@ -1577,8 +1579,8 @@ class HarborAsyncClient:
         repository_name : str
             The name of the repository.
         """
-        url = f"/projects/{project_name}/repositories/{repository_name}"
-        await self.put(url, json=repository)
+        path = get_repo_path(project_name, repository_name)
+        await self.put(path, json=repository)
 
     # DELETE /projects/{project_name}/repositories/{repository_name}
     async def delete_repository(
@@ -1598,9 +1600,10 @@ class HarborAsyncClient:
         missing_ok : bool
             If true, do not raise an error if the repository does not exist.
         """
+        path = get_repo_path(project_id, repository_name)
         await self.delete(
-            f"/projects/{project_id}/repositories/{repository_name}",
-            missing_ok=True,
+            path,
+            missing_ok=missing_ok,
         )
 
     # GET /projects/{project_name}/repositories
