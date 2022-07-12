@@ -48,8 +48,12 @@ def test_client_init_sanity():
         username="username", secret="secret", url="https://harbor.example.com"
     )
     assert client.url == "https://harbor.example.com/api/v2.0"
-    assert client.username == "username"
-    assert client.credentials is not None  # TODO: check credentials validity?
+    assert client.credentials == get_credentials("username", "secret")
+
+
+def test_client_init_no_credentials():
+    with pytest.raises(ValueError):
+        HarborAsyncClient(url="https://harbor.example.com")
 
 
 @pytest.mark.asyncio
