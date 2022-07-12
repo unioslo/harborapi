@@ -24,7 +24,7 @@ def handle_optional_json_response(resp: Response) -> Optional[JSONType]:
         j = resp.json()
     except JSONDecodeError as e:
         logger.error("Failed to parse JSON from {}: {}", resp.url, e)
-        raise HarborAPIException(e)
+        raise HarborAPIException("Failed to parse JSON from {}".format(resp.url)) from e
     return j
 
 
