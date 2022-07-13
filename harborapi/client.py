@@ -1601,8 +1601,8 @@ class HarborAsyncClient:
     # GET /scanners
     async def get_scanners(
         self,
-        query: Optional[str],
-        sort: Optional[str],
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
         page: int = 1,
         page_size: int = 10,
     ) -> List[ScannerRegistration]:
