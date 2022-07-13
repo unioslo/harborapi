@@ -52,7 +52,6 @@ nav:
     - endpoints/systeminfo.md
     - endpoints/users.md
   - "Reference":
-    - reference/exceptions.md
     - reference/client.md
-  - "Models":
-    - models/models.md
+    - reference/exceptions.md
+    - reference/models.md
