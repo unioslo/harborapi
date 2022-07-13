@@ -67,7 +67,19 @@ class NotFound(StatusError):
     pass
 
 
+class MethodNotAllowed(StatusError):
+    pass
+
+
+class Conflict(StatusError):
+    pass
+
+
 class PreconditionFailed(StatusError):
+    pass
+
+
+class UnsupportedMediaType(StatusError):
     pass
 
 
@@ -106,7 +118,10 @@ def check_response_status(response: Response, missing_ok: bool = False) -> None:
             401: Unauthorized,
             403: Forbidden,
             404: NotFound,
+            405: MethodNotAllowed,
+            409: Conflict,
             412: PreconditionFailed,
+            415: UnsupportedMediaType,
             500: InternalServerError,
         }
         exc = exceptions.get(status_code, StatusError)
