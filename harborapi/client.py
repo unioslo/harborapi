@@ -121,7 +121,7 @@ class HarborAsyncClient:
         Raises
         ------
         ValueError
-            Neither `username` and `secret` nor `credentials` are provided.
+            Neither `username` and `secret`, `credentials` nor `credentials_file` are provided.
         """
         if username and secret:
             self.credentials = get_credentials(username, secret)
@@ -131,7 +131,9 @@ class HarborAsyncClient:
             crfile = load_harbor_auth_file(credentials_file)
             self.credentials = get_credentials(crfile.name, crfile.secret)
         else:
-            raise ValueError("Must provide either username and secret or credentials")
+            raise ValueError(
+                "Must provide username and secret, credentials, or credentials_file"
+            )
 
         # TODO: add URL regex and improve parsing OR don't police this at all
         url = url.strip("/")  # remove trailing slash
