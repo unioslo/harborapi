@@ -1,9 +1,12 @@
 name: Test
 on:
   push:
+    branches-ignore:
+      - "gh-pages"
     paths-ignore:
       - "**/README.md"
       - "docs/*"
+      - "mkdocs.yml"
 jobs:
   unit_tests:
     strategy:
