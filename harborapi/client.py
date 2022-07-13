@@ -470,7 +470,7 @@ class HarborAsyncClient:
 
         Parameters
         ----------
-        project_name: Union[str, int]
+        project_name_or_id: Union[str, int]
             The name or ID of the project
             * String arguments are treated as project names.
             * Integer arguments are treated as project IDs.
@@ -493,7 +493,7 @@ class HarborAsyncClient:
 
         Parameters
         ----------
-        project_name: Union[str, int]
+        project_name_or_id: Union[str, int]
             The name or ID of the project
             * String arguments are treated as project names.
             * Integer arguments are treated as project IDs.
@@ -1972,14 +1972,16 @@ class HarborAsyncClient:
         repository_name: str,
         repository: Repository,
     ) -> None:
-        """Get a repository.
+        """Update a repository.
 
         Parameters
         ----------
-        project_id : int
+        project_name : str
             The name of the project the repository belongs to.
         repository_name : str
             The name of the repository.
+        repository : Repository
+            The new repository values.
         """
         path = get_repo_path(project_name, repository_name)
         await self.put(path, json=repository)
@@ -2094,7 +2096,7 @@ class HarborAsyncClient:
 
         Parameters
         ----------
-        oidctest : OIDCTestReq
+        oidcreq : OIDCTestReq
             The OIDC test request.
         """
         await self.post("/system/oidc/ping", json=oidcreq)
