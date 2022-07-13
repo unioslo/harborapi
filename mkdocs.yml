@@ -2,33 +2,36 @@ site_name: My Docs
 theme:
   name: "material"
 plugins:
+- autorefs
 - mkdocstrings:
+    enable_inventory: true
     handlers:
       python:
+        import:
+        - https://docs.python.org/3/objects.inv
         options:
           docstring_style: numpy
           members_order: source
-          # group_by_category: true
-          # show_category_heading: true
           docstring_section_style: table
 
 nav:
-  - reference.md
-  - endpoints/artifacts.md
-  - endpoints/audit.md
-  - endpoints/cveallowlist.md
-  - endpoints/health.md
-  - endpoints/oidc.md
-  - endpoints/ping.md
-  - endpoints/projects.md
-  - endpoints/quota.md
-  - endpoints/registries.md
-  - endpoints/repositories.md
-  - endpoints/scan.md
-  - endpoints/scanall.md
-  - endpoints/scanners.md
-  - endpoints/search.md
-  - endpoints/statistics.md
-  - endpoints/systeminfo.md
-  - endpoints/users.md
-  - models/models.md
+  - "Endpoints":
+    - endpoints/artifacts.md
+    - endpoints/audit.md
+    - endpoints/cveallowlist.md
+    - endpoints/health.md
+    - endpoints/oidc.md
+    - endpoints/ping.md
+    - endpoints/projects.md
+    - endpoints/quota.md
+    - endpoints/registries.md
+    - endpoints/repositories.md
+    - endpoints/scan.md
+    - endpoints/scanall.md
+    - endpoints/scanners.md
+    - endpoints/search.md
+    - endpoints/statistics.md
+    - endpoints/systeminfo.md
+    - endpoints/users.md
+  - "Models":
+    - models/models.md
