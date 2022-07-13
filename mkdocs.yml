@@ -5,6 +5,8 @@ plugins:
 - search
 - autorefs
 - mkdocstrings:
+    watch:
+      - harborapi
     enable_inventory: true
     handlers:
       python:
