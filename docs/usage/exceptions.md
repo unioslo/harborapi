@@ -1,6 +1,6 @@
 # Exceptions
 
-All methods that interact with the Harbor API raise exceptions derived from [`StatusError`](../../reference/exceptions/#harborapi.exceptions.StatusError) for responses with non-2xx status codes unless otherwise specified.
+All methods that interact with the Harbor API raise exceptions derived from [`StatusError`][harborapi.exceptions.StatusError] for responses with non-2xx status codes unless otherwise specified.
 
 ## Status Code
 
@@ -13,7 +13,7 @@ except StatusError as e:
 
 ## Granular Exception Handling
 
-If more granular exception handling is required, all documented HTTP exceptions in the API spec are implemented as discrete classes derived from [`StatusError`](../../reference/exceptions/#harborapi.exceptions.StatusError)
+If more granular exception handling is required, all documented HTTP exceptions in the API spec are implemented as discrete classes derived from [`StatusError`][harborapi.exceptions.StatusError]
 
 ```py
 from harborapi.exceptions import (
@@ -38,7 +38,7 @@ except StatusError as e:
 
 ## Inspecting Errors
 
-The `StatusError.errors` attribute is a list of [`Error`](../../reference/models/#harborapi.models.models.Error) objects that contain
+The [`StatusError.errors`][harborapi.exceptions.StatusError.errors] attribute is a list of [`Error`][harborapi.models.models.Error] objects that contain
 more detailed information about the error(s) that have occured.
 
 ```py
@@ -49,7 +49,7 @@ except StatusError as e:
         print(error.code, error.message)
 ```
 
-An [`Error`](../../reference/models/#harborapi.models.models.Error) object has the following structure
+An [`Error`][harborapi.models.models.Error] object has the following structure:
 
 ```py
 class Error(BaseModel):
