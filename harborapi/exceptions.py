@@ -14,17 +14,36 @@ class HarborAPIException(Exception):
 
 # FIXME: this SUCKS
 class StatusError(HarborAPIException):
-    __cause__: Optional[HTTPStatusError]
-    errors: List[Error]
-
     def __init__(self, errors: Optional[Errors] = None, *args, **kwargs):
-        self.errors = []
+        """Initialize a StatusError.
+
+        Parameters
+        ----------
+        errors : Optional[Errors]
+            A list of errors returned by the Harbor API.
+        """
+        super().__init__(*args, **kwargs)
+
+        self.__cause__: Optional[HTTPStatusError] = None
+        """The underlying HTTPX exception that caused this exception.
+        Automatically assigned when raised from a HTTPX exception."""
+
+        self.errors: List[Error] = []
+        """A list of errors returned by the Harbor API."""
+
         if isinstance(errors, Errors) and errors.errors:
             self.errors = errors.errors
-        super().__init__(*args, **kwargs)
 
     @property
     def status_code(self) -> Optional[int]:
+        """The status code of the underlying HTTPX exception.
+
+        Returns
+        -------
+        Optional[int]
+            The status code of the underlying HTTPX exception, or None if
+            this exception was not raised from a HTTPX exception.
+        """
         # should always return int, but we can't guarantee it
         try:
             return self.__cause__.response.status_code  # type: ignore
