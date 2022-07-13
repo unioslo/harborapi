@@ -66,7 +66,7 @@ def check_response_status(response: Response, missing_ok: bool = False) -> None:
     ----------
     response : Response
         The response to check.
-    missing_ok : bool, optional
+    missing_ok : bool
         If `True`, do not raise an exception if the status is 404.
     """
     try:
@@ -97,16 +97,16 @@ def check_response_status(response: Response, missing_ok: bool = False) -> None:
 def try_parse_errors(response: Response) -> Optional[Errors]:
     """Attempts to return the errors from a response.
 
-        See: `models.Errors`
+    See: `models.Errors`
 
-        Parameters
-        ----------
-        response : Response
-    ):
-        Returns
-        -------
-        Optional[Errors]
-            The errors from the response.
+    Parameters
+    ----------
+    response : Response
+
+    Returns
+    -------
+    Optional[Errors]
+        The errors from the response.
     """
     if is_json(response):
         try:
