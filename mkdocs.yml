@@ -1,7 +1,8 @@
-site_name: My Docs
+site_name: harborapi
 theme:
   name: "material"
 plugins:
+- search
 - autorefs
 - mkdocstrings:
     enable_inventory: true
@@ -13,9 +14,24 @@ plugins:
           docstring_style: numpy
           members_order: source
           docstring_section_style: table
+          show_source: false
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
 
 nav:
+  - index.md
+  - "Usage":
+    - usage/_intro.md
+    - usage/examples.md
+    - usage/exceptions.md
+    - usage/sync-client.md
   - "Endpoints":
+    - endpoints/_overview.md
     - endpoints/artifacts.md
     - endpoints/audit.md
     - endpoints/cveallowlist.md
@@ -33,5 +49,8 @@ nav:
     - endpoints/statistics.md
     - endpoints/systeminfo.md
     - endpoints/users.md
+  - "Reference":
+    - reference/exceptions.md
+    - reference/client.md
   - "Models":
     - models/models.md
