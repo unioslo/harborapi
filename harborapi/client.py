@@ -111,7 +111,7 @@ class HarborAsyncClient:
             authentication in place of `username` and `secret`.
         credentials_file : Optional[Union[str, Path]]
             Path to a JSON-encoded credentials file from which to load credentials.
-        logging : bool, optional
+        logging : bool
             Enable client logging with `Loguru`, by default False
         config : Optional[Any]
             (NYI) config, by default None
@@ -228,7 +228,7 @@ class HarborAsyncClient:
         ----------
         scope : Optional[str]
             The scope for the permission
-        relative : bool, optional
+        relative : bool
             Display resource paths relative to the scope, by default False
             Has no effect if `scope` is not specified
 
@@ -385,7 +385,7 @@ class HarborAsyncClient:
         ----------
         user_id : int
             The ID of the user to delete
-        missing_ok : bool, optional
+        missing_ok : bool
             Do not raise an error if the user does not exist, by default False
         """
         await self.delete(f"/users/{user_id}", missing_ok=missing_ok)
@@ -1667,9 +1667,9 @@ class HarborAsyncClient:
             and separated by `","`. e.g. `"k1=v1,k2=~v2,k3=[min~max]"`
         sort : Optional[str]
             The sort order of the scanners.
-        page : int, optional
+        page : int
             The page of results to return, default 1
-        page_size : int, optional
+        page_size : int
             The number of results to return per page, default 10
 
         Returns
@@ -1733,7 +1733,7 @@ class HarborAsyncClient:
         ----------
         registration_id : Union[int, str]
             The ID of the scanner to delete.
-        missing_ok : bool, optional
+        missing_ok : bool
             Whether to ignore 404 error when deleting the scanner, by default False.
 
         Returns
@@ -1768,7 +1768,7 @@ class HarborAsyncClient:
         ----------
         registration_id : Union[int, str]
             The ID of the scanner to set as the default.
-        is_default : bool, optional
+        is_default : bool
             Whether to set the scanner as the default, by default `True`.
             Set to `False` to unset the scanner as the default.
         """
@@ -2255,11 +2255,11 @@ class HarborAsyncClient:
         ----------
         path : str
             URL path to resource
-        params : Optional[dict], optional
+        params : Optional[dict]
             Request parameters, by default None
-        headers : Optional[dict], optional
+        headers : Optional[dict]
             Request headers, by default None
-        follow_links : bool, optional
+        follow_links : bool
             Enable pagination by following links in response header, by default True
 
         Returns
