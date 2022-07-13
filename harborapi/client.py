@@ -1,4 +1,5 @@
 import asyncio
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 
 import backoff
@@ -6,6 +7,8 @@ import httpx
 from httpx import RequestError, Response
 from loguru import logger
 from pydantic import BaseModel, ValidationError
+
+from harborapi.auth import load_harbor_auth_file
 
 from .exceptions import BadRequest, HarborAPIException, NotFound, check_response_status
 from .models import (
@@ -83,15 +86,50 @@ class HarborAsyncClient:
         username: Optional[str] = None,
         secret: Optional[str] = None,
         credentials: Optional[str] = None,
+        credentials_file: Optional[Union[str, Path]] = None,
         logging: bool = False,
         config: Optional[Any] = None,  # NYI
         version: str = "2.0",
         **kwargs: Any,
     ) -> None:
+        """Initialize a new HarborAsyncClient with either a username and secret,
+        an authentication token, or a credentials file.
+
+        Parameters
+        ----------
+        url : str
+            The URL of the Harbor server in the format `http://host:[port]/api/v<version>`
+
+            Example: `http://localhost:8080/api/v2.0`
+        username : Optional[str]
+            Username to use for authentication.
+            If not provided, the client attempts to use `credentials` to authenticate.
+        secret : Optional[str]
+            Secret to use for authentication along with `username`.
+        credentials : Optional[str]
+            base64-encoded Basic Access Authentication credentials to use for
+            authentication in place of `username` and `secret`.
+        credentials_file : Optional[Union[str, Path]]
+            Path to a JSON-encoded credentials file from which to load credentials.
+        logging : bool, optional
+            Enable client logging with `Loguru`, by default False
+        config : Optional[Any]
+            (NYI) config, by default None
+        version : str
+            Used to construct URL if the specified URL does not contain the version.
+
+        Raises
+        ------
+        ValueError
+            Neither `username` and `secret` nor `credentials` are provided.
+        """
         if username and secret:
             self.credentials = get_credentials(username, secret)
         elif credentials:
             self.credentials = credentials
+        elif credentials_file:
+            crfile = load_harbor_auth_file(credentials_file)
+            self.credentials = get_credentials(crfile.name, crfile.secret)
         else:
             raise ValueError("Must provide either username and secret or credentials")
 

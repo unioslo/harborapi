@@ -1,4 +1,5 @@
 import asyncio
+from pathlib import Path
 
 import pytest
 from httpx import HTTPStatusError
@@ -43,12 +44,28 @@ def test_client_init_url(url: str, expected: str):
     assert client.url == expected
 
 
-def test_client_init_sanity():
+def test_client_init_username():
     client = HarborAsyncClient(
         username="username", secret="secret", url="https://harbor.example.com"
     )
     assert client.url == "https://harbor.example.com/api/v2.0"
     assert client.credentials == get_credentials("username", "secret")
+
+
+def test_client_init_token():
+    client = HarborAsyncClient(
+        credentials="dXNlcm5hbWU6c2VjcmV0", url="https://harbor.example.com"
+    )
+    assert client.url == "https://harbor.example.com/api/v2.0"
+    assert client.credentials == get_credentials("username", "secret")
+
+
+def test_client_init_credentials_file(credentials_file: Path):
+    client = HarborAsyncClient(
+        credentials_file=credentials_file, url="https://harbor.example.com"
+    )
+    assert client.url == "https://harbor.example.com/api/v2.0"
+    assert client.credentials == get_credentials("robot$harborapi-test", "bad-password")
 
 
 def test_client_init_no_credentials():
