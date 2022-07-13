@@ -9,3 +9,9 @@
 - Data validation with [Pydantic](https://pydantic-docs.helpmanual.io/)
 - HTTP handled by [HTTPX](https://www.python-httpx.org/)
 - Extensive test coverage powered by [Hypothesis](https://hypothesis.works/)
+
+## Installation
+
+```bash
+pip install harborapi
+```
