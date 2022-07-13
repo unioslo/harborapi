@@ -7,7 +7,7 @@ from pytest_httpserver import HTTPServer
 
 from harborapi.client import HarborAsyncClient
 from harborapi.models import Quota
-from harborapi.models.models import QuotaUpdateReq
+from harborapi.models.models import QuotaUpdateReq, ResourceList
 
 
 @pytest.mark.asyncio
@@ -38,10 +38,10 @@ async def test_update_quota(async_client: HarborAsyncClient, httpserver: HTTPSer
     await async_client.update_quota(
         1234,
         QuotaUpdateReq(
-            hard={
-                "storage": 100,
-                "storage2": 200,
-            }
+            hard=ResourceList(
+                storage=100,  # type: ignore
+                storage2=200,  # type: ignore
+            )
         ),
     )
 

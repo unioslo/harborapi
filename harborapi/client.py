@@ -1,4 +1,5 @@
 import asyncio
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 
 import backoff
@@ -6,6 +7,8 @@ import httpx
 from httpx import RequestError, Response
 from loguru import logger
 from pydantic import BaseModel, ValidationError
+
+from harborapi.auth import load_harbor_auth_file
 
 from .exceptions import BadRequest, HarborAPIException, NotFound, check_response_status
 from .models import (
@@ -83,17 +86,54 @@ class HarborAsyncClient:
         username: Optional[str] = None,
         secret: Optional[str] = None,
         credentials: Optional[str] = None,
+        credentials_file: Optional[Union[str, Path]] = None,
         logging: bool = False,
         config: Optional[Any] = None,  # NYI
         version: str = "2.0",
         **kwargs: Any,
     ) -> None:
+        """Initialize a new HarborAsyncClient with either a username and secret,
+        an authentication token, or a credentials file.
+
+        Parameters
+        ----------
+        url : str
+            The URL of the Harbor server in the format `http://host:[port]/api/v<version>`
+
+            Example: `http://localhost:8080/api/v2.0`
+        username : Optional[str]
+            Username to use for authentication.
+            If not provided, the client attempts to use `credentials` to authenticate.
+        secret : Optional[str]
+            Secret to use for authentication along with `username`.
+        credentials : Optional[str]
+            base64-encoded Basic Access Authentication credentials to use for
+            authentication in place of `username` and `secret`.
+        credentials_file : Optional[Union[str, Path]]
+            Path to a JSON-encoded credentials file from which to load credentials.
+        logging : bool
+            Enable client logging with `Loguru`, by default False
+        config : Optional[Any]
+            (NYI) config, by default None
+        version : str
+            Used to construct URL if the specified URL does not contain the version.
+
+        Raises
+        ------
+        ValueError
+            Neither `username` and `secret`, `credentials` nor `credentials_file` are provided.
+        """
         if username and secret:
             self.credentials = get_credentials(username, secret)
         elif credentials:
             self.credentials = credentials
+        elif credentials_file:
+            crfile = load_harbor_auth_file(credentials_file)
+            self.credentials = get_credentials(crfile.name, crfile.secret)
         else:
-            raise ValueError("Must provide either username and secret or credentials")
+            raise ValueError(
+                "Must provide username and secret, credentials, or credentials_file"
+            )
 
         # TODO: add URL regex and improve parsing OR don't police this at all
         url = url.strip("/")  # remove trailing slash
@@ -166,7 +206,7 @@ class HarborAsyncClient:
         username : str
             The username to search for
         page : int
-            The page of results to return
+            The page of results to return, default 1
         page_size : int
             The number of results to return per page
         retrieve_all : bool
@@ -190,7 +230,7 @@ class HarborAsyncClient:
         ----------
         scope : Optional[str]
             The scope for the permission
-        relative : bool, optional
+        relative : bool
             Display resource paths relative to the scope, by default False
             Has no effect if `scope` is not specified
 
@@ -208,6 +248,13 @@ class HarborAsyncClient:
 
     # GET /users/current
     async def get_current_user(self) -> UserResp:
+        """Get information about the current user.
+
+        Returns
+        -------
+        UserResp
+            Information about the current user.
+        """
         user_resp = await self.get("/users/current")
         return construct_model(UserResp, user_resp)
 
@@ -284,6 +331,18 @@ class HarborAsyncClient:
 
     # GET /users
     async def get_users(self, sort: Optional[str] = None, **kwargs) -> List[UserResp]:
+        """Get all users.
+
+        Parameters
+        ----------
+        sort : Optional[str]
+            The sort order for the results.
+
+        Returns
+        -------
+        List[UserResp]
+            A list of users.
+        """
         params = {**kwargs}
         if sort:
             params["sort"] = sort
@@ -305,11 +364,32 @@ class HarborAsyncClient:
 
     # GET /users/{user_id}
     async def get_user(self, user_id: int) -> UserResp:
+        """Get information about a user.
+
+        Parameters
+        ----------
+        user_id : int
+            The ID of the user to get information about
+
+        Returns
+        -------
+        UserResp
+            Information about the user.
+        """
         user_resp = await self.get(f"/users/{user_id}")
         return construct_model(UserResp, user_resp)
 
     # DELETE /users/{user_id}
     async def delete_user(self, user_id: int, missing_ok: bool = False) -> None:
+        """Delete a user.
+
+        Parameters
+        ----------
+        user_id : int
+            The ID of the user to delete
+        missing_ok : bool
+            Do not raise an error if the user does not exist, by default False
+        """
         await self.delete(f"/users/{user_id}", missing_ok=missing_ok)
 
     # CATEGORY: gc
@@ -318,27 +398,59 @@ class HarborAsyncClient:
 
     # GET /scans/all/metrics
     async def get_scan_all_metrics(self) -> Stats:
+        """Get metrics for a Scan All job.
+
+        Returns
+        -------
+        Stats
+            The metrics for the Scan All job.
+        """
         resp = await self.get("/scans/all/metrics")
         return construct_model(Stats, resp)
 
     # PUT /system/scanAll/schedule
     async def update_scan_all_schedule(self, schedule: Schedule) -> None:
-        """Update the scan all schedule."""
+        """Update the schedule for a Scan All job.
+
+        Parameters
+        ----------
+        schedule : Schedule
+            The new schedule for the Scan All job
+        """
         await self.put("/system/scanAll/schedule", json=schedule)
 
     # POST /system/scanAll/schedule
     async def create_scan_all_schedule(self, schedule: Schedule) -> str:
-        """Create a new scan all job schedule. Returns location of the created schedule."""
+        """Create a new scan all job schedule. Returns location of the created schedule.
+
+        Parameters
+        ----------
+        schedule : Schedule
+            The schedule to create
+
+        Returns
+        -------
+        str
+            The location of the created schedule
+        """
         resp = await self.post("/system/scanAll/schedule", json=schedule)
         return urldecode_header(resp, "Location")
 
     # GET /system/scanAll/schedule
     async def get_scan_all_schedule(self) -> Schedule:
+        """Get the schedule for a Scan All job.
+
+        Returns
+        -------
+        Schedule
+            The schedule for the Scan All job.
+        """
         resp = await self.get("/system/scanAll/schedule")
         return construct_model(Schedule, resp)
 
     # POST /system/scanAll/stop
     async def stop_scan_all_job(self) -> None:
+        """Stop a Scan All job."""
         await self.post("/system/scanAll/stop")
 
     # CATEGORY: configure
@@ -360,7 +472,7 @@ class HarborAsyncClient:
 
         Parameters
         ----------
-        project_name: Union[str, int]
+        project_name_or_id: Union[str, int]
             The name or ID of the project
             * String arguments are treated as project names.
             * Integer arguments are treated as project IDs.
@@ -383,7 +495,7 @@ class HarborAsyncClient:
 
         Parameters
         ----------
-        project_name: Union[str, int]
+        project_name_or_id: Union[str, int]
             The name or ID of the project
             * String arguments are treated as project names.
             * Integer arguments are treated as project IDs.
@@ -733,7 +845,24 @@ class HarborAsyncClient:
     async def get_artifact_scan_report_log(
         self, project_name: str, repository_name: str, reference: str, report_id: str
     ) -> str:
-        """Get the log of a scan report."""
+        """Get the log of a scan report.
+
+        Parameters
+        ----------
+        project_name : str
+            The name of the project
+        repository_name : str
+            The name of the repository
+        reference : str
+            The reference of the artifact, can be digest or tag
+        report_id : str
+            The ID of the scan report
+
+        Returns
+        -------
+        str
+            The log of a scan report
+        """ """"""
         # TODO: investigate what exactly this endpoint returns
         path = get_artifact_path(project_name, repository_name, reference)
         return await self.get_text(f"{path}/scan/{report_id}/log")
@@ -742,7 +871,17 @@ class HarborAsyncClient:
     async def stop_artifact_scan(
         self, project_name: str, repository_name: str, reference: str
     ) -> None:
-        """Stop a scan for a particular artifact."""
+        """Stop a scan for a particular artifact.
+
+        Parameters
+        ----------
+        project_name : str
+            The name of the project
+        repository_name : str
+            The name of the repository
+        reference : str
+            The reference of the artifact, can be digest or tag
+        """
         path = get_artifact_path(project_name, repository_name, reference)
         resp = await self.post(f"{path}/scan/stop")
         if resp.status_code != 202:
@@ -758,18 +897,41 @@ class HarborAsyncClient:
     # CATEGORY: registry
     # POST /registries/ping
     async def check_registry_status(self, ping: RegistryPing) -> None:
-        """Check the status of the registry."""
+        """Check the status of the registry.
+
+        Parameters
+        ----------
+        ping : RegistryPing
+            The ping request
+        """
         await self.post("/registries/ping", json=ping)
 
     # GET /replication/adapters
     async def get_registry_adapters(self) -> List[str]:
-        """Get the list of available registry adapters."""
+        """Get the list of available registry adapters.
+
+        Returns
+        -------
+        List[str]
+            The list of available registry adapters
+        """
         resp = await self.get("/replication/adapters")
         return resp  # type: ignore # we know this is a list of strings
 
     # GET /registries/{id}/info
     async def get_registry_info(self, id: int) -> RegistryInfo:
-        """Get the info of a registry."""
+        """Get the info of a registry.
+
+        Parameters
+        ----------
+        id : int
+            The ID of the registry
+
+        Returns
+        -------
+        RegistryInfo
+            The info of a registry
+        """
         resp = await self.get(f"/registries/{id}/info")
         return construct_model(RegistryInfo, resp)
 
@@ -806,6 +968,11 @@ class HarborAsyncClient:
         ----------
         id : int
             The ID of the registry
+
+        Returns
+        -------
+        Registry
+            The registry
         """
         resp = await self.get(f"/registries/{id}")
         return construct_model(Registry, resp)
@@ -1225,6 +1392,11 @@ class HarborAsyncClient:
         retrieve_all: bool
             If true, retrieve all the resources,
             otherwise, retrieve only the number of resources specified by `page_size`.
+
+        Returns
+        -------
+        List[Artifact]
+            A list of artifacts in the repository matching the query.
         """
         path = f"/projects/{project_name}/repositories/{repository_name}/artifacts"
         params = {
@@ -1328,6 +1500,11 @@ class HarborAsyncClient:
             Currently the mime type supports:
             * `'application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0'`
             * `'application/vnd.security.vulnerability.report; version=1.1'`
+
+        Returns
+        -------
+        Artifact
+            An artifact.
         """
         path = get_artifact_path(project_name, repository_name, reference)
         resp = await self.get(
@@ -1405,7 +1582,24 @@ class HarborAsyncClient:
         # TODO: support multiple mime types?
         mime_type: str = "application/vnd.security.vulnerability.report; version=1.1",
     ) -> Optional[HarborVulnerabilityReport]:
-        """Get the vulnerabilities for an artifact."""
+        """Get the vulnerabilities for an artifact.
+
+        Parameters
+        ----------
+        project_name : str
+            The name of the project
+        repository_name : str
+            The name of the repository
+        reference : str
+            The reference of the artifact, can be digest or tag
+        mime_type : str
+            A comma-separated lists of MIME types for the scan report or scan summary.
+
+        Returns
+        -------
+        Optional[HarborVulnerabilityReport]
+            The vulnerabilities for the artifact, or None if the artifact is not found
+        """
         path = get_artifact_path(project_name, repository_name, reference)
         url = f"{path}/additions/vulnerabilities"
         resp = await self.get(url, headers={"X-Accept-Vulnerabilities": mime_type})
@@ -1429,25 +1623,103 @@ class HarborAsyncClient:
 
     # POST /scanners
     async def create_scanner(self, scanner: ScannerRegistrationReq) -> str:
-        """Creates a new scanner. Returns location of the created scanner."""
+        """Creates a new scanner. Returns location of the created scanner.
+
+        Parameters
+        ----------
+        scanner : ScannerRegistrationReq
+            The scanner to create.
+
+        Returns
+        -------
+        str
+            The location of the created scanner.
+        """
         resp = await self.post("/scanners", json=scanner)
         return urldecode_header(resp, "Location")
 
     # GET /scanners
-    async def get_scanners(self, *args, **kwargs) -> List[ScannerRegistration]:
-        scanners = await self.get("/scanners", params=kwargs)
+    async def get_scanners(
+        self,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 10,
+    ) -> List[ScannerRegistration]:
+        """Get a list of scanners.
+
+        Parameters
+        ----------
+        query : Optional[str]
+            A query string to filter the scanners.
+
+            Supported query patterns are:
+            * exact match(`"k=v"`)
+            * fuzzy match(`"k=~v"`)
+            * range(`"k=[min~max]"`)
+            * list with union releationship(`"k={v1 v2 v3}"`)
+            * list with intersection relationship(`"k=(v1 v2 v3)"`).
+
+            The value of range and list can be:
+            * string(enclosed by `"` or `'`)
+            * integer
+            * time(in format `"2020-04-09 02:36:00"`)
+
+            All of these query patterns should be put in the query string
+            and separated by `","`. e.g. `"k1=v1,k2=~v2,k3=[min~max]"`
+        sort : Optional[str]
+            The sort order of the scanners.
+        page : int
+            The page of results to return, default 1
+        page_size : int
+            The number of results to return per page, default 10
+
+        Returns
+        -------
+        List[ScannerRegistration]
+            _description_
+        """
+        params = {
+            "q": query,
+            "sort": sort,
+            "page": page,
+            "page_size": page_size,
+        }
+        params = {k: v for k, v in params.items() if v is not None}
+        scanners = await self.get("/scanners", params=params)
         return [construct_model(ScannerRegistration, s) for s in scanners]
 
     # PUT /scanners/{registration_id}
     async def update_scanner(
         self, registration_id: Union[int, str], scanner: ScannerRegistrationReq
     ) -> None:
+        """Update a scanner.
+
+        Parameters
+        ----------
+        registration_id : Union[int, str]
+            The ID of the scanner to update.
+        scanner : ScannerRegistrationReq
+            The updated scanner definition.
+        """
         await self.put(f"/scanners/{registration_id}", json=scanner)
 
     # GET /scanners/{registration_id}
     async def get_scanner(
         self, registration_id: Union[int, str]
     ) -> ScannerRegistration:
+        """Fetch a scanner by ID.
+
+        Parameters
+        ----------
+        registration_id : Union[int, str]
+            The ID of the scanner to fetch.
+
+        Returns
+        -------
+        ScannerRegistration
+            The scanner.
+        """
         scanner = await self.get(f"/scanners/{registration_id}")
         return construct_model(ScannerRegistration, scanner)
 
@@ -1457,6 +1729,25 @@ class HarborAsyncClient:
         registration_id: Union[int, str],
         missing_ok: bool = False,
     ) -> Optional[ScannerRegistration]:
+        """Delete a scanner by ID.
+
+        Parameters
+        ----------
+        registration_id : Union[int, str]
+            The ID of the scanner to delete.
+        missing_ok : bool
+            Whether to ignore 404 error when deleting the scanner, by default False.
+
+        Returns
+        -------
+        Optional[ScannerRegistration]
+            The scanner, or None if the scanner is not found and `missing_ok` is True.
+
+        Raises
+        ------
+        HarborAPIException
+            Successful deletion request that returns an empty response.
+        """
         scanner = await self.delete(
             f"/scanners/{registration_id}", missing_ok=missing_ok
         )
@@ -1473,18 +1764,47 @@ class HarborAsyncClient:
     async def set_default_scanner(
         self, registration_id: Union[int, str], is_default: bool = True
     ) -> None:
+        """Set a scanner as the default scanner.
+
+        Parameters
+        ----------
+        registration_id : Union[int, str]
+            The ID of the scanner to set as the default.
+        is_default : bool
+            Whether to set the scanner as the default, by default `True`.
+            Set to `False` to unset the scanner as the default.
+        """
         await self.patch(
             f"/scanners/{registration_id}", json=IsDefault(is_default=is_default)
         )
 
     # POST /scanners/ping
     async def ping_scanner_adapter(self, settings: ScannerRegistrationSettings) -> None:
+        """Ping a scanner adapter.
+
+        Parameters
+        ----------
+        settings : ScannerRegistrationSettings
+            The settings of the scanner adapter.
+        """
         await self.post("/scanners/ping", json=settings)
 
     # GET /scanners/{registration_id}/metadata
     async def get_scanner_metadata(
         self, registration_id: int
     ) -> ScannerAdapterMetadata:
+        """Get metadata of a scanner adapter given its registration ID.
+
+        Parameters
+        ----------
+        registration_id : int
+            The ID of the scanner adapter.
+
+        Returns
+        -------
+        ScannerAdapterMetadata
+            The metadata of the scanner adapter.
+        """
         scanner = await self.get(f"/scanners/{registration_id}/metadata")
         return construct_model(ScannerAdapterMetadata, scanner)
 
@@ -1492,7 +1812,13 @@ class HarborAsyncClient:
 
     # GET /systeminfo/volumes
     async def get_system_volume_info(self) -> SystemInfo:
-        """Get info about the system's volumes."""
+        """Get info about the system's volumes.
+
+        Returns
+        -------
+        SystemInfo
+            Information about the system's volumes.
+        """
         resp = await self.get("/systeminfo/volumes")
         return construct_model(SystemInfo, resp)
 
@@ -1503,13 +1829,25 @@ class HarborAsyncClient:
 
     # GET /systeminfo
     async def get_system_info(self) -> GeneralInfo:
-        """Get info about the system."""
+        """Get general info about the system.
+
+        Returns
+        -------
+        GeneralInfo
+            The general info about the system
+        """
         resp = await self.get("/systeminfo")
         return construct_model(GeneralInfo, resp)
 
     # CATEGORY: statistic
     async def get_statistics(self) -> Statistic:
-        """Get the statistics of the Harbor server."""
+        """Get statistics on the Harbor server.
+
+        Returns
+        -------
+        Statistic
+            The statistics on the Harbor server
+        """
         stats = await self.get("/statistics")
         return construct_model(Statistic, stats)
 
@@ -1549,6 +1887,11 @@ class HarborAsyncClient:
         retrieve_all: bool
             If true, retrieve all the resources,
             otherwise, retrieve only the number of resources specified by `page_size`.
+
+        Returns
+        -------
+        List[Quota]
+            The quotas
         """
         params = {
             "reference": reference,
@@ -1589,6 +1932,11 @@ class HarborAsyncClient:
         ----------
         id : int
             The id of the quota to get.
+
+        Returns
+        -------
+        Quota
+            The quota
         """
         quota = await self.get(f"/quotas/{id}")
         return construct_model(Quota, quota)
@@ -1626,14 +1974,16 @@ class HarborAsyncClient:
         repository_name: str,
         repository: Repository,
     ) -> None:
-        """Get a repository.
+        """Update a repository.
 
         Parameters
         ----------
-        project_id : int
+        project_name : str
             The name of the project the repository belongs to.
         repository_name : str
             The name of the repository.
+        repository : Repository
+            The new repository values.
         """
         path = get_repo_path(project_name, repository_name)
         await self.put(path, json=repository)
@@ -1701,12 +2051,17 @@ class HarborAsyncClient:
             The sort method.
             TODO: add boilerplate sort documentation
         page : int
-            The page number.
+            The page of results to return, default 1
         page_size : int
-            The page size.
+            The number of results to return per page, default 10
         retrieve_all : bool
             If true, retrieve all the resources,
             otherwise, retrieve only the number of resources specified by `page_size`.
+
+        Returns
+        -------
+        List[Repository]
+            A list of repositories matching the query.
         """
         params = {
             "query": query,
@@ -1725,7 +2080,13 @@ class HarborAsyncClient:
     # CATEGORY: ping
     # GET /ping
     async def ping_harbor_api(self) -> str:
-        """Pings the Harbor API to check if it is alive."""
+        """Pings the Harbor server to check if it is alive.
+
+        Returns
+        -------
+        str
+            Text response from the server.
+        """
         return await self.get_text("/ping")
 
     # CATEGORY: oidc
@@ -1737,7 +2098,7 @@ class HarborAsyncClient:
 
         Parameters
         ----------
-        oidctest : OIDCTestReq
+        oidcreq : OIDCTestReq
             The OIDC test request.
         """
         await self.post("/system/oidc/ping", json=oidcreq)
@@ -1745,17 +2106,37 @@ class HarborAsyncClient:
     # CATEGORY: SystemCVEAllowlist
     # PUT /system/CVEAllowlist
     async def update_cve_allowlist(self, allowlist: CVEAllowlist) -> None:
-        """Overwrites the existing CVE allowlist with a new one."""
+        """Overwrites the existing CVE allowlist with a new one.
+
+        Parameters
+        ----------
+        allowlist : CVEAllowlist
+            The new CVE allowlist.
+        """
         await self.put("/system/CVEAllowlist", json=allowlist)
 
     # GET /system/CVEAllowlist
     async def get_cve_allowlist(self) -> CVEAllowlist:
+        """Gets the current CVE allowlist.
+
+        Returns
+        -------
+        CVEAllowlist
+            The current CVE allowlist.
+        """
         resp = await self.get("/system/CVEAllowlist")
         return construct_model(CVEAllowlist, resp)
 
     # CATEGORY: health
     # GET /health
     async def health_check(self) -> OverallHealthStatus:
+        """Gets the health status of the Harbor server.
+
+        Returns
+        -------
+        OverallHealthStatus
+            The health status of the Harbor server.
+        """
         resp = await self.get("/health")
         return construct_model(OverallHealthStatus, resp)
 
@@ -1876,11 +2257,11 @@ class HarborAsyncClient:
         ----------
         path : str
             URL path to resource
-        params : Optional[dict], optional
+        params : Optional[dict]
             Request parameters, by default None
-        headers : Optional[dict], optional
+        headers : Optional[dict]
             Request headers, by default None
-        follow_links : bool, optional
+        follow_links : bool
             Enable pagination by following links in response header, by default True
 
         Returns
