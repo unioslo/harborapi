@@ -10,6 +10,16 @@ Python async API wrapper for the Harbor  REST API v2.0.
 - HTTP handled by [HTTPX](https://www.python-httpx.org/)
 - Extensive test coverage powered by [Hypothesis](https://hypothesis.works/)
 
+## Installation
+
+```bash
+pip install harborapi
+```
+
+## Documentation
+
+Documentation is available [here](https://pederhan.github.io/harborapi/)
+
 ## Implemented endpoints
 
 - [x] user
@@ -47,14 +57,3 @@ Python async API wrapper for the Harbor  REST API v2.0.
 - [x] auditlog
 
 \*\* `/systeminfo/getcert` NYI
-
-
-## Installation
-
-```bash
-pip install harborapi
-```
-
-## Documentation
-
-Documentation is available [here](https://pederhan.github.io/harborapi/)
