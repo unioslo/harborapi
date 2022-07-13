@@ -1,4 +1,4 @@
-# Client
+# HarborAsyncClient
 
 ::: harborapi.client.HarborAsyncClient
     options:
