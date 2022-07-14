@@ -466,10 +466,10 @@ class HarborAsyncClient:
         """
         Get the internal configuration. Cannot be called by normal user accounts.
 
-        NOTE
-        ----
-        It is likely not possible to call this method, but it is included
-        here for completeness.
+        !!! danger
+
+            It is likely not possible to call this method due to its internal account
+            requirement, but it is included for completeness and to allow for future use.
 
         Returns
         -------
@@ -483,9 +483,9 @@ class HarborAsyncClient:
     async def update_config(self, config: Configurations) -> None:
         """Fully or partially update the system configuration.
 
-        NOTE
-        ----
-        Requires admin privileges or a privileged Robot account.
+        !!! attention
+
+            Requires admin privileges or a privileged Robot account.
 
         Parameters
         ----------
@@ -499,9 +499,9 @@ class HarborAsyncClient:
     async def get_config(self) -> ConfigurationsResponse:
         """Get the system configuration.
 
-        NOTE
-        ----
-        Requires admin privileges or a privileged Robot account.
+        !!! attention
+
+            Requires admin privileges or a privileged Robot account.
 
         Returns
         -------
@@ -526,9 +526,9 @@ class HarborAsyncClient:
     ) -> RobotCreated:
         """Create a new robot account.
 
-        NOTE
-        ----
-        This action requires a sysadmin account to perform.
+        !!! attention
+
+            This action requires a sysadmin account to perform.
 
         Parameters
         ----------
@@ -1683,10 +1683,12 @@ class HarborAsyncClient:
             The reference of the artifact, can be digest or tag
         page : int
             The page of results to return, default 1
-            NOTE: unclear if this has an effect, even though it's in the API spec
+            !!! warning
+                Unclear if this argument has any effect, even though it's in the API spec
         page_size : int
             The number of results to return per page, default 10
-            NOTE: unclear if this has an effect, even though it's in the API spec
+            !!! warning
+                Unclear if this argument has any effect, even though it's in the API spec
         with_tag : bool
             Whether to include the tags of the artifact in the response
         with_label : bool
@@ -2360,9 +2362,9 @@ class HarborAsyncClient:
     ) -> List[AuditLog]:
         """Get a list of audit logs for the projects the user is a member of.
 
-        NOTE
-        ----
-        Set `retrieve_all` to `True` to retrieve the entire audit log for all projects.
+        !!! note
+
+            Set `retrieve_all` to `True` to retrieve the entire audit log for all projects.
 
         Parameters
         ----------
