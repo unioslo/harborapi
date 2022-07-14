@@ -15,24 +15,83 @@ def load_harbor_auth_file(path: Union[str, Path]) -> "HarborAuthFile":
     return HarborAuthFile.parse_obj(j)
 
 
-def save_authfile(path: Union[str, Path], authfile: "HarborAuthFile") -> None:
+def save_authfile(
+    path: Union[str, Path], authfile: "HarborAuthFile", overwrite: bool
+) -> None:
+    """Save the authfile to the given path.
+
+    Parameters
+    ----------
+    path : Union[str, Path]
+        Path to save the file to.
+    authfile : HarborAuthFile
+        Auth file definition to save.
+    overwrite : bool
+        Overwrite file if it exists.
+
+    Raises
+    ------
+    FileExistsError
+        A file with the given path already exists, and `overwrite` is `False`.
+    """
+    p = Path(path)
+    if p.exists() and not overwrite:
+        raise FileExistsError(f"File {p} already exists")
     with open(path, "w") as f:
-        json.dump(authfile.dict(), f)
+        f.write(authfile.json(indent=4))
 
 
 def new_authfile_from_robotcreate(
-    path: Union[str, Path], robotcreate: RobotCreate, robotcreated: RobotCreated
+    path: Union[str, Path],
+    robotcreate: RobotCreate,
+    robotcreated: RobotCreated,
+    overwrite: bool = False,
 ) -> None:
+    """Create a new authfile from the result of a create robot call.
+
+    Parameters
+    ----------
+    path : Union[str, Path]
+        Path to save the file to.
+    robotcreate : RobotCreate
+        The arguments used to create the robot.
+    robotcreated : RobotCreated
+        The result of the create robot call.
+    overwrite : bool, optional
+        Overwrite file if it exists.
+
+    See: save_authfile
+    """
     authfile = HarborAuthFile.parse_obj(
         {**(robotcreated.dict()), **(robotcreate.dict())}
     )
-    save_authfile(path, authfile)
+    save_authfile(path, authfile, overwrite=overwrite)
 
 
-def new_authfile_from_robot(path: Union[str, Path], robot: Robot, secret: str) -> None:
+def new_authfile_from_robot(
+    path: Union[str, Path],
+    robot: Robot,
+    secret: str,
+    overwrite: bool = False,
+) -> None:
+    """Create a new authfile from a Robot definition and a secret.
+
+    Parameters
+    ----------
+    path : Union[str, Path]
+        Path to save the file to.
+    robot : Robot
+        Robot definition.
+    secret : str
+        Secret to use for the robot.
+    overwrite : bool
+        Overwrite file if it exists.
+
+    See: save_authfile
+    """
     authfile = HarborAuthFile.parse_obj(robot.dict())
     authfile.secret = secret
-    save_authfile(path, authfile)
+    save_authfile(path, authfile, overwrite=overwrite)
 
 
 class HarborAction(BaseModel):

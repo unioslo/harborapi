@@ -8,7 +8,7 @@ from httpx import RequestError, Response
 from loguru import logger
 from pydantic import BaseModel, ValidationError
 
-from harborapi.auth import load_harbor_auth_file
+from harborapi.auth import load_harbor_auth_file, new_authfile_from_robotcreate
 from harborapi.models.models import Robot, RobotCreate, RobotCreated, RobotSec
 
 from .exceptions import BadRequest, HarborAPIException, NotFound, check_response_status
@@ -462,7 +462,12 @@ class HarborAsyncClient:
     # CATEGORY: robot
 
     # POST /robots
-    async def create_robot(self, robot: RobotCreate) -> RobotCreated:
+    async def create_robot(
+        self,
+        robot: RobotCreate,
+        path: Optional[Union[str, Path]] = None,
+        overwrite: bool = False,
+    ) -> RobotCreated:
         """Create a new robot account.
 
         NOTE
@@ -473,6 +478,11 @@ class HarborAsyncClient:
         ----------
         robot : RobotCreate
             The definition for the robot account to create.
+        path : Optional[Union[str, Path]]
+            Optional path to save the robot credentials to.
+        overwrite: bool
+            If True, overwrite the existing credentials file.
+            Has no effect if `path` is `None`.
 
         Returns
         -------
@@ -483,7 +493,13 @@ class HarborAsyncClient:
         j = handle_optional_json_response(resp)
         if not j:
             raise HarborAPIException("Server did not return a JSON response.")
-        return construct_model(RobotCreated, j)
+        robot_created = construct_model(RobotCreated, j)
+        if path:
+            new_authfile_from_robotcreate(
+                path, robot, robot_created, overwrite=overwrite
+            )
+            logger.debug("Saved robot credentials to {path}", path=path)
+        return robot_created
 
     # GET /robots
     async def get_robots(
