@@ -1,4 +1,4 @@
-# Geting Started
+# Getting Started
 
 This page contains examples on how to instantiate and use `HarborAsyncClient`.
 
