@@ -1,12 +1,8 @@
 from datetime import datetime, timezone
 from pathlib import Path
 
-from harborapi.auth import (
-    HarborAction,
-    HarborPermission,
-    HarborPermissionScope,
-    load_harbor_auth_file,
-)
+from harborapi.auth import load_harbor_auth_file
+from harborapi.models.models import Access, RobotPermission
 
 
 def test_load_harbor_auth_file(credentials_file: Path):
@@ -16,23 +12,14 @@ def test_load_harbor_auth_file(credentials_file: Path):
     assert auth_file.description == "Some description"
     assert auth_file.duration == 30
     assert auth_file.editable is True
-    assert auth_file.expires_at == datetime(
-        2022, 7, 31, 13, 20, 46, tzinfo=timezone.utc
-    )
+    assert auth_file.expires_at == 1659273646
     assert auth_file.secret == "bad-password"
-    assert auth_file.permission_scope == HarborPermissionScope(
-        access=[
-            HarborAction(action="list", resource="repository"),
-            HarborAction(action="pull", resource="repository"),
-        ],
-        cover_all=True,  # type: ignore
-    )
 
     assert auth_file.permissions == [
-        HarborPermission(
+        RobotPermission(
             access=[
-                HarborAction(action="list", resource="repository"),
-                HarborAction(action="pull", resource="repository"),
+                Access(action="list", resource="repository"),
+                Access(action="pull", resource="repository"),
             ],
             kind="project",
             namespace="*",

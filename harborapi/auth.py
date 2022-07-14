@@ -1,9 +1,10 @@
 import json
-from datetime import datetime
 from pathlib import Path
 from typing import List, Union
 
 from pydantic import BaseModel, Field
+
+from harborapi.models.models import Robot, RobotCreate, RobotCreated
 
 
 def load_harbor_auth_file(path: Union[str, Path]) -> "HarborAuthFile":
@@ -36,20 +37,7 @@ class HarborPermissionScope(BaseModel):
         allow_population_by_field_name = True
 
 
-class HarborAuthFile(BaseModel):
-    creation_time: datetime
-    description: str
-    disable: bool
-    duration: int  # in days
-    editable: bool
-    expires_at: datetime  # unix timestamp in source file
-    id: int
-    level: str
-    name: str
-    permissions: List[HarborPermission] = Field(default_factory=list)
-    update_time: datetime
-    permission_scope: HarborPermissionScope = Field(..., alias="permissionScope")
-    secret: str
-
+class HarborAuthFile(Robot):
     class Config:
         allow_population_by_field_name = True
+        extra = "allow"
