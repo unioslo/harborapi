@@ -6,7 +6,7 @@ In order to circumvent this limitation, one can create robot accounts through th
 
 ----
 
-This section is based on [this](https://github.com/goharbor/harbor/issues/14145#issuecomment-781006533) comment by Harbor developer [wy65701436](https://github.com/wy65701436). Also check out the [source code](https://github.com/goharbor/harbor/blob/main/src/common/rbac/const.go) for more information on all the possible resource permissions that can be granted to Robot accounts.
+This page is based on [this](https://github.com/goharbor/harbor/issues/14145#issuecomment-781006533) comment by Harbor developer [wy65701436](https://github.com/wy65701436). Also check out the [source code](https://github.com/goharbor/harbor/blob/main/src/common/rbac/const.go) for more information on all the possible resource permissions that can be granted to Robot accounts.
 
 All examples on this page will be using `harborapi` to create privileged robot accounts.
 
