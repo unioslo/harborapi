@@ -39,6 +39,7 @@ client = HarborAsyncClient(
 
 When [creating Robot accounts](https://goharbor.io/docs/1.10/working-with-projects/project-configuration/create-robot-accounts/), the robot account's credentials can be exported as a JSON file. The `credentials_file` parameter takes an argument specifying the path to such a file.
 
+
 ```py
 from harborapi import HarborAsyncClient
 
@@ -47,6 +48,10 @@ client = HarborAsyncClient(
     credentials_file="/path/to/file.json",
 )
 ```
+
+See [Creating Privileged Robot Accounts](creating-system-robot.md) for information about how to create Robot accounts with extended privileges using `harborapi`.
+
+
 ## Examples
 
 This section contains some basic examples showing the general usage of `harborapi`. Consult the [Endpoints Reference](../endpoints/_overview.md) for an overview of all the available client methods.
