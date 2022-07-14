@@ -30,7 +30,7 @@ Documentation is available [here](https://pederhan.github.io/harborapi/)
 - [ ] preheat
 - [ ] replication
 - [ ] label
-- [ ] robot
+- [x] robot
 - [ ] webhookjob
 - [ ] icon
 - [x] project
