@@ -2372,6 +2372,8 @@ class HarborAsyncClient:
         **kwargs: Any,
     ) -> str:
         """Bad workaround in order to have a cleaner API for text/plain responses."""
+        headers = headers or {}
+        headers.update({"Accept": "text/plain"})
         resp = await self._get(path, params=params, headers=headers, **kwargs)
         return resp  # type: ignore
 
