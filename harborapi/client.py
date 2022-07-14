@@ -9,6 +9,7 @@ from loguru import logger
 from pydantic import BaseModel, ValidationError
 
 from harborapi.auth import load_harbor_auth_file
+from harborapi.models.models import Robot, RobotCreate, RobotCreated, RobotSec
 
 from .exceptions import BadRequest, HarborAPIException, NotFound, check_response_status
 from .models import (
@@ -459,6 +460,141 @@ class HarborAsyncClient:
     # CATEGORY: replication
     # CATEGORY: label
     # CATEGORY: robot
+
+    # POST /robots
+    async def create_robot_account(self, robot: RobotCreate) -> RobotCreated:
+        """Create a new robot account.
+
+        NOTE
+        ----
+        This action requires a sysadmin account to perform.
+
+        Parameters
+        ----------
+        robot : RobotCreate
+            The definition for the robot account to create.
+
+        Returns
+        -------
+        RobotCreated
+            Information about the created robot account.
+        """
+        resp = await self.post("/robots", json=robot)
+        j = handle_optional_json_response(resp)
+        if not j:
+            raise HarborAPIException("Server did not return a JSON response.")
+        return construct_model(RobotCreated, j)
+
+    # GET /robots
+    async def get_robot_accounts(
+        self,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 10,
+    ) -> List[Robot]:
+        """Get all robot accounts, optionally filtered by query.
+
+        Parameters
+        ----------
+        query : Optional[str]
+            A query string to filter the resources.
+
+            Except the basic properties, the other supported queries includes:
+            * `"tags=*"` to list only tagged resources
+            * `"tags=nil"` to list only untagged resources
+            * `"tags=~v"` to list resources whose tag fuzzy matches "v"
+            * `"tags=v"` to list artifact whose tag exactly matches "v"
+            * `"labels=(id1, id2)"` to list resources that both labels with id1 and id2 are added to
+
+            The value of range and list can be:
+            * string(enclosed by `"` or `'`)
+            * integer
+            * time(in format `"2020-04-09 02:36:00"`)
+
+            All of these query patterns should be put in the query string
+            and separated by `","`. e.g. `"k1=v1,k2=~v2,k3=[min~max]"`
+        sort : Optional[str]
+            The sort order of the artifacts.
+        page : int
+            The page of results to return, default 1
+        page_size : int
+            The number of results to return per page, default 10
+
+        Returns
+        -------
+        List[Robot]
+            A list of registered robot accounts matching the query.
+        """
+        params = {
+            "page": page,
+            "page_size": page_size,
+            "query": query,
+            "sort": sort,
+        }
+        params = {k: v for k, v in params.items() if v is not None}
+        resp = await self.get("/robots", params=params)
+        return [construct_model(Robot, r) for r in resp]
+
+    # GET /robots/{robot_id}
+    async def get_robot_account(self, robot_id: int) -> Robot:
+        """Fetch a robot account by its ID.
+
+        Parameters
+        ----------
+        robot_id : int
+            The ID of the robot account to get.
+
+        Returns
+        -------
+        Robot
+            Information about the robot account.
+        """
+        resp = await self.get(f"/robots/{robot_id}")
+        return construct_model(Robot, resp)
+
+    # PUT /robots/{robot_id}
+    async def update_robot_account(self, robot_id: int, robot: Robot) -> None:
+        """Update a robot account.
+
+        Parameters
+        ----------
+        robot_id : int
+            The ID of the robot account to update.
+        robot : Robot
+            The new definition for the robot account.
+        """
+        await self.put(f"/robots/{robot_id}", json=robot)
+
+    # DELETE /robots/{robot_id}
+    async def delete_robot_account(
+        self, robot_id: int, missing_ok: bool = False
+    ) -> None:
+        """Delete a robot account.
+
+        Parameters
+        ----------
+        robot_id : int
+            The ID of the robot account to delete.
+        missing_ok : bool
+            Do not raise an error if the robot account does not exist.
+        """
+        await self.delete(f"/robots/{robot_id}", missing_ok=missing_ok)
+
+    # PATCH /robots/{robot_id}
+    async def update_robot_secret(self, robot_id: int, secret: str) -> RobotSec:
+        """Give the robot account a new secret.
+
+        Parameters
+        ----------
+        robot_id : int
+            The ID of the robot account to refresh.
+        secret : str
+            The new secret for the robot account.
+        """
+        resp = await self.patch(f"/robots/{robot_id}", json=RobotSec(secret=secret))
+        return construct_model(RobotSec, resp)
+
     # CATEGORY: webhookjob
     # CATEGORY: icon
 

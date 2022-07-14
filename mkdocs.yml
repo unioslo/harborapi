@@ -44,6 +44,7 @@ nav:
     - endpoints/quota.md
     - endpoints/registries.md
     - endpoints/repositories.md
+    - endpoints/robots.md
     - endpoints/scan.md
     - endpoints/scanall.md
     - endpoints/scanners.md
