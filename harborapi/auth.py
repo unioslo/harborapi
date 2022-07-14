@@ -15,6 +15,26 @@ def load_harbor_auth_file(path: Union[str, Path]) -> "HarborAuthFile":
     return HarborAuthFile.parse_obj(j)
 
 
+def save_authfile(path: Union[str, Path], authfile: "HarborAuthFile") -> None:
+    with open(path, "w") as f:
+        json.dump(authfile.dict(), f)
+
+
+def new_authfile_from_robotcreate(
+    path: Union[str, Path], robotcreate: RobotCreate, robotcreated: RobotCreated
+) -> None:
+    authfile = HarborAuthFile.parse_obj(
+        {**(robotcreated.dict()), **(robotcreate.dict())}
+    )
+    save_authfile(path, authfile)
+
+
+def new_authfile_from_robot(path: Union[str, Path], robot: Robot, secret: str) -> None:
+    authfile = HarborAuthFile.parse_obj(robot.dict())
+    authfile.secret = secret
+    save_authfile(path, authfile)
+
+
 class HarborAction(BaseModel):
     action: str
     resource: str
