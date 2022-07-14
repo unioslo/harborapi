@@ -25,7 +25,7 @@ Documentation is available [here](https://pederhan.github.io/harborapi/)
 - [x] user
 - [ ] gc
 - [x] scanAll
-- [ ] configure
+- [x] configure
 - [ ] usergroup
 - [ ] preheat
 - [ ] replication
