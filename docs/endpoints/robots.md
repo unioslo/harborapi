@@ -3,9 +3,9 @@
 ::: harborapi.client.HarborAsyncClient
     options:
         members:
-        - create_robot_account
-        - get_robot_accounts
-        - get_robot_account
-        - update_robot_account
-        - delete_robot_account
+        - create_robot
+        - get_robots
+        - get_robot
+        - update_robot
+        - delete_robot
         - update_robot_secret

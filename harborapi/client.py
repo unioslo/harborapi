@@ -462,7 +462,7 @@ class HarborAsyncClient:
     # CATEGORY: robot
 
     # POST /robots
-    async def create_robot_account(self, robot: RobotCreate) -> RobotCreated:
+    async def create_robot(self, robot: RobotCreate) -> RobotCreated:
         """Create a new robot account.
 
         NOTE
@@ -486,7 +486,7 @@ class HarborAsyncClient:
         return construct_model(RobotCreated, j)
 
     # GET /robots
-    async def get_robot_accounts(
+    async def get_robots(
         self,
         query: Optional[str] = None,
         sort: Optional[str] = None,
@@ -537,7 +537,7 @@ class HarborAsyncClient:
         return [construct_model(Robot, r) for r in resp]
 
     # GET /robots/{robot_id}
-    async def get_robot_account(self, robot_id: int) -> Robot:
+    async def get_robot(self, robot_id: int) -> Robot:
         """Fetch a robot account by its ID.
 
         Parameters
@@ -554,7 +554,7 @@ class HarborAsyncClient:
         return construct_model(Robot, resp)
 
     # PUT /robots/{robot_id}
-    async def update_robot_account(self, robot_id: int, robot: Robot) -> None:
+    async def update_robot(self, robot_id: int, robot: Robot) -> None:
         """Update a robot account.
 
         Parameters
@@ -567,9 +567,7 @@ class HarborAsyncClient:
         await self.put(f"/robots/{robot_id}", json=robot)
 
     # DELETE /robots/{robot_id}
-    async def delete_robot_account(
-        self, robot_id: int, missing_ok: bool = False
-    ) -> None:
+    async def delete_robot(self, robot_id: int, missing_ok: bool = False) -> None:
         """Delete a robot account.
 
         Parameters
