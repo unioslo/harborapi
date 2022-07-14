@@ -112,9 +112,9 @@ class HarborAsyncClient:
         credentials_file : Optional[Union[str, Path]]
             Path to a JSON-encoded credentials file from which to load credentials.
         logging : bool
-            Enable client logging with `Loguru`, by default False
+            Enable client logging with `Loguru`.
         config : Optional[Any]
-            (NYI) config, by default None
+            (NYI) config
         version : str
             Used to construct URL if the specified URL does not contain the version.
 
@@ -231,7 +231,7 @@ class HarborAsyncClient:
         scope : Optional[str]
             The scope for the permission
         relative : bool
-            Display resource paths relative to the scope, by default False
+            Display resource paths relative to the scope.
             Has no effect if `scope` is not specified
 
         Returns
@@ -388,7 +388,7 @@ class HarborAsyncClient:
         user_id : int
             The ID of the user to delete
         missing_ok : bool
-            Do not raise an error if the user does not exist, by default False
+            Do not raise an error if the user does not exist.
         """
         await self.delete(f"/users/{user_id}", missing_ok=missing_ok)
 
@@ -1736,7 +1736,7 @@ class HarborAsyncClient:
         registration_id : Union[int, str]
             The ID of the scanner to delete.
         missing_ok : bool
-            Whether to ignore 404 error when deleting the scanner, by default False.
+            Whether to ignore 404 error when deleting the scanner.
 
         Returns
         -------
@@ -2258,11 +2258,11 @@ class HarborAsyncClient:
         path : str
             URL path to resource
         params : Optional[dict]
-            Request parameters, by default None
+            Request parameters
         headers : Optional[dict]
-            Request headers, by default None
+            Request headers
         follow_links : bool
-            Enable pagination by following links in response header, by default True
+            Enable pagination by following links in response header
 
         Returns
         -------
