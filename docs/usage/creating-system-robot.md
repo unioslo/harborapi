@@ -47,7 +47,7 @@ RobotCreated(
     name='robot$from_api',
     secret='tBuDZ700tPkKLNQ0z1EAYndMOFEzvgM8',
     creation_time=datetime.datetime(2022, 7, 14, 10, 3, 40, 906000, tzinfo=datetime.timezone.utc),
-    expires_at=1660385020,q
+    expires_at=1660385020,
 )
 ```
 
