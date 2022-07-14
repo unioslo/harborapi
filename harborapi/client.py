@@ -213,7 +213,7 @@ class HarborAsyncClient:
         username : str
             The username to search for
         page : int
-            The page of results to return, default 1
+            The page of results to return
         page_size : int
             The number of results to return per page
         retrieve_all : bool
@@ -592,9 +592,9 @@ class HarborAsyncClient:
         sort : Optional[str]
             The sort order of the artifacts.
         page : int
-            The page of results to return, default 1
+            The page of results to return
         page_size : int
-            The number of results to return per page, default 10
+            The number of results to return per page
 
         Returns
         -------
@@ -763,9 +763,9 @@ class HarborAsyncClient:
         sort : Optional[str]
             The sort order of the artifacts.
         page : int
-            The page of results to return, default 1
+            The page of results to return
         page_size : int
-            The number of results to return per page, default 10
+            The number of results to return per page
         retrieve_all: bool
             If true, retrieve all the resources,
             otherwise, retrieve only the number of resources specified by `page_size`.
@@ -853,9 +853,9 @@ class HarborAsyncClient:
         with_detail : bool
             Return detailed information about the project.
         page : int
-            The page of results to return, default 1
+            The page of results to return
         page_size : int
-            The number of results to return per page, default 10
+            The number of results to return per page
         retrieve_all: bool
             If true, retrieve all the resources,
             otherwise, retrieve only the number of resources specified by `page_size`.
@@ -970,9 +970,9 @@ class HarborAsyncClient:
         sort : Optional[str]
             The sort order of the scanners.
         page : int
-            The page of results to return, default 1
+            The page of results to return
         page_size : int
-            The number of results to return per page, default 10
+            The number of results to return per page
         """
         headers = get_project_headers(project_name_or_id)
         params = {
@@ -1267,9 +1267,9 @@ class HarborAsyncClient:
         sort : Optional[str]
             The sort order of the artifacts.
         page : int
-            The page of results to return, default 1
+            The page of results to return
         page_size : int
-            The number of results to return per page, default 10
+            The number of results to return per page
         name: str: Optional[str]
             The name of the registry (deprecated, use `query` instead)
         retrieve_all: bool
@@ -1395,9 +1395,9 @@ class HarborAsyncClient:
         sort : Optional[str]
             The sort order of the tags. TODO: document this parameter
         page : int
-            The page of results to return, default 1
+            The page of results to return
         page_size : int
-            The number of results to return per page, default 10
+            The number of results to return per page
         with_signature : bool
             Whether to include the signature of the tag in the response
         with_immutable_status : bool
@@ -1469,9 +1469,9 @@ class HarborAsyncClient:
         sort : Optional[str]
             The sort order of the tags.
         page : int
-            The page of results to return, default 1
+            The page of results to return
         page_size : int
-            The number of results to return per page, default 10
+            The number of results to return per page
         retrieve_all: bool
             If true, retrieve all the resources,
             otherwise, retrieve only the number of resources specified by `page_size`.
@@ -1599,9 +1599,9 @@ class HarborAsyncClient:
         sort : Optional[str]
             The sort order of the artifacts.
         page : int
-            The page of results to return, default 1
+            The page of results to return
         page_size : int
-            The number of results to return per page, default 10
+            The number of results to return per page
         with_tag : bool
             Whether to include the tags of the artifact in the response
         with_label : bool
@@ -1620,8 +1620,8 @@ class HarborAsyncClient:
             The first mime type will be used when the report found for it.
             Currently the mime type supports:
 
-                * `'application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0'`
-                * `'application/vnd.security.vulnerability.report; version=1.1'`
+                * application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0
+                * application/vnd.security.vulnerability.report; version=1.1
         retrieve_all: bool
             If true, retrieve all the resources,
             otherwise, retrieve only the number of resources specified by `page_size`.
@@ -1709,13 +1709,9 @@ class HarborAsyncClient:
         reference : str
             The reference of the artifact, can be digest or tag
         page : int
-            The page of results to return, default 1
-            !!! warning
-                Unclear if this argument has any effect, even though it's in the API spec
+            The page of results to return
         page_size : int
-            The number of results to return per page, default 10
-            !!! warning
-                Unclear if this argument has any effect, even though it's in the API spec
+            The number of results to return per page
         with_tag : bool
             Whether to include the tags of the artifact in the response
         with_label : bool
@@ -1734,8 +1730,8 @@ class HarborAsyncClient:
             The first mime type will be used when the report found for it.
             Currently the mime type supports:
 
-                * `'application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0'`
-                * `'application/vnd.security.vulnerability.report; version=1.1'`
+                * application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0
+                * application/vnd.security.vulnerability.report; version=1.1
 
         Returns
         -------
@@ -1908,9 +1904,9 @@ class HarborAsyncClient:
         sort : Optional[str]
             The sort order of the scanners.
         page : int
-            The page of results to return, default 1
+            The page of results to return
         page_size : int
-            The number of results to return per page, default 10
+            The number of results to return per page
 
         Returns
         -------
@@ -2293,9 +2289,9 @@ class HarborAsyncClient:
             The sort method.
             TODO: add boilerplate sort documentation
         page : int
-            The page of results to return, default 1
+            The page of results to return
         page_size : int
-            The number of results to return per page, default 10
+            The number of results to return per page
         retrieve_all : bool
             If true, retrieve all the resources,
             otherwise, retrieve only the number of resources specified by `page_size`.
