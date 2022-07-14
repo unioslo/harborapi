@@ -1,6 +1,11 @@
 site_name: harborapi
+
+repo_url: https://github.com/pederhan/harborapi
+repo_name: pederhan/harborapi
+
 theme:
   name: "material"
+
 plugins:
 - search
 - autorefs
