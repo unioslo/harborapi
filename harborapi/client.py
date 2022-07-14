@@ -80,9 +80,7 @@ def construct_model(cls: Type[T], data: Any) -> T:
     try:
         return cls.parse_obj(data)
     except ValidationError as e:
-        logger.error(
-            "Failed to validate {} given {}, error: {}", str(cls.__class__), data, e
-        )
+        logger.error("Failed to construct {} with {}", cls, data)
         raise e
 
 
