@@ -12,7 +12,6 @@ class HarborAPIException(Exception):
     pass
 
 
-# FIXME: this SUCKS
 class StatusError(HarborAPIException):
     def __init__(self, errors: Optional[Errors] = None, *args, **kwargs):
         """Initialize a StatusError.
@@ -42,7 +41,7 @@ class StatusError(HarborAPIException):
         -------
         Optional[int]
             The status code of the underlying HTTPX exception, or None if
-            this exception was not raised from a HTTPX exception.
+            this exception was not raised from an HTTPX exception.
         """
         # should always return int, but we can't guarantee it
         try:

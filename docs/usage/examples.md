@@ -1,4 +1,4 @@
-# Examples
+# Geting Started
 
 This page contains examples on how to instantiate and use `HarborAsyncClient`.
 
@@ -8,6 +8,8 @@ This page contains examples on how to instantiate and use `HarborAsyncClient`.
 The client can be instatiated with either a username and password, a base64-encoded [HTTP Basic Access Authentication](https://en.wikipedia.org/wiki/Basic_access_authentication) credential string, or JSON-encoded Harbor credentials file.
 
 ### Username and Password
+
+Username and password (titled `secret` to conform with Harbor naming schemes) can be used by instantiating the client with the `username` and `secret` parameters. This is the most straight forward method of authenticating.
 
 ```py
 from harborapi import HarborAsyncClient
@@ -21,6 +23,9 @@ client = HarborAsyncClient(
 
 ### Basic Access Authentication Credentials
 
+In place of `username` and `secret`, a Base64-encoded [HTTP Basic Access Authentication](https://en.wikipedia.org/wiki/Basic_access_authentication) credentials string can be used to authenticate.
+This string is simply `username:secret` encoded to Base64, and as such provides no stronger security than username and password authentication; it only obscures the actual values.
+
 ```py
 from harborapi import HarborAsyncClient
 
@@ -32,6 +37,8 @@ client = HarborAsyncClient(
 
 ### Credentials File
 
+When [creating Robot accounts](https://goharbor.io/docs/1.10/working-with-projects/project-configuration/create-robot-accounts/), the robot account's credentials can be exported as a JSON file. The `credentials_file` parameter takes an argument specifying the path to such a file.
+
 ```py
 from harborapi import HarborAsyncClient
 
@@ -40,8 +47,11 @@ client = HarborAsyncClient(
     credentials_file="/path/to/file.json",
 )
 ```
+## Examples
 
-## Get Current User
+This section contains some basic examples showing the general usage of `harborapi`. Consult the [Endpoints Reference](../endpoints/_overview.md) for an overview of all the available client methods.
+
+### Get Current User
 
 ```py
 import asyncio
@@ -80,7 +90,7 @@ UserResp(
 )
 ```
 
-## Get Artifacts
+### Get Artifacts
 
 ```py
 await client.get_artifacts("project", "repository")

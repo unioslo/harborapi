@@ -20,8 +20,11 @@ from harborapi.exceptions import (
     BadRequest,
     Forbidden,
     NotFound,
+    MethodNotAllowed,
+    Conflict,
     Unauthorized,
     PreconditionFailed,
+    UnsupportedMediaType,
     InternalServerError,
     StatusError
 )
