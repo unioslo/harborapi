@@ -9,16 +9,18 @@ from loguru import logger
 from pydantic import BaseModel, ValidationError
 
 from harborapi.auth import load_harbor_auth_file, new_authfile_from_robotcreate
-from harborapi.models.models import Robot, RobotCreate, RobotCreated, RobotSec
 
 from .exceptions import BadRequest, HarborAPIException, NotFound, check_response_status
 from .models import (
     Accessory,
     Artifact,
     AuditLog,
+    Configurations,
+    ConfigurationsResponse,
     CVEAllowlist,
     GeneralInfo,
     HarborVulnerabilityReport,
+    InternalConfigurationsResponse,
     IsDefault,
     Label,
     OIDCTestReq,
@@ -38,6 +40,10 @@ from .models import (
     RegistryProviderInfo,
     RegistryUpdate,
     Repository,
+    Robot,
+    RobotCreate,
+    RobotCreated,
+    RobotSec,
     ScannerAdapterMetadata,
     ScannerRegistration,
     ScannerRegistrationReq,
@@ -455,6 +461,56 @@ class HarborAsyncClient:
         await self.post("/system/scanAll/stop")
 
     # CATEGORY: configure
+    # GET /internalconfig
+    async def get_internal_config(self) -> InternalConfigurationsResponse:
+        """
+        Get the internal configuration. Cannot be called by normal user accounts.
+
+        NOTE
+        ----
+        It is likely not possible to call this method, but it is included
+        here for completeness.
+
+        Returns
+        -------
+        InternalConfigurationsResponse
+            Internal system configuration.
+        """
+        resp = await self.get("/internalconfig")
+        return construct_model(InternalConfigurationsResponse, resp)
+
+    # PUT /internalconfig
+    async def update_config(self, config: Configurations) -> None:
+        """Fully or partially update the system configuration.
+
+        NOTE
+        ----
+        Requires admin privileges or a privileged Robot account.
+
+        Parameters
+        ----------
+        config : Configurations
+            The configuration map can contain a subset of the attributes
+            of the schema, which are to be updated.
+        """
+        await self.put("/configurations", json=config)
+
+    # GET /configurations
+    async def get_config(self) -> ConfigurationsResponse:
+        """Get the system configuration.
+
+        NOTE
+        ----
+        Requires admin privileges or a privileged Robot account.
+
+        Returns
+        -------
+        ConfigurationsResponse
+            The system configuration.
+        """
+        resp = await self.get("/configurations")
+        return construct_model(ConfigurationsResponse, resp)
+
     # CATEGORY: usergroup
     # CATEGORY: preheat
     # CATEGORY: replication

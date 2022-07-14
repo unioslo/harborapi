@@ -37,6 +37,7 @@ nav:
     - endpoints/_overview.md
     - endpoints/artifacts.md
     - endpoints/audit.md
+    - endpoints/configure.md
     - endpoints/cveallowlist.md
     - endpoints/health.md
     - endpoints/oidc.md
