@@ -31,6 +31,7 @@ nav:
     - usage/_intro.md
     - usage/examples.md
     - usage/exceptions.md
+    - usage/creating-system-robot.md
     - usage/sync-client.md
   - "Endpoints":
     - endpoints/_overview.md
