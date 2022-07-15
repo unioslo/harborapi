@@ -1,6 +1,6 @@
 # Sync Client
 
-When using the non-async client `HarborClient`, all methods are invoked identically to methods on `HarborAsyncClient`, except the `await` keyword in front of the method call is omitted.
+When using the non-async client [`HarborClient`][harborapi.HarborClient], all methods are invoked identically to methods on [`HarborAsyncClient`][harborapi.client.HarborAsyncClient], except the `await` keyword in front of the method call is omitted.
 
 ### Example
 

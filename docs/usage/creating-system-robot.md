@@ -4,14 +4,11 @@ By default, the Robot account creation process in the Harbor web interface only 
 
 In order to circumvent this limitation, one can create robot accounts through the API with system resource permissions that go beyond the options offered in the web interface.
 
-----
-
 This page is based on [this](https://github.com/goharbor/harbor/issues/14145#issuecomment-781006533) comment by Harbor developer [wy65701436](https://github.com/wy65701436). Also check out the [source code](https://github.com/goharbor/harbor/blob/main/src/common/rbac/const.go) for more information on all the possible resource permissions that can be granted to Robot accounts.
 
 All examples on this page will be using `harborapi` to create privileged robot accounts.
 
 ## Project Creation Privileges
-
 
 Following the example provided in the GitHub comment above, `harborapi` uses [`HarborAsyncClient.create_robot`][harborapi.client.HarborAsyncClient.create_robot] to achieve the same functionality:
 
@@ -64,3 +61,5 @@ By default, the file must not already exist. This can be overriden by adding `ov
 ```py
 await client.create_robot(RobotCreate(...), path="/path/to/file.json", overwrite=True)
 ```
+
+For more information, see [`HarborAsyncClient.create_robot`][harborapi.client.HarborAsyncClient.create_robot].

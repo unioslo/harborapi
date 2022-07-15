@@ -1,6 +1,6 @@
 # Endpoints Overview
 
-This section contains API documentation for the methods implementing the different Harbor API endpoints.
+This section contains API documentation for the methods implementing the different Harbor API endpoints. All methods described here are available on the [`HarborAsyncClient`][harborapi.client.HarborAsyncClient] class.
 
 ## Implemented Endpoints
 
