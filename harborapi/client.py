@@ -134,7 +134,7 @@ class HarborAsyncClient:
             self.credentials = credentials
         elif credentials_file:
             crfile = load_harbor_auth_file(credentials_file)
-            self.credentials = get_credentials(crfile.name, crfile.secret)
+            self.credentials = get_credentials(crfile.name, crfile.secret)  # type: ignore # load_harbor_auth_file guarantees these are not None
         else:
             raise ValueError(
                 "Must provide username and secret, credentials, or credentials_file"

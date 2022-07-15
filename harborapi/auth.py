@@ -12,7 +12,12 @@ def load_harbor_auth_file(path: Union[str, Path]) -> "HarborAuthFile":
         # parse without any guards against exceptions
         # pass the exception to the caller
         j = json.load(f)
-    return HarborAuthFile.parse_obj(j)
+    authfile = HarborAuthFile.parse_obj(j)
+    if not authfile.name:
+        raise ValueError("Field 'name' is required")
+    if not authfile.secret:
+        raise ValueError("Field 'secret' is required")
+    return authfile
 
 
 def save_authfile(
