@@ -2474,19 +2474,39 @@ class HarborAsyncClient:
             follow_links=follow_links,
             **kwargs,
         )
+        if not next_url:  # no pagination
+            return j
 
+        # Make sure j is a list
+        if not isinstance(j, list):
+            logger.warning(
+                "Unable to handle paginated results: Expected a list from 'GET %s', but got %s",
+                path,
+                type(j),
+            )
+            # TODO: add toggle for this coercion (coerce or throw exception)
+            #       or should we even accomodate this use-case? Always throw exception?
+            logger.info("Coercing value from %s to list", path)
+            j = [j]
+
+        # Send requests as long as we get next links
         while next_url:
             paginated, next_url = await self._get(
                 next_url,
-                params=params,
+                # don't pass params (they should be in next URL)
                 headers=headers,
                 follow_links=follow_links,
                 **kwargs,
             )
             if not isinstance(paginated, list):
-                paginated = [paginated]
-            if not isinstance(j, list):
-                j = [j]  # OR THROW EXCEPTION?
+                logger.warning(
+                    "Unable to handle paginated results: Expected a list from 'GET %s', but got %s",
+                    next_url,
+                    type(paginated),
+                )
+                # NOTE: we could also abort here, so we don't get partial results
+                #       but right now it's unclear whether this can ever happen
+                continue
             j.extend(paginated)
 
         return j
