@@ -9,6 +9,7 @@ from loguru import logger
 from pydantic import BaseModel, ValidationError
 
 from harborapi.auth import load_harbor_auth_file, new_authfile_from_robotcreate
+from harborapi.models.models import GCHistory
 
 from .exceptions import BadRequest, HarborAPIException, NotFound, check_response_status
 from .models import (
@@ -406,7 +407,105 @@ class HarborAsyncClient:
         """
         await self.delete(f"/users/{user_id}", missing_ok=missing_ok)
 
-    # CATEGORY: gc
+    # CATEGORY: gc (Garbage Collection)
+
+    # GET /system/gc/schedule
+    # Get gc's schedule.
+    async def get_gc_schedule(self) -> Schedule:
+        """Get Garbage Collection schedule.
+
+        Returns
+        -------
+        Schedule
+            The gc's schedule.
+        """
+        resp = await self.get("/system/gc/schedule")
+        return construct_model(Schedule, resp)
+
+    # POST /system/gc/schedule
+    # Create a gc schedule.
+    async def create_gc_schedule(self, schedule: Schedule) -> None:
+        """Create a Garbage Collection schedule.
+
+        Parameters
+        ----------
+        schedule : Schedule
+            The schedule to create
+        """
+        await self.post("/system/gc/schedule", json=schedule)
+
+    # PUT /system/gc/schedule
+    # Update gc's schedule.
+    async def update_gc_schedule(self, schedule: Schedule) -> None:
+        """Update the Garbage Collection schedule.
+
+        Parameters
+        ----------
+        schedule : Schedule
+            The new schedule to set
+        """
+        await self.put("/system/gc/schedule", json=schedule)
+
+    # GET /system/gc
+    # Get gc results.
+    async def get_gc_results(
+        self,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 10,
+    ) -> List[GCHistory]:
+        """Get Garbage Collection history.
+
+        Parameters
+        ----------
+        query : Optional[str]
+            A query string to filter the Garbage Collection logs.
+
+            Supported query patterns are:
+
+                * exact match(`"k=v"`)
+                * fuzzy match(`"k=~v"`)
+                * range(`"k=[min~max]"`)
+                * list with union releationship(`"k={v1 v2 v3}"`)
+                * list with intersection relationship(`"k=(v1 v2 v3)"`).
+
+            The value of range and list can be:
+
+                * string(enclosed by `"` or `'`)
+                * integer
+                * time(in format `"2020-04-09 02:36:00"`)
+
+            All of these query patterns should be put in the query string
+            and separated by `","`. e.g. `"k1=v1,k2=~v2,k3=[min~max]"`
+        sort : Optional[str]
+            The sort order of the logs.
+        page : int
+            The page of results to return
+        page_size : int
+            The number of results to return per page
+
+        Returns
+        -------
+        List[GCHistory]
+            List of Garbage Collection logs.
+        """
+        # TODO: refactor this and use with every method that uses queries + pagination
+        params = {
+            "q": query,
+            "sort": sort,
+            "page": page,
+            "page_size": page_size,
+        }
+        params = {k: v for k, v in params.items() if v is not None}
+        resp = await self.get("/system/gc")
+        return [construct_model(GCHistory, g) for g in resp]
+
+    # GET /system/gc/{gc_id}/log
+    # Get gc job log.
+
+    # GET /system/gc/{gc_id}
+    # Get gc status.
 
     # CATEGORY: scanAll
 
