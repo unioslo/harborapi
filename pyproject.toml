@@ -44,3 +44,7 @@ asyncio_mode = "auto"
 
 [tool.coverage.report]
 include = ["./harborapi/*.py", "./tests/*.py"]
+
+[tool.mypy]
+strict = true
+exclude = ["tests/"]
