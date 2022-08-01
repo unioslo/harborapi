@@ -134,9 +134,6 @@ class HarborAsyncClient:
             self.credentials = credentials
         elif credentials_file:
             crfile = load_harbor_auth_file(credentials_file)
-<<<<<<< HEAD
-            self.credentials = get_credentials(crfile.name, crfile.secret)  # type: ignore # load_harbor_auth_file guarantees these are not None
-=======
             # TODO: perform this check somewhere else?
             #       it's likely we will ALWAYS require a username and secret
             if not crfile.name:
@@ -144,7 +141,6 @@ class HarborAsyncClient:
             elif not crfile.secret:
                 raise ValueError("Credentials file missing value for 'secret' field")
             self.credentials = get_credentials(crfile.name, crfile.secret)
->>>>>>> 729b7c7 (Add None check for credentials in client __init__)
         else:
             raise ValueError(
                 "Must provide username and secret, credentials, or credentials_file"
@@ -685,7 +681,7 @@ class HarborAsyncClient:
     async def set_project_scanner(
         self, project_name_or_id: str, scanner_uuid: str
     ) -> None:
-        """Set one of the system configured scanner registration as the independent scanner of the specified project.
+        """Set one of the system configured scanner registration as the indepndent scanner of the specified project.
 
         Parameters
         ----------
