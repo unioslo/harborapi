@@ -104,10 +104,10 @@ async def test_get_pagination_large_mock(
         [{"username": "user1"}],
         headers={"link": '</api/v2.0/users?page=2>; rel="next"'},
     )
-    N_PAGES = 200
+    N_PAGES = 500
     for page in range(2, N_PAGES + 1):
         if page == N_PAGES:
-            headers = None
+            headers = {"link": f'</api/v2.0/users?page={page-1}>; rel="prev"'}
         else:
             headers = {"link": f'</api/v2.0/users?page={page+1}>; rel="next"'}
         httpserver.expect_oneshot_request(
@@ -127,7 +127,13 @@ async def test_get_pagination_no_follow(
     """Test pagination by mocking paginated /users results."""
     httpserver.expect_oneshot_request("/api/v2.0/users").respond_with_json(
         [{"username": "user1"}, {"username": "user2"}],
-        headers={"link": "/users?page=2"},
+        headers={"link": '</api/v2.0/users?page=2>; rel="next"'},
+    )
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/users", query_string=f"page=2"
+    ).respond_with_json(
+        [{"username": "user3"}],
+        headers={"link": '</api/v2.0/users?page=1>; rel="prev"'},
     )
     async_client.url = httpserver.url_for("/api/v2.0")
     users = await async_client.get("/users", follow_links=False)  # type: ignore
@@ -151,7 +157,10 @@ async def test_get_pagination_invalid_mock(
     # Next page does not return a list, so we ignore it
     httpserver.expect_oneshot_request(
         "/api/v2.0/users", query_string="page=2"
-    ).respond_with_json({"username": "user3"})
+    ).respond_with_json(
+        {"username": "user3"},
+        headers={"link": '</api/v2.0/users?page=1>; rel="prev"'},
+    )
     async_client.url = httpserver.url_for("/api/v2.0")
     users = await async_client.get("/users")  # type: ignore
     assert isinstance(users, list)
