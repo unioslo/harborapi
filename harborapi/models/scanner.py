@@ -272,7 +272,7 @@ class HarborVulnerabilityReport(BaseModel):
         default_factory=list, description="The list of vulnerabilities found."
     )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"HarborVulnerabilityReport(generated_at={self.generated_at}, artifact={self.artifact}, scanner={self.scanner}, severity={self.severity}, vulnerabilities=list(len={len(self.vulnerabilities)}))"
 
     @property

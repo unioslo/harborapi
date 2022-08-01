@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from httpx import HTTPStatusError, Response
 from loguru import logger
@@ -13,7 +13,7 @@ class HarborAPIException(Exception):
 
 
 class StatusError(HarborAPIException):
-    def __init__(self, errors: Optional[Errors] = None, *args, **kwargs):
+    def __init__(self, errors: Optional[Errors] = None, *args: Any, **kwargs: Any):
         """Initialize a StatusError.
 
         Parameters

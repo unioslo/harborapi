@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from pydantic import AnyUrl, BaseModel, Extra, Field, root_validator
 
@@ -211,7 +211,10 @@ class ScanOverview(BaseModel):
     with the dict assigned as an extra attribute. This behavior is not specified.
     """
 
-    def __new__(cls, *args, **kwargs):
+    # TODO: make this way less hacky
+    def __new__(  # type: ignore # mypy doesn't like __new__ that returns different classes
+        cls, *args: Any, **kwargs: Any
+    ) -> Union["ScanOverview", NativeReportSummary]:
         mime_types = (
             "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0",
             "application/vnd.security.vulnerability.report; version=1.1",

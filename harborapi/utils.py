@@ -11,7 +11,7 @@ from .types import JSONType
 
 def is_json(response: Response) -> bool:
     """Return True if the response body is JSON-encoded."""
-    return response.headers.get("content-type", "").startswith("application/json")
+    return response.headers.get("content-type", "").startswith("application/json")  # type: ignore # headers guaranteed to be a dict[str, str]
 
 
 def handle_optional_json_response(resp: Response) -> Optional[JSONType]:
@@ -25,7 +25,9 @@ def handle_optional_json_response(resp: Response) -> Optional[JSONType]:
     except JSONDecodeError as e:
         logger.error("Failed to parse JSON from {}: {}", resp.url, e)
         raise HarborAPIException("Failed to parse JSON from {}".format(resp.url)) from e
-    return j
+    # we assume Harbor API returns dict or list,
+    # if not, they are breaking their own schema and that is not our fault
+    return j  # type: ignore
 
 
 def urlencode_repo(repository_name: str) -> str:

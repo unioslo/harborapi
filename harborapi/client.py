@@ -19,7 +19,6 @@ from .models import (
     ConfigurationsResponse,
     CVEAllowlist,
     GeneralInfo,
-    HarborVulnerabilityReport,
     InternalConfigurationsResponse,
     IsDefault,
     Label,
@@ -60,6 +59,7 @@ from .models import (
     UserSearchRespItem,
     UserSysAdminFlag,
 )
+from .models.scanner import HarborVulnerabilityReport
 from .types import JSONType
 from .utils import (
     get_artifact_path,
@@ -342,7 +342,9 @@ class HarborAsyncClient:
         return urldecode_header(resp, "Location")
 
     # GET /users
-    async def get_users(self, sort: Optional[str] = None, **kwargs) -> List[UserResp]:
+    async def get_users(
+        self, sort: Optional[str] = None, **kwargs: Any
+    ) -> List[UserResp]:
         """Get all users.
 
         Parameters
