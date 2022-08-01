@@ -610,7 +610,7 @@ class HarborAsyncClient:
         params = {
             "page": page,
             "page_size": page_size,
-            "query": query,
+            "q": query,
             "sort": sort,
         }
         params = {k: v for k, v in params.items() if v is not None}
@@ -777,7 +777,7 @@ class HarborAsyncClient:
             otherwise, retrieve only the number of resources specified by `page_size`.
         """
         params = {
-            "query": query,
+            "q": query,
             "sort": sort,
             "page": page,
             "page_size": page_size,
@@ -867,7 +867,7 @@ class HarborAsyncClient:
             otherwise, retrieve only the number of resources specified by `page_size`.
         """
         params = {
-            "query": query,
+            "q": query,
             "sort": sort,
             "name": name,
             "public": public,
@@ -982,7 +982,7 @@ class HarborAsyncClient:
         """
         headers = get_project_headers(project_name_or_id)
         params = {
-            "query": query,
+            "q": query,
             "sort": sort,
             "page": page,
             "page_size": page_size,
@@ -1288,7 +1288,7 @@ class HarborAsyncClient:
             A list of Registry objects.
         """
         params = {
-            "query": query,
+            "q": query,
             "sort": sort,
             "page": page,
             "page_size": page_size,
@@ -2308,7 +2308,7 @@ class HarborAsyncClient:
             A list of repositories matching the query.
         """
         params = {
-            "query": query,
+            "q": query,
             "sort": sort,
             "page": page,
             "page_size": page_size,
@@ -2440,7 +2440,7 @@ class HarborAsyncClient:
             The list of audit logs.
         """
         params = {
-            "query": query,
+            "q": query,
             "sort": sort,
             "page": page,
             "page_size": page_size,
