@@ -134,7 +134,17 @@ class HarborAsyncClient:
             self.credentials = credentials
         elif credentials_file:
             crfile = load_harbor_auth_file(credentials_file)
+<<<<<<< HEAD
             self.credentials = get_credentials(crfile.name, crfile.secret)  # type: ignore # load_harbor_auth_file guarantees these are not None
+=======
+            # TODO: perform this check somewhere else?
+            #       it's likely we will ALWAYS require a username and secret
+            if not crfile.name:
+                raise ValueError("Credentials file missing value for 'name' field")
+            elif not crfile.secret:
+                raise ValueError("Credentials file missing value for 'secret' field")
+            self.credentials = get_credentials(crfile.name, crfile.secret)
+>>>>>>> 729b7c7 (Add None check for credentials in client __init__)
         else:
             raise ValueError(
                 "Must provide username and secret, credentials, or credentials_file"
@@ -2547,7 +2557,6 @@ class HarborAsyncClient:
         return data
 
     # NOTE: POST is not idempotent, should we still retry?
-    # TODO: fix abstraction of post/_post. Put everything into _post?
     @backoff.on_exception(backoff.expo, RequestError, max_tries=1)
     async def post(
         self,
