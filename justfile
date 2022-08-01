@@ -52,3 +52,8 @@ genapimodels: _fetchswagger _codegen
 # Generate new Scanner API models
 genscannermodels version=default_scanner_version: (_fetchswagger_scanner version) (_codegen_scanner version)
     # Finished fetching new definitions and generating models for the Harbor Pluggable Scanner API
+
+docs_addr := "localhost:8000"
+# Serve docs locally
+serve addr=docs_addr:
+    mkdocs serve -a {{docs_addr}}
