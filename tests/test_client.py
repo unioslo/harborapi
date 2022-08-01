@@ -99,12 +99,12 @@ async def test_get_pagination_mock(
 async def test_get_pagination_large_mock(
     async_client: HarborAsyncClient, httpserver: HTTPServer
 ):
-    """Test pagination with a large number of pages (100)."""
+    """Test pagination with a large number of pages (200)."""
     httpserver.expect_oneshot_request("/api/v2.0/users").respond_with_json(
         [{"username": "user1"}],
         headers={"link": '</api/v2.0/users?page=2>; rel="next"'},
     )
-    N_PAGES = 100
+    N_PAGES = 200
     for page in range(2, N_PAGES + 1):
         if page == N_PAGES:
             headers = None
@@ -117,7 +117,7 @@ async def test_get_pagination_large_mock(
     async_client.url = httpserver.url_for("/api/v2.0")
     users = await async_client.get("/users")  # type: ignore
     assert isinstance(users, list)
-    assert len(users) == 100
+    assert len(users) == N_PAGES
 
 
 @pytest.mark.asyncio

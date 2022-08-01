@@ -1,6 +1,6 @@
 import asyncio
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Type, TypeVar, Union
+from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar, Union
 
 import backoff
 import httpx
@@ -2467,13 +2467,29 @@ class HarborAsyncClient:
         follow_links: bool = True,
         **kwargs: Any,
     ) -> JSONType:
-        return await self._get(
+        j, next_url = await self._get(
             path,
             params=params,
             headers=headers,
             follow_links=follow_links,
             **kwargs,
         )
+
+        while next_url:
+            paginated, next_url = await self._get(
+                next_url,
+                params=params,
+                headers=headers,
+                follow_links=follow_links,
+                **kwargs,
+            )
+            if not isinstance(paginated, list):
+                paginated = [paginated]
+            if not isinstance(j, list):
+                j = [j]  # OR THROW EXCEPTION?
+            j.extend(paginated)
+
+        return j
 
     @backoff.on_exception(backoff.expo, RequestError, max_time=30)
     async def get_text(
@@ -2497,7 +2513,7 @@ class HarborAsyncClient:
         headers: Optional[Dict[str, Any]] = None,
         follow_links: bool = True,
         **kwargs: Any,
-    ) -> JSONType:
+    ) -> Tuple[JSONType, Optional[str]]:
         """Sends a GET request to the Harbor API.
         Returns JSON unless the response is text/plain.
 
@@ -2526,13 +2542,15 @@ class HarborAsyncClient:
         check_response_status(resp)
         j = handle_optional_json_response(resp)
         if j is None:
-            return resp.text  # type: ignore # FIXME: resolve this ASAP (use overload?)
+            return resp.text, None  # type: ignore # FIXME: resolve this ASAP (use overload?)
 
         # If we have "Link" in headers, we need to handle paginated results
         if (link := resp.headers.get("link")) and 'rel="next"' in link and follow_links:
             logger.debug("Handling paginated results. Header value: {}", link)
-            j = await self._handle_pagination(j, link)  # recursion (refactor?)
-        return j
+            # j = await self._handle_pagination(j, link)  # recursion (refactor?)
+            return j, parse_pagination_url(link)
+
+        return j, None
 
     async def _handle_pagination(self, data: JSONType, link: str) -> JSONType:
         """Handles paginated results by recursing until all results are returned."""
