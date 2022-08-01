@@ -1,6 +1,6 @@
 import asyncio
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Type, TypeVar, Union
+from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar, Union
 
 import backoff
 import httpx
@@ -2467,13 +2467,49 @@ class HarborAsyncClient:
         follow_links: bool = True,
         **kwargs: Any,
     ) -> JSONType:
-        return await self._get(
+        j, next_url = await self._get(
             path,
             params=params,
             headers=headers,
             follow_links=follow_links,
             **kwargs,
         )
+        if not next_url:  # no pagination
+            return j
+
+        # Make sure j is a list
+        if not isinstance(j, list):
+            logger.warning(
+                "Unable to handle paginated results: Expected a list from 'GET %s', but got %s",
+                path,
+                type(j),
+            )
+            # TODO: add toggle for this coercion (coerce or throw exception)
+            #       or should we even accomodate this use-case? Always throw exception?
+            logger.info("Coercing value from %s to list", path)
+            j = [j]
+
+        # Send requests as long as we get next links
+        while next_url:
+            paginated, next_url = await self._get(
+                next_url,
+                # don't pass params (they should be in next URL)
+                headers=headers,
+                follow_links=follow_links,
+                **kwargs,
+            )
+            if not isinstance(paginated, list):
+                logger.warning(
+                    "Unable to handle paginated results: Expected a list from 'GET %s', but got %s",
+                    next_url,
+                    type(paginated),
+                )
+                # NOTE: we could also abort here, so we don't get partial results
+                #       but right now it's unclear whether this can ever happen
+                continue
+            j.extend(paginated)
+
+        return j
 
     @backoff.on_exception(backoff.expo, RequestError, max_time=30)
     async def get_text(
@@ -2486,7 +2522,8 @@ class HarborAsyncClient:
         """Bad workaround in order to have a cleaner API for text/plain responses."""
         headers = headers or {}
         headers.update({"Accept": "text/plain"})
-        resp = await self._get(path, params=params, headers=headers, **kwargs)
+        resp, _ = await self._get(path, params=params, headers=headers, **kwargs)
+        # assume text is never paginated
         return resp  # type: ignore
 
     # TODO: refactor this method so it looks like the other methods, while still supporting pagination.
@@ -2497,7 +2534,7 @@ class HarborAsyncClient:
         headers: Optional[Dict[str, Any]] = None,
         follow_links: bool = True,
         **kwargs: Any,
-    ) -> JSONType:
+    ) -> Tuple[JSONType, Optional[str]]:
         """Sends a GET request to the Harbor API.
         Returns JSON unless the response is text/plain.
 
@@ -2526,33 +2563,14 @@ class HarborAsyncClient:
         check_response_status(resp)
         j = handle_optional_json_response(resp)
         if j is None:
-            return resp.text  # type: ignore # FIXME: resolve this ASAP (use overload?)
+            return resp.text, None  # type: ignore # FIXME: resolve this ASAP (use overload?)
 
-        # If we have "Link" in headers, we need to handle paginated results
-        if (link := resp.headers.get("link")) and 'rel="next"' in link and follow_links:
+        # If we have "Link" in headers, we need to parse the next page link
+        if follow_links and (link := resp.headers.get("link")):
             logger.debug("Handling paginated results. Header value: {}", link)
-            j = await self._handle_pagination(j, link)  # recursion (refactor?)
-        return j
+            return j, parse_pagination_url(link)
 
-    async def _handle_pagination(self, data: JSONType, link: str) -> JSONType:
-        """Handles paginated results by recursing until all results are returned."""
-        # Parse the link header value and get next page URL
-        next_url = parse_pagination_url(link)
-
-        # ignoring params and only using the next URL
-        # the next URL should contain the original params with page number adjusted
-        j = await self.get(next_url)
-
-        if not isinstance(j, list) or not isinstance(data, list):
-            logger.warning(
-                "Unable to handle paginated results, received non-list value. URL: {}",
-                next_url,
-            )
-            # TODO: add more diagnostics info here
-            return data
-
-        data.extend(j)
-        return data
+        return j, None
 
     # NOTE: POST is not idempotent, should we still retry?
     @backoff.on_exception(backoff.expo, RequestError, max_tries=1)
