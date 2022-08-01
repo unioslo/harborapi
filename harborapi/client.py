@@ -685,7 +685,7 @@ class HarborAsyncClient:
     async def set_project_scanner(
         self, project_name_or_id: str, scanner_uuid: str
     ) -> None:
-        """Set one of the system configured scanner registration as the indepndent scanner of the specified project.
+        """Set one of the system configured scanner registration as the independent scanner of the specified project.
 
         Parameters
         ----------
