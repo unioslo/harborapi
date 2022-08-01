@@ -2,6 +2,7 @@ site_name: harborapi
 
 repo_url: https://github.com/pederhan/harborapi
 repo_name: pederhan/harborapi
+edit_uri: edit/main/docs/
 
 theme:
   name: "material"
