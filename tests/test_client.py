@@ -99,7 +99,7 @@ async def test_get_pagination_mock(
 async def test_get_pagination_large_mock(
     async_client: HarborAsyncClient, httpserver: HTTPServer
 ):
-    """Test pagination with a large number of pages (200)."""
+    """Test pagination with a large number of pages."""
     httpserver.expect_oneshot_request("/api/v2.0/users").respond_with_json(
         [{"username": "user1"}],
         headers={"link": '</api/v2.0/users?page=2>; rel="next"'},
