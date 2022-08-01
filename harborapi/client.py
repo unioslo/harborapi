@@ -2522,7 +2522,8 @@ class HarborAsyncClient:
         """Bad workaround in order to have a cleaner API for text/plain responses."""
         headers = headers or {}
         headers.update({"Accept": "text/plain"})
-        resp = await self._get(path, params=params, headers=headers, **kwargs)
+        resp, _ = await self._get(path, params=params, headers=headers, **kwargs)
+        # assume text is never paginated
         return resp  # type: ignore
 
     # TODO: refactor this method so it looks like the other methods, while still supporting pagination.
