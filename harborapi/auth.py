@@ -99,28 +99,6 @@ def new_authfile_from_robot(
     save_authfile(path, authfile, overwrite=overwrite)
 
 
-class HarborAction(BaseModel):
-    action: str
-    resource: str
-
-
-class HarborPermission(BaseModel):
-    access: List[HarborAction] = Field(default_factory=list)
-    kind: str
-    namespace: str
-
-
-class HarborPermissionScope(BaseModel):
-    # NOTE: unclear if this model is different from HarborPermission,
-    # or if we should bake it into HarborPermission with default values
-    # for the fields
-    access: List[HarborAction] = Field(default_factory=list)
-    cover_all: bool = Field(..., alias="coverAll")
-
-    class Config:
-        allow_population_by_field_name = True
-
-
 class HarborAuthFile(Robot):
     class Config:
         allow_population_by_field_name = True
