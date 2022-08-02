@@ -9,6 +9,7 @@ from loguru import logger
 from pydantic import BaseModel, ValidationError
 
 from harborapi.auth import load_harbor_auth_file, new_authfile_from_robotcreate
+from harborapi.models.models import GCHistory
 
 from .exceptions import BadRequest, HarborAPIException, NotFound, check_response_status
 from .models import (
@@ -406,7 +407,154 @@ class HarborAsyncClient:
         """
         await self.delete(f"/users/{user_id}", missing_ok=missing_ok)
 
-    # CATEGORY: gc
+    # CATEGORY: gc (Garbage Collection)
+
+    # GET /system/gc/schedule
+    # Get gc's schedule.
+    async def get_gc_schedule(self) -> Schedule:
+        """Get Garbage Collection schedule.
+
+        Returns
+        -------
+        Schedule
+            The gc's schedule.
+        """
+        resp = await self.get("/system/gc/schedule")
+        return construct_model(Schedule, resp)
+
+    # POST /system/gc/schedule
+    # Create a gc schedule.
+    async def create_gc_schedule(self, schedule: Schedule) -> str:
+        """Create a Garbage Collection schedule.
+
+        Parameters
+        ----------
+        schedule : Schedule
+            The schedule to create
+
+        Returns
+        -------
+        str
+            The location of the created schedule.
+        """
+        resp = await self.post("/system/gc/schedule", json=schedule)
+        return urldecode_header(resp, "Location")
+
+    # PUT /system/gc/schedule
+    # Update gc's schedule.
+    async def update_gc_schedule(self, schedule: Schedule) -> None:
+        """Update the Garbage Collection schedule.
+
+        Parameters
+        ----------
+        schedule : Schedule
+            The new schedule to set
+        """
+        await self.put("/system/gc/schedule", json=schedule)
+
+    # GET /system/gc
+    # Get gc results.
+    async def get_gc_jobs(
+        self,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 10,
+    ) -> List[GCHistory]:
+        # TODO: limit number of results?
+        """Get Garbage Collection history for all jobs, optionally filtered by query.
+
+        Parameters
+        ----------
+        query : Optional[str]
+            A query string to filter the Garbage Collection results logs.
+
+            Supported query patterns are:
+
+                * exact match(`"k=v"`)
+                * fuzzy match(`"k=~v"`)
+                * range(`"k=[min~max]"`)
+                * list with union releationship(`"k={v1 v2 v3}"`)
+                * list with intersection relationship(`"k=(v1 v2 v3)"`).
+
+            The value of range and list can be:
+
+                * string(enclosed by `"` or `'`)
+                * integer
+                * time(in format `"2020-04-09 02:36:00"`)
+
+            All of these query patterns should be put in the query string
+            and separated by `","`. e.g. `"k1=v1,k2=~v2,k3=[min~max]"`
+        sort : Optional[str]
+            The sort order of the logs.
+        page : int
+            The page of results to return
+        page_size : int
+            The number of results to return per page
+
+        Returns
+        -------
+        List[GCHistory]
+            List of Garbage Collection logs.
+        """
+        # TODO: refactor this and use with every method that uses queries + pagination
+        params = {
+            "q": query,
+            "sort": sort,
+            "page": page,
+            "page_size": page_size,
+        }
+        params = {k: v for k, v in params.items() if v is not None}
+        resp = await self.get("/system/gc")
+        return [construct_model(GCHistory, g) for g in resp]
+
+    # GET /system/gc/{gc_id}/log
+    # Get gc job log.
+    async def get_gc_log(
+        self, gc_id: int, as_list: bool = True
+    ) -> Union[List[str], str]:
+        """Get log output for a specific Garbage Collection job.
+
+        Results are returned as a list of lines, or as a single string if
+        `as_list` is False.
+
+        Parameters
+        ----------
+        gc_id : int
+            The ID of the Garbage Collection job to get the log for
+        as_list : bool
+            If `True`, return the log as a list of lines, otherwise as single string.
+
+        Returns
+        -------
+        Union[List[str], str]
+            The log output for the Garbage Collection job.
+        """
+        resp = await self.get_text(f"/system/gc/{gc_id}/log")
+        if as_list:
+            return resp.splitlines()
+        return resp
+
+    # GET /system/gc/{gc_id}
+    # Get gc status.
+    async def get_gc_job(
+        self,
+        gc_id: int,
+    ) -> GCHistory:
+        """Get a specific Garbage Collection job.
+
+        Parameters
+        ----------
+        gc_id : int
+            The ID of the Garbage Collection job to get information about.
+
+        Returns
+        -------
+        GCHistory
+            Information about the Garbage Collection job.
+        """
+        resp = await self.get(f"/system/gc/{gc_id}")
+        return construct_model(GCHistory, resp)
 
     # CATEGORY: scanAll
 
@@ -610,7 +758,7 @@ class HarborAsyncClient:
         params = {
             "page": page,
             "page_size": page_size,
-            "query": query,
+            "q": query,
             "sort": sort,
         }
         params = {k: v for k, v in params.items() if v is not None}
@@ -777,7 +925,7 @@ class HarborAsyncClient:
             otherwise, retrieve only the number of resources specified by `page_size`.
         """
         params = {
-            "query": query,
+            "q": query,
             "sort": sort,
             "page": page,
             "page_size": page_size,
@@ -867,7 +1015,7 @@ class HarborAsyncClient:
             otherwise, retrieve only the number of resources specified by `page_size`.
         """
         params = {
-            "query": query,
+            "q": query,
             "sort": sort,
             "name": name,
             "public": public,
@@ -982,7 +1130,7 @@ class HarborAsyncClient:
         """
         headers = get_project_headers(project_name_or_id)
         params = {
-            "query": query,
+            "q": query,
             "sort": sort,
             "page": page,
             "page_size": page_size,
@@ -1288,7 +1436,7 @@ class HarborAsyncClient:
             A list of Registry objects.
         """
         params = {
-            "query": query,
+            "q": query,
             "sort": sort,
             "page": page,
             "page_size": page_size,
@@ -2308,7 +2456,7 @@ class HarborAsyncClient:
             A list of repositories matching the query.
         """
         params = {
-            "query": query,
+            "q": query,
             "sort": sort,
             "page": page,
             "page_size": page_size,
@@ -2440,7 +2588,7 @@ class HarborAsyncClient:
             The list of audit logs.
         """
         params = {
-            "query": query,
+            "q": query,
             "sort": sort,
             "page": page,
             "page_size": page_size,
