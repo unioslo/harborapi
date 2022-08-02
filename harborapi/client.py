@@ -9,7 +9,6 @@ from loguru import logger
 from pydantic import BaseModel, ValidationError
 
 from harborapi.auth import load_harbor_auth_file, new_authfile_from_robotcreate
-from harborapi.models.models import GCHistory
 
 from .exceptions import BadRequest, HarborAPIException, NotFound, check_response_status
 from .models import (
@@ -19,6 +18,7 @@ from .models import (
     Configurations,
     ConfigurationsResponse,
     CVEAllowlist,
+    GCHistory,
     GeneralInfo,
     InternalConfigurationsResponse,
     IsDefault,
@@ -55,6 +55,8 @@ from .models import (
     SystemInfo,
     Tag,
     UserCreationReq,
+    UserGroup,
+    UserGroupSearchItem,
     UserProfile,
     UserResp,
     UserSearchRespItem,
@@ -667,6 +669,130 @@ class HarborAsyncClient:
         return construct_model(ConfigurationsResponse, resp)
 
     # CATEGORY: usergroup
+    # GET /usergroups/search
+    # Search groups by groupname
+    async def search_usergroups(
+        self, group_name: str, page: int = 1, page_size: int = 10
+    ) -> List[UserGroupSearchItem]:
+        """Search for user groups by group name.
+
+        Parameters
+        ----------
+        group_name : str
+            The group name to search for.
+        page : int
+            The page of results to return
+        page_size : int
+            The number of results to return per page
+
+        Returns
+        -------
+        List[UserGroupSearchItem]
+            List of user groups.
+        """
+        params = {
+            "groupname": group_name,
+            "page": page,
+            "page_size": page_size,
+        }
+        params = {k: v for k, v in params.items() if v is not None}
+        resp = await self.get("/usergroups/search", params=params)
+        return [construct_model(UserGroupSearchItem, g) for g in resp]
+
+    # POST /usergroups
+    # Create user group
+    async def create_usergroup(self, usergroup: UserGroup) -> str:
+        """Create a new user group. Returns location of the created user group.
+
+        Parameters
+        ----------
+        usergroup : UserGroup
+            The user group to create
+
+        Returns
+        -------
+        str
+            The location of the created user group
+        """
+        resp = await self.post("/usergroups", json=usergroup)
+        return urldecode_header(resp, "Location")
+
+    # GET /usergroups
+    # Get all user groups information
+    async def get_usergroups(
+        self, ldap_group_dn: Optional[str] = None, page: int = 1, page_size: int = 10
+    ) -> List[UserGroup]:
+        """Get all user groups.
+
+        Parameters
+        ----------
+        ldap_group_dn : Optional[str]
+            The LDAP group DN to filter by.
+        page : int
+            The page of results to return
+        page_size : int
+            The number of results to return per page
+
+        Returns
+        -------
+        List[UserGroup]
+            List of user groups.
+        """
+        params = {
+            "ldap_group_dn": ldap_group_dn,
+            "page": page,
+            "page_size": page_size,
+        }
+        params = {k: v for k, v in params.items() if v is not None}
+        resp = await self.get("/usergroups", params=params)
+        return [construct_model(UserGroup, g) for g in resp]
+
+    # PUT /usergroups/{group_id}
+    # Update group information
+    async def update_usergroup(self, group_id: int, usergroup: UserGroup) -> None:
+        """Update group information.
+
+        Parameters
+        ----------
+        group_id : int
+            The group ID to update.
+        usergroup : UserGroup
+            The new definition for the usergroup.
+        """
+        await self.put(f"/usergroups/{group_id}", json=usergroup)
+
+    # GET /usergroups/{group_id}
+    # Get user group information
+    async def get_usergroup(self, group_id: int) -> UserGroup:
+        """Get a user group by ID.
+
+        Parameters
+        ----------
+        group_id : int
+            The group ID to get.
+
+        Returns
+        -------
+        UserGroup
+            The user group.
+        """
+        resp = await self.get(f"/usergroups/{group_id}")
+        return construct_model(UserGroup, resp)
+
+    # DELETE /usergroups/{group_id}
+    # Delete user group
+    async def delete_usergroup(self, group_id: int, missing_ok: bool = True) -> None:
+        """Delete a user group.
+
+        Parameters
+        ----------
+        group_id : int
+            The group ID to delete.
+        missing_ok : bool
+            If `True`, do not raise an error if the group does not exist.
+        """
+        await self.delete(f"/usergroups/{group_id}", missing_ok=missing_ok)
+
     # CATEGORY: preheat
     # CATEGORY: replication
     # CATEGORY: label

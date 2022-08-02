@@ -29,7 +29,7 @@ Documentation is available [here](https://pederhan.github.io/harborapi/)
 - [x] gc
 - [x] scanAll
 - [x] configure
-- [ ] usergroup
+- [x] usergroup
 - [ ] preheat
 - [ ] replication
 - [ ] label

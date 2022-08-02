@@ -68,6 +68,7 @@ nav:
       - endpoints/statistics.md
       - endpoints/systeminfo.md
       - endpoints/users.md
+      - endpoints/usergroups.md
   - "Reference":
       - reference/client.md
       - reference/exceptions.md
