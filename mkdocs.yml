@@ -13,21 +13,21 @@ theme:
     - navigation.expand
 
 plugins:
-- search
-- autorefs
-- mkdocstrings:
-    watch:
-      - harborapi
-    enable_inventory: true
-    handlers:
-      python:
-        import:
-        - https://docs.python.org/3/objects.inv
-        options:
-          docstring_style: numpy
-          members_order: source
-          docstring_section_style: table
-          show_source: false
+  - search
+  - autorefs
+  - mkdocstrings:
+      watch:
+        - harborapi
+      enable_inventory: true
+      handlers:
+        python:
+          import:
+            - https://docs.python.org/3/objects.inv
+          options:
+            docstring_style: numpy
+            members_order: source
+            docstring_section_style: table
+            show_source: false
 
 markdown_extensions:
   - pymdownx.highlight:
@@ -41,36 +41,37 @@ markdown_extensions:
 nav:
   - index.md
   - "Usage":
-    - usage/_intro.md
-    - usage/examples.md
-    - usage/exceptions.md
-    - usage/creating-system-robot.md
-    - usage/sync-client.md
+      - usage/_intro.md
+      - usage/examples.md
+      - usage/exceptions.md
+      - usage/creating-system-robot.md
+      - usage/sync-client.md
   - "Endpoints":
-    - endpoints/_overview.md
-    - endpoints/artifacts.md
-    - endpoints/audit.md
-    - endpoints/configure.md
-    - endpoints/cveallowlist.md
-    - endpoints/health.md
-    - endpoints/oidc.md
-    - endpoints/ping.md
-    - endpoints/projects.md
-    - endpoints/quota.md
-    - endpoints/registries.md
-    - endpoints/repositories.md
-    - endpoints/robots.md
-    - endpoints/scan.md
-    - endpoints/scanall.md
-    - endpoints/scanners.md
-    - endpoints/search.md
-    - endpoints/statistics.md
-    - endpoints/systeminfo.md
-    - endpoints/users.md
+      - endpoints/_overview.md
+      - endpoints/artifacts.md
+      - endpoints/audit.md
+      - endpoints/configure.md
+      - endpoints/gc.md
+      - endpoints/cveallowlist.md
+      - endpoints/health.md
+      - endpoints/oidc.md
+      - endpoints/ping.md
+      - endpoints/projects.md
+      - endpoints/quota.md
+      - endpoints/registries.md
+      - endpoints/repositories.md
+      - endpoints/robots.md
+      - endpoints/scan.md
+      - endpoints/scanall.md
+      - endpoints/scanners.md
+      - endpoints/search.md
+      - endpoints/statistics.md
+      - endpoints/systeminfo.md
+      - endpoints/users.md
   - "Reference":
-    - reference/client.md
-    - reference/exceptions.md
-    - "Models":
-      - reference/models/models.md
-      - reference/models/scanner.md
-    - reference/client_sync.md
+      - reference/client.md
+      - reference/exceptions.md
+      - "Models":
+          - reference/models/models.md
+          - reference/models/scanner.md
+      - reference/client_sync.md

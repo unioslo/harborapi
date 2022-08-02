@@ -424,15 +424,21 @@ class HarborAsyncClient:
 
     # POST /system/gc/schedule
     # Create a gc schedule.
-    async def create_gc_schedule(self, schedule: Schedule) -> None:
+    async def create_gc_schedule(self, schedule: Schedule) -> str:
         """Create a Garbage Collection schedule.
 
         Parameters
         ----------
         schedule : Schedule
             The schedule to create
+
+        Returns
+        -------
+        str
+            The location of the created schedule.
         """
-        await self.post("/system/gc/schedule", json=schedule)
+        resp = await self.post("/system/gc/schedule", json=schedule)
+        return urldecode_header(resp, "Location")
 
     # PUT /system/gc/schedule
     # Update gc's schedule.
@@ -448,19 +454,20 @@ class HarborAsyncClient:
 
     # GET /system/gc
     # Get gc results.
-    async def get_gc_results(
+    async def get_gc_jobs(
         self,
         query: Optional[str] = None,
         sort: Optional[str] = None,
         page: int = 1,
         page_size: int = 10,
     ) -> List[GCHistory]:
-        """Get Garbage Collection history.
+        # TODO: limit number of results?
+        """Get Garbage Collection history for all jobs, optionally filtered by query.
 
         Parameters
         ----------
         query : Optional[str]
-            A query string to filter the Garbage Collection logs.
+            A query string to filter the Garbage Collection results logs.
 
             Supported query patterns are:
 
@@ -503,9 +510,51 @@ class HarborAsyncClient:
 
     # GET /system/gc/{gc_id}/log
     # Get gc job log.
+    async def get_gc_log(
+        self, gc_id: int, as_list: bool = True
+    ) -> Union[List[str], str]:
+        """Get log output for a specific Garbage Collection job.
+
+        Results are returned as a list of lines, or as a single string if
+        `as_list` is False.
+
+        Parameters
+        ----------
+        gc_id : int
+            The ID of the Garbage Collection job to get the log for
+        as_list : bool
+            If `True`, return the log as a list of lines, otherwise as single string.
+
+        Returns
+        -------
+        Union[List[str], str]
+            The log output for the Garbage Collection job.
+        """
+        resp = await self.get_text(f"/system/gc/{gc_id}/log")
+        if as_list:
+            return resp.splitlines()
+        return resp
 
     # GET /system/gc/{gc_id}
     # Get gc status.
+    async def get_gc_job(
+        self,
+        gc_id: int,
+    ) -> GCHistory:
+        """Get a specific Garbage Collection job.
+
+        Parameters
+        ----------
+        gc_id : int
+            The ID of the Garbage Collection job to get information about.
+
+        Returns
+        -------
+        GCHistory
+            Information about the Garbage Collection job.
+        """
+        resp = await self.get(f"/system/gc/{gc_id}")
+        return construct_model(GCHistory, resp)
 
     # CATEGORY: scanAll
 

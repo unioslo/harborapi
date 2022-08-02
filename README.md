@@ -22,8 +22,11 @@ Documentation is available [here](https://pederhan.github.io/harborapi/)
 
 ## Implemented endpoints
 
+<!-- - [ ] Products
+- [ ] Chart Repository
+- [ ] Label -->
 - [x] user
-- [ ] gc
+- [x] gc
 - [x] scanAll
 - [x] configure
 - [ ] usergroup
