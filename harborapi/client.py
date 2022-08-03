@@ -95,6 +95,7 @@ class HarborAsyncClient:
         secret: Optional[str] = None,
         credentials: Optional[str] = None,
         credentials_file: Optional[Union[str, Path]] = None,
+        follow_redirects: bool = True,
         logging: bool = False,
         config: Optional[Any] = None,  # NYI
         version: str = "2.0",
@@ -119,6 +120,9 @@ class HarborAsyncClient:
             authentication in place of `username` and `secret`.
         credentials_file : Optional[Union[str, Path]]
             Path to a JSON-encoded credentials file from which to load credentials.
+        follow_redirects : bool
+            If True, follow redirects when making requests.
+            Allows for coercion from HTTP to HTTPS.
         logging : bool
             Enable client logging with `Loguru`.
         config : Optional[Any]
@@ -162,7 +166,7 @@ class HarborAsyncClient:
 
         self.url = url.strip("/")  # make sure we haven't added a trailing slash again
         self.config = config
-        self.client = httpx.AsyncClient()
+        self.client = httpx.AsyncClient(follow_redirects=follow_redirects)
 
         # NOTE: make env var?
         if logging:
@@ -794,7 +798,42 @@ class HarborAsyncClient:
         await self.delete(f"/usergroups/{group_id}", missing_ok=missing_ok)
 
     # CATEGORY: preheat
+
     # CATEGORY: replication
+
+    # PUT /replication/executions/{id}
+    # Stop the specific replication execution
+
+    # GET /replication/executions/{id}
+    # Get the specific replication execution
+
+    # GET /replication/executions/{id}/tasks
+    # List replication tasks for a specific execution
+
+    # POST /replication/policies
+    # Create a replication policy
+
+    # GET /replication/policies
+    # List replication policies
+
+    # POST /replication/executions
+    # Start one replication execution
+
+    # GET /replication/executions
+    # List replication executions
+
+    # PUT /replication/policies/{id}
+    # Update the replication policy
+
+    # GET /replication/policies/{id}
+    # Get the specific replication policy
+
+    # DELETE /replication/policies/{id}
+    # Delete the specific replication policy
+
+    # GET /replication/executions/{id}/tasks/{task_id}/log
+    # Get the log of the specific replication task
+
     # CATEGORY: label
     # CATEGORY: robot
 
