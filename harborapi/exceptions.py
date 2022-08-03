@@ -124,7 +124,7 @@ def check_response_status(response: Response, missing_ok: bool = False) -> None:
             500: InternalServerError,
         }
         exc = exceptions.get(status_code, StatusError)
-        raise exc from e
+        raise exc(errors, *e.args) from e
 
 
 def try_parse_errors(response: Response) -> Optional[Errors]:
