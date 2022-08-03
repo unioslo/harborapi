@@ -7,6 +7,7 @@
         - get_artifact_tags
         - delete_artifact_tag
         - get_artifact_vulnerabilities
+        - get_artifact_build_history
         - get_artifact_accessories
         - copy_artifact
         - get_artifacts

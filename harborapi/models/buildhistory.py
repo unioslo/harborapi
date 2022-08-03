@@ -2,18 +2,14 @@
 The models in this module are _NOT_ automatically generated."""
 
 from datetime import datetime
-from typing import List
+from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
+# Unclear what is optional and what isn't
 class BuildHistoryEntry(BaseModel):
     created: datetime
     created_by: str
-    empty_layer: bool
-
-
-class BuildHistory(BaseModel):
-    """Returned by GET /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/build_history"""
-
-    __root__: List[BuildHistoryEntry] = Field(default_factory=list)
+    author: Optional[str] = None
+    empty_layer: bool = False

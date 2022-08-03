@@ -9,6 +9,7 @@ from loguru import logger
 from pydantic import BaseModel, ValidationError
 
 from harborapi.auth import load_harbor_auth_file, new_authfile_from_robotcreate
+from harborapi.models.buildhistory import BuildHistoryEntry
 
 from .exceptions import BadRequest, HarborAPIException, NotFound, check_response_status
 from .models import (
@@ -99,7 +100,6 @@ class HarborAsyncClient:
         logging: bool = False,
         config: Optional[Any] = None,  # NYI
         version: str = "2.0",
-        **kwargs: Any,
     ) -> None:
         """Initialize a new HarborAsyncClient with either a username and secret,
         an authentication token, or a credentials file.
@@ -2166,6 +2166,36 @@ class HarborAsyncClient:
             return None
 
         return construct_model(HarborVulnerabilityReport, report)
+
+    # GET /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/build_history
+    async def get_artifact_build_history(
+        self, project_name: str, repository_name: str, reference: str
+    ) -> List[BuildHistoryEntry]:
+        """Get the build history for an artifact.
+
+        Parameters
+        ----------
+        project_name : str
+            The name of the project
+        repository_name : str
+            The name of the repository
+        reference : str
+            The reference of the artifact, can be digest or tag
+
+        Returns
+        -------
+        BuildHistory
+            The build history for the artifact
+        """
+        path = get_artifact_path(project_name, repository_name, reference)
+        url = f"{path}/additions/build_history"
+        resp = await self.get(url)
+        return [construct_model(BuildHistoryEntry, build) for build in resp]
+
+    # NYI:
+    # GET /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/values.yaml
+    # GET /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/readme.md
+    # GET /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/dependencies
 
     # CATEGORY: immutable
     # CATEGORY: retention

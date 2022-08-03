@@ -9,6 +9,7 @@ from pytest_httpserver import HTTPServer
 from harborapi.client import HarborAsyncClient
 from harborapi.exceptions import StatusError
 from harborapi.models import HarborVulnerabilityReport
+from harborapi.models.buildhistory import BuildHistoryEntry
 from harborapi.models.models import Accessory, Artifact, Label, Tag
 
 from ..strategies.artifact import get_hbv_strategy
@@ -69,9 +70,30 @@ async def test_get_artifact_vulnerabilities_mock(
     r = await async_client.get_artifact_vulnerabilities(
         "testproj", "testrepo", "latest"
     )
-    # TODO: add test for empty response ('{}')
     # TODO: specify MIME type when testing?
     assert r == report
+
+
+@pytest.mark.asyncio
+@given(st.lists(st.builds(BuildHistoryEntry)))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+async def test_get_artifact_build_history_mock(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+    build_history: List[BuildHistoryEntry],
+):
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/additions/build_history",
+        method="GET",
+    ).respond_with_data(
+        json_from_list(build_history),
+        content_type="application/json",
+    )
+    async_client.url = httpserver.url_for("/api/v2.0")
+    resp = await async_client.get_artifact_build_history(
+        "testproj", "testrepo", "latest"
+    )
+    assert build_history == resp
 
 
 @pytest.mark.asyncio
