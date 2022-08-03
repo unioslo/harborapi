@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+from collections import Counter
 from datetime import datetime
 from enum import Enum
 from typing import (
@@ -298,6 +299,14 @@ class HarborVulnerabilityReport(BaseModel):
     @property
     def low(self) -> List[VulnerabilityItem]:
         return self.vulnerabilities_by_severity(Severity.low)
+
+    @property
+    def distribution(self) -> Counter[Severity]:
+        dist = Counter()  # type: Counter[Severity]
+        for vulnerability in self.vulnerabilities:
+            if vulnerability.severity:
+                dist[vulnerability.severity] += 1
+        return dist
 
     def vulnerabilities_by_severity(
         self, severity: Severity
