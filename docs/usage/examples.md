@@ -131,7 +131,19 @@ Produces:
 ]
 ```
 
-Passing `with_scan_overview=True` will also include a `NativeReportSummary` if possible (otherwise `ScanOverview`) along with the artifact if the artifact has a scan report associated with it.
+#### Filter By Tag
+
+Providing an argument for `query` can help narrow down the results. For example, if you only want to retrieve artifacts tagged `latest`, you can pass `"tags=latest"` to `query`:
+
+```py
+await client.get_artifacts("project", "repository", query="tags=latest")
+```
+
+See [`HarborAsyncClient.get_artifacts`][harborapi.HarborAsyncClient.get_artifacts] for more information about possible queries.
+
+#### Including Scan Overview
+
+Passing `with_scan_overview=True` will also include a [`NativeReportSummary`][harborapi.models.NativeReportSummary] if possible (otherwise [`ScanOverview`][harborapi.models.ScanOverview]) along with the artifact if the artifact has a scan report associated with it.
 
 ```py
 await client.get_artifacts("project", "repository", with_scan_overview=True)

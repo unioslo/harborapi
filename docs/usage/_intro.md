@@ -4,7 +4,7 @@
 
 `harborapi` is predominantly focused on providing an async API for interacting with the Harbor API. The various code snippets on these pages all assume the instantiated client is [`HarborAsyncClient`][harborapi.client.HarborAsyncClient], and it is running within a coroutine where `await` can be used.
 
-If you only intend to use the Async Client, skip ahead to [Getting Started](getting-started.md).
+If you only intend to use the Async Client, skip ahead to [Getting Started](examples.md).
 
 ## Non-Async Client
 
