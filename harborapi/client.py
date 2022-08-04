@@ -1950,8 +1950,10 @@ class HarborAsyncClient:
         List[Artifact]
             A list of artifacts in the repository matching the query.
         """
-        path = f"/projects/{project_name}/repositories/{repository_name}/artifacts"
+        path = f"{get_repo_path(project_name, repository_name)}/artifacts"
         params = {
+            "q": query,
+            "sort": sort,
             "page": page,
             "page_size": page_size,
             "with_tag": with_tag,
@@ -1960,13 +1962,10 @@ class HarborAsyncClient:
             "with_signature": with_signature,
             "with_immutable_status": with_immutable_status,
             "with_accessory": with_accessory,
-        }  # type: Dict[str, Union[str, int, bool]]
-        if query:
-            params["q"] = query
-        if sort:
-            params["sort"] = sort
+        }
+        params = {k: v for k, v in params.items() if v is not None}
         resp = await self.get(
-            f"{path}",
+            path,
             params=params,
             headers={"X-Accept-Vulnerabilities": mime_type},
             follow_links=retrieve_all,
