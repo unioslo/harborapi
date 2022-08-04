@@ -2608,12 +2608,13 @@ class HarborAsyncClient:
         page_size: int = 10,
         retrieve_all: bool = True,
     ) -> List[Repository]:
-        """Get a list of repositories
+        """Get a list of all repositories, optionally only in a specific project.
 
         Parameters
         ----------
-        project_name : str
-            The name of the project.
+        project_name : Optional[str]
+            The name of the project to retrieve repositories from.
+            If None, retrieve repositories from all projects.
         query : str
             The query string to filter the repositories.
 
