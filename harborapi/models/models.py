@@ -8,6 +8,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
+from loguru import logger
 from pydantic import AnyUrl, BaseModel, Extra, Field, root_validator
 
 
@@ -91,6 +92,50 @@ class Repository(BaseModel):
     update_time: Optional[datetime] = Field(
         None, description="The update time of the repository"
     )
+
+    @property
+    def base_name(self) -> Optional[str]:
+        """The repository name without the project name
+
+        Returns
+        -------
+        Optional[str]
+            The basename of the repository name
+        """
+        s = self.split_name()
+        return s[1] if s else None
+
+    @property
+    def project_name(self) -> Optional[str]:
+        """The name of the project that the repository belongs to
+
+        Returns
+        -------
+        Optional[str]
+            The name of the project that the repository belongs to
+        """
+        s = self.split_name()
+        return s[0] if s else None
+
+    # TODO: cache?
+    def split_name(self) -> Optional[List[str]]:
+        """Split name into tuple of project and repository name
+
+        Returns
+        -------
+        Optional[List[str]]
+            The tuple of <project> and <repo>
+        """
+        if not self.name:
+            return None
+        components = self.name.split("/", 1)
+        if len(components) == 1:  # no slash in name
+            # Shouldn't happen, but we account for it anyway
+            logger.warning(
+                "Repository '{}' name is not in the format <project>/<repo>", self.name
+            )
+            return None
+        return components
 
 
 class Tag(BaseModel):
