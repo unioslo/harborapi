@@ -207,7 +207,8 @@ class VulnerabilityItem(BaseModel):
         scanner: Optional[Scanner],
         version: int = 3,
         vendor_priority: Iterable[str] = ("nvd", "redhat"),
-    ) -> Optional[float]:
+        default: float = 0.0,
+    ) -> float:
         """The default scanner Trivy, as of version 0.29.1, does not use the
         preferred_cvss field.
 
@@ -228,15 +229,15 @@ class VulnerabilityItem(BaseModel):
         # fallback to the scanner-specific CVSS score
         # TODO: refactor: move to a separate function
         if not scanner:
-            return None
+            return default
 
         if scanner.name == "Trivy":
             if self.vendor_attributes is None:
-                return None
+                return default
 
             cvss_data = self.vendor_attributes.get("CVSS")
             if not cvss_data:
-                return None
+                return default
 
             for prio in vendor_priority:
                 # Trivy uses the vendor name as the key for the CVSS data
@@ -249,7 +250,10 @@ class VulnerabilityItem(BaseModel):
                 elif version == 2:
                     return vendor_cvss.get("V2Score")
 
-        return None
+        # Other scanners here
+        # ...
+
+        return default
 
 
 class ErrorResponse(BaseModel):
