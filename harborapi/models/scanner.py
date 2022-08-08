@@ -204,7 +204,7 @@ class VulnerabilityItem(BaseModel):
 
     @property
     def fixable(self) -> bool:
-        return self.fix_version is not None
+        return bool(self.fix_version)  # None and empty string are False
 
     def get_cvss_score(
         self,
