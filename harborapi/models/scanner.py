@@ -202,6 +202,10 @@ class VulnerabilityItem(BaseModel):
     )
     vendor_attributes: Optional[Dict[str, Any]] = None
 
+    @property
+    def fixable(self) -> bool:
+        return self.fix_version is not None
+
     def get_cvss_score(
         self,
         scanner: Optional[Scanner],
@@ -282,11 +286,11 @@ class HarborVulnerabilityReport(BaseModel):
 
     @property
     def fixable(self) -> List[VulnerabilityItem]:
-        return [v for v in self.vulnerabilities if v.fix_version]
+        return [v for v in self.vulnerabilities if v.fixable]
 
     @property
     def unfixable(self) -> List[VulnerabilityItem]:
-        return [v for v in self.vulnerabilities if not v.fix_version]
+        return [v for v in self.vulnerabilities if not v.fixable]
 
     @property
     def critical(self) -> List[VulnerabilityItem]:
