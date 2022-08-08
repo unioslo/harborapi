@@ -208,7 +208,7 @@ class VulnerabilityItem(BaseModel):
 
     def get_cvss_score(
         self,
-        scanner: Optional[Scanner],
+        scanner: Union[Optional[Scanner], str] = "Trivy",
         version: int = 3,
         vendor_priority: Iterable[str] = ("nvd", "redhat"),
         default: float = 0.0,
@@ -232,14 +232,23 @@ class VulnerabilityItem(BaseModel):
 
         # fallback to the scanner-specific CVSS score
         # TODO: refactor: move to a separate function
+
+        # Scanner is an optional field in the spec,
+        # but it's likely that it will always be present,
+        # since there is no vulnerability without a scanner.
         if not scanner:
             return default
 
-        if scanner.name == "Trivy":
+        if isinstance(scanner, str):
+            scanner_name = scanner
+        elif isinstance(scanner, Scanner):
+            scanner_name = scanner.name
+
+        if scanner_name == "Trivy":
             if self.vendor_attributes is None:
                 return default
 
-            cvss_data = self.vendor_attributes.get("CVSS")
+            cvss_data = self.vendor_attributes.get("CVSS", default)
             if not cvss_data:
                 return default
 
@@ -250,9 +259,9 @@ class VulnerabilityItem(BaseModel):
                     continue
                 # NOTE: we can't guarantee these values are floats (dangerous)
                 if version == 3:
-                    return vendor_cvss.get("V3Score")
+                    return vendor_cvss.get("V3Score", default)
                 elif version == 2:
-                    return vendor_cvss.get("V2Score")
+                    return vendor_cvss.get("V2Score", default)
 
         # Other scanners here
         # ...
