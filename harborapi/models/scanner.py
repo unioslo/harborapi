@@ -329,7 +329,19 @@ class HarborVulnerabilityReport(BaseModel):
         """
         return list(
             filter(
-                None.__ne__,
-                [v.get_cvss_score(self.scanner) for v in self.vulnerabilities],
+                None.__ne__, # type: ignore
+                [v.get_cvss_score(self.scanner) for v in self.vulnerabilities], # type: ignore
             )
         )
+
+    def most_severe_vulnerabilities(self, n: int = 5) -> List[VulnerabilityItem]:
+        """Returns the n most severe vulnerabilities.
+
+        Returns
+        -------
+        List[VulnerabilityItem]
+            The n most severe vulnerabilities.
+        """
+        return sorted(
+            self.vulnerabilities, key=lambda v: v.get_cvss_score(self.scanner), reverse=True
+        )[:n]
