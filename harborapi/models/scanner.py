@@ -329,19 +329,33 @@ class HarborVulnerabilityReport(BaseModel):
         """
         return list(
             filter(
-                None.__ne__, # type: ignore
-                [v.get_cvss_score(self.scanner) for v in self.vulnerabilities], # type: ignore
+                None.__ne__,  # type: ignore
+                [v.get_cvss_score(self.scanner) for v in self.vulnerabilities],  # type: ignore
             )
         )
 
-    def most_severe_vulnerabilities(self, n: int = 5) -> List[VulnerabilityItem]:
+    def top_vulns(self, n: int = 5, fixable: bool = False) -> List[VulnerabilityItem]:
         """Returns the n most severe vulnerabilities.
+
+
+        Parameters
+        ----------
+        n : int
+            The maximum number of vulnerabilities to return.
+        fixable : bool
+            If `True`, only vulnerabilities with a fix version are returned.
 
         Returns
         -------
         List[VulnerabilityItem]
             The n most severe vulnerabilities.
+
         """
+        # TODO: implement UNfixable
+        if fixable:
+            vulns = self.fixable
+        else:
+            vulns = self.vulnerabilities
         return sorted(
-            self.vulnerabilities, key=lambda v: v.get_cvss_score(self.scanner), reverse=True
+            vulns, key=lambda v: v.get_cvss_score(self.scanner), reverse=True
         )[:n]
