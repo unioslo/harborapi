@@ -268,6 +268,33 @@ class VulnerabilityItem(BaseModel):
 
         return default
 
+    def get_severity(
+        self,
+        scanner: Union[Optional[Scanner], str] = "Trivy",
+        vendor_priority: Iterable[str] = ("nvd", "redhat"),
+    ) -> Severity:
+        """Returns the CVSS V3 severity of the vulnerability based on a specific vendor.
+        If no vendor is specified, the default vendor priority is used (NVD over RedHat).
+
+        With Trivy 0.29.1, the `severity` field is based on the Red Hat vulnerability rating.
+        This attempts to return the severity based on a user-provided vendor priority.
+
+        TODO: improve documentation for the what and why of this method
+        """
+        cvss_score = self.get_cvss_score(
+            scanner=scanner, vendor_priority=vendor_priority
+        )
+        if cvss_score == 0.0:
+            return Severity.unknown
+        elif cvss_score < 3.0:
+            return Severity.low
+        elif cvss_score < 6.0:
+            return Severity.medium
+        elif cvss_score < 8.0:
+            return Severity.high
+        else:
+            return Severity.critical
+
 
 class ErrorResponse(BaseModel):
     error: Optional[Error] = None
