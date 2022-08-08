@@ -313,25 +313,19 @@ class HarborVulnerabilityReport(BaseModel):
     ) -> List[VulnerabilityItem]:
         return [v for v in self.vulnerabilities if v.severity == severity]
 
-    def get_cvss_scores(
-        self, ignore_none: bool = True
-    ) -> Union[List[float], List[Optional[float]]]:
+    @property
+    def cvss_scores(self) -> List[float]:
         """Returns a list of CVSS scores for each vulnerability.
-
-        Parameters
-        ----
-        ignore_none: bool
-            Omits None values from the list.
+        Vulnerabilities with a score of `None` are omitted.
 
         Returns
         ----
         List[Optional[float]]
             A list of CVSS scores for each vulnerability.
         """
-        if ignore_none:
-            f = lambda v: False if v is None else True
-        else:
-            f = lambda v: True
         return list(
-            filter(f, [v.get_cvss_score(self.scanner) for v in self.vulnerabilities])
+            filter(
+                None.__ne__,
+                [v.get_cvss_score(self.scanner) for v in self.vulnerabilities],
+            )
         )
