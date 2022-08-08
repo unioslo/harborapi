@@ -396,6 +396,11 @@ class HarborVulnerabilityReport(BaseModel):
             vulns = self.fixable
         else:
             vulns = self.vulnerabilities
+
+        # Remove vulnerabilities with no CVSS score
+        vulns = filter(lambda v: v.get_cvss_score(self.scanner) is not None, vulns)
+
+        # Sort by CVSS score
         return sorted(
             vulns, key=lambda v: v.get_cvss_score(self.scanner), reverse=True
         )[:n]
