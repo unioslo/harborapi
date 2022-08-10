@@ -189,7 +189,7 @@ class VulnerabilityItem(BaseModel):
         description="The detailed description of the vulnerability.\n",
         example="dpkg-source in dpkg 1.3.0 through 1.18.23 is able to use a non-GNU patch program\nand does not offer a protection mechanism for blank-indented diff hunks, which\nallows remote attackers to conduct directory traversal attacks via a crafted\nDebian source package, as demonstrated by using of dpkg-source on NetBSD.\n",
     )
-    links: Optional[List[AnyUrl]] = Field(
+    links: Optional[List[str]] = Field(
         None,
         description="The list of links to the upstream databases with the full description of the vulnerability.\n",
         example=["https://security-tracker.debian.org/tracker/CVE-2017-8283"],
