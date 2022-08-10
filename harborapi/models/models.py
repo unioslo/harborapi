@@ -94,7 +94,7 @@ class Repository(BaseModel):
     )
 
     @property
-    def base_name(self) -> Optional[str]:
+    def base_name(self) -> str:
         """The repository name without the project name
 
         Returns
@@ -103,10 +103,10 @@ class Repository(BaseModel):
             The basename of the repository name
         """
         s = self.split_name()
-        return s[1] if s else None
+        return s[1] if s else ""
 
     @property
-    def project_name(self) -> Optional[str]:
+    def project_name(self) -> str:
         """The name of the project that the repository belongs to
 
         Returns
@@ -115,7 +115,7 @@ class Repository(BaseModel):
             The name of the project that the repository belongs to
         """
         s = self.split_name()
-        return s[0] if s else None
+        return s[0] if s else ""
 
     # TODO: cache?
     def split_name(self) -> Optional[List[str]]:
