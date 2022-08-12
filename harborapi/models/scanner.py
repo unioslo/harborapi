@@ -317,6 +317,9 @@ class VulnerabilityItem(BaseModel):
         """Attempts to find the highest severity of the vulnerability based on a specific vendor."""
 
         sev_prio = [s for s in Severity]
+        # NOTE: We rely on the fact that the order of the Severity enum is
+        #       the same as the ordering of CVSSv3 severities.
+        #       Probably not a good idea to rely on this assumption
 
         highest = Severity.negligible
         highest_idx = 0
@@ -330,6 +333,12 @@ class VulnerabilityItem(BaseModel):
             if idx > highest_idx:
                 highest = sev
                 highest_idx = idx
+
+        # Check if self.severity is set and is higher than the highest
+        if self.severity:
+            idx = sev_prio.index(self.severity)
+            if idx > highest_idx:
+                highest = self.severity
 
         return highest
 
