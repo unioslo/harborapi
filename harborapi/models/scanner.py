@@ -262,23 +262,23 @@ class VulnerabilityItem(BaseModel):
         default: float = 0.0,
     ) -> float:
         # TODO: add logging when we hit defaults
-            if self.vendor_attributes is None:
-                return default
+        if self.vendor_attributes is None:
+            return default
 
         cvss_data = self.vendor_attributes.get("CVSS", {})
-            if not cvss_data:
-                return default
+        if not cvss_data:
+            return default
 
-            for prio in vendor_priority:
-                # Trivy uses the vendor name as the key for the CVSS data
-                vendor_cvss = cvss_data.get(prio)
-                if vendor_cvss is None:
-                    continue
-                # NOTE: we can't guarantee these values are floats (dangerous)
-                if version == 3:
-                    return vendor_cvss.get("V3Score", default)
-                elif version == 2:
-                    return vendor_cvss.get("V2Score", default)
+        for prio in vendor_priority:
+            # Trivy uses the vendor name as the key for the CVSS data
+            vendor_cvss = cvss_data.get(prio)
+            if vendor_cvss is None:
+                continue
+            # NOTE: we can't guarantee these values are floats (dangerous)
+            if version == 3:
+                return vendor_cvss.get("V3Score", default)
+            elif version == 2:
+                return vendor_cvss.get("V2Score", default)
 
     def get_severity(
         self,
@@ -308,6 +308,29 @@ class VulnerabilityItem(BaseModel):
             return Severity.negligible  # this is called "None" in the CVSSv3 spec
         # can never return Severity.unknown
 
+    def get_severity_highest(
+        self,
+        scanner: Union[Optional[Scanner], str] = "Trivy",
+        vendors: Iterable[str] = DEFAULT_VENDORS,
+    ) -> Severity:
+        """Attempts to find the highest severity of the vulnerability based on a specific vendor."""
+
+        sev_prio = [s for s in Severity]
+
+        highest = Severity.negligible
+        highest_idx = 0
+
+        for vendor in vendors:
+            sev = self.get_severity(scanner=scanner, vendor_priority=(vendor,))
+            try:
+                idx = sev_prio.index(sev)
+            except ValueError:
+                continue  # TODO: log?
+            if idx > highest_idx:
+                highest = sev
+                highest_idx = idx
+
+        return highest
 
 
 class ErrorResponse(BaseModel):
