@@ -1,8 +1,6 @@
 import json
 from pathlib import Path
-from typing import List, Union
-
-from pydantic import BaseModel, Field
+from typing import Union
 
 from harborapi.models.models import Robot, RobotCreate, RobotCreated
 
