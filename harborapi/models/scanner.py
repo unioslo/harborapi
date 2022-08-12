@@ -22,6 +22,8 @@ from typing import (
 
 from pydantic import AnyUrl, BaseModel, Extra, Field
 
+DEFAULT_VENDORS = ("nvd", "redhat")
+
 
 class SemVer(NamedTuple):
     # TODO: move this and get_version_tuple() to separate module (for reuse)
@@ -210,7 +212,7 @@ class VulnerabilityItem(BaseModel):
         self,
         scanner: Union[Optional[Scanner], str] = "Trivy",
         version: int = 3,
-        vendor_priority: Iterable[str] = ("nvd", "redhat"),
+        vendor_priority: Iterable[str] = DEFAULT_VENDORS,
         default: float = 0.0,
     ) -> float:
         """The default scanner Trivy, as of version 0.29.1, does not use the
@@ -263,15 +265,10 @@ class VulnerabilityItem(BaseModel):
                 elif version == 2:
                     return vendor_cvss.get("V2Score", default)
 
-        # Other scanners here
-        # ...
-
-        return default
-
     def get_severity(
         self,
         scanner: Union[Optional[Scanner], str] = "Trivy",
-        vendor_priority: Iterable[str] = ("nvd", "redhat"),
+        vendor_priority: Iterable[str] = DEFAULT_VENDORS,
     ) -> Severity:
         """Returns the CVSS V3 severity of the vulnerability based on a specific vendor.
         If no vendor is specified, the default vendor priority is used (NVD over RedHat).
