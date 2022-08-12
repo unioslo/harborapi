@@ -279,6 +279,7 @@ class VulnerabilityItem(BaseModel):
                 return vendor_cvss.get("V3Score", default)
             elif version == 2:
                 return vendor_cvss.get("V2Score", default)
+        return default
 
     def get_severity(
         self,
