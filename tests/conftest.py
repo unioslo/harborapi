@@ -1,3 +1,4 @@
+import json
 import os
 from pathlib import Path
 
@@ -46,53 +47,42 @@ def caplog(caplog: LogCaptureFixture):
 
 
 @pytest.fixture(scope="function")
-def credentials_file(tmp_path: Path) -> Path:
+def credentials_dict() -> dict:
+    return {
+        "creation_time": "2022-07-01T13:20:46.230Z",
+        "description": "Some description",
+        "disable": False,
+        "duration": 30,
+        "editable": True,
+        "expires_at": 1659273646,
+        "id": 1,
+        "level": "system",
+        "name": "robot$harborapi-test",
+        "permissions": [
+            {
+                "access": [
+                    {"action": "list", "resource": "repository"},
+                    {"action": "pull", "resource": "repository"},
+                ],
+                "kind": "project",
+                "namespace": "*",
+            }
+        ],
+        "update_time": "2022-07-06T13:26:45.360Z",
+        "permissionScope": {
+            "coverAll": True,
+            "access": [
+                {"action": "list", "resource": "repository"},
+                {"action": "pull", "resource": "repository"},
+            ],
+        },
+        "secret": "bad-password",
+    }
+
+
+@pytest.fixture(scope="function")
+def credentials_file(tmp_path: Path, credentials_dict: dict) -> Path:
     """Create a credentials file for testing"""
     credentials_file = tmp_path / "credentials.json"
-    credentials_file.write_text(
-        """
-{
-    "creation_time": "2022-07-01T13:20:46.230Z",
-    "description": "Some description",
-    "disable": false,
-    "duration": 30,
-    "editable": true,
-    "expires_at": 1659273646,
-    "id": 1,
-    "level": "system",
-    "name": "robot$harborapi-test",
-    "permissions": [
-        {
-            "access": [
-                {
-                    "action": "list",
-                    "resource": "repository"
-                },
-                {
-                    "action": "pull",
-                    "resource": "repository"
-                }
-            ],
-            "kind": "project",
-            "namespace": "*"
-        }
-    ],
-    "update_time": "2022-07-06T13:26:45.360Z",
-    "permissionScope": {
-        "coverAll": true,
-        "access": [
-            {
-                "action": "list",
-                "resource": "repository"
-            },
-            {
-                "action": "pull",
-                "resource": "repository"
-            }
-        ]
-    },
-    "secret": "bad-password"
-}
-        """
-    )
+    credentials_file.write_text(json.dumps(credentials_dict))
     return credentials_file
