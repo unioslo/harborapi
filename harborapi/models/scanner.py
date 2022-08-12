@@ -284,16 +284,18 @@ class VulnerabilityItem(BaseModel):
         cvss_score = self.get_cvss_score(
             scanner=scanner, vendor_priority=vendor_priority
         )
-        if cvss_score == 0.0:
-            return Severity.unknown
-        elif cvss_score < 3.0:
-            return Severity.low
-        elif cvss_score < 6.0:
-            return Severity.medium
-        elif cvss_score < 8.0:
-            return Severity.high
-        else:
+        if cvss_score >= 9.0:
             return Severity.critical
+        elif cvss_score >= 7.0:
+            return Severity.high
+        elif cvss_score >= 4.0:
+            return Severity.medium
+        elif cvss_score >= 0.1:
+            return Severity.low
+        else:
+            return Severity.negligible  # this is called "None" in the CVSSv3 spec
+        # can never return Severity.unknown
+
 
 
 class ErrorResponse(BaseModel):
