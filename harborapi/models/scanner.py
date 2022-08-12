@@ -233,7 +233,6 @@ class VulnerabilityItem(BaseModel):
                 return self.preferred_cvss.score_v2
 
         # fallback to the scanner-specific CVSS score
-        # TODO: refactor: move to a separate function
 
         # Scanner is an optional field in the spec,
         # but it's likely that it will always be present,
@@ -246,11 +245,27 @@ class VulnerabilityItem(BaseModel):
         elif isinstance(scanner, Scanner):
             scanner_name = scanner.name
 
-        if scanner_name == "Trivy":
+        if scanner_name.lower() == "trivy":
+            return self._get_trivy_cvss_score(
+                version=version, vendor_priority=vendor_priority, default=default
+            )
+
+        # Other scanners here
+        # ...
+
+        return default
+
+    def _get_trivy_cvss_score(
+        self,
+        version: int = 3,
+        vendor_priority: Iterable[str] = DEFAULT_VENDORS,
+        default: float = 0.0,
+    ) -> float:
+        # TODO: add logging when we hit defaults
             if self.vendor_attributes is None:
                 return default
 
-            cvss_data = self.vendor_attributes.get("CVSS", default)
+        cvss_data = self.vendor_attributes.get("CVSS", {})
             if not cvss_data:
                 return default
 
