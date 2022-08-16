@@ -6,6 +6,7 @@
         - get_users
         - search_users_by_username
         - get_user
+        - get_user_by_username
         - create_user
         - delete_user
         - update_user_profile

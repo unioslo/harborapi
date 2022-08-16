@@ -215,6 +215,36 @@ async def test_get_user_mock(
 
 
 @pytest.mark.asyncio
+@given(st.builds(UserResp))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+async def test_get_user_by_username_mock(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+    # users: List[UserSearchRespItem],
+    user: UserResp,
+):
+    user.user_id = 1234
+    user.username = "test-user"
+    search_resp = [UserSearchRespItem(user_id=1234, username="test-user")]
+
+    # Set up search endpoint
+    httpserver.expect_oneshot_request("/api/v2.0/users/search").respond_with_data(
+        json_from_list(search_resp),
+        content_type="application/json",
+    )
+
+    # Set up user endpoint
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/users/1234",
+        method="GET",
+    ).respond_with_data(user.json(), content_type="application/json")
+
+    async_client.url = httpserver.url_for("/api/v2.0")
+    resp = await async_client.get_user_by_username("test-user")
+    assert resp == user
+
+
+@pytest.mark.asyncio
 async def test_delete_user_mock(
     async_client: HarborAsyncClient,
     httpserver: HTTPServer,

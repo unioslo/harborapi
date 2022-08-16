@@ -400,6 +400,35 @@ class HarborAsyncClient:
         user_resp = await self.get(f"/users/{user_id}")
         return construct_model(UserResp, user_resp)
 
+    async def get_user_by_username(self, username: str) -> UserResp:
+        """Get information about a user by username.
+
+        This is a convenience method for searching for a user by username and
+        then getting the full user information with its ID.
+
+        See:
+
+        * [search_users_by_username][harborapi.client.HarborAsyncClient.search_users_by_username]
+        * [get_user][harborapi.client.HarborAsyncClient.get_user]
+
+        Parameters
+        ----------
+        username : str
+            The username of the user to get information about
+
+        Returns
+        -------
+        UserResp
+            Information about the user.
+        """
+        results = await self.search_users_by_username(username)
+        if not results:
+            raise NotFound(None, f"User with username {username} not found")
+        user = results[0]
+        if user.user_id is None:
+            raise HarborAPIException(f"User with username {username} has no ID")
+        return await self.get_user(user.user_id)
+
     # DELETE /users/{user_id}
     async def delete_user(self, user_id: int, missing_ok: bool = False) -> None:
         """Delete a user.
