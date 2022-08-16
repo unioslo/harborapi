@@ -55,7 +55,7 @@ async def test_set_user_cli_secret_mock(
 @pytest.mark.asyncio
 @given(st.lists(st.builds(UserSearchRespItem)))
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-async def test_get_users_by_username_mock(
+async def test_search_users_by_username_mock(
     async_client: HarborAsyncClient,
     httpserver: HTTPServer,
     users: List[UserSearchRespItem],
@@ -64,7 +64,7 @@ async def test_get_users_by_username_mock(
         json_from_list(users), content_type="application/json"
     )
     async_client.url = httpserver.url_for("/api/v2.0")
-    resp = await async_client.get_users_by_username("username")
+    resp = await async_client.search_users_by_username("username")
     assert resp == users
 
 

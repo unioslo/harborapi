@@ -210,7 +210,7 @@ class HarborAsyncClient:
             raise
 
     # GET /users/search
-    async def get_users_by_username(
+    async def search_users_by_username(
         self,
         username: str,
         page: int = 1,

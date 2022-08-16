@@ -4,7 +4,7 @@
     options:
         members:
         - get_users
-        - get_users_by_username
+        - search_users_by_username
         - get_user
         - create_user
         - delete_user
