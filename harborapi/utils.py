@@ -62,30 +62,25 @@ def get_credentials(username: str, secret: str) -> str:
     return b64encode(f"{username}:{secret}".encode("utf-8")).decode("utf-8")
 
 
-def parse_pagination_url(url: str, ignore_prev: bool = True) -> Optional[str]:
+def parse_pagination_url(url: str) -> Optional[str]:
     """Parse pagination URL and return the next URL
 
     Parameters
     ----------
     url : str
         The pagination URL to parse
-    ignore_prev : bool
-        Whether to return `None` if the URL relation is `prev`
-
-
     Returns
     -------
     Optional[str]
         The next URL, or `None` if the URL relation is `prev` and `ignore_prev` is `True`
     """
     # Formatting: '</api/v2.0/endpoint?page=X&page_size=Y>; rel="next"'
-    if 'rel="next"' not in url:
-        # abnormal case, log warning and return None
-        logger.warning("No next page found in pagination URL: {}", url)
+    if 'rel="prev"' in url:
         return None
-    if ignore_prev and 'rel="prev"' in url:
-        return None  # this is normal, and should not be logged
-
+    elif 'rel="next"' not in url:
+        # abnormal case, log warning and return None
+        logger.debug("No next page found in pagination URL: {}", url)
+        return None
     url = url.split(";")[0].strip("><")
     u = url.split("/", 3)  # remove /api/v2.0/
     return "/" + u[-1]  # last segment is the next URL
