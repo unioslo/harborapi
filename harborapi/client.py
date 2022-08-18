@@ -2559,15 +2559,15 @@ class HarborAsyncClient:
     # GET /projects/{project_name}/repositories/{repository_name}
     async def get_repository(
         self,
-        project_id: str,
+        project_name: str,
         repository_name: str,
     ) -> Repository:
         """Get a repository.
 
         Parameters
         ----------
-        project_id : int
-            The id of the project the repository belongs to.
+        project_name : str
+            The name of the project the repository belongs to.
         repository_name : str
             The name of the repository.
 
@@ -2576,7 +2576,7 @@ class HarborAsyncClient:
         Repository
             The repository.
         """
-        path = get_repo_path(project_id, repository_name)
+        path = get_repo_path(project_name, repository_name)
         resp = await self.get(path)
         return construct_model(Repository, resp)
 
