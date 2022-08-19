@@ -14,6 +14,5 @@ artifacts = list(itertools.chain.from_iterable(r))
 ```
 
 !!! note
-    We use `return_exceptions=True` as an argument to `asyncio.gather` in the example, which means you have to manually
-    filter out these exceptions from the list and choose how to handle them.
-    Set `return_exceptions` to `False` if you wish any encountered exceptions to abort execution.
+    We use `return_exceptions=True` as an argument to `asyncio.gather` in the example, which means exceptions are returned in the list of results. These exceptions should be filtered out and handled.
+    Set `return_exceptions` to `False` if you wish any encountered exceptions to be raised automatically.
