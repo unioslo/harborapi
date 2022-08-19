@@ -11,6 +11,7 @@ theme:
     - navigation.tabs
     - navigation.tabs.sticky
     - navigation.expand
+    - navigation.indexes
 
 plugins:
   - search
@@ -41,11 +42,15 @@ markdown_extensions:
 nav:
   - index.md
   - "Usage":
-      - usage/_intro.md
-      - usage/examples.md
+      - usage/index.md
       - usage/exceptions.md
       - usage/creating-system-robot.md
-      - usage/sync-client.md
+      - usage/async-sync.md
+      - "Recipes":
+          - usage/recipes/index.md
+          - usage/recipes/artifactowner.md
+          - usage/recipes/conc-artifact.md
+          - usage/recipes/conc-repo.md
   - "Endpoints":
       - endpoints/_overview.md
       - endpoints/artifacts.md

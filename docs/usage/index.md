@@ -1,6 +1,7 @@
 # Getting Started
 
-This page contains examples on how to instantiate and use [`HarborAsyncClient`][harborapi.client.HarborAsyncClient].
+This page contains basic examples on how to instantiate and use [`HarborAsyncClient`][harborapi.client.HarborAsyncClient].
+For more specialized uses, check out [Recipes](./recipes).
 
 ## Instantiate Client
 
