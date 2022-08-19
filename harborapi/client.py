@@ -2913,8 +2913,8 @@ class HarborAsyncClient:
 
         Returns
         -------
-        JSONType
-            JSON data returned by the API
+        Tuple[JSONType, Optional[str]]
+            JSON data returned by the API, and the next URL if pagination is enabled.
         """
         # async with httpx.AsyncClient() as client:
         resp = await self.client.get(
