@@ -99,7 +99,6 @@ class HarborAsyncClient:
         follow_redirects: bool = True,
         logging: bool = False,
         config: Optional[Any] = None,  # NYI
-        version: str = "2.0",
     ) -> None:
         """Initialize a new HarborAsyncClient with either a username and secret,
         an authentication token, or a credentials file.
@@ -127,8 +126,6 @@ class HarborAsyncClient:
             Enable client logging with `Loguru`.
         config : Optional[Any]
             (NYI) config
-        version : str
-            Used to construct URL if the specified URL does not contain the version.
 
         Raises
         ------
@@ -142,7 +139,8 @@ class HarborAsyncClient:
         elif credentials_file:
             crfile = load_harbor_auth_file(credentials_file)
             # TODO: perform this check somewhere else?
-            #       it's likely we will ALWAYS require a username and secret
+            #       it's likely the credentials file will ALWAYS require a username and secret
+            #       so anytime load_harbor_auth_file() is called, this check should be performed
             if not crfile.name:
                 raise ValueError("Credentials file missing value for 'name' field")
             elif not crfile.secret:
@@ -153,19 +151,11 @@ class HarborAsyncClient:
                 "Must provide username and secret, credentials, or credentials_file"
             )
 
-        # TODO: add URL regex and improve parsing OR don't police this at all
-        url = url.strip("/")  # remove trailing slash
-        if version and not "/api/v" in url:
-            version = str(version)
-            if "v" not in version:
-                version = f"v{version}"
-            if "/api" in url:
-                url = url.strip("/") + "/" + version
-            else:
-                url = url + "/api/" + version
-
-        self.url = url.strip("/")  # make sure we haven't added a trailing slash again
+        self.url = url.strip("/")  # make sure URL doesn't have a trailing slash
         self.config = config
+
+        # Instantiate persistent HTTP client using the redirect policy
+        # NOTE: any reason we don't specify headers here too?
         self.client = httpx.AsyncClient(follow_redirects=follow_redirects)
 
         # NOTE: make env var?

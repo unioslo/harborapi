@@ -28,25 +28,21 @@ from .strategies import errors_strategy
 @pytest.mark.parametrize(
     "url, expected",
     [
-        ("https://harbor.example.com", "https://harbor.example.com/api/v2.0"),
-        ("https://harbor.example.com/api", "https://harbor.example.com/api/v2.0"),
-        ("https://harbor.example.com/api/", "https://harbor.example.com/api/v2.0"),
+        ("https://harbor.example.com/", "https://harbor.example.com"),
+        ("https://harbor.example.com/api/", "https://harbor.example.com/api"),
+        ("https://harbor.example.com/api/v2.0", "https://harbor.example.com/api/v2.0"),
         ("https://harbor.example.com/api/v2.0/", "https://harbor.example.com/api/v2.0"),
-        # should have regex to check for valid URL, as this likely isn't a valid URL vvvv
-        ("https://harbor.example.com/api/v", "https://harbor.example.com/api/v"),
     ],
 )
 def test_client_init_url(url: str, expected: str):
     # manually set version to v2.0 for this test
-    client = HarborAsyncClient(
-        username="username", secret="secret", url=url, version="v2.0"
-    )
+    client = HarborAsyncClient(username="username", secret="secret", url=url)
     assert client.url == expected
 
 
 def test_client_init_username():
     client = HarborAsyncClient(
-        username="username", secret="secret", url="https://harbor.example.com"
+        username="username", secret="secret", url="https://harbor.example.com/api/v2.0"
     )
     assert client.url == "https://harbor.example.com/api/v2.0"
     assert client.credentials == get_credentials("username", "secret")
@@ -54,7 +50,7 @@ def test_client_init_username():
 
 def test_client_init_token():
     client = HarborAsyncClient(
-        credentials="dXNlcm5hbWU6c2VjcmV0", url="https://harbor.example.com"
+        credentials="dXNlcm5hbWU6c2VjcmV0", url="https://harbor.example.com/api/v2.0"
     )
     assert client.url == "https://harbor.example.com/api/v2.0"
     assert client.credentials == get_credentials("username", "secret")
@@ -62,7 +58,7 @@ def test_client_init_token():
 
 def test_client_init_credentials_file(credentials_file: Path):
     client = HarborAsyncClient(
-        credentials_file=credentials_file, url="https://harbor.example.com"
+        credentials_file=credentials_file, url="https://harbor.example.com/api/v2.0"
     )
     assert client.url == "https://harbor.example.com/api/v2.0"
     assert client.credentials == get_credentials("robot$harborapi-test", "bad-password")
@@ -70,7 +66,7 @@ def test_client_init_credentials_file(credentials_file: Path):
 
 def test_client_init_no_credentials():
     with pytest.raises(ValueError):
-        HarborAsyncClient(url="https://harbor.example.com")
+        HarborAsyncClient(url="https://harbor.example.com/api/v2.0")
 
 
 @pytest.mark.asyncio
