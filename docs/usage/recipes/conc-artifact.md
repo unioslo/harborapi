@@ -2,7 +2,7 @@
 
 Given a list of repository names and a project name, we can use Asyncio to dispatch multiple requests concurrently to the Harbor API to fetch all artifacts in the repositories.
 
-Finally, we flatten the list of lists into a list of artifacts.
+Because the result is a list of lists, we flatten it with `itertools.chain.from_iterable`.
 
 ```py
 repos = ["foo", "bar", "baz"]
