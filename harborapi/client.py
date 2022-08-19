@@ -1157,7 +1157,7 @@ class HarborAsyncClient:
         page_size: int = 10,
         retrieve_all: bool = True,
     ) -> List[Project]:
-        """Get the artifacts for a repository.
+        """Get all projects, optionally filtered by query.
 
         Parameters
         ----------
