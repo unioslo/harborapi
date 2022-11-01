@@ -56,4 +56,4 @@ genscannermodels version=default_scanner_version: (_fetchswagger_scanner version
 docs_addr := "localhost:8000"
 # Serve docs locally
 serve addr=docs_addr:
-    mkdocs serve -a {{docs_addr}}
+    mkdocs serve -a {{addr}}
