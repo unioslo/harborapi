@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar, Union
 
 import backoff
 import httpx
-from httpx import RequestError, Response
+from httpx import RequestError, Response, Timeout
 from loguru import logger
 from pydantic import BaseModel, ValidationError
 
@@ -97,6 +97,7 @@ class HarborAsyncClient:
         credentials: Optional[str] = None,
         credentials_file: Optional[Union[str, Path]] = None,
         follow_redirects: bool = True,
+        timeout: Union[float, Timeout] = 10.0,
         logging: bool = False,
         config: Optional[Any] = None,  # NYI
     ) -> None:
@@ -122,6 +123,9 @@ class HarborAsyncClient:
         follow_redirects : bool
             If True, follow redirects when making requests.
             Allows for coercion from HTTP to HTTPS.
+        timeout : Union[float, Timeout]
+            The timeout to use for requests.
+            Can be either a float or a `httpx.Timeout` object.
         logging : bool
             Enable client logging with `Loguru`.
         config : Optional[Any]
@@ -156,7 +160,9 @@ class HarborAsyncClient:
 
         # Instantiate persistent HTTP client using the redirect policy
         # NOTE: any reason we don't specify headers here too?
-        self.client = httpx.AsyncClient(follow_redirects=follow_redirects)
+        self.client = httpx.AsyncClient(
+            follow_redirects=follow_redirects, timeout=timeout
+        )
 
         # NOTE: make env var?
         if logging:
