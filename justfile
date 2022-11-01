@@ -16,7 +16,7 @@ testhtml: _cov
 
 # Run pre-commit hooks on all files
 pcrun:
-    pre-commit run --all-files
+    -pre-commit run --all-files
 
 
 # Recipes for generating Pydantic models from Swagger API schemas
