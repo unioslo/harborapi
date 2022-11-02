@@ -24,3 +24,20 @@ def test_vulnerabilityitem_get_severity():
     )
     assert vuln.get_severity("Trivy", ("nvd", "redhat")) == Severity.high
     assert vuln.get_severity("Trivy", ("redhat", "nvd")) == Severity.critical
+
+
+def test_severity_enum():
+    # Defined in order from least to most severe
+    severities = [
+        "Unknown",
+        "Negligible",
+        "Low",
+        "Medium",
+        "High",
+        "Critical",
+    ]
+    for severity in severities:
+        assert getattr(Severity, severity.lower()) == Severity(severity)
+
+    # Test that the enum is ordered
+    assert list(iter(Severity)) == [Severity(s) for s in severities]
