@@ -451,3 +451,145 @@ class HarborVulnerabilityReport(BaseModel):
         return sorted(
             vulns, key=lambda v: v.get_cvss_score(self.scanner), reverse=True
         )[:n]
+
+    def has_cve(self, cve_id: str, case_sensitive: bool = False) -> bool:
+        """Whether or not the report contains a vulnerability with the given CVE ID.
+
+        Parameters
+        ----------
+        cve_id : str
+            The CVE ID to search for.
+
+        Returns
+        -------
+        bool
+            Report contains the a vulnerability with the given CVE ID.
+        """
+        return self.vuln_with_cve(cve_id, case_sensitive) is not None
+
+    def has_description(self, description: str, case_sensitive: bool = False) -> bool:
+        """Whether or not the report contains a vulnerability whose description contains the given string.
+
+        Parameters
+        ----------
+        description : str
+            The string to search for in the descriptions.
+        case_sensitive : bool
+            Case sensitive search, by default False
+
+        Returns
+        -------
+        bool
+            The report contains a vulnerability whose description contains the given string.
+        """
+        for _ in self.vulns_with_description(description, case_sensitive):
+            return True
+        return False
+
+    def has_package(self, package: str, case_sensitive: bool = False) -> bool:
+        """Whether or not the report contains a vulnerability affecting the given package.
+
+        Parameters
+        ----------
+        package : str
+            Name of the package to search for.
+        case_sensitive : bool
+            Case sensitive search, by default False
+
+        Returns
+        -------
+        bool
+            The given package is affected by a vulnerability in the report.
+        """
+
+        for _ in self.vulns_with_package(package, case_sensitive):
+            return True
+        return False
+
+    def vuln_with_cve(
+        self, cve: str, case_sensitive: bool = False
+    ) -> Optional[VulnerabilityItem]:
+        """Returns a vulnerability with the specified CVE ID if it exists in the report.
+
+        Parameters
+        ----------
+        cve : str
+            The CVE ID of the vulnerability to return.
+        case_sensitive : bool
+            Case sensitive search, by default False
+
+        Returns
+        -------
+        Optional[VulnerabilityItem]
+            A vulnerability with the specified CVE ID if it exists, otherwise `None`.
+        """
+        for vuln in self.vulnerabilities:
+            if vuln.id is None:
+                continue
+
+            vuln_id = vuln.id
+            if not case_sensitive:
+                vuln_id = vuln.id.lower()
+                cve = cve.lower()
+
+            if vuln_id == cve:
+                return vuln  # should only be one match
+        return None
+
+    def vulns_with_package(
+        self, package: str, case_sensitive: bool = False
+    ) -> Iterable[VulnerabilityItem]:
+        """Generator that yields all vulnerabilities that affect the given package.
+
+        Parameters
+        ----------
+        package : str
+            The package name to search for.
+        case_sensitive : bool
+            Case sensitive search, by default False
+
+        Yields
+        ------
+        VulnerabilityItem
+            Vulnerability that affects the given package.
+        """
+        for vuln in self.vulnerabilities:
+            if vuln.package is None:
+                continue
+
+            vuln_package = vuln.package
+            if not case_sensitive:
+                vuln_package = vuln.package.lower()
+                package = package.lower()
+
+            if vuln_package == package:
+                yield vuln
+
+    def vulns_with_description(
+        self, description: str, case_sensitive: bool = False
+    ) -> Iterable[VulnerabilityItem]:
+        """Generator that yields all vulnerabilities whose description contains the given string.
+
+        Parameters
+        ----------
+        description : str
+            The string to search for in vulnerability descriptions.
+        case_sensitive : bool
+            Case sensitive search, by default False
+
+        Yields
+        ------
+        VulnerabilityItem
+            Vulnerability whose description contains the given string.
+        """
+        for vuln in self.vulnerabilities:
+            if vuln.description is None:
+                continue
+
+            vuln_description = vuln.description
+            if not case_sensitive:
+                description = description.lower()
+                vuln_description = vuln_description.lower()
+
+            if description in vuln_description:
+                yield vuln

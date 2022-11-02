@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "harborapi"
-version = "0.1.7"
+version = "0.1.8"
 description = "Async Harbor API v2.0 wrapper"
 readme = "README.md"
 authors = ["Peder Hovdan Andresen <pederhan@usit.uio.no>"]
