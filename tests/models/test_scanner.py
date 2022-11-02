@@ -1,4 +1,12 @@
-from harborapi.models.scanner import Severity, VulnerabilityItem
+from hypothesis import HealthCheck, given, settings
+
+from harborapi.models.scanner import (
+    HarborVulnerabilityReport,
+    Severity,
+    VulnerabilityItem,
+)
+
+from ..strategies.artifact import get_hbv_strategy
 
 
 def test_vulnerabilityitem_get_severity_highest():
@@ -41,3 +49,19 @@ def test_severity_enum():
 
     # Test that the enum is ordered
     assert list(iter(Severity)) == [Severity(s) for s in severities]
+
+
+@given(get_hbv_strategy())
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+def test_harborvulnerabilityreport(report: HarborVulnerabilityReport) -> None:
+    report.vulnerabilities.append(
+        VulnerabilityItem(
+            id="CVE-2022-1337-test",
+            description="test-cve",
+            package="test-package",
+        )
+    )
+    assert report.has_cve("CVE-2022-1337-test")
+    assert not report.has_cve("CVE-2022-1337-test2")
+    assert report.has_description("test-cve")
+    assert report.has_package("test-package")
