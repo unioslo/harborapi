@@ -2,12 +2,11 @@
 
 This page describes how to fetch all vulnerabilities from all artifacts in all repositories in all (or a subset of) projects.
 
-The recipe below shows how to fetch all artifacts and determine if any of them are affected by an OpenSSL 3.x vulnerability. Notice how we specify each project manually, instead of fetching from all projects.
+The recipe below demonstrates how to fetch all artifacts that have vulnerabilities affecting OpenSSL version 3.x.
 
-There are two primary reasons for this:
-    * We don't want to fetch all projects, as we only care about a subset of them.
-    * We don't want to overload our harbor instance by requesting all artifacts at once, as this will result in a lot of concurrent requests.
+The recipe makes use of the built-in rate limiting implemented in [`get_artifact_vulnerabilities`][harborapi.ext.api.get_artifact_vulnerabilities]. By default, a maximum of 5 requests are sent concurrently, which prevents accidentally performing a DoS attack on your Harbor instance.
 
+Attempting to fetch too many resources simultaneously can lead to extreme slowdowns and in some cases completely locking up your Harbor instance. Experiment with the `batch_size` argument of [`get_artifact_vulnerabilities`][harborapi.ext.api.get_artifact_vulnerabilities] to find the optimal value for your Harbor instance.
 
 ```py
 import asyncio
@@ -30,6 +29,7 @@ client = HarborAsyncClient(
 async def main():
     artifacts = await get_artifact_vulnerabilities(
         client,
+        batch_size=5, # number of concurrent requests
         exc_ok=True,
     )
     artifacts.extend(project_artifacts)
@@ -63,4 +63,12 @@ def get_openssl_version(artifact: ArtifactInfo) -> Optional[str]:
 
 
 asyncio.run(main())
+```
+
+Example output:
+
+```txt
+library/foo@sha256:f2f9fddc: OpenSSL version: 3.0.2-0ubuntu1.6
+other-project/bar@sha256:b498b376: OpenSSL version: 3.0.2-0ubuntu1.6
+legacy/baz@sha256:ddf6b9db: OpenSSL version: 3.0.2-0ubuntu1.6
 ```

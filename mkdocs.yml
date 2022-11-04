@@ -51,10 +51,6 @@ nav:
           - usage/recipes/artifactowner.md
           - usage/recipes/conc-artifact.md
           - usage/recipes/conc-repo.md
-  - "Extended Functionality":
-      - "ext/index.md"
-      - "ext/api.md"
-      - "ext/artifact.md"
   - "Endpoints":
       - endpoints/_overview.md
       - endpoints/artifacts.md
@@ -78,6 +74,11 @@ nav:
       - endpoints/systeminfo.md
       - endpoints/users.md
       - endpoints/usergroups.md
+  - "Extended Functionality":
+      - "ext/index.md"
+      - "ext/api.md"
+      - "Examples":
+          - "ext/examples/api-artifacts.md"
   - "Reference":
       - reference/client.md
       - reference/exceptions.md

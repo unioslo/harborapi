@@ -1,3 +1,5 @@
+# `ext`: Extended Functionality
+
 The `ext` module contains extensions and utility functions that are not part of the Harbor API.
 
 It expands the functionality of the Harbor API by providing additional
