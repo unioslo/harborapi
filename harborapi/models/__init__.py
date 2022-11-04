@@ -15,6 +15,5 @@ from .scanner import Severity, VulnerabilityItem
 # we need to explicitly import the conflicting models from the other schema prefixed
 # with 'Scan'.
 #
-# We cannot just import from scanner.py and shadow the names of the models in models.py,
-# because even though their names are the same, some of the models are different
-# from each other.
+# These models are different despite the overlapping names, so we can't just
+# import them both, as one will shadow the other.

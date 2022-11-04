@@ -8,19 +8,15 @@ from harborapi.models.scanner import (
     VulnerabilityItem,
 )
 
-artifact_strategy = st.one_of(
-    st.none(),
-    st.builds(
-        Artifact,
-        repository=st.text(),
-        digest=st.text(),
-        tag=st.text(),
-        # TODO: add other possible mime types
-        mime_type=st.sampled_from(
-            ["application/vnd.docker.distribution.manifest.v2+json"]
-        ),
-    ),
+artifact_strategy = st.builds(
+    Artifact,
+    repository=st.text(),
+    digest=st.text(),
+    tag=st.text(),
+    # TODO: add other possible mime types
+    mime_type=st.sampled_from(["application/vnd.docker.distribution.manifest.v2+json"]),
 )
+artifact_or_none_strategy = st.one_of(st.none(), artifact_strategy)
 
 scanner_strategy = st.one_of(
     st.none(),

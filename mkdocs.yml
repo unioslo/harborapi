@@ -51,6 +51,10 @@ nav:
           - usage/recipes/artifactowner.md
           - usage/recipes/conc-artifact.md
           - usage/recipes/conc-repo.md
+  - "Extended Functionality":
+      - "ext/index.md"
+      - "ext/api.md"
+      - "ext/artifact.md"
   - "Endpoints":
       - endpoints/_overview.md
       - endpoints/artifacts.md
@@ -80,4 +84,7 @@ nav:
       - "Models":
           - reference/models/models.md
           - reference/models/scanner.md
+      - "Ext":
+          - reference/ext/api.md
+          - reference/ext/artifact.md
       - reference/client_sync.md

@@ -16,3 +16,8 @@ artifacts = list(itertools.chain.from_iterable(r))
 !!! note
     We use `return_exceptions=True` as an argument to `asyncio.gather` in the example, which means exceptions are returned in the list of results. These exceptions should be filtered out and handled.
     Set `return_exceptions` to `False` if you wish any encountered exceptions to be raised automatically.
+
+
+## Using the `ext` module
+
+The recipe above has been baked into the `ext` module to allow for quick and easy retrieval of artifacts in multiple repositories. See: [Extended Functionality](../../ext/index.md) for more information.
