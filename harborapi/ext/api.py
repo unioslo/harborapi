@@ -1,19 +1,5 @@
 import asyncio
-import itertools
-from datetime import datetime
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Coroutine,
-    Dict,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-    TypeVar,
-    Union,
-)
+from typing import Any, Coroutine, List, Optional, Sequence, TypeVar, Union
 
 import backoff
 from httpx import TimeoutException
@@ -28,36 +14,7 @@ from .artifact import ArtifactInfo
 T = TypeVar("T")
 
 
-async def get_artifact(
-    client: HarborAsyncClient,
-    repo: str,
-    tag: Optional[str] = None,
-    digest: Optional[str] = None,
-) -> Optional[ArtifactInfo]:
-    """Fetches an artifact from a repository, optionally with a specific tag or digest.
-    If no tag or digest, the latest artifact is returned.
-
-    Parameters
-    ----------
-    client : HarborAsyncClient
-        The Harbor API client.
-    repo : str
-        The repository to search for the artifact.
-    tag : Optional[str]
-        The tag to search for.
-    digest : Optional[str]
-        The digest to search for.
-
-    Returns
-    -------
-    Optional[ArtifactInfo]
-        The artifact, or None if not found.
-    """
-    artifacts = await get_artifacts(client)
-    return await _filter_artifact(artifacts, repo, tag, digest)
-
-
-async def get_artifact_by_digest(
+async def get_artifactinfo_by_digest(
     client: HarborAsyncClient,
     project: str,
     repository: str,
@@ -101,32 +58,6 @@ async def get_artifact_by_digest(
         return _no_report()  # type: ignore
 
     return ArtifactInfo(artifact=artifact, repository=repo, report=report)
-
-
-async def _filter_artifact(
-    artifacts: List[ArtifactInfo],
-    repo: str,
-    tag: Optional[str],
-    digest: Optional[str],
-) -> Optional[ArtifactInfo]:
-    matches = [a for a in artifacts if a.repository.project_name == repo]
-    if not matches:
-        return None
-
-    if digest:
-        return next(a for a in matches if a.artifact.digest == digest)
-
-    if not tag:
-        has_date = [m for m in matches if m.artifact.push_time]
-        return sorted(has_date, key=lambda m: m.artifact.push_time)[-1]  # type: ignore # guaranteed to have push_time
-
-    for m in matches:
-        if not m.artifact.tags:
-            continue
-        for t in m.artifact.tags:
-            if t and t.name == tag:
-                return m
-    return None
 
 
 async def get_artifacts(
@@ -208,12 +139,6 @@ async def _get_repo_artifacts(
         **kwargs,
     )
     return [ArtifactInfo(artifact=artifact, repository=repo) for artifact in artifacts]
-
-
-async def get_projects(client: HarborAsyncClient) -> List[Project]:
-    """Get all projects."""
-    projects = await client.get_projects()
-    return projects
 
 
 async def get_repositories(
@@ -325,7 +250,7 @@ async def get_artifact_vulnerabilities(
     """
     # Get all projects if not specified
     if not projects:
-        p = await get_projects(client)
+        p = await client.get_projects()
         projects = [project.name for project in p if project.name]
 
     repos = await get_repositories(client, projects, exc_ok=exc_ok)
