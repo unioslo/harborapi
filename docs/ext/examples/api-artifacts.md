@@ -32,7 +32,6 @@ async def main():
         batch_size=5, # number of concurrent requests
         exc_ok=True,
     )
-    artifacts.extend(project_artifacts)
 
     report = ArtifactReport(artifacts, remove_duplicates=False)
     print_openssl_info(report)
