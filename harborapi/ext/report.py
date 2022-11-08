@@ -22,7 +22,9 @@ class ArtifactCVSS:
     artifact: ArtifactInfo
 
 
-def remove_duplicate_artifacts(artifacts: List[ArtifactInfo]) -> Iterable[ArtifactInfo]:
+def _remove_duplicate_artifacts(
+    artifacts: List[ArtifactInfo],
+) -> Iterable[ArtifactInfo]:
     """Remove duplicate artifacts from the list of artifacts, based on SHA256 digest."""
     seen = set()
     for a in artifacts:
