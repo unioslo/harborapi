@@ -79,7 +79,6 @@ nav:
       - "ext/artifact.md"
       - "ext/api.md"
       - "ext/report.md"
-      - "ext/cve.md"
       - "Examples":
           - "ext/examples/api-artifacts.md"
   - "Reference":
@@ -91,4 +90,6 @@ nav:
       - "Ext":
           - reference/ext/api.md
           - reference/ext/artifact.md
+          - reference/ext/cve.md
+          - reference/ext/report.md
       - reference/client_sync.md

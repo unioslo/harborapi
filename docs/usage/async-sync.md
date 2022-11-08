@@ -30,7 +30,7 @@ client = HarborClient(
 res = client.get_current_user()
 ```
 
-It is not recommended to use this client, but is provided as an alternative if you _absolutely_ don't want to deal with anything related to `asyncio`.
+It is not recommended to use this client, but is provided as an alternative if you _absolutely_ don't want to deal with anything related to `asyncio` yourself. Due to the metaprogramming involved in the non-async client, autocompletion and type hints are not available for the non-async client.
 
 ---
 
