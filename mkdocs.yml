@@ -76,7 +76,10 @@ nav:
       - endpoints/usergroups.md
   - "Extended Functionality":
       - "ext/index.md"
+      - "ext/artifact.md"
       - "ext/api.md"
+      - "ext/report.md"
+      - "ext/cve.md"
       - "Examples":
           - "ext/examples/api-artifacts.md"
   - "Reference":
