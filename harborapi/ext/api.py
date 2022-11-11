@@ -65,8 +65,7 @@ async def get_artifacts(
     repos: Optional[List[Repository]] = None,
     tags: Optional[List[str]] = None,
     exc_ok: bool = True,
-    batch_size: Optional[int] = 5,
-    sleep_duration: Optional[float] = None,
+    max_connections: Optional[int] = 5,
     **kwargs: Any,
 ) -> List[ArtifactInfo]:
     """Fetch all artifacts in all repositories.
@@ -84,6 +83,12 @@ async def get_artifacts(
         If not specified, all repositories will be used.
     tags : Optional[List[str]]
         The tag(s) to filter the artifacts by.
+    exc_ok : bool
+        Whether or not to continue on error.
+        If True, the failed artifact is skipped, and the exception
+        is logged. If False, the exception is raised.
+    max_connections : Optional[int]
+        The maximum number of concurrent connections to open.
 
     **kwargs : Any
         Additional arguments to pass to the `HarborAsyncClient.get_artifacts` method.
@@ -99,7 +104,7 @@ async def get_artifacts(
         )  # bit of a hack for now to retrieve all repos
     # Fetch artifacts from each repository concurrently
     coros = [_get_repo_artifacts(client, repo, tags=tags, **kwargs) for repo in repos]
-    a = await run_coros(coros, batch_size=batch_size, sleep_duration=sleep_duration)
+    a = await run_coros(coros, max_connections=max_connections)
     return handle_gather(a, exc_ok=exc_ok)
     # return list(itertools.chain.from_iterable(a))
 
@@ -145,8 +150,7 @@ async def get_repositories(
     client: HarborAsyncClient,
     projects: Optional[List[str]] = None,
     exc_ok: bool = False,
-    batch_size: Optional[int] = 5,
-    sleep_duration: Optional[float] = None,
+    max_connections: Optional[int] = 5,
 ) -> List[Repository]:
     """Fetch all repositories in a list of projects.
 
@@ -161,6 +165,8 @@ async def get_repositories(
         Whether or not to continue on error.
         If True, the failed repository is skipped, and the exception
         is logged. If False, the exception is raised.
+    max_connections : Optional[int]
+        The maximum number of concurrent connections to open.
 
     Returns
     -------
@@ -170,7 +176,7 @@ async def get_repositories(
     if projects is None:
         projects = [None]
     coros = [_get_project_repos(client, project) for project in projects]
-    rtn = await run_coros(coros, batch_size=batch_size, sleep_duration=sleep_duration)
+    rtn = await run_coros(coros, max_connections=max_connections)
     return handle_gather(rtn, exc_ok=exc_ok)
 
 
@@ -200,8 +206,7 @@ async def get_artifact_vulnerabilities(
     tags: Optional[List[str]] = None,
     projects: Optional[List[str]] = None,
     exc_ok: bool = False,
-    batch_size: Optional[int] = 5,
-    sleep_duration: Optional[float] = None,
+    max_connections: Optional[int] = 5,
     **kwargs: Any,
 ) -> List[ArtifactInfo]:
     """Fetch all artifact vulnerability reports in all projects or a subset of projects,
@@ -213,7 +218,7 @@ async def get_artifact_vulnerabilities(
 
     Attempting to fetch all artifact vulnerability reports in all projects
     simultaneously will likely DoS your harbor instance, and as such it is not advisable
-    to set `batch_size` to a large value. The default value of 5 is a known safe value,
+    to set `max_connections` to a large value. The default value of 5 is a known safe value,
     but you may need to experiment with your own instance to find the optimal value.
 
     Parameters
@@ -228,17 +233,14 @@ async def get_artifact_vulnerabilities(
     exc_ok : bool
         Whether or not to continue on error.
         If True, the failed artifact is skipped, and the exception
-        is logged. If False, the exception is raised.
-        For large batches, it is recommended to set this to True.
-        NOTE: there is no functionality in place for scheduling retrying of failed coros.
-    batch_size : Optional[int]
-        The number of requests to make in each batch.
-        If None, all requests will be made in a single batch.
-        WARNING: uncapping this will likely cause a DoS on the Harbor server.
-    sleep_duration : Optional[float]
-        The duration to sleep between batches of requests.
-        If None, the next batch is sent immediately.
-        By default, sleeping is disabled.
+        is logged.
+        If False, the exception is raised.
+        For processing a large number of artifacts, it is recommended to set this to True.
+        NOTE: there is no functionality in place for scheduling retry of failed coros.
+    max_connections : Optional[int]
+        The maximum number of concurrent connections to the Harbor API.
+        If None, the number of connections is unlimited.
+        WARNING: uncapping connections will likely cause a DoS on the Harbor server.
     **kwargs : Any
         Additional arguments to pass to the `HarborAsyncClient.get_artifacts` method.
 
@@ -253,12 +255,19 @@ async def get_artifact_vulnerabilities(
         p = await client.get_projects()
         projects = [project.name for project in p if project.name]
 
-    repos = await get_repositories(client, projects, exc_ok=exc_ok)
+    repos = await get_repositories(
+        client, projects, max_connections=max_connections, exc_ok=exc_ok
+    )
 
     # We first retrieve all artifacts before we get the vulnerability reports
     # since the reports themselves lack information about the artifact.
-    artifacts = await get_artifacts(client, repos=repos, tags=tags, **kwargs)
-
+    artifacts = await get_artifacts(
+        client,
+        repos=repos,
+        tags=tags,
+        max_connections=max_connections,
+        **kwargs,
+    )
     # Filter out artifacts without a scan overview (no vulnerability report)
     artifacts = [a for a in artifacts if a.artifact.scan_overview is not None]
 
@@ -266,34 +275,50 @@ async def get_artifact_vulnerabilities(
     # getting all reports in one call.
     # This is done concurrently to speed up the process.
     coros = [_get_artifact_report(client, artifact) for artifact in artifacts]
-    artifacts = await run_coros(
-        coros, batch_size=batch_size, sleep_duration=sleep_duration
-    )
+    artifacts = await run_coros(coros, max_connections=max_connections)
     return handle_gather(artifacts, exc_ok=exc_ok)
 
 
 async def run_coros(
     coros: List[Coroutine[Any, Any, Any]],
-    batch_size: Optional[int],
-    sleep_duration: Optional[float],
+    max_connections: Optional[int],
 ) -> List[Any]:
-    """Splits up a list of coroutines into smaller batches and runs each batch sequentially."""
+    """Runs a list of coroutines and returns the results.
+    Given a `max_connections` value, the number of concurrent coroutines is limited.
+    All coroutines are run with `asyncio.gather(..., return_exceptions=True)`,
+    so the list of results can contain exceptions, which must be handled
+    by the caller.
+
+    Parameters
+    ----------
+    coros : List[Coroutine[Any, Any, Any]]
+        The list of coroutines to run.
+    max_connections : Optional[int]
+        The maximum number of concurrent coroutines to run.
+
+    Returns
+    -------
+    List[Any]
+        A list of results from running the coroutines, which may contain exceptions.
+    """
     results = []
 
-    # Divide coros into batches
-    if batch_size is not None:
-        coros_to_run = [
-            coros[i : i + batch_size] for i in range(0, len(coros), batch_size)
-        ]
-    else:
-        coros_to_run = [coros]
+    # Create semaphore to limit concurrent connections
+    maxconn = max_connections or 0  # semamphore expects an int
+    sem = asyncio.Semaphore(maxconn)
 
-    for coros in coros_to_run:
-        res = await asyncio.gather(*coros, return_exceptions=True)
-        results.extend(res)
-        if sleep_duration is not None:
-            await asyncio.sleep(sleep_duration)  # sleep between batches
+    # Instead of passing the semaphore to each coroutine, we wrap each coroutine
+    # in a function that acquires the semaphore before running the coroutine.
+    # This lets us run any coroutine without having to modify them to accommodate
+    # the semaphore.
+    async def _wrap_coro(coro: Coroutine[Any, Any, Any]) -> Any:
+        async with sem:
+            return await coro
 
+    res = await asyncio.gather(
+        *[_wrap_coro(coro) for coro in coros], return_exceptions=True
+    )
+    results.extend(res)
     return results
 
 
