@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Callable, Generator, Iterable, List, Optional
+from typing import TYPE_CHECKING, Callable, Iterable, List, Optional
 
 if TYPE_CHECKING:
     from typing import Dict
@@ -51,20 +51,67 @@ class ArtifactInfo(BaseModel):
         return f"{self.repository.name}:{tag}"
 
     def has_cve(self, cve_id: str) -> bool:
+        """Returns whether the artifact is affected by the given CVE ID.
+
+        Parameters
+        ----------
+        cve_id : str
+            The CVE ID, e.g. CVE-2019-1234.
+
+        Returns
+        -------
+        bool
+            Whether the artifact is affected by the given CVE ID.
+        """
         return self.vuln_by_cve(cve_id) is not None
 
     def has_description(self, description: str, case_sensitive: bool = False) -> bool:
+        """Returns whether the artifact is affected by a vulnerability whose description
+        contains the given string.
+
+        Parameters
+        ----------
+        description : str
+            The string to search for in vulnerability descriptions.
+        case_sensitive : bool
+            Case sensitive matching
+
+        Returns
+        -------
+        bool
+            Whether the artifact is affected by a vulnerability whose description
+            contains the given string.
+        """
         for vuln in self.vulns_with_description(description, case_sensitive):
             return True
         return False
 
     def has_package(self, package: str, case_sensitive: bool = False) -> bool:
+        """Returns whether the artifact is affected by a vulnerability whose affected
+        package matches the given string.
+
+        Parameters
+        ----------
+        package : str
+            The name of the package to search for.
+        case_sensitive : bool
+            Case sensitive matching
+
+        Returns
+        -------
+        bool
+            Whether the artifact is affected by a vulnerability whose affected
+            package matches the given string.
+        """
         for vuln in self.vulns_with_package(package, case_sensitive):
             return True
         return False
 
     def vuln_by_cve(self, cve: str) -> Optional[VulnerabilityItem]:
-        """Returns the vulnerability with the specified CVE ID if it exists.
+        """Returns the vulnerability with the specified CVE ID if the artifact is
+        affected by it.
+
+        To just check if the artifact is affected by a given CVE, use [`has_cve()`][harborapi.ext.artifact.ArtifactInfo.has_cve].
 
         Parameters
         ----------
