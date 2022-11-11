@@ -18,6 +18,38 @@ class ArtifactInfo(BaseModel):
     report: HarborVulnerabilityReport = HarborVulnerabilityReport()  # type: ignore # why complain?
     # NOTE: add Project?
 
+    @property
+    def name_with_digest(self) -> str:
+
+        """The name of the artifact as denoted by its digest.
+
+        Returns
+        -------
+        str
+            The artifact's name in the form of `repository@digest`.
+        """
+        # The digest should always exist, but just in case:
+        digest = self.artifact.digest
+        if digest:
+            digest = digest[:15]  # mimic harbor digest notation
+        return f"{self.repository.name}@{self.artifact.digest}"
+
+    @property
+    def name_with_tag(self) -> str:
+        """The name of the artifact as denoted by its primary tag.
+
+        Returns
+        -------
+        str
+            The artifact's name in the form of `repository:tag`.
+        """
+        tag = None
+        if self.artifact.tags:
+            tag = self.artifact.tags[0].name
+        if not tag:
+            tag = "untagged"
+        return f"{self.repository.name}:{tag}"
+
     def has_cve(self, cve_id: str) -> bool:
         return self.vuln_by_cve(cve_id) is not None
 
