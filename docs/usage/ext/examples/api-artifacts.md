@@ -6,7 +6,7 @@ The recipe below demonstrates how to fetch all artifacts that have vulnerabiliti
 
 The recipe makes use of the built-in rate limiting implemented in [`get_artifact_vulnerabilities`][harborapi.ext.api.get_artifact_vulnerabilities]. By default, a maximum of 5 requests are sent concurrently, which prevents accidentally performing a DoS attack on your Harbor instance.
 
-Attempting to fetch too many resources simultaneously can lead to extreme slowdowns and in some cases completely locking up your Harbor instance. Experiment with the `batch_size` argument of [`get_artifact_vulnerabilities`][harborapi.ext.api.get_artifact_vulnerabilities] to find the optimal value for your Harbor instance.
+Attempting to fetch too many resources simultaneously can lead to extreme slowdowns and in some cases completely locking up your Harbor instance. Experiment with the `max_connections` argument of [`get_artifact_vulnerabilities`][harborapi.ext.api.get_artifact_vulnerabilities] to find the optimal value for your Harbor instance.
 
 ```py
 import asyncio
@@ -29,7 +29,7 @@ client = HarborAsyncClient(
 async def main():
     artifacts = await get_artifact_vulnerabilities(
         client,
-        batch_size=5, # number of concurrent requests
+        max_connections=5, # number of concurrent requests
         exc_ok=True,
     )
 

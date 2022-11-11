@@ -46,6 +46,13 @@ nav:
       - usage/exceptions.md
       - usage/creating-system-robot.md
       - usage/async-sync.md
+      - "Extended Functionality":
+          - "usage/ext/index.md"
+          - "usage/ext/artifact.md"
+          - "usage/ext/api.md"
+          - "usage/ext/report.md"
+          - "Examples":
+              - "usage/ext/examples/api-artifacts.md"
       - "Recipes":
           - usage/recipes/index.md
           - usage/recipes/artifactowner.md
@@ -74,13 +81,7 @@ nav:
       - endpoints/systeminfo.md
       - endpoints/users.md
       - endpoints/usergroups.md
-  - "Extended Functionality":
-      - "ext/index.md"
-      - "ext/artifact.md"
-      - "ext/api.md"
-      - "ext/report.md"
-      - "Examples":
-          - "ext/examples/api-artifacts.md"
+
   - "Reference":
       - reference/client.md
       - reference/exceptions.md

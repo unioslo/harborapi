@@ -1,4 +1,4 @@
-# Creating Privileged Robot Accounts
+# Privileged Robot Accounts
 
 By default, the Robot account creation process in the Harbor web interface only allows for a limited permission scope when creating new Robot accounts. As of Harbor v.2.5.2, this is still the case.
 

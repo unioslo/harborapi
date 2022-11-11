@@ -20,4 +20,4 @@ artifacts = list(itertools.chain.from_iterable(r))
 
 ## Using the `ext` module
 
-The recipe above has been baked into the `ext` module to allow for quick and easy retrieval of artifacts in multiple repositories. See: [Extended Functionality](../../ext/index.md) for more information.
+The recipe above has been baked into the `ext` module to allow for quick and easy retrieval of artifacts in multiple repositories. See: [Extended Functionality](../ext/index.md) for more information.
