@@ -5,7 +5,6 @@ from typing import Iterable, List, Tuple
 
 from harborapi.models.scanner import Severity, VulnerabilityItem
 
-from .. import npmath
 from .api import ArtifactInfo
 from .cve import CVSSData
 
@@ -20,6 +19,14 @@ class Vulnerability:
 class ArtifactCVSS:
     cvss: CVSSData
     artifact: ArtifactInfo
+
+    @classmethod
+    def from_artifactinfo_cvss(cls, artifact: ArtifactInfo):
+        """Create a CVSSData instance from an ArtifactInfo."""
+        return cls(
+            cvss=artifact.cvss,
+            artifact=artifact,
+        )
 
 
 def _remove_duplicate_artifacts(
@@ -54,19 +61,9 @@ class ArtifactReport:
         return len(self.artifacts) > 1
 
     @property
-    def cvss(self) -> List[ArtifactCVSS]:
-        cvss = []  # type: List[ArtifactCVSS]
-        for a in self.artifacts:
-            scores = a.report.cvss_scores
-            c = CVSSData(
-                mean=npmath.median(scores),
-                median=npmath.mean(scores),
-                stdev=npmath.stdev(scores),
-                min=npmath.min(scores),
-                max=npmath.max(scores),
-            )
-            cvss.append(ArtifactCVSS(c, a))
-        return cvss
+    def cvss(self) -> CVSSData:
+        """Get an aggregate of CVSS data for the artifacts in this report."""
+        return CVSSData.from_report(self)
 
     # NOTE: we could implement these methods with some dirty metaprogramming
     #       but let's keep it simple for now

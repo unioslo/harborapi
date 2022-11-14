@@ -7,6 +7,7 @@ from pydantic import BaseModel
 
 from ..models import Artifact, Repository
 from ..models.scanner import HarborVulnerabilityReport, VulnerabilityItem
+from .cve import CVSSData
 
 
 class ArtifactInfo(BaseModel):
@@ -17,6 +18,21 @@ class ArtifactInfo(BaseModel):
     repository: Repository
     report: HarborVulnerabilityReport = HarborVulnerabilityReport()  # type: ignore # why complain?
     # NOTE: add Project?
+
+    @property
+    def cvss(self) -> CVSSData:
+        """Key CVSS metrics for the artifact.
+
+        Returns
+        -------
+        CVSSData
+            Key CVSS metrics for the artifact.
+
+        See Also
+        --------
+        [CVSSData][harborapi.ext.cve.CVSSData]
+        """
+        return CVSSData.from_artifactinfo(self)
 
     @property
     def name_with_digest(self) -> str:
