@@ -1,5 +1,15 @@
 import asyncio
-from typing import Any, Coroutine, List, Optional, Sequence, TypeVar, Union
+from typing import (
+    Any,
+    Coroutine,
+    List,
+    Literal,
+    Optional,
+    Sequence,
+    TypeVar,
+    Union,
+    overload,
+)
 
 import backoff
 from httpx import TimeoutException
@@ -60,16 +70,44 @@ async def get_artifactinfo_by_digest(
     return ArtifactInfo(artifact=artifact, repository=repo, report=report)
 
 
+@overload
+async def get_artifacts(
+    client: HarborAsyncClient,
+    repos: Optional[List[Repository]] = ...,
+    tags: Optional[List[str]] = ...,
+    exc_ok: bool = ...,
+    return_exceptions: Literal[True] = True,
+    max_connections: Optional[int] = ...,
+    **kwargs: Any,
+) -> List[Union[ArtifactInfo, Exception]]:
+    ...
+
+
+@overload
+async def get_artifacts(
+    client: HarborAsyncClient,
+    repos: Optional[List[Repository]] = ...,
+    tags: Optional[List[str]] = ...,
+    exc_ok: bool = ...,
+    return_exceptions: Literal[False] = False,
+    max_connections: Optional[int] = ...,
+    **kwargs: Any,
+) -> List[ArtifactInfo]:
+    ...
+
+
 async def get_artifacts(
     client: HarborAsyncClient,
     repos: Optional[List[Repository]] = None,
+    projects: Optional[List[str]] = None,
     tags: Optional[List[str]] = None,
     exc_ok: bool = True,
+    return_exceptions: bool = False,
     max_connections: Optional[int] = 5,
     **kwargs: Any,
-) -> List[ArtifactInfo]:
+) -> Union[List[ArtifactInfo], List[Union[ArtifactInfo, Exception]]]:
     """Fetch all artifacts in all repositories.
-    Optionally specify a list of repositories to fetch from.
+    Optionally specify a list of repositories or projects to fetch from.
 
     The Harbor API doesn't support getting all artifacts in all projects at once,
     so we have to retrieve all artifacts in each repository and then combine them.
@@ -81,31 +119,36 @@ async def get_artifacts(
     repos : Optional[List[Repository]]
         The list of repositories to fetch artifacts from.
         If not specified, all repositories will be used.
+    projects : Optional[List[str]]
+        The list of projects to fetch repositories from which artifacts
+        are fetched from.
+        If not specified, all projects will be used.
+        Has no effect if `repos` is specified.
     tags : Optional[List[str]]
         The tag(s) to filter the artifacts by.
     exc_ok : bool
         Whether or not to continue on error.
         If True, the failed artifact is skipped, and the exception
         is logged. If False, the exception is raised.
+    return_exceptions : bool
+        Whether or not to return exceptions in the result list.
     max_connections : Optional[int]
         The maximum number of concurrent connections to open.
-
     **kwargs : Any
         Additional arguments to pass to the `HarborAsyncClient.get_artifacts` method.
 
     Returns
     -------
-    List[ArtifactInfo]
+    Union[List[ArtifactInfo], List[Union[ArtifactInfo, Exception]]]
         A list of ArtifactInfo objects, without the .report field populated.
+        Can contain exceptions if `return_exceptions` is True.
     """
     if not repos:
-        repos = await get_repositories(
-            client, projects=[None]
-        )  # bit of a hack for now to retrieve all repos
+        repos = await get_repositories(client, projects=projects)
     # Fetch artifacts from each repository concurrently
     coros = [_get_repo_artifacts(client, repo, tags=tags, **kwargs) for repo in repos]
     a = await run_coros(coros, max_connections=max_connections)
-    return handle_gather(a, exc_ok=exc_ok)
+    return handle_gather(a, exc_ok=exc_ok, return_exceptions=return_exceptions)
     # return list(itertools.chain.from_iterable(a))
 
 
@@ -146,12 +189,35 @@ async def _get_repo_artifacts(
     return [ArtifactInfo(artifact=artifact, repository=repo) for artifact in artifacts]
 
 
+@overload
+async def get_repositories(
+    client: HarborAsyncClient,
+    projects: Optional[List[str]] = ...,
+    exc_ok: bool = ...,
+    return_exceptions: Literal[False] = False,
+    max_connections: Optional[int] = ...,
+) -> List[Repository]:
+    ...
+
+
+@overload
+async def get_repositories(
+    client: HarborAsyncClient,
+    projects: Optional[List[str]] = ...,
+    exc_ok: bool = ...,
+    return_exceptions: Literal[True] = True,
+    max_connections: Optional[int] = ...,
+) -> List[Union[Repository, Exception]]:
+    ...
+
+
 async def get_repositories(
     client: HarborAsyncClient,
     projects: Optional[List[str]] = None,
     exc_ok: bool = False,
+    return_exceptions: bool = False,
     max_connections: Optional[int] = 5,
-) -> List[Repository]:
+) -> Union[List[Repository], List[Union[Repository, Exception]]]:
     """Fetch all repositories in a list of projects.
 
     Parameters
@@ -165,19 +231,22 @@ async def get_repositories(
         Whether or not to continue on error.
         If True, the failed repository is skipped, and the exception
         is logged. If False, the exception is raised.
+    return_exceptions : bool
+        Whether or not to return exceptions in the result list.
     max_connections : Optional[int]
         The maximum number of concurrent connections to open.
 
     Returns
     -------
-    List[Repository]
+    Union[List[Repository], List[Union[Repository, Exception]]]
         A list of Repository objects.
+        Can contain exceptions if `return_exceptions` is True.
     """
     if projects is None:
         projects = [None]
     coros = [_get_project_repos(client, project) for project in projects]
     rtn = await run_coros(coros, max_connections=max_connections)
-    return handle_gather(rtn, exc_ok=exc_ok)
+    return handle_gather(rtn, exc_ok=exc_ok, return_exceptions=return_exceptions)
 
 
 async def _get_project_repos(
@@ -247,8 +316,8 @@ async def get_artifact_vulnerabilities(
     Returns
     -------
     List[ArtifactInfo]
-        A list of ArtifactInfo objects, where the .report field is populated with the
-        vulnerability report.
+        A list of ArtifactInfo objects, where each object's `report` field
+        is populated with the vulnerability report.
     """
     # Get all projects if not specified
     if not projects:
@@ -306,11 +375,11 @@ async def run_coros(
     # Create semaphore to limit concurrent connections
     maxconn = max_connections or 0  # semamphore expects an int
     sem = asyncio.Semaphore(maxconn)
+    logger.debug("Running with max connections: {}", maxconn)
 
     # Instead of passing the semaphore to each coroutine, we wrap each coroutine
-    # in a function that acquires the semaphore before running the coroutine.
-    # This lets us run any coroutine without having to modify them to accommodate
-    # the semaphore.
+    # in a function that acquires the semaphore before calling the coroutine.
+    # This lets us run any coroutine without having to explicitly pass the semaphore.
     async def _wrap_coro(coro: Coroutine[Any, Any, Any]) -> Any:
         async with sem:
             return await coro
@@ -366,12 +435,11 @@ async def _get_artifact_report(
     return artifact
 
 
-# TODO: maybe move this to a separate module?
-#       but putting it into utils leads to circular imports
-#       Consider moving ArtifactInfo to a separate module to resolve this
 def handle_gather(
-    results: Sequence[Union[T, Sequence[T], Exception]], exc_ok: bool
-) -> List[T]:
+    results: Sequence[Union[T, Sequence[T], Exception]],
+    exc_ok: bool,
+    return_exceptions: bool = False,
+) -> Union[List[T], List[Union[T, Exception]]]:
     """Handles the returned values of an `asyncio.gather()` call, handling
     any exceptions and returning a list of the results with exceptions removed.
     Flattens lists of results. TODO: toggle this?
@@ -384,17 +452,22 @@ def handle_gather(
         Whether to log and skip exceptions, or raise them.
         If True, exceptions are logged and skipped.
         If False, exceptions are raised.
+    return_exceptions : bool
+        Whether to return exceptions in the list of results.
+        If True, exceptions are returned in the list of results.
 
     Returns
     -------
     List[T]
         The list of results with exceptions removed.
     """
-    ok = []  # type: List[T]
+    ok = []  # type: Union[List[T], List[Union[T, Exception]]]
     for res_or_exc in results:
         if isinstance(res_or_exc, Exception):
             if exc_ok:
                 logger.error(res_or_exc)
+                if return_exceptions:
+                    ok.append(res_or_exc)
             else:
                 raise res_or_exc
         else:
