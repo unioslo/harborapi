@@ -1,6 +1,6 @@
-# Fetching Vulnerabilities from All Artifacts
+# Fetching vulnerabilities from all artifacts
 
-This page describes how to fetch all vulnerabilities from all artifacts in all repositories in all (or a subset of) projects.
+This page describes how to fetch all vulnerabilities from all artifacts in all repositories in all (or a subset of) projects using the helper functions defined in [`ext.api`](/reference/ext/api.md).
 
 The recipe below demonstrates how to fetch all artifacts that have vulnerabilities affecting OpenSSL version 3.x.
 

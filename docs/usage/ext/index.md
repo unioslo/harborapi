@@ -1,4 +1,4 @@
-# `ext`: Extended Functionality
+# `ext`: Extended functionality
 
 The `harborapi.ext` module contains extensions and utility functions that are not part of the Harbor API.
 

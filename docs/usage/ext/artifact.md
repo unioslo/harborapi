@@ -1,4 +1,4 @@
-# Artifact Info
+# Artifact info
 
 The `ext.artifact` module defines the `ArtifactInfo` class that composes several different Harbor API models into one object. The models it is composed of are:
 

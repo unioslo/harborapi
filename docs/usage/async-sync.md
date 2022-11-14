@@ -1,13 +1,13 @@
-# Async vs Sync
+# Async vs sync
 
 
-## Async Client
+## Async client
 
 `harborapi` is predominantly focused on providing an async API for interacting with the Harbor API. The various code snippets on these pages all assume the instantiated client is [`HarborAsyncClient`][harborapi.client.HarborAsyncClient], and it is running within a coroutine where `await` can be used.
 
 If you only intend to use the Async Client, skip this page.
 
-## Non-Async Client
+## Non-async client
 
 `harborapi` provides `HarborClient` as a non-async alternative. `HarborClient` provides all the same methods as `HarborAsyncClient`, except it schedules the asynchronous methods to run as coroutines in the event loop by intercepting attribute access on the class.
 
