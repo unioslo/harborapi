@@ -6,6 +6,10 @@ edit_uri: edit/main/docs/
 
 theme:
   name: "material"
+  palette:
+    scheme: slate
+    primary: deep purple
+    accent: orange
   language: en
   features:
     - navigation.tabs
