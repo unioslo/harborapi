@@ -27,10 +27,6 @@ class ArtifactInfo(BaseModel):
         -------
         CVSSData
             Key CVSS metrics for the artifact.
-
-        See Also
-        --------
-        [CVSSData][harborapi.ext.cve.CVSSData]
         """
         return CVSSData.from_artifactinfo(self)
 

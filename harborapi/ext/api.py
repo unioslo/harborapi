@@ -31,6 +31,7 @@ async def get_artifactinfo_by_digest(
     tag: Optional[str] = None,
     digest: Optional[str] = None,
 ) -> Optional[ArtifactInfo]:
+    """Fetch an artifact and its vulnerability report by digest."""
     reference = tag or digest
     if not reference:
         raise ValueError("Must specify either tag or digest")
@@ -479,6 +480,20 @@ def handle_gather(
 
 
 async def get_artifact_owner(client: HarborAsyncClient, artifact: Artifact) -> UserResp:
+    """Get the full owner information for an artifact.
+
+    Parameters
+    ----------
+    client : HarborAsyncClient
+        The client to use for the API call.
+    artifact : Artifact
+        The artifact to get the owner for.
+
+    Returns
+    -------
+    UserResp
+        The full owner information for the artifact.
+    """
     project_id = artifact.project_id
     if project_id is None:
         raise ValueError("Artifact has no project_id")

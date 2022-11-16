@@ -1,6 +1,6 @@
 # Reports
 
-The `ext.report` module defines the [`ArtifactReport`][harborapi.ext.report.ArtifactReport] class, which aggregates several [`ArtifactInfo`][harborapi.ext.artifact.ArtifactInfo] objects. Through this class, one can query the aggregated data for all artifacts affected by a given vulnerability, all artifacts who has a given vulnerable package, etc.
+The `ext.report` module defines the [`ArtifactReport`][harborapi.ext.report.ArtifactReport] class, which aggregates several [`ArtifactInfo`][harborapi.ext.artifact.ArtifactInfo] objects. Through this class, one can query the aggregated data for all artifacts affected by a given vulnerability, all artifacts who have a given vulnerable package, etc.
 
 This allows for a deeper analysis of the vulnerabilities in your Harbor instance, and can be used to generate reports for your Harbor instance.
 
