@@ -2964,8 +2964,8 @@ class HarborAsyncClient:
             params=params,
             headers=self._get_headers(headers),
         )
-        check_response_status(resp)
         self.log_response(resp)
+        check_response_status(resp)
         j = handle_optional_json_response(resp)
         if j is None:
             return resp.text, None  # type: ignore # FIXME: resolve this ASAP (use overload?)
@@ -3009,8 +3009,8 @@ class HarborAsyncClient:
             params=params,
             headers=self._get_headers(headers),
         )
-        check_response_status(resp)
         self.log_response(resp)
+        check_response_status(resp)
         return resp
 
     @backoff.on_exception(backoff.expo, RequestError, max_time=30)
@@ -3048,8 +3048,8 @@ class HarborAsyncClient:
             headers=self._get_headers(headers),
             **kwargs,
         )
-        check_response_status(resp)
         self.log_response(resp)
+        check_response_status(resp)
         return resp
 
     @backoff.on_exception(backoff.expo, RequestError, max_time=30)
@@ -3088,8 +3088,8 @@ class HarborAsyncClient:
             headers=self._get_headers(headers),
             **kwargs,
         )
-        check_response_status(resp)
         self.log_response(resp)
+        check_response_status(resp)
         return resp
 
     @backoff.on_exception(backoff.expo, RequestError, max_time=30)
