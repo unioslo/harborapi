@@ -88,7 +88,7 @@ def construct_model(cls: Type[T], data: Any) -> T:
         raise e
 
 
-class RequestLogEntry(NamedTuple):
+class ResponseLogEntry(NamedTuple):
     url: str
     method: str
     status_code: int
@@ -180,7 +180,7 @@ class HarborAsyncClient:
         else:
             logger.disable("harborapi")
 
-        self.request_log = deque()  # type: deque[RequestLogEntry]
+        self.response_log = deque()  # type: deque[ResponseLogEntry]
 
     def log_response(self, response: Response) -> None:
         """Log the response to a request.
@@ -190,8 +190,8 @@ class HarborAsyncClient:
         response : Response
             The response to log.
         """
-        self.request_log.append(
-            RequestLogEntry(
+        self.response_log.append(
+            ResponseLogEntry(
                 url=response.url,
                 method=response.request.method,
                 status_code=response.status_code,
@@ -201,10 +201,10 @@ class HarborAsyncClient:
         )
 
     @property
-    def last_response(self) -> Optional[RequestLogEntry]:
+    def last_response(self) -> Optional[ResponseLogEntry]:
         """Return the last response logged."""
         try:
-            return self.request_log[-1]
+            return self.response_log[-1]
         except IndexError:
             return None
 
