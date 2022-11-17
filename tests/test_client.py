@@ -358,3 +358,19 @@ async def test_exceptions(
         elif method == "DELETE":
             await async_client.delete("/exceptions")
     assert exc_info.value.status_code == status_code
+
+
+async def test_log_response(async_client: HarborAsyncClient, httpserver: HTTPServer):
+    """Tests handling of data from the server that does not match the schema."""
+    httpserver.expect_oneshot_request("/api/v2.0/users").respond_with_json(
+        [{"username": "user1"}, {"username": "user2"}], status=200
+    )
+
+    async_client.url = httpserver.url_for("/api/v2.0")
+    await async_client.get_users()
+    last_response = async_client.last_response
+    assert last_response is not None
+    assert last_response.status_code == 200
+    assert last_response.url == async_client.url + "/users"
+    assert last_response.method == "GET"
+    assert last_response.response_size > 0
