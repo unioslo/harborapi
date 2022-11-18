@@ -167,6 +167,21 @@ class ArtifactReport:
         )
         return ages, scores, colors
 
+    def has_cve(self, cve_id: str) -> bool:
+        """Check if any of the artifacts has the given CVE.
+
+        Parameters
+        ----------
+        cve_id : str
+            The CVE ID, e.g. CVE-2019-1234.
+
+        Returns
+        -------
+        bool
+            True if any of the artifacts has the given CVE, False otherwise.
+        """
+        return any(a.has_cve(cve_id) for a in self.artifacts)
+
     def with_cve(self, cve_id: str) -> List[ArtifactInfo]:
         """Get all artifacts that have the given CVE.
 
@@ -181,6 +196,27 @@ class ArtifactReport:
             A list of artifacts that have the given CVE.
         """
         return [a for a in self.artifacts if a.has_cve(cve_id)]
+
+    def has_description(self, description: str, case_sensitive: bool = False) -> bool:
+        """Check if any of the artifacts have a vulnerability with a description
+        that contains the given string.
+
+        Parameters
+        ----------
+        description : str
+            The description to search for.
+        case_sensitive : bool
+            Whether the search should be case sensitive, by default False.
+
+        Returns
+        -------
+        bool
+            True if any of the artifacts has the given description, False otherwise.
+        """
+        return any(
+            a.has_description(description, case_sensitive=case_sensitive)
+            for a in self.artifacts
+        )
 
     def with_description(
         self, description: str, case_sensitive: bool = False
@@ -202,6 +238,26 @@ class ArtifactReport:
         return [
             a for a in self.artifacts if a.has_description(description, case_sensitive)
         ]
+
+    def has_package(self, package: str, case_sensitive: bool = False) -> bool:
+        """Check if any of the artifacts has the given package.
+
+        Parameters
+        ----------
+        package : str
+            The package name to search for.
+        case_sensitive : bool
+            Whether the search should be case sensitive, by default False.
+
+        Returns
+        -------
+        bool
+            True if any of the artifacts has the given package, False otherwise.
+        """
+        return any(
+            a.has_package(package, case_sensitive=case_sensitive)
+            for a in self.artifacts
+        )
 
     def with_package(
         self, package: str, case_sensitive: bool = False
