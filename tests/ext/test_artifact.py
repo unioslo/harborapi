@@ -1,27 +1,20 @@
 from typing import List
 
 import pytest
-from hypothesis import HealthCheck, assume, given, settings
+from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from harborapi.ext.artifact import ArtifactInfo
-from harborapi.models.models import Artifact, Repository
-from harborapi.models.scanner import (
-    HarborVulnerabilityReport,
-    Severity,
-    VulnerabilityItem,
-)
+from harborapi.models.scanner import Severity, VulnerabilityItem
 from harborapi.version import SemVer
 
-from ..strategies.artifact import artifact_strategy, get_hbv_strategy
+from ..strategies.ext import artifact_info_strategy
 
 
-@given(artifact_strategy, st.builds(Repository, name=st.text()), get_hbv_strategy())
+@given(artifact_info_strategy)
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 def test_artifactinfo(
-    art: Artifact,
-    repository: Repository,
-    report: HarborVulnerabilityReport,
+    artifact: ArtifactInfo,
 ) -> None:
     vuln = VulnerabilityItem(
         id="CVE-2022-test-1",
@@ -35,9 +28,7 @@ def test_artifactinfo(
             "https://www.test2.com",
         ],
     )
-    report.vulnerabilities = [vuln]
-
-    artifact = ArtifactInfo(artifact=art, repository=repository, report=report)
+    artifact.report.vulnerabilities = [vuln]
 
     assert artifact.has_cve("CVE-2022-test-1")
     assert artifact.has_description("test description")
