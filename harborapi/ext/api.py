@@ -215,7 +215,7 @@ async def get_repositories(
 async def get_repositories(
     client: HarborAsyncClient,
     projects: Optional[List[str]] = None,
-    exc_ok: bool = False,
+    exc_ok: bool = True,
     return_exceptions: bool = False,
     max_connections: Optional[int] = 5,
 ) -> Union[List[Repository], List[Union[Repository, Exception]]]:
@@ -275,7 +275,7 @@ async def get_artifact_vulnerabilities(
     client: HarborAsyncClient,
     tags: Optional[List[str]] = None,
     projects: Optional[List[str]] = None,
-    exc_ok: bool = False,
+    exc_ok: bool = True,
     max_connections: Optional[int] = 5,
     **kwargs: Any,
 ) -> List[ArtifactInfo]:
