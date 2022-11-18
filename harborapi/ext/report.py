@@ -41,8 +41,6 @@ def _remove_duplicate_artifacts(
             yield a
 
 
-# @dataclass
-# TODO: rename to something more appropriate
 class ArtifactReport:
     """A report for one or more artifacts."""
 
@@ -54,8 +52,6 @@ class ArtifactReport:
         if remove_duplicates:
             artifacts = list(_remove_duplicate_artifacts(artifacts))
         self.artifacts = artifacts
-        if len(artifacts) == 0:
-            raise ValueError("List of artifacts must not be empty")
 
     @property
     def is_aggregate(self) -> bool:
