@@ -159,7 +159,7 @@ class ArtifactReport:
     def get_vulns_age_score_color(
         self,
     ) -> Tuple[List[datetime], List[float], List[float]]:
-        """Get a scatter plot of the age of the artifacts vs. the CVSS score."""
+        """Get data points for a scatter plot of the age of the artifacts vs. the CVSS score."""
         ages = []  # type: List[datetime]
         scores = []  # type: List[float]
         colors = []  # type: List[float]
@@ -183,7 +183,7 @@ class ArtifactReport:
         """
         return any(a.has_cve(cve_id) for a in self.artifacts)
 
-    def with_cve(self, cve_id: str) -> List[ArtifactInfo]:
+    def with_cve(self, cve_id: str) -> "ArtifactReport":
         """Get all artifacts that have the given CVE.
 
         Parameters
@@ -193,10 +193,10 @@ class ArtifactReport:
 
         Returns
         -------
-        List[ArtifactInfo]
-            A list of artifacts that have the given CVE.
+        ArtifactReport
+            A report with all artifacts that are affected by the given CVE.
         """
-        return [a for a in self.artifacts if a.has_cve(cve_id)]
+        return ArtifactReport([a for a in self.artifacts if a.has_cve(cve_id)])
 
     def has_description(self, description: str, case_sensitive: bool = False) -> bool:
         """Check if any of the artifacts have a vulnerability with a description
@@ -221,7 +221,7 @@ class ArtifactReport:
 
     def with_description(
         self, description: str, case_sensitive: bool = False
-    ) -> List[ArtifactInfo]:
+    ) -> "ArtifactReport":
         """Get all artifacts that have a vulnerability containing the given string.
 
         Parameters
@@ -233,12 +233,17 @@ class ArtifactReport:
 
         Returns
         -------
-        List[ArtifactInfo]
-            A list of artifacts that have a vulnerability containing the given string.
+        ArtifactReport
+            A report with all artifacts that have a vulnerability containing the given
+            string.
         """
-        return [
-            a for a in self.artifacts if a.has_description(description, case_sensitive)
-        ]
+        return ArtifactReport(
+            [
+                a
+                for a in self.artifacts
+                if a.has_description(description, case_sensitive)
+            ]
+        )
 
     def has_package(
         self,
@@ -281,7 +286,7 @@ class ArtifactReport:
         case_sensitive: bool = False,
         min_version: Optional[VersionType] = None,
         max_version: Optional[VersionType] = None,
-    ) -> List[ArtifactInfo]:
+    ) -> "ArtifactReport":
         """Get all artifacts that have a vulnerability affecting the given package.
 
         Parameters
@@ -297,10 +302,11 @@ class ArtifactReport:
 
         Returns
         -------
-        List[ArtifactInfo]
-            A list of artifacts that have a vulnerability affecting the given package.
+        ArtifactReport
+            An artifact report with all artifacts that have a vulnerability affecting
+            the given package.
         """
-        return (
+        return ArtifactReport(
             [
                 a
                 for a in self.artifacts
@@ -311,6 +317,39 @@ class ArtifactReport:
                     max_version=max_version,
                 )
             ],
+        )
+
+    def has_severity(self, severity: Severity) -> bool:
+        """Check if any of the artifacts has a vulnerability with the given severity.
+
+        Parameters
+        ----------
+        severity : Severity
+            The severity to search for.
+
+        Returns
+        -------
+        bool
+            True if any of the artifacts has the given severity, False otherwise.
+        """
+        return bool(self.with_severity(severity).artifacts)
+
+    def with_severity(self, severity: Severity) -> "ArtifactReport":
+        """Get all artifacts that have a vulnerability with the given severity.
+
+        Parameters
+        ----------
+        severity : Severity
+            The severity to search for.
+
+        Returns
+        -------
+        ArtifactReport
+            An artifact report with all artifacts that have a vulnerability with the
+            given severity.
+        """
+        return ArtifactReport(
+            [a for a in self.artifacts if a.report.severity == severity]
         )
 
 
