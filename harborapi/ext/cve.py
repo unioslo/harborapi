@@ -33,6 +33,16 @@ class CVSSData(BaseModel):
     def from_artifactinfo(cls, artifact: "ArtifactInfo") -> "CVSSData":
         """Create a CVSSData instance from an ArtifactInfo object.
 
+        Parameters
+        ----------
+        artifact : ArtifactInfo
+            The artifact to extract CVSS data from.
+
+        Returns
+        -------
+        CVSSData
+            The CVSS data for the artifact.
+
         See Also
         --------
         [ArtifactInfo.cvss][harborapi.ext.artifact.ArtifactInfo.cvss]
@@ -48,7 +58,18 @@ class CVSSData(BaseModel):
 
     @classmethod
     def from_report(cls, report: "ArtifactReport") -> "CVSSData":
-        """Create a CVSSData instance from an ArtifactReport object."""
+        """Create a CVSSData instance from an ArtifactReport object.
+
+        Parameters
+        ----------
+        report : ArtifactReport
+            The report to extract CVSS data from.
+
+        Returns
+        -------
+        CVSSData
+            The CVSS data for the report.
+        """
         data = [artifact.cvss for artifact in report.artifacts]
         return cls(
             mean=stats.median([d.mean for d in data]),
