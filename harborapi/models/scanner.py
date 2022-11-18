@@ -7,29 +7,13 @@ from __future__ import annotations
 from collections import Counter
 from datetime import datetime
 from enum import Enum
-from typing import (
-    Any,
-    Dict,
-    Iterable,
-    List,
-    Literal,
-    NamedTuple,
-    Optional,
-    Tuple,
-    Union,
-    overload,
-)
+from typing import Any, Dict, Iterable, List, Literal, Optional, Tuple, Union, overload
 
 from pydantic import AnyUrl, BaseModel, Extra, Field
 
+from ..version import SemVer, get_semver
+
 DEFAULT_VENDORS = ("nvd", "redhat")
-
-
-class SemVer(NamedTuple):
-    # TODO: move this and get_version_tuple() to separate module (for reuse)
-    major: int
-    minor: int
-    patch: int
 
 
 class Scanner(BaseModel):
@@ -43,11 +27,9 @@ class Scanner(BaseModel):
         None, description="The version of the scanner.", example="0.4.0"
     )
 
-    def get_version_tuple(self) -> SemVer:
-        if self.version is None:
-            return SemVer(0, 0, 0)
-        parts = self.version.split(".")
-        return SemVer(*[int(part) for part in parts])  # why have to wrap in list?
+    @property
+    def semver(self) -> SemVer:
+        return get_semver(self.version)
 
 
 class ScannerProperties(BaseModel):
@@ -203,6 +185,10 @@ class VulnerabilityItem(BaseModel):
         example=["CWE-476"],
     )
     vendor_attributes: Optional[Dict[str, Any]] = None
+
+    @property
+    def semver(self) -> SemVer:
+        return get_semver(self.version)
 
     @property
     def fixable(self) -> bool:
