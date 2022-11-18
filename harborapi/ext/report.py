@@ -240,7 +240,13 @@ class ArtifactReport:
             a for a in self.artifacts if a.has_description(description, case_sensitive)
         ]
 
-    def has_package(self, package: str, case_sensitive: bool = False) -> bool:
+    def has_package(
+        self,
+        package: str,
+        case_sensitive: bool = False,
+        min_version: Optional[VersionType] = None,
+        max_version: Optional[VersionType] = None,
+    ) -> bool:
         """Check if any of the artifacts has the given package.
 
         Parameters
@@ -249,6 +255,10 @@ class ArtifactReport:
             The package name to search for.
         case_sensitive : bool
             Whether the search should be case sensitive, by default False.
+        min_version : Optional[VersionType]
+            The minimum version of the package to search for, by default None.
+        max_version : Optional[VersionType]
+            The maximum version of the package to search for, by default None.
 
         Returns
         -------
@@ -256,7 +266,12 @@ class ArtifactReport:
             True if any of the artifacts has the given package, False otherwise.
         """
         return any(
-            a.has_package(package, case_sensitive=case_sensitive)
+            a.has_package(
+                package,
+                case_sensitive=case_sensitive,
+                min_version=min_version,
+                max_version=max_version,
+            )
             for a in self.artifacts
         )
 
