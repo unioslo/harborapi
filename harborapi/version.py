@@ -8,10 +8,10 @@ class SemVer(NamedTuple):
     prerelease: Optional[str] = None
     build: Optional[str] = None
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return bool(self.major or self.minor or self.patch)
 
-    def __eq__(self, other: "VersionType"):
+    def __eq__(self, other: "VersionType") -> bool:
         other = get_semver(other)
         return (
             self.major == other.major
@@ -21,7 +21,7 @@ class SemVer(NamedTuple):
             and self.build == other.build
         )
 
-    def __gt__(self, other: "VersionType"):
+    def __gt__(self, other: "VersionType") -> bool:
         other = get_semver(other)
         if self.major > other.major:
             return True
@@ -42,15 +42,15 @@ class SemVer(NamedTuple):
                         return True
                     return False
 
-    def __ge__(self, other: "VersionType"):
+    def __ge__(self, other: "VersionType") -> bool:
         other = get_semver(other)
         return self > other or self == other
 
-    def __le__(self, other: "VersionType"):
+    def __le__(self, other: "VersionType") -> bool:
         other = get_semver(other)
         return (not self > other) or self == other
 
-    def __lt__(self, other: "VersionType"):
+    def __lt__(self, other: "VersionType") -> bool:
         other = get_semver(other)
         if (
             self.build != other.build
