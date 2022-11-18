@@ -11,6 +11,7 @@ from harborapi.models.scanner import (
     Severity,
     VulnerabilityItem,
 )
+from harborapi.version import SemVer
 
 from ..strategies.artifact import artifact_strategy, get_hbv_strategy
 
@@ -40,7 +41,29 @@ def test_artifactinfo(
 
     assert artifact.has_cve("CVE-2022-test-1")
     assert artifact.has_description("test description")
+
+    # Affected package (with and without version constraints)
     assert artifact.has_package("test-package")
+    assert artifact.has_package("test-package", min_version=(1, 0, 0))
+    assert artifact.has_package("test-package", max_version=(1, 0, 0))
+    assert artifact.has_package("test-package", max_version=(1, 0, 1))
+    assert not artifact.has_package("test-package", min_version=(1, 0, 1))
+    assert not artifact.has_package("test-package", max_version=(0, 9, 1))
+
+    # Different types of version constraints
+    for version in [(1, 0, 0), "1.0.0", 1, SemVer(1, 0, 0)]:
+        assert artifact.has_package("test-package", min_version=version)
+        assert artifact.has_package(
+            "test-package", min_version=version, max_version=version
+        )
+
+    # Invalid version constraint (min > max)
+    with pytest.raises(ValueError):
+        assert artifact.has_package(
+            "test-package", max_version=(1, 0, 0), min_version=(1, 0, 1)
+        )
+
+    # CVE that doesn't exist
     assert not artifact.has_cve("CVE-2022-test-2")
     assert not artifact.has_description("test description 2")
     assert not artifact.has_package("test-package-2")

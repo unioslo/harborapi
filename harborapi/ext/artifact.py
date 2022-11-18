@@ -1,5 +1,7 @@
 from typing import TYPE_CHECKING, Callable, Iterable, List, Optional
 
+from ..version import VersionType, get_semver
+
 if TYPE_CHECKING:
     from typing import Dict
 
@@ -98,7 +100,13 @@ class ArtifactInfo(BaseModel):
             return True
         return False
 
-    def has_package(self, package: str, case_sensitive: bool = False) -> bool:
+    def has_package(
+        self,
+        package: str,
+        case_sensitive: bool = False,
+        min_version: Optional[VersionType] = None,
+        max_version: Optional[VersionType] = None,
+    ) -> bool:
         """Returns whether the artifact is affected by a vulnerability whose affected
         package matches the given string.
 
@@ -108,6 +116,10 @@ class ArtifactInfo(BaseModel):
             The name of the package to search for.
         case_sensitive : bool
             Case sensitive matching
+        min_version : Optional[VersionType]
+            Minimum version of the package to match
+        max_version : Optional[VersionType]
+            Maximum version of the package to match
 
         Returns
         -------
@@ -115,7 +127,21 @@ class ArtifactInfo(BaseModel):
             Whether the artifact is affected by a vulnerability whose affected
             package matches the given string.
         """
+        minv = get_semver(min_version)
+        maxv = get_semver(max_version)
+        if maxv and minv:
+            if maxv < minv:
+                raise ValueError(
+                    "max_version must be greater than or equal to min_version"
+                )
+
         for vuln in self.vulns_with_package(package, case_sensitive):
+            if not vuln.semver:
+                continue
+            if min_version is not None and vuln.semver < minv:
+                continue
+            if max_version is not None and vuln.semver > maxv:
+                continue
             return True
         return False
 

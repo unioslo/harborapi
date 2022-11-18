@@ -1,10 +1,11 @@
 from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Iterable, List, Tuple
+from typing import Iterable, List, Optional, Tuple
 
 from harborapi.models.scanner import Severity, VulnerabilityItem
 
+from ..version import VersionType
 from .api import ArtifactInfo
 from .cve import CVSSData
 
@@ -260,7 +261,11 @@ class ArtifactReport:
         )
 
     def with_package(
-        self, package: str, case_sensitive: bool = False
+        self,
+        package: str,
+        case_sensitive: bool = False,
+        min_version: Optional[VersionType] = None,
+        max_version: Optional[VersionType] = None,
     ) -> List[ArtifactInfo]:
         """Get all artifacts that have a vulnerability affecting the given package.
 
@@ -276,7 +281,19 @@ class ArtifactReport:
         List[ArtifactInfo]
             A list of artifacts that have a vulnerability affecting the given package.
         """
-        return [a for a in self.artifacts if a.has_package(package, case_sensitive)]
+        return (
+            [
+                a
+                for a in self.artifacts
+                if a.has_package(
+                    package,
+                    case_sensitive,
+                    min_version=min_version,
+                    max_version=max_version,
+                    max_version=max_version,
+                )
+            ],
+        )
 
 
 # TODO: add test to ensure parity with HarborVulnerabilityReport
