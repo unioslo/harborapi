@@ -290,6 +290,10 @@ class ArtifactReport:
             The name of the package to search for.
         case_sensitive : bool
             Case sensitive matching
+        min_version : Optional[VersionType]
+            The minimum version of the package to search for, by default None.
+        max_version : Optional[VersionType]
+            The maximum version of the package to search for, by default None.
 
         Returns
         -------
@@ -304,7 +308,6 @@ class ArtifactReport:
                     package,
                     case_sensitive,
                     min_version=min_version,
-                    max_version=max_version,
                     max_version=max_version,
                 )
             ],
