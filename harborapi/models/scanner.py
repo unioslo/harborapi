@@ -9,6 +9,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, Iterable, List, Literal, Optional, Tuple, Union, overload
 
+from loguru import logger
 from pydantic import AnyUrl, BaseModel, Extra, Field
 
 from ..version import SemVer, get_semver
@@ -257,8 +258,13 @@ class VulnerabilityItem(BaseModel):
 
         for prio in vendor_priority:
             # Trivy uses the vendor name as the key for the CVSS data
-            vendor_cvss = cvss_data.get(prio)
-            if vendor_cvss is None:
+            vendor_cvss = cvss_data.get(prio, {})  # type: dict
+            if not vendor_cvss:
+                continue
+            elif not isinstance(vendor_cvss, dict):
+                logger.warning(
+                    f"Received non-dict value for vendor CVSS data: {vendor_cvss}"
+                )
                 continue
             # NOTE: we can't guarantee these values are floats (dangerous)
             if version == 3:
