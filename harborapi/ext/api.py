@@ -15,10 +15,9 @@ import backoff
 from httpx import TimeoutException
 from loguru import logger
 
-from harborapi import HarborAsyncClient
-from harborapi.exceptions import NotFound
-from harborapi.models import Artifact, Project, Repository, UserResp
-
+from .. import HarborAsyncClient
+from ..exceptions import NotFound
+from ..models import Artifact, Repository, UserResp
 from .artifact import ArtifactInfo
 
 T = TypeVar("T")
