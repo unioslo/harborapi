@@ -1,7 +1,6 @@
 from collections import Counter
 from dataclasses import dataclass
-from datetime import datetime
-from typing import Iterable, List, Optional, Tuple
+from typing import Iterable, List, Optional, Union
 
 from harborapi.models.scanner import Severity, VulnerabilityItem
 
@@ -53,6 +52,9 @@ class ArtifactReport:
             artifacts = list(_remove_duplicate_artifacts(artifacts))
         self.artifacts = artifacts
 
+    def __bool__(self) -> bool:
+        return bool(self.artifacts)
+
     @property
     def is_aggregate(self) -> bool:
         return len(self.artifacts) > 1
@@ -64,6 +66,11 @@ class ArtifactReport:
 
     # NOTE: we could implement these methods with some dirty metaprogramming
     #       but let's keep it simple for now
+
+    # TODO: The methods that return Iterable[Vulnerability] are inconsistent
+    # with the other methods that return ArtifactReport. We should probably
+    # change them to return ArtifactReport as well, or change their names to reflect
+    # that they return an iterable of Vulnerability objects.
 
     @property
     def fixable(self) -> Iterable[Vulnerability]:
@@ -151,18 +158,6 @@ class ArtifactReport:
         for a in self.artifacts:
             for v in a.report.vulnerabilities_by_severity(severity):
                 yield Vulnerability(v, a)
-
-    def get_vulns_age_score_color(
-        self,
-    ) -> Tuple[List[datetime], List[float], List[float]]:
-        """Get data points for a scatter plot of the age of the artifacts vs. the CVSS score."""
-        ages = []  # type: List[datetime]
-        scores = []  # type: List[float]
-        colors = []  # type: List[float]
-        raise NotImplementedError(
-            "Not possible until Trivy includes the publication date of the CVE"
-        )
-        return ages, scores, colors
 
     def has_cve(self, cve_id: str) -> bool:
         """Check if any of the artifacts has the given CVE.
@@ -346,6 +341,74 @@ class ArtifactReport:
         """
         return ArtifactReport(
             [a for a in self.artifacts if a.report.severity == severity]
+        )
+
+    def has_repository(self, repository: str, case_sensitive: bool = False) -> bool:
+        """Check if any of the artifacts belong to the given repository.
+
+        Parameters
+        ----------
+        repository : str
+            The repository name to search for
+        case_sensitive : bool, optional
+            Case sensitive search, by default False
+
+        Returns
+        -------
+        bool
+            Whether any of the artifacts belong to the given repository.
+        """
+        return bool(self.with_repository(repository, case_sensitive).artifacts)
+
+    def with_repository(
+        self, repositories: Union[str, List[str]], case_sensitive: bool = False
+    ) -> "ArtifactReport":
+        """Return a new report with all artifacts belonging to one or more repositories.
+
+        Parameters
+        ----------
+        repositories : Union[str, List[str]]
+            A repository or a list of repositories to filter for.
+        case_sensitive : bool
+            Case sensitive repository name matching, by default False
+
+        Returns
+        -------
+        ArtifactReport
+            A new ArtifactReport where all artifacts belong to one of the given
+            repositories.
+        """
+        # Docker doesn't allow upper-case letters in repository names, but
+        # I could not find any documentation on whether Harbor allows it.
+        # So we'll just assume that it does. Worst case scenario, the `case_sensitive`
+        # parameter will be redundant, but that's fine just to ensure compatibility.
+
+        # Do this the "dumb" way to ensure readability.
+        # We could do some stuff with getattr(a.repository, attr)() == getattr(repository, attr)()
+        # where attr is either "lower" or "__str__", but that's not as readable.
+        if isinstance(repositories, str):
+            repositories = [repositories]
+        elif not isinstance(repositories, list):
+            raise TypeError(
+                "repositories must be either a string or a list of strings"
+            )  # pragma: no cover
+
+        if case_sensitive:
+            attr = "__str__"
+        else:
+            attr = "lower"
+        # if not case_sensitive:
+        # repositories = [r.lower() for r in repositories]
+
+        return ArtifactReport(
+            [
+                a
+                for a in self.artifacts
+                if any(
+                    getattr(a.repository.name, attr)() == getattr(r, attr)()
+                    for r in repositories
+                )
+            ]
         )
 
 
