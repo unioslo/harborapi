@@ -5,13 +5,14 @@ from typing import Dict, Tuple
 
 from loguru import logger
 
-_pattern_cache: Dict[Tuple[str, bool], re.Pattern[str]] = {}
+# Regex type generics require >=3.9. Have to wrap in a string.
+_pattern_cache: Dict[Tuple[str, bool], "re.Pattern[str]"] = {}
 
 # TODO: bake get_pattern() into match(), so we only have to call match() in the codebase.
 
 # NOTE: could we just do away with _pattern_cache and add lru_cache to the
 # get_pattern function?  I think we could,  but we should test the performance of both approaches.
-def get_pattern(pattern: str, case_sensitive: bool = False) -> re.Pattern[str]:
+def get_pattern(pattern: str, case_sensitive: bool = False) -> "re.Pattern[str]":
     """Simple cache function for getting/setting compiled regex patterns.
 
     Parameters
@@ -34,7 +35,7 @@ def get_pattern(pattern: str, case_sensitive: bool = False) -> re.Pattern[str]:
 
 
 @lru_cache(maxsize=128)
-def match(pattern: re.Pattern[str], s: str) -> re.Match[str]:
+def match(pattern: "re.Pattern[str]", s: str) -> "re.Match[str]":
     try:
         return pattern.match(s)
     except Exception as e:
