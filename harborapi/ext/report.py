@@ -1,3 +1,4 @@
+import re
 from collections import Counter
 from dataclasses import dataclass
 from typing import Iterable, List, Optional, Union
@@ -284,6 +285,7 @@ class ArtifactReport:
         ----------
         package : str
             The name of the package to search for.
+            Supports regular expressions.
         case_sensitive : bool
             Case sensitive matching
         min_version : Optional[VersionType]
@@ -326,7 +328,7 @@ class ArtifactReport:
         return bool(self.with_severity(severity).artifacts)
 
     def with_severity(self, severity: Severity) -> "ArtifactReport":
-        """Get all artifacts that have a vulnerability with the given severity.
+        """Get all artifacts that have a report with the given severity.
 
         Parameters
         ----------
@@ -349,7 +351,8 @@ class ArtifactReport:
         Parameters
         ----------
         repository : str
-            The repository name to search for
+            The repository name to search for.
+            Supports regular expressons.
         case_sensitive : bool, optional
             Case sensitive search, by default False
 
@@ -369,6 +372,7 @@ class ArtifactReport:
         ----------
         repositories : Union[str, List[str]]
             A repository or a list of repositories to filter for.
+            Supports regular expressions.
         case_sensitive : bool
             Case sensitive repository name matching, by default False
 
@@ -383,32 +387,24 @@ class ArtifactReport:
         # So we'll just assume that it does. Worst case scenario, the `case_sensitive`
         # parameter will be redundant, but that's fine just to ensure compatibility.
 
-        # Do this the "dumb" way to ensure readability.
-        # We could do some stuff with getattr(a.repository, attr)() == getattr(repository, attr)()
-        # where attr is either "lower" or "__str__", but that's not as readable.
         if isinstance(repositories, str):
             repositories = [repositories]
-        elif not isinstance(repositories, list):
+        elif not isinstance(repositories, list) or not all(
+            isinstance(r, str) for r in repositories
+        ):
             raise TypeError(
                 "repositories must be either a string or a list of strings"
             )  # pragma: no cover
 
-        if case_sensitive:
-            attr = "__str__"
-        else:
-            attr = "lower"
-        # if not case_sensitive:
-        # repositories = [r.lower() for r in repositories]
-
+        # Make regex pattern for each repository
+        # Our cache function only accepts string arguments, but it's fine to not
+        # use it here, since this method is not called nearly as often as the underlying
+        # `has_*` methods on the ArtifactInfo objects.
+        pattern = re.compile(
+            "|".join(repositories), flags=re.IGNORECASE if not case_sensitive else 0
+        )
         return ArtifactReport(
-            [
-                a
-                for a in self.artifacts
-                if any(
-                    getattr(a.repository.name, attr)() == getattr(r, attr)()
-                    for r in repositories
-                )
-            ]
+            [a for a in self.artifacts if pattern.match(a.repository.name)]
         )
 
 

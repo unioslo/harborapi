@@ -444,6 +444,10 @@ class HarborVulnerabilityReport(BaseModel):
             vulns, key=lambda v: v.get_cvss_score(self.scanner), reverse=True
         )[:n]
 
+    # DEPRECATED:
+    # The with_ and has_ methods are deprecated in favor of similar methods
+    # on the `ext.artifact.ArtifactInfo` class.
+
     def has_cve(self, cve_id: str, case_sensitive: bool = False) -> bool:
         """Whether or not the report contains a vulnerability with the given CVE ID.
 

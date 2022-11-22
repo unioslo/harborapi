@@ -32,6 +32,9 @@ def test_artifactinfo(
 
     assert artifact.has_cve("CVE-2022-test-1")
     assert artifact.has_description("test description")
+    # regex
+    assert artifact.has_cve("CVE-2022-test-.*")
+    assert artifact.has_description(".*description")
 
     # Affected package (with and without version constraints)
     assert artifact.has_package("test-package")
@@ -40,6 +43,12 @@ def test_artifactinfo(
     assert artifact.has_package("test-package", max_version=(1, 0, 1))
     assert not artifact.has_package("test-package", min_version=(1, 0, 1))
     assert not artifact.has_package("test-package", max_version=(0, 9, 1))
+    # regex
+    assert artifact.has_package("test-.*", min_version=(1, 0, 0))
+    assert artifact.has_package("Test-.*", min_version=(1, 0, 0))
+    assert not artifact.has_package(
+        "Test-.*", case_sensitive=True, min_version=(1, 0, 0)
+    )
 
     # Different types of version constraints
     for version in [(1, 0, 0), "1.0.0", 1, SemVer(1, 0, 0)]:
@@ -58,12 +67,16 @@ def test_artifactinfo(
     assert not artifact.has_cve("CVE-2022-test-2")
     assert not artifact.has_description("test description 2")
     assert not artifact.has_package("test-package-2")
+    # regex
+    assert not artifact.has_package(".*package-2")
 
     vuln2 = vuln.copy(deep=True)
     vuln2.id = "CVE-2022-test-2"
     vuln2.description = None
     artifact.report.vulnerabilities.append(vuln2)
 
-    assert artifact.vuln_by_cve("CVE-2022-test-1") == vuln
+    assert artifact.vuln_with_cve("CVE-2022-test-1") == vuln
     assert list(artifact.vulns_with_package("test-package")) == [vuln, vuln2]
     assert list(artifact.vulns_with_description("test description")) == [vuln]
+    # regex
+    assert artifact.has_cve(".*2022-test-2")

@@ -10,7 +10,9 @@ from ..strategies.ext import artifact_report_strategy
 
 
 @given(artifact_report_strategy)
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(
+    suppress_health_check=[HealthCheck.function_scoped_fixture, HealthCheck.too_slow]
+)
 def test_artifactreport(
     report: ArtifactReport,
 ) -> None:
@@ -114,31 +116,33 @@ def test_artifactreport_with_repository(
     report: ArtifactReport,
 ) -> None:
     assume(len(report.artifacts) > 0)
-    # It's unlikely hypothesis will generate the name "Test-Repo", but to ensure our test
+    # It's unlikely hypothesis will generate the name "Test-Repo-1", but to ensure our test
     # isn't flaky because of an assumption, we should set the names of _all_
     # repositories every time.
 
     N_ARTIFACTS = 10
     report.artifacts = [copy.deepcopy(report.artifacts[0]) for i in range(N_ARTIFACTS)]
     for i, artifact in enumerate(report.artifacts):
-        artifact.repository.name = "Test-Repo"
+        artifact.repository.name = "Test-Repo-1"
         artifact.artifact.digest = f"{artifact.artifact.digest}-{i}"
 
-    assert report.has_repository("Test-Repo", case_sensitive=True)
-    assert report.has_repository("Test-Repo", case_sensitive=False)
-    assert report.has_repository("test-repo", case_sensitive=False)
-    assert not report.has_repository("test-repo", case_sensitive=True)
+    assert report.has_repository("Test-Repo-1", case_sensitive=True)
+    assert report.has_repository("Test-Repo-1", case_sensitive=False)
+    assert report.has_repository("test-repo-1", case_sensitive=False)
+    assert not report.has_repository("test-repo-1", case_sensitive=True)
 
     assert len(
-        report.with_repository("Test-Repo", case_sensitive=True).artifacts
+        report.with_repository("Test-Repo-1", case_sensitive=True).artifacts
     ) == len(report.artifacts)
     assert len(
-        report.with_repository("Test-Repo", case_sensitive=False).artifacts
+        report.with_repository("Test-Repo-1", case_sensitive=False).artifacts
     ) == len(report.artifacts)
     assert len(
-        report.with_repository("test-repo", case_sensitive=False).artifacts
+        report.with_repository("test-repo-1", case_sensitive=False).artifacts
     ) == len(report.artifacts)
-    assert len(report.with_repository("test-repo", case_sensitive=True).artifacts) == 0
+    assert (
+        len(report.with_repository("test-repo-1", case_sensitive=True).artifacts) == 0
+    )
 
     # Artifacts with different repos
     report.artifacts[0].repository.name = "Test-Repo-2"
@@ -148,11 +152,11 @@ def test_artifactreport_with_repository(
     assert not report.has_repository("test-repo-2", case_sensitive=True)
 
     assert (
-        len(report.with_repository("Test-Repo", case_sensitive=True).artifacts)
+        len(report.with_repository("Test-Repo-1", case_sensitive=True).artifacts)
         == len(report.artifacts) - 1
     )
     assert (
-        len(report.with_repository("Test-Repo", case_sensitive=False).artifacts)
+        len(report.with_repository("Test-Repo-1", case_sensitive=False).artifacts)
         == len(report.artifacts) - 1
     )
     assert (
@@ -165,24 +169,33 @@ def test_artifactreport_with_repository(
     # Match multiple repos
     assert len(
         report.with_repository(
-            ["Test-Repo", "Test-Repo-2"], case_sensitive=True
+            ["Test-Repo-1", "Test-Repo-2"], case_sensitive=True
         ).artifacts
     ) == len(report.artifacts)
     assert len(
         report.with_repository(
-            ["Test-Repo", "Test-Repo-2"], case_sensitive=False
+            ["Test-Repo-1", "Test-Repo-2"], case_sensitive=False
         ).artifacts
     ) == len(report.artifacts)
     assert (
         len(
             report.with_repository(
-                ["test-repo", "test-repo-2"], case_sensitive=True
+                ["test-repo-1", "test-repo-2"], case_sensitive=True
             ).artifacts
         )
         == 0
     )
     assert len(
         report.with_repository(
-            ["test-repo", "test-repo-2"], case_sensitive=False
+            ["test-repo-1", "test-repo-2"], case_sensitive=False
         ).artifacts
     ) == len(report.artifacts)
+
+    # regex
+    assert len(
+        report.with_repository("test-repo-.*", case_sensitive=False).artifacts
+    ) == len(report.artifacts)
+    assert (
+        len(report.with_repository("test-repo-.*", case_sensitive=True).artifacts) == 0
+    )
+    # TODO: more extensive regex tests

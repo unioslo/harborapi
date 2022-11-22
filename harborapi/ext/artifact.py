@@ -1,3 +1,4 @@
+import re
 from typing import TYPE_CHECKING, Callable, Iterable, List, Optional
 
 from ..version import VersionType, get_semver
@@ -10,6 +11,7 @@ from pydantic import BaseModel
 from ..models import Artifact, Repository
 from ..models.scanner import HarborVulnerabilityReport, VulnerabilityItem
 from .cve import CVSSData
+from .regex import get_pattern, match
 
 
 class ArtifactInfo(BaseModel):
@@ -77,7 +79,7 @@ class ArtifactInfo(BaseModel):
         bool
             Whether the artifact is affected by the given CVE ID.
         """
-        return self.vuln_by_cve(cve_id) is not None
+        return self.vuln_with_cve(cve_id) is not None
 
     def has_description(self, description: str, case_sensitive: bool = False) -> bool:
         """Returns whether the artifact is affected by a vulnerability whose description
@@ -145,7 +147,7 @@ class ArtifactInfo(BaseModel):
             return True
         return False
 
-    def vuln_by_cve(self, cve: str) -> Optional[VulnerabilityItem]:
+    def vuln_with_cve(self, cve: str) -> Optional[VulnerabilityItem]:
         """Returns the vulnerability with the specified CVE ID if the artifact is
         affected by it.
 
@@ -155,14 +157,19 @@ class ArtifactInfo(BaseModel):
         ----------
         cve : str
             The CVE ID of the vulnerability to return.
+            Supports regular expressions.
 
         Returns
         -------
         Optional[VulnerabilityItem]
             The vulnerability with the specified CVE ID if it exists, otherwise `None`.
         """
+        pattern = get_pattern(cve, case_sensitive=False)
         for vuln in self.report.vulnerabilities:
-            if vuln.id == cve:
+            if vuln.id is None:
+                continue
+            # Prioritize exact matches (inefficient? Add regex param?)
+            if vuln.id == cve or match(pattern, vuln.id):
                 return vuln
         return None
 
@@ -175,6 +182,7 @@ class ArtifactInfo(BaseModel):
         ----------
         package : str
             The name of the affected package to search for.
+            Supports regular expressions.
         case_sensitive : bool, optional
             Case sensitive search, by default False
 
@@ -183,18 +191,12 @@ class ArtifactInfo(BaseModel):
         VulnerabilityItem
             Vulnerability that affects the given package.
         """
+        pattern = get_pattern(package, case_sensitive=case_sensitive)
         for vuln in self.report.vulnerabilities:
             # Can't compare with None
             if vuln.package is None:
                 continue
-
-            # Case insensitive comparison
-            vuln_package = vuln.package
-            if not case_sensitive:
-                package = package.lower()
-                vuln_package = vuln_package.lower()
-
-            if vuln_package == package:
+            if pattern.match(vuln.package):
                 yield vuln
 
     def vulns_with_description(
@@ -207,6 +209,7 @@ class ArtifactInfo(BaseModel):
         ----------
         description : str
             The string to search for in the vulnerability descriptions.
+            Supports regular expressions.
         case_sensitive : Optional[bool]
             Case sensitive comparison, by default False
 
@@ -215,18 +218,12 @@ class ArtifactInfo(BaseModel):
         VulnerabilityItem
             A vulnerability whose description contains the given string.
         """
+        pattern = get_pattern(description, case_sensitive=case_sensitive)
         for vuln in self.report.vulnerabilities:
             # Can't compare with None
             if vuln.description is None:
                 continue
-
-            # Case insensitive comparison
-            vuln_description = vuln.description
-            if not case_sensitive:
-                description = description.lower()
-                vuln_description = vuln_description.lower()
-
-            if description in vuln_description:
+            if match(pattern, vuln.description):
                 yield vuln
 
 
