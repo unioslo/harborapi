@@ -7,6 +7,7 @@ from __future__ import annotations
 from collections import Counter
 from datetime import datetime
 from enum import Enum
+from functools import lru_cache
 from typing import Any, Dict, Iterable, List, Literal, Optional, Tuple, Union, overload
 
 from loguru import logger
@@ -107,6 +108,24 @@ class Severity(Enum):
     medium = "Medium"
     high = "High"
     critical = "Critical"
+
+    @classmethod
+    @property
+    @lru_cache(maxsize=1)
+    def priority(cls) -> Dict[Severity, int]:
+        return {s: i for i, s in enumerate(cls)}
+
+    def __gt__(self, other: Severity) -> bool:
+        return self.priority[self] > self.priority[other]
+
+    def __ge__(self, other: Severity) -> bool:
+        return self.priority[self] >= self.priority[other]
+
+    def __lt__(self, other: Severity) -> bool:
+        return self.priority[self] < self.priority[other]
+
+    def __le__(self, other: Severity) -> bool:
+        return self.priority[self] <= self.priority[other]
 
 
 class Error(BaseModel):
