@@ -69,16 +69,3 @@ class CVSSData(BaseModel):
             min=stats.min([d.min for d in data]),
             max=stats.max([d.max for d in data]),
         )
-
-
-def most_severe(severities: Iterable[Severity]) -> Optional[Severity]:
-    """Returns the highest severity in a list of severities."""
-    return max(severities, key=lambda x: SEVERITY_PRIORITY[x], default=None)
-
-
-def sort_distribution(distribution: "Counter[Severity]") -> List[Tuple[Severity, int]]:
-    """Sort the distribution of severities by severity."""
-    return [
-        (k, v)
-        for k, v in sorted(distribution.items(), key=lambda x: SEVERITY_PRIORITY[x])
-    ]

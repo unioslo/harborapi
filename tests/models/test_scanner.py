@@ -13,8 +13,8 @@ def test_vulnerabilityitem_get_severity_highest():
     vuln = VulnerabilityItem(
         vendor_attributes={
             "CVSS": {
-                "nvd": {"V3Score": 7.5},
-                "redhat": {"V3Score": 9.1},
+                "nvd": {"V3Score": 7.5},  # 7.5: high
+                "redhat": {"V3Score": 9.1},  # 9.1: critical
             }
         },
     )
@@ -25,8 +25,8 @@ def test_vulnerabilityitem_get_severity():
     vuln = VulnerabilityItem(
         vendor_attributes={
             "CVSS": {
-                "nvd": {"V3Score": 7.5},
-                "redhat": {"V3Score": 9.1},
+                "nvd": {"V3Score": 7.5},  # 7.5: high
+                "redhat": {"V3Score": 9.1},  # 9.1: critical
             }
         },
     )

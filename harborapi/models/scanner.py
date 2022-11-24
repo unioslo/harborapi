@@ -342,32 +342,26 @@ class VulnerabilityItem(BaseModel):
         vendors: Iterable[str] = DEFAULT_VENDORS,
     ) -> Severity:
         """Attempts to find the highest severity of the vulnerability based on a specific vendor."""
+        severities = [
+            self.get_severity(scanner=scanner, vendor_priority=[v]) for v in vendors
+        ]
+        if self.severity is not None:
+            severities.append(self.severity)
+        return most_severe(severities)
 
-        sev_prio = [s for s in Severity]
-        # NOTE: We rely on the fact that the order of the Severity enum is
-        #       the same as the ordering of CVSSv3 severities.
-        #       Probably not a good idea to rely on this assumption
 
-        highest = Severity.negligible
-        highest_idx = 0
+# TODO: find a more suitable place for this
+def most_severe(severities: Iterable[Severity]) -> Optional[Severity]:
+    """Returns the highest severity in a list of severities."""
+    return max(severities, key=lambda x: SEVERITY_PRIORITY[x], default=None)
 
-        for vendor in vendors:
-            sev = self.get_severity(scanner=scanner, vendor_priority=(vendor,))
-            try:
-                idx = sev_prio.index(sev)
-            except ValueError:
-                continue  # TODO: log?
-            if idx > highest_idx:
-                highest = sev
-                highest_idx = idx
 
-        # Check if self.severity is set and is higher than the highest
-        if self.severity:
-            idx = sev_prio.index(self.severity)
-            if idx > highest_idx:
-                highest = self.severity
-
-        return highest
+def sort_distribution(distribution: "Counter[Severity]") -> List[Tuple[Severity, int]]:
+    """Sort the distribution of severities by severity."""
+    return [
+        (k, v)
+        for k, v in sorted(distribution.items(), key=lambda x: SEVERITY_PRIORITY[x])
+    ]
 
 
 class ErrorResponse(BaseModel):
