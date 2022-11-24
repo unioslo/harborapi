@@ -8,7 +8,18 @@ from collections import Counter
 from datetime import datetime
 from enum import Enum
 from functools import lru_cache
-from typing import Any, Dict, Iterable, List, Literal, Optional, Tuple, Union, overload
+from typing import (
+    Any,
+    Dict,
+    Final,
+    Iterable,
+    List,
+    Literal,
+    Optional,
+    Tuple,
+    Union,
+    overload,
+)
 
 from loguru import logger
 from pydantic import AnyUrl, BaseModel, Extra, Field
@@ -109,23 +120,23 @@ class Severity(Enum):
     high = "High"
     critical = "Critical"
 
-    @classmethod
-    @property
-    @lru_cache(maxsize=1)
-    def priority(cls) -> Dict[Severity, int]:
-        return {s: i for i, s in enumerate(cls)}
-
     def __gt__(self, other: Severity) -> bool:
-        return self.priority[self] > self.priority[other]
+        return SEVERITY_PRIORITY[self] > SEVERITY_PRIORITY[other]
 
     def __ge__(self, other: Severity) -> bool:
-        return self.priority[self] >= self.priority[other]
+        return SEVERITY_PRIORITY[self] >= SEVERITY_PRIORITY[other]
 
     def __lt__(self, other: Severity) -> bool:
-        return self.priority[self] < self.priority[other]
+        return SEVERITY_PRIORITY[self] < SEVERITY_PRIORITY[other]
 
     def __le__(self, other: Severity) -> bool:
-        return self.priority[self] <= self.priority[other]
+        return SEVERITY_PRIORITY[self] <= SEVERITY_PRIORITY[other]
+
+
+SEVERITY_PRIORITY = {
+    s: i for i, s in enumerate(Severity)
+}  # type: Final[Dict[Severity, int]]
+"""The priority of severity levels, from lowest to highest. Used for sorting."""
 
 
 class Error(BaseModel):
