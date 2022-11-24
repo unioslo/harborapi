@@ -198,7 +198,12 @@ class VulnerabilityItem(BaseModel):
         description="The version of the package containing the fix if available.\n",
         example="1.18.0",
     )
-    severity: Optional[Severity] = None
+    # Changed from spec: Severity.unknown as default instead of None
+    severity: Severity = Field(
+        Severity.unknown,
+        description="The severity of the vulnerability.",
+        example=Severity.high.value,
+    )
     description: Optional[str] = Field(
         None,
         description="The detailed description of the vulnerability.\n",
