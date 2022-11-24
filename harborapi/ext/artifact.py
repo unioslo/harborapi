@@ -48,7 +48,7 @@ class ArtifactInfo(BaseModel):
         digest = self.artifact.digest
         if digest:
             digest = digest[:15]  # mimic harbor digest notation
-        return f"{self.repository.name}@{self.artifact.digest}"
+        return f"{self.repository.name}@{digest}"
 
     @property
     def name_with_tag(self) -> str:
