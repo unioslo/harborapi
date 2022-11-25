@@ -61,17 +61,20 @@ class SemVer(NamedTuple):
 VersionType = Union[str, int, SemVer, Tuple[int, int, int]]
 
 
-def clean_version_number(version: str) -> int:
+def clean_version_number(version: str, default: int = 0) -> int:
     """Ignore characters after non-numeric chars in patch (e.g. 3a4 -> 3)
 
     These characters are completely discarded, and as such, this function
-    is not appropriate if full version info from other version schemes is
-    needed.
+    is not appropriate if full version info from version schemes other than
+    SemVer are needed.
 
     Parameters
     ----------
     version : str
         The version string to clean.
+    default : int
+        The default value to return if the version string is empty or
+        contains only non-numeric characters, by default 0
 
     Returns
     -------
@@ -85,7 +88,10 @@ def clean_version_number(version: str) -> int:
             v.append(c)
         else:
             break
-    return int("".join(v))
+    try:
+        return int("".join(v))
+    except:
+        return default
 
 
 def get_semver(version: Optional[VersionType]) -> SemVer:
