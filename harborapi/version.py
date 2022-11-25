@@ -25,22 +25,20 @@ class SemVer(NamedTuple):
         other = get_semver(other)
         if self.major > other.major:
             return True
-        elif self.major < other.major:
+        if self.major < other.major:
             return False
-        else:
-            if self.minor > other.minor:
-                return True
-            elif self.minor < other.minor:
-                return False
-            else:
-                if self.patch > other.patch:
-                    return True
-                elif self.patch < other.patch:
-                    return False
-                else:
-                    if self.prerelease is None and other.prerelease is not None:
-                        return True
-                    return False
+        if self.minor > other.minor:
+            return True
+        if self.minor < other.minor:
+            return False
+        if self.patch > other.patch:
+            return True
+        if self.patch < other.patch:
+            return False
+        # A non-prerelease version is always greater than a prerelease version
+        if self.prerelease is None and other.prerelease is not None:
+            return True
+        return False
 
     def __ge__(self, other: "VersionType") -> bool:
         other = get_semver(other)
