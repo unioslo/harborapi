@@ -98,7 +98,23 @@ def get_semver(version: Optional[VersionType]) -> SemVer:
     if isinstance(version, SemVer):
         return version
     elif isinstance(version, tuple):
-        return SemVer(*version)
+        for i, v in enumerate(version):
+            # first 3 values are major, minor, patch
+            if i <= 2:
+                if not isinstance(v, int):
+                    raise ValueError(
+                        f"Version tuple must contain integers, got {version}"
+                    )
+                elif v < 0:
+                    raise ValueError(
+                        f"Version tuple must contain positive integers, got {version}"
+                    )
+            try:
+                return SemVer(*version)
+            except Exception as e:
+                raise ValueError(f"Invalid version {version}: {e}")
+        else:
+            raise ValueError(f"Invalid semver tuple: {version}")
     elif isinstance(version, int):
         # Return SemVer with major version only if version is an integer
         return SemVer(version)
