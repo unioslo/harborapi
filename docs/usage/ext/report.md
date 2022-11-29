@@ -17,23 +17,27 @@ artifacts = await get_artifact_vulnerabilities(client)
 
 # Instantiate the ArtifactReport from the fetched artifacts
 report = ArtifactReport(artifacts)
-filtered_report = await report.with_cve("CVE-2020-0001")
+filtered_report = report.with_cve("CVE-2020-0001")
 
 # iterating on ArtifactReport yields ArtifactInfo objects
 for artifact in filtered_report:
     print(artifact.repository.name, artifact.artifact.digest)
 ```
 
+All `ArtifactReport.with_*` methods return new ArtifactReport objects.
+
+## More granular package filtering
+
 We can also query report for all artifacts who have a given vulnerable package:
 
 ```py
-filtered_report = await report.with_package("openssl")
+filtered_report = report.with_package("openssl")
 ```
 
 The search is case-insensitive by default, but can be made case-sensitive by setting the `case_sensitive` argument to `True`:
 
 ```py hl_lines="3"
-filtered_report = await report.with_package(
+filtered_report = report.with_package(
     "OpenSSL", # BEWARE: package is likely named openssl! This is an example
     case_sensitive=True,
 )
@@ -42,7 +46,7 @@ filtered_report = await report.with_package(
 We can also further narrow down the results by specifying minimum and/or maximum versions of the package:
 
 ```py hl_lines="3 4"
-filtered_report = await report.with_package(
+filtered_report = report.with_package(
     "openssl",
     min_version=(3, 0, 0),
     max_version=(3, 0, 2)
@@ -52,5 +56,17 @@ filtered_report = await report.with_package(
 All text-based queries support regular expressions. For example, to find all artifacts with a package name that starts with `openssl`:
 
 ```py
-filtered_report = await report.with_package("openssl.*")
+filtered_report = report.with_package("openssl.*")
+```
+
+## Chaining filters
+
+As previously mentioned, all `ArtifactReport.with_*` methods return new ArtifactReport objects, so they can be chained together to easily filter a report with multiple criteria.
+
+```py
+filtered_report = (
+    report.with_package("openssl")
+    .with_cve("CVE-2020-0001")
+    .with_repository("my-repo")
+)   .with_tag("latest")
 ```

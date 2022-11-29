@@ -5,6 +5,7 @@ from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from harborapi.ext.artifact import ArtifactInfo
+from harborapi.models import Tag
 from harborapi.models.scanner import Severity, VulnerabilityItem
 from harborapi.version import SemVer
 
@@ -29,6 +30,10 @@ def test_artifactinfo(
         ],
     )
     artifact.report.vulnerabilities = [vuln]
+
+    assert len(artifact.artifact.tags) > 0
+    artifact.artifact.tags[0].name = "latest-test"
+    assert artifact.has_tag("latest-test")
 
     assert artifact.has_cve("CVE-2022-test-1")
     assert artifact.has_description("test description")

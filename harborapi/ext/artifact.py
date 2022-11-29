@@ -147,6 +147,29 @@ class ArtifactInfo(BaseModel):
             return True
         return False
 
+    def has_tag(self, tag: str) -> bool:
+        """Returns whether the artifact has the given tag.
+
+        Parameters
+        ----------
+        tag : str
+            The tag to search for.
+
+        Returns
+        -------
+        bool
+            Whether the artifact has the given tag.
+        """
+        if not self.artifact.tags:
+            return False
+        pattern = get_pattern(tag)
+        for t in self.artifact.tags:
+            if t.name is None:
+                continue
+            if match(pattern, t.name):
+                return True
+        return False
+
     def vuln_with_cve(self, cve: str) -> Optional[VulnerabilityItem]:
         """Returns the vulnerability with the specified CVE ID if the artifact is
         affected by it.

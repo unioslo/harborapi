@@ -417,5 +417,37 @@ class ArtifactReport(BaseModel):
             artifacts=[a for a in self.artifacts if pattern.match(a.repository.name)]
         )
 
+    def has_tag(self, tag: str) -> bool:
+        """Check if any of the artifacts has the given tag.
+
+        Parameters
+        ----------
+        tag : str
+            The tag to search for.
+
+        Returns
+        -------
+        bool
+            True if any of the artifacts has the given tag, False otherwise.
+        """
+        return any(a.has_tag(tag) for a in self.artifacts)
+
+    def with_tag(self, tag: str) -> "ArtifactReport":
+        """Return a new report with all artifacts having the given tag.
+
+        Parameters
+        ----------
+        tag : str
+            The tag to filter for.
+
+        Returns
+        -------
+        ArtifactReport
+            A new ArtifactReport where all artifacts have the given tag.
+        """
+        return ArtifactReport.construct(
+            artifacts=[a for a in self.artifacts if a.artifact.tags[0].name == tag]
+        )
+
 
 # TODO: add test to ensure parity with HarborVulnerabilityReport

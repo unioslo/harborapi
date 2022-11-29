@@ -32,7 +32,10 @@ def test_artifactreport(
     )
     for artifact in report.artifacts:
         artifact.report.vulnerabilities = [vuln]
+        assert len(artifact.artifact.tags) > 0  # our strategy should ensure this
+        artifact.artifact.tags[0].name = "latest-test"
 
+    assert report.has_tag("latest-test")
     assert report.has_cve("CVE-2022-test-1")
     assert report.has_description("test description")
     assert report.has_package("test-package")
@@ -48,6 +51,7 @@ def test_artifactreport(
         report.with_cve("CVE-2022-test-1")
         .with_package("test-package")
         .with_description("test description")
+        .with_tag("latest-test")
         .artifacts
     ) == len(report.artifacts)
 

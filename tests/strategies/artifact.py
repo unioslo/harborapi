@@ -1,20 +1,60 @@
 from hypothesis import strategies as st
 
-from harborapi.models.scanner import (
+from harborapi.models.models import (
+    Accessory,
+    AdditionLinks,
+    Annotations,
     Artifact,
+    ExtraAttrs,
+    Label,
+    ScanOverview,
+    Tag,
+)
+from harborapi.models.scanner import (
     HarborVulnerabilityReport,
     Scanner,
     Severity,
     VulnerabilityItem,
 )
 
+tag_strategy = st.builds(
+    Tag,
+    id=st.integers(),
+    repository_id=st.integers(),
+    artifact_id=st.integers(),
+    name=st.text(),
+    push_time=st.datetimes(),
+    pull_time=st.datetimes(),
+    immutable=st.booleans(),
+    signed=st.booleans(),
+)
+
 artifact_strategy = st.builds(
     Artifact,
-    repository=st.text(),
-    digest=st.text(),
-    tag=st.text(),
+    id=st.integers(),
+    type=st.one_of(st.sampled_from(["image", "chart"]), st.text()),
+    # TODO: investiate proper values for this field
+    manifest_media_type=st.sampled_from(
+        ["application/vnd.docker.distribution.manifest.v2+json"]
+    ),
     # TODO: add other possible mime types
-    mime_type=st.sampled_from(["application/vnd.docker.distribution.manifest.v2+json"]),
+    media_type=st.sampled_from(
+        ["application/vnd.docker.distribution.manifest.v2+json"]
+    ),
+    project_id=st.integers(),
+    repository_id=st.integers(),
+    digest=st.text(),
+    size=st.integers(),
+    icon=st.one_of(st.text(), st.none()),
+    push_time=st.datetimes(),
+    pull_time=st.datetimes(),
+    annotations=st.builds(Annotations),
+    extra_attrs=st.builds(ExtraAttrs),
+    tags=st.lists(tag_strategy, min_size=1),
+    addition_links=st.builds(AdditionLinks),
+    labels=st.lists(st.builds(Label)),
+    scan_overview=st.builds(ScanOverview),
+    accessories=st.lists(st.builds(Accessory)),
 )
 artifact_or_none_strategy = st.one_of(st.none(), artifact_strategy)
 
