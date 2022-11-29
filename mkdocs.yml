@@ -64,9 +64,8 @@ nav:
           - recipes/artifacts/all-vulns.md
       - "Repositories":
           - recipes/repos/conc-repo.md
-      - "Projects":
-          - recipes/conc-project.md
-      # - usage/recipes/api-artifacts.md
+      # - "Projects":
+      #     - recipes/conc-project.md
   - "Endpoints":
       - endpoints/index.md
       - endpoints/artifacts.md
@@ -91,8 +90,13 @@ nav:
       - endpoints/users.md
       - endpoints/usergroups.md
   - "Reference":
+      - reference/index.md
       - reference/client.md
+      - reference/client_sync.md
+      - reference/auth.md
       - reference/exceptions.md
+      - reference/types.md
+      - reference/utils.md
       - "Models":
           - reference/models/models.md
           - reference/models/scanner.md
@@ -101,4 +105,3 @@ nav:
           - reference/ext/artifact.md
           - reference/ext/cve.md
           - reference/ext/report.md
-      - reference/client_sync.md

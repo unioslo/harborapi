@@ -1,8 +1,8 @@
-# CVE
+# Utils
 
-The `harborapi.ext.cve` module provides functionality for working with CVSSv3 data.
+`harborapi.utils` defines utility functions for use with `harborapi`.
 
-::: harborapi.ext.cve
+::: harborapi.utils
     options:
         merge_init_into_class: false
         show_if_no_docstring: false

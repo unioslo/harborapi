@@ -54,7 +54,7 @@ See [Creating Privileged Robot Accounts](creating-system-robot.md) for informati
 
 ## Examples
 
-This section contains some basic examples showing the general usage of `harborapi`. Consult the [Endpoints Reference](../endpoints/_overview.md) for an overview of all the available client methods.
+This section contains some basic examples showing the general usage of `harborapi`. Consult the [Endpoints Reference](../endpoints/_overview.md) for an overview of all the available client methods that conform to the Harbor API specification. For more specialized uses, check out [Recipes](/recipes).
 
 ### Get current user
 

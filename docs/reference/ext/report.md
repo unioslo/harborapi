@@ -1,6 +1,6 @@
 # Report
 
-Module that defines classes and functions for aggregating the information of multiple artifacts.
+`harborapi.ext.report` defines classes and functions for aggregating the data of multiple artifacts, including their repositories and vulnerability reports.
 
 ::: harborapi.ext.report
     options:

@@ -1,8 +1,8 @@
-# CVE
+# Auth
 
-The `harborapi.ext.cve` module provides functionality for working with CVSSv3 data.
+`harborapi.auth` defines utility functions for use with `harborapi`.
 
-::: harborapi.ext.cve
+::: harborapi.auth
     options:
         merge_init_into_class: false
         show_if_no_docstring: false

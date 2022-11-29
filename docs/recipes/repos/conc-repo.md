@@ -1,4 +1,4 @@
-# Fetch repos
+# Fetch repositories
 
 Given a list of project names, we can use Asyncio to dispatch multiple requests concurrently to the Harbor API to fetch repositories in a list of projects (or all projects if `None` is passed in) with the help of [`ext.api.get_repositories()`][harborapi.ext.api.get_repositories]
 
