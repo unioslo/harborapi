@@ -5,8 +5,7 @@ from harborapi.ext import api
 
 client = HarborAsyncClient(
     url="https://your-harbor-instance.com/api/v2.0",
-    username="username",
-    secret="secret",
+    credentials_file="/path/to/file.json",
 )
 
 
