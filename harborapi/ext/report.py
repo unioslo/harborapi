@@ -42,7 +42,7 @@ def _remove_duplicate_artifacts(
 
 
 class ArtifactReport:
-    """A report for one or more artifacts."""
+    """Aggregation of artifacts and their vulnerabilities."""
 
     artifacts: List[ArtifactInfo]
 
@@ -56,6 +56,12 @@ class ArtifactReport:
     def __bool__(self) -> bool:
         return bool(self.artifacts)
 
+    def __iter__(self) -> Iterable[ArtifactInfo]:
+        return iter(self.artifacts)
+
+    def __len__(self) -> int:
+        return len(self.artifacts)
+
     @property
     def is_aggregate(self) -> bool:
         return len(self.artifacts) > 1
@@ -65,13 +71,10 @@ class ArtifactReport:
         """Get an aggregate of CVSS data for the artifacts in this report."""
         return CVSSData.from_report(self)
 
-    # NOTE: we could implement these methods with some dirty metaprogramming
-    #       but let's keep it simple for now
-
     # TODO: The methods that return Iterable[Vulnerability] are inconsistent
     # with the other methods that return ArtifactReport. We should probably
-    # change them to return ArtifactReport as well, or change their names to reflect
-    # that they return an iterable of Vulnerability objects.
+    # change them to return ArtifactReport or Iterable[ArtifactInfo],
+    # or change their names to reflect that they return invididual vulnerabilities.
 
     @property
     def fixable(self) -> Iterable[Vulnerability]:

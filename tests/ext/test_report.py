@@ -109,6 +109,11 @@ def test_artifactreport(
         # the method should be changed to operate on ArtifactInfo objects.
         assert report.distribution[severity] == n_vulnerabilities
 
+    # Iteration
+    for i, artifact in enumerate(report):
+        assert artifact == report.artifacts[i]
+    assert len(report) == len(report.artifacts)
+
 
 @given(artifact_report_strategy)
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
