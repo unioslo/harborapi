@@ -1,14 +1,23 @@
 # Artifact info
 
-The `ext.artifact` module defines the `ArtifactInfo` class that composes several different Harbor API models into one object. The models it is composed of are:
+The `ext.artifact` module defines the `ArtifactInfo` class, which is a class that is composed of several different Harbor API models. These models are:
 
 * [`Artifact`][harborapi.models.models.Artifact]
 * [`Repository`][harborapi.models.models.Repository]
 * [`HarborVulnerabilityReport`][harborapi.models.scanner.HarborVulnerabilityReport]
 
-This thus provides the complete information for a given artifact, including its repository and its vulnerability report. Through this, it is possible to easily access all information about an artifact in one place.
+Which in simplified Python code looks like this:
 
-Several helper methods are defined to make use of the information available in the `ArtifactInfo` object.
+```py
+class ArtifactInfo:
+    artifact: Artifact
+    repository: Repository
+    report: HarborVulnerabilityReport
+```
+
+The `ArtifactInfo` thus provides the complete information for a given artifact, including its repository and its vulnerability report. This makes all the information about an artifact available in one place.
+
+Several helper methods are defined to make use of the information available in the `ArtifactInfo` object. See the [ArtifactInfo reference][harborapi.ext.artifact.ArtifactInfo] for more information.
 
 Most functions defined in `ext.api` return `ArtifactInfo` objects.
 

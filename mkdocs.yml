@@ -47,8 +47,9 @@ nav:
   - index.md
   - "Usage":
       - usage/index.md
-      - usage/exceptions.md
+      - usage/getting-started.md
       - usage/creating-system-robot.md
+      - usage/exceptions.md
       - usage/async-sync.md
       - "Extended functionality":
           - "usage/ext/index.md"
@@ -61,7 +62,6 @@ nav:
           - recipes/artifacts/conc-artifact.md
           - recipes/artifacts/artifactowner.md
           - recipes/artifacts/artifact-vulns.md
-          - recipes/artifacts/all-vulns.md
       - "Repositories":
           - recipes/repos/conc-repo.md
       # - "Projects":

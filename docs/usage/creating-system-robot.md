@@ -8,14 +8,17 @@ This page is based on [this](https://github.com/goharbor/harbor/issues/14145#iss
 
 All examples on this page will be using `harborapi` to create privileged robot accounts.
 
-## Project creation privileges
+## Example: Robot with project creation privileges
 
-Following the example provided in the GitHub comment above, `harborapi` uses [`HarborAsyncClient.create_robot`][harborapi.client.HarborAsyncClient.create_robot] to achieve the same functionality:
+Following the example provided in the GitHub comment above, `harborapi` provides [`HarborAsyncClient.create_robot`][harborapi.client.HarborAsyncClient.create_robot] to achieve the same functionality.
 
-```py
+When creating privileged robot accounts, `HarborAsyncClient` must be instantiated with a privileged user's credentials.
+
+```py title="createrobot.py"
 from harborapi.models import RobotCreate, RobotPermission, Access
 
-# Client is instantiated with administrator account
+# Client is instantiated with administrator account.
+# This is required to create robot accounts with system resource permissions.
 
 await client.create_robot(
     RobotCreate(
@@ -49,18 +52,37 @@ RobotCreated(
 )
 ```
 
-## Saving credentials to a file
+### Saving credentials to a file
 
-The resulting Robot account can be saved to a Harbor credentials file by providing an argument to the `path` parameter specifying the location to save the credentials to.
+The resulting Robot account can be saved to a Harbor credentials file by providing an argument to the `path` parameter specifying the location to save the credentials to. The `path` argument can be either a string or a [pathlib.Path][] object.
 
-```py
-await client.create_robot(RobotCreate(...), path="/path/to/file.json")
+```py hl_lines="3"
+await client.create_robot(
+    RobotCreate(...),
+    path="/path/to/file.json",
+)
 ```
 
-By default, the file must not already exist. This can be overriden by adding `overwrite=True`:
+By default, the file must not already exist. This can be overriden by adding `overwrite=True`, which overwrites the file if it already exists.
 
-```py
-await client.create_robot(RobotCreate(...), path="/path/to/file.json", overwrite=True)
+```py hl_lines="4"
+await client.create_robot(
+    RobotCreate(...),
+    path="/path/to/file.json",
+    overwrite=True
+)
 ```
 
-For more information, see [`HarborAsyncClient.create_robot`][harborapi.client.HarborAsyncClient.create_robot].
+The resulting file can then be used when instantiating `HarborAsyncClient` to authenticate with the Robot account.
+
+```py title="from_credentials_file.py" hl_lines="5"
+from harborapi import HarborAsyncClient
+
+client = HarborAsyncClient(
+    url="https://your-harbor-instance.com/api/v2.0",
+    credentials_file="/path/to/file.json",
+)
+```
+
+
+For more information, see [`HarborAsyncClient.create_robot`][harborapi.client.HarborAsyncClient.create_robot] and [`HarborAsyncClient.__init__`][harborapi.HarborAsyncClient.__init__]

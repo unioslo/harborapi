@@ -1,12 +1,12 @@
-# Reports
+# Report
 
 The `ext.report` module defines the [`ArtifactReport`][harborapi.ext.report.ArtifactReport] class, which aggregates several [`ArtifactInfo`][harborapi.ext.artifact.ArtifactInfo] objects. Through this class, one can query the aggregated data for all artifacts affected by a given vulnerability, all artifacts who have a given vulnerable package, etc.
 
-This allows for a deeper analysis of the vulnerabilities in your Harbor instance, and can be used to generate reports for your Harbor instance.
+This allows for a deeper analysis of the vulnerabilities affecting your artifacts, and can be used to generate reports, or to take action on the artifacts that are affected by a given vulnerability.
 
 Given a list of ArtifactInfo objects, we can query the aggregated data to find all artifacts affected by a given vulnerability:
 
-```py
+```py title="report_filter_cve.py" hl_lines="11"
 from harborapi import HarborAsyncClient
 from harborapi.ext.api import get_artifact_vulnerabilities
 from harborapi.ext.report import ArtifactReport
@@ -15,9 +15,42 @@ client = HarborAsyncClient(...)
 
 artifacts = await get_artifact_vulnerabilities(client)
 
+# Instantiate the ArtifactReport from the fetched artifacts
 report = ArtifactReport(artifacts)
-affected_artifacts = await report.with_cve("CVE-2020-0001")
+filtered_report = await report.with_cve("CVE-2020-0001")
 
-for artifact in affected_artifacts:
+# iterating on ArtifactReport yields ArtifactInfo objects
+for artifact in filtered_report:
     print(artifact.repository.name, artifact.artifact.digest)
+```
+
+We can also query report for all artifacts who have a given vulnerable package:
+
+```py
+filtered_report = await report.with_package("openssl")
+```
+
+The search is case-insensitive by default, but can be made case-sensitive by setting the `case_sensitive` argument to `True`:
+
+```py hl_lines="3"
+filtered_report = await report.with_package(
+    "OpenSSL", # BEWARE: package is likely named openssl! This is an example
+    case_sensitive=True,
+)
+```
+
+We can also further narrow down the results by specifying minimum and/or maximum versions of the package:
+
+```py hl_lines="3 4"
+filtered_report = await report.with_package(
+    "openssl",
+    min_version=(3, 0, 0),
+    max_version=(3, 0, 2)
+)
+```
+
+All text-based queries support regular expressions. For example, to find all artifacts with a package name that starts with `openssl`:
+
+```py
+filtered_report = await report.with_package("openssl.*")
 ```

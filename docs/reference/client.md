@@ -1,6 +1,6 @@
 # HarborAsyncClient
 
-See [Endpoints](../endpoints/_overview.md) for all methods implemented on the class used to interact with the Harbor API.
+See [Endpoints](/endpoints) for all methods implemented on the class used to interact with the Harbor API.
 
 ::: harborapi.client.HarborAsyncClient
     options:
@@ -8,5 +8,5 @@ See [Endpoints](../endpoints/_overview.md) for all methods implemented on the cl
         show_if_no_docstring: true
         show_source: true
         show_bases: true
-        members:
-            - __init__
+        <!-- members:
+            - __init__ -->
