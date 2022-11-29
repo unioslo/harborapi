@@ -1,5 +1,7 @@
-"""Models defined here are part of the Harbor API, but not documented of the official schema.
-The models in this module are _NOT_ automatically generated."""
+"""Models defined here are part of the Harbor API, but not documented in the official schema.
+
+The models in this module are _NOT_ automatically generated.
+"""
 
 from datetime import datetime
 from typing import Optional

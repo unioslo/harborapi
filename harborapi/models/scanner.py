@@ -7,29 +7,26 @@ from __future__ import annotations
 from collections import Counter
 from datetime import datetime
 from enum import Enum
+from functools import lru_cache
 from typing import (
     Any,
     Dict,
+    Final,
     Iterable,
     List,
     Literal,
-    NamedTuple,
     Optional,
     Tuple,
     Union,
     overload,
 )
 
+from loguru import logger
 from pydantic import AnyUrl, BaseModel, Extra, Field
 
+from ..version import SemVer, get_semver
+
 DEFAULT_VENDORS = ("nvd", "redhat")
-
-
-class SemVer(NamedTuple):
-    # TODO: move this and get_version_tuple() to separate module (for reuse)
-    major: int
-    minor: int
-    patch: int
 
 
 class Scanner(BaseModel):
@@ -43,11 +40,9 @@ class Scanner(BaseModel):
         None, description="The version of the scanner.", example="0.4.0"
     )
 
-    def get_version_tuple(self) -> SemVer:
-        if self.version is None:
-            return SemVer(0, 0, 0)
-        parts = self.version.split(".")
-        return SemVer(*[int(part) for part in parts])  # why have to wrap in list?
+    @property
+    def semver(self) -> SemVer:
+        return get_semver(self.version)
 
 
 class ScannerProperties(BaseModel):
@@ -125,6 +120,24 @@ class Severity(Enum):
     high = "High"
     critical = "Critical"
 
+    def __gt__(self, other: Severity) -> bool:
+        return SEVERITY_PRIORITY[self] > SEVERITY_PRIORITY[other]
+
+    def __ge__(self, other: Severity) -> bool:
+        return SEVERITY_PRIORITY[self] >= SEVERITY_PRIORITY[other]
+
+    def __lt__(self, other: Severity) -> bool:
+        return SEVERITY_PRIORITY[self] < SEVERITY_PRIORITY[other]
+
+    def __le__(self, other: Severity) -> bool:
+        return SEVERITY_PRIORITY[self] <= SEVERITY_PRIORITY[other]
+
+
+SEVERITY_PRIORITY = {
+    s: i for i, s in enumerate(Severity)
+}  # type: Final[Dict[Severity, int]]
+"""The priority of severity levels, from lowest to highest. Used for sorting."""
+
 
 class Error(BaseModel):
     message: Optional[str] = Field(None, example="Some unexpected error")
@@ -185,7 +198,12 @@ class VulnerabilityItem(BaseModel):
         description="The version of the package containing the fix if available.\n",
         example="1.18.0",
     )
-    severity: Optional[Severity] = None
+    # Changed from spec: Severity.unknown as default instead of None
+    severity: Severity = Field(
+        Severity.unknown,
+        description="The severity of the vulnerability.",
+        example=Severity.high.value,
+    )
     description: Optional[str] = Field(
         None,
         description="The detailed description of the vulnerability.\n",
@@ -203,6 +221,10 @@ class VulnerabilityItem(BaseModel):
         example=["CWE-476"],
     )
     vendor_attributes: Optional[Dict[str, Any]] = None
+
+    @property
+    def semver(self) -> SemVer:
+        return get_semver(self.version)
 
     @property
     def fixable(self) -> bool:
@@ -271,8 +293,13 @@ class VulnerabilityItem(BaseModel):
 
         for prio in vendor_priority:
             # Trivy uses the vendor name as the key for the CVSS data
-            vendor_cvss = cvss_data.get(prio)
-            if vendor_cvss is None:
+            vendor_cvss = cvss_data.get(prio, {})  # type: dict
+            if not vendor_cvss:
+                continue
+            elif not isinstance(vendor_cvss, dict):
+                logger.warning(
+                    f"Received non-dict value for vendor CVSS data: {vendor_cvss}"
+                )
                 continue
             # NOTE: we can't guarantee these values are floats (dangerous)
             if version == 3:
@@ -315,32 +342,26 @@ class VulnerabilityItem(BaseModel):
         vendors: Iterable[str] = DEFAULT_VENDORS,
     ) -> Severity:
         """Attempts to find the highest severity of the vulnerability based on a specific vendor."""
+        severities = [
+            self.get_severity(scanner=scanner, vendor_priority=[v]) for v in vendors
+        ]
+        if self.severity is not None:
+            severities.append(self.severity)
+        return most_severe(severities)
 
-        sev_prio = [s for s in Severity]
-        # NOTE: We rely on the fact that the order of the Severity enum is
-        #       the same as the ordering of CVSSv3 severities.
-        #       Probably not a good idea to rely on this assumption
 
-        highest = Severity.negligible
-        highest_idx = 0
+# TODO: find a more suitable place for this
+def most_severe(severities: Iterable[Severity]) -> Optional[Severity]:
+    """Returns the highest severity in a list of severities."""
+    return max(severities, key=lambda x: SEVERITY_PRIORITY[x], default=None)
 
-        for vendor in vendors:
-            sev = self.get_severity(scanner=scanner, vendor_priority=(vendor,))
-            try:
-                idx = sev_prio.index(sev)
-            except ValueError:
-                continue  # TODO: log?
-            if idx > highest_idx:
-                highest = sev
-                highest_idx = idx
 
-        # Check if self.severity is set and is higher than the highest
-        if self.severity:
-            idx = sev_prio.index(self.severity)
-            if idx > highest_idx:
-                highest = self.severity
-
-        return highest
+def sort_distribution(distribution: "Counter[Severity]") -> List[Tuple[Severity, int]]:
+    """Sort the distribution of severities by severity."""
+    return [
+        (k, v)
+        for k, v in sorted(distribution.items(), key=lambda x: SEVERITY_PRIORITY[x])
+    ]
 
 
 class ErrorResponse(BaseModel):
@@ -451,6 +472,10 @@ class HarborVulnerabilityReport(BaseModel):
         return sorted(
             vulns, key=lambda v: v.get_cvss_score(self.scanner), reverse=True
         )[:n]
+
+    # DEPRECATED:
+    # The with_ and has_ methods are deprecated in favor of similar methods
+    # on the `ext.artifact.ArtifactInfo` class.
 
     def has_cve(self, cve_id: str, case_sensitive: bool = False) -> bool:
         """Whether or not the report contains a vulnerability with the given CVE ID.

@@ -6,6 +6,10 @@ edit_uri: edit/main/docs/
 
 theme:
   name: "material"
+  palette:
+    scheme: slate
+    primary: deep purple
+    accent: orange
   language: en
   features:
     - navigation.tabs
@@ -46,13 +50,24 @@ nav:
       - usage/exceptions.md
       - usage/creating-system-robot.md
       - usage/async-sync.md
-      - "Recipes":
-          - usage/recipes/index.md
-          - usage/recipes/artifactowner.md
-          - usage/recipes/conc-artifact.md
-          - usage/recipes/conc-repo.md
+      - "Extended functionality":
+          - "usage/ext/index.md"
+          - "usage/ext/artifact.md"
+          - "usage/ext/api.md"
+          - "usage/ext/report.md"
+  - "Recipes":
+      - recipes/index.md
+      - "Artifacts":
+          - recipes/artifacts/conc-artifact.md
+          - recipes/artifacts/artifactowner.md
+          - recipes/artifacts/artifact-vulns.md
+          - recipes/artifacts/all-vulns.md
+      - "Repositories":
+          - recipes/repos/conc-repo.md
+      # - "Projects":
+      #     - recipes/conc-project.md
   - "Endpoints":
-      - endpoints/_overview.md
+      - endpoints/index.md
       - endpoints/artifacts.md
       - endpoints/audit.md
       - endpoints/configure.md
@@ -75,9 +90,18 @@ nav:
       - endpoints/users.md
       - endpoints/usergroups.md
   - "Reference":
+      - reference/index.md
       - reference/client.md
+      - reference/client_sync.md
+      - reference/auth.md
       - reference/exceptions.md
+      - reference/types.md
+      - reference/utils.md
       - "Models":
           - reference/models/models.md
           - reference/models/scanner.md
-      - reference/client_sync.md
+      - "Ext":
+          - reference/ext/api.md
+          - reference/ext/artifact.md
+          - reference/ext/cve.md
+          - reference/ext/report.md

@@ -1,6 +1,6 @@
-import asyncio
+from collections import deque
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, Dict, List, NamedTuple, Optional, Tuple, Type, TypeVar, Union
 
 import backoff
 import httpx
@@ -88,6 +88,14 @@ def construct_model(cls: Type[T], data: Any) -> T:
         raise e
 
 
+class ResponseLogEntry(NamedTuple):
+    url: str
+    method: str
+    status_code: int
+    duration: float
+    response_size: int
+
+
 class HarborAsyncClient:
     def __init__(
         self,
@@ -171,6 +179,34 @@ class HarborAsyncClient:
             logger.enable("harborapi")
         else:
             logger.disable("harborapi")
+
+        self.response_log = deque()  # type: deque[ResponseLogEntry]
+
+    def log_response(self, response: Response) -> None:
+        """Log the response to a request.
+
+        Parameters
+        ----------
+        response : Response
+            The response to log.
+        """
+        self.response_log.append(
+            ResponseLogEntry(
+                url=response.url,
+                method=response.request.method,
+                status_code=response.status_code,
+                duration=response.elapsed.total_seconds(),
+                response_size=len(response.content),
+            )
+        )
+
+    @property
+    def last_response(self) -> Optional[ResponseLogEntry]:
+        """Return the last response logged."""
+        try:
+            return self.response_log[-1]
+        except IndexError:
+            return None
 
     # NOTE: add destructor that closes client?
 
@@ -2922,12 +2958,13 @@ class HarborAsyncClient:
         Tuple[JSONType, Optional[str]]
             JSON data returned by the API, and the next URL if pagination is enabled.
         """
-        # async with httpx.AsyncClient() as client:
+        url = f"{self.url}{path}"
         resp = await self.client.get(
-            self.url + path,
+            url,
             params=params,
             headers=self._get_headers(headers),
         )
+        self.log_response(resp)
         check_response_status(resp)
         j = handle_optional_json_response(resp)
         if j is None:
@@ -2972,6 +3009,7 @@ class HarborAsyncClient:
             params=params,
             headers=self._get_headers(headers),
         )
+        self.log_response(resp)
         check_response_status(resp)
         return resp
 
@@ -3010,6 +3048,7 @@ class HarborAsyncClient:
             headers=self._get_headers(headers),
             **kwargs,
         )
+        self.log_response(resp)
         check_response_status(resp)
         return resp
 
@@ -3049,6 +3088,7 @@ class HarborAsyncClient:
             headers=self._get_headers(headers),
             **kwargs,
         )
+        self.log_response(resp)
         check_response_status(resp)
         return resp
 
@@ -3085,6 +3125,7 @@ class HarborAsyncClient:
             **kwargs,
         )
         check_response_status(resp, missing_ok=missing_ok)
+        self.log_response(resp)
         return resp
 
     @backoff.on_exception(backoff.expo, RequestError, max_time=30)
@@ -3120,6 +3161,7 @@ class HarborAsyncClient:
             **kwargs,
         )
         check_response_status(resp, missing_ok=missing_ok)
+        self.log_response(resp)
         return resp
 
     # TODO: add on_giveup callback for all backoff methods

@@ -1,4 +1,4 @@
-# Creating Privileged Robot Accounts
+# Privileged robot accounts
 
 By default, the Robot account creation process in the Harbor web interface only allows for a limited permission scope when creating new Robot accounts. As of Harbor v.2.5.2, this is still the case.
 
@@ -8,7 +8,7 @@ This page is based on [this](https://github.com/goharbor/harbor/issues/14145#iss
 
 All examples on this page will be using `harborapi` to create privileged robot accounts.
 
-## Project Creation Privileges
+## Project creation privileges
 
 Following the example provided in the GitHub comment above, `harborapi` uses [`HarborAsyncClient.create_robot`][harborapi.client.HarborAsyncClient.create_robot] to achieve the same functionality:
 
@@ -49,7 +49,7 @@ RobotCreated(
 )
 ```
 
-## Saving Credentials to File
+## Saving credentials to a file
 
 The resulting Robot account can be saved to a Harbor credentials file by providing an argument to the `path` parameter specifying the location to save the credentials to.
 

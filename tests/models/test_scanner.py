@@ -13,8 +13,8 @@ def test_vulnerabilityitem_get_severity_highest():
     vuln = VulnerabilityItem(
         vendor_attributes={
             "CVSS": {
-                "nvd": {"V3Score": 7.5},
-                "redhat": {"V3Score": 9.1},
+                "nvd": {"V3Score": 7.5},  # 7.5: high
+                "redhat": {"V3Score": 9.1},  # 9.1: critical
             }
         },
     )
@@ -25,8 +25,8 @@ def test_vulnerabilityitem_get_severity():
     vuln = VulnerabilityItem(
         vendor_attributes={
             "CVSS": {
-                "nvd": {"V3Score": 7.5},
-                "redhat": {"V3Score": 9.1},
+                "nvd": {"V3Score": 7.5},  # 7.5: high
+                "redhat": {"V3Score": 9.1},  # 9.1: critical
             }
         },
     )
@@ -49,6 +49,30 @@ def test_severity_enum():
 
     # Test that the enum is ordered
     assert list(iter(Severity)) == [Severity(s) for s in severities]
+
+    # Test enum comparison
+    assert Severity.low < Severity.medium
+    assert Severity.medium > Severity.low
+    assert Severity.medium <= Severity.medium
+    assert Severity.medium >= Severity.medium
+    assert Severity.medium == Severity.medium
+    assert Severity.medium != Severity.high
+
+    # Ensure that the enum values are ordered from least to most severe
+    severities = list(iter(Severity))
+    for i, severity in enumerate(severities):
+        if i == 0:
+            assert severity < severities[i + 1]
+        elif i == len(severities) - 1:
+            assert severity > severities[i - 1]
+        else:
+            assert severity > severities[i - 1]
+            assert severity < severities[i + 1]
+        # TODO: Assert that the cache is not modified.
+        # We use an lru_cache(maxsize=1) decorator instead of computed_property
+        # because computed_property doesn't play well with classmethods.
+        # Since we have a maxsize of 1, we want to make sure this cache is
+        # never modified.
 
 
 @given(get_hbv_strategy())
