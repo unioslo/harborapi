@@ -41,17 +41,22 @@ def _remove_duplicate_artifacts(
             yield a
 
 
-class ArtifactReport:
+from pydantic import BaseModel
+
+
+class ArtifactReport(BaseModel):
     """Aggregation of artifacts and their vulnerabilities."""
 
-    artifacts: List[ArtifactInfo]
+    artifacts: List[ArtifactInfo] = []
 
     def __init__(
-        self, artifacts: List[ArtifactInfo], remove_duplicates: bool = True
+        self,
+        artifacts: Optional[List[ArtifactInfo]] = None,
+        **kwargs,
     ) -> None:
-        if remove_duplicates:
-            artifacts = list(_remove_duplicate_artifacts(artifacts))
-        self.artifacts = artifacts
+        if artifacts is None:
+            artifacts = []
+        super().__init__(artifacts=artifacts, **kwargs)
 
     def __bool__(self) -> bool:
         return bool(self.artifacts)
@@ -191,7 +196,9 @@ class ArtifactReport:
         ArtifactReport
             A report with all artifacts that are affected by the given CVE.
         """
-        return ArtifactReport([a for a in self.artifacts if a.has_cve(cve_id)])
+        return ArtifactReport.construct(
+            artifacts=[a for a in self.artifacts if a.has_cve(cve_id)]
+        )
 
     def has_description(self, description: str, case_sensitive: bool = False) -> bool:
         """Check if any of the artifacts have a vulnerability with a description
@@ -232,8 +239,8 @@ class ArtifactReport:
             A report with all artifacts that have a vulnerability containing the given
             string.
         """
-        return ArtifactReport(
-            [
+        return ArtifactReport.construct(
+            artifacts=[
                 a
                 for a in self.artifacts
                 if a.has_description(description, case_sensitive)
@@ -302,8 +309,8 @@ class ArtifactReport:
             An artifact report with all artifacts that have a vulnerability affecting
             the given package.
         """
-        return ArtifactReport(
-            [
+        return ArtifactReport.construct(
+            artifacts=[
                 a
                 for a in self.artifacts
                 if a.has_package(
@@ -344,8 +351,8 @@ class ArtifactReport:
             An artifact report with all artifacts that have a vulnerability with the
             given severity.
         """
-        return ArtifactReport(
-            [a for a in self.artifacts if a.report.severity == severity]
+        return ArtifactReport.construct(
+            artifacts=[a for a in self.artifacts if a.report.severity == severity]
         )
 
     def has_repository(self, repository: str, case_sensitive: bool = False) -> bool:
@@ -406,8 +413,8 @@ class ArtifactReport:
         pattern = re.compile(
             "|".join(repositories), flags=re.IGNORECASE if not case_sensitive else 0
         )
-        return ArtifactReport(
-            [a for a in self.artifacts if pattern.match(a.repository.name)]
+        return ArtifactReport.construct(
+            artifacts=[a for a in self.artifacts if pattern.match(a.repository.name)]
         )
 
 
