@@ -10,11 +10,45 @@ from .types import JSONType
 
 
 def is_json(response: Response) -> bool:
-    """Return True if the response body is JSON-encoded."""
+    """Determines if a response body has a json content type.
+
+    Parameters
+    ----------
+    response : Response
+        The HTTPX response to check.
+
+    Returns
+    -------
+    bool
+        `True` if the response has a json content type, `False` otherwise.
+    """
     return response.headers.get("content-type", "").startswith("application/json")  # type: ignore # headers guaranteed to be a dict[str, str]
 
 
 def handle_optional_json_response(resp: Response) -> Optional[JSONType]:
+    """Takes in a response and attempts to parse the body as JSON.
+
+    If the response cannot be parsed, an exception is raised.
+    If the response has no body, `None` is returned.
+
+    Parameters
+    ----------
+    resp : Response
+        The HTTPX response to parse.
+
+    Returns
+    -------
+    Optional[JSONType]
+        The parsed JSON, or `None` if the response has no body.
+
+    Raises
+    ------
+    HarborAPIException
+        Raised if the response body cannot be parsed as JSON.
+        The __cause__ attribute of the exception will be the original
+        JSONDecodeError.
+
+    """
     # import here to resolve circular import
     from .exceptions import HarborAPIException
 
@@ -33,32 +67,113 @@ def handle_optional_json_response(resp: Response) -> Optional[JSONType]:
 def urlencode_repo(repository_name: str) -> str:
     """URL-encode a repository name.
     The Harbor API requires names to be double URL-encoded for some reason.
+    So we have to manually encode it here, and then let HTTPX encode it again
+    when we make the request.
+
+    Parameters
+    ----------
+    repository_name : str
+        The repository name to encode.
+
+    Returns
+    -------
+    str
+        The encoded repository name.
     """
     return quote_plus(quote_plus(repository_name))
 
 
 def urldecode_header(response: Response, key: str) -> str:
-    """URL decode the location header of a response.
+    """URL decode a value of a specific key from a response's headers.
 
-    Returns the decoded value, or an empty string if the header is not present.
+    Returns the decoded value, or an empty string if the header key is not present.
+
+    Parameters
+    ----------
+    response : Response
+        The HTTPX response to parse.
+    key : str
+        The header key to decode.
+
+    Returns
+    -------
+    str
+        The decoded header value, or an empty string if the header key is not present.
     """
     return unquote_plus(response.headers.get(key, ""))
 
 
 def get_repo_path(project_name: str, repository_name: str) -> str:
-    """Get repository path given a project name and a repository name"""
+    """Get a Harbor repository path given a project name and a repository name.
+
+    Example
+    -------
+    ```pycon
+    >>> get_repo_path("library", "hello-wØrld")
+    '/projects/library/repositories/hello-w%25C3%2598rld'
+    ```
+
+    Parameters
+    ----------
+    project_name : str
+        The project name
+    repository_name : str
+        The repository name
+
+    Returns
+    -------
+    str
+        The repository path
+    """
     repo_name = urlencode_repo(repository_name)
     return f"/projects/{project_name}/repositories/{repo_name}"
 
 
 def get_artifact_path(project_name: str, repository_name: str, reference: str) -> str:
-    """Get artifact path given a project name, repo name and a reference (tag or digest)"""
+    """Get artifact path given a project name, repo name and a reference (tag or digest)
+
+    Example
+    -------
+    ```pycon
+    >>> get_artifact_path("library", "hello-wØrld", "latest")
+    '/projects/library/repositories/hello-w%25C3%2598rld/artifacts/latest'
+    ```
+
+    Parameters
+    ----------
+    project_name : str
+        The project name
+    repository_name : str
+        The repository name
+    reference : str
+        The tag or digest of the artifact
+
+    Returns
+    -------
+    str
+        The artifact path
+    """
     repo_path = get_repo_path(project_name, repository_name)
     return f"{repo_path}/artifacts/{reference}"
 
 
 def get_credentials(username: str, secret: str) -> str:
-    """Get HTTP basic access authentication credentials given a username and a secret"""
+    """Get HTTP basic access authentication credentials given a username and a secret.
+
+    Parameters
+    ----------
+    username : str
+        The username to use for authentication.
+    secret : str
+        The secret (password) for the user.
+
+    Returns
+    -------
+    str
+        The credentials string used for HTTP basic access authentication,
+        encoded in base64. This is not a one-way hash, so it should be
+        considered insecure!
+    """
     return b64encode(f"{username}:{secret}".encode("utf-8")).decode("utf-8")
 
 
@@ -69,6 +184,7 @@ def parse_pagination_url(url: str) -> Optional[str]:
     ----------
     url : str
         The pagination URL to parse
+
     Returns
     -------
     Optional[str]
@@ -87,12 +203,23 @@ def parse_pagination_url(url: str) -> Optional[str]:
 
 
 def get_project_headers(project_name_or_id: Union[str, int]) -> Dict[str, str]:
-    """Get HTTP headers given a project name or ID.
+    """Get HTTP headers used to make a request given a project name or ID,
+    which distinguishes whether the request uses the project name or ID.
 
     If the project name or ID is an integer, it is assumed to be the project ID.
     Otherwise, it is assumed to be the project name.
     This determines the value of the `X-Is-Resource-Name` header.
 
     `True` means the value is a project name, `False` means the value is a project ID.
+
+    Parameters
+    ----------
+    project_name_or_id : Union[str, int]
+        The project name or ID.
+
+    Returns
+    -------
+    Dict[str, str]
+        The headers to use for the request.
     """
     return {"X-Is-Resource-Name": str(isinstance(project_name_or_id, str)).lower()}

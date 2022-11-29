@@ -6,6 +6,24 @@ from harborapi.models.models import Robot, RobotCreate, RobotCreated
 
 
 def load_harbor_auth_file(path: Union[str, Path]) -> "HarborAuthFile":
+    """Load a HarborAuthFile from a file path. Fails if the auth file
+    does not contain a username and secret.
+
+    Parameters
+    ----------
+    path : Union[str, Path]
+        The path to the file to load.
+
+    Returns
+    -------
+    HarborAuthFile
+        The HarborAuthFile loaded from the file.
+
+    Raises
+    ------
+    ValueError
+        The auth file does not contain a username and/or secret.
+    """
     with open(path, "r") as f:
         # parse without any guards against exceptions
         # pass the exception to the caller
@@ -63,7 +81,9 @@ def new_authfile_from_robotcreate(
     overwrite : bool, optional
         Overwrite file if it exists.
 
-    See: save_authfile
+    See Also
+    --------
+    [harborapi.auth.save_authfile][]
     """
     authfile = HarborAuthFile.parse_obj(
         {**(robotcreated.dict()), **(robotcreate.dict())}
@@ -90,7 +110,9 @@ def new_authfile_from_robot(
     overwrite : bool
         Overwrite file if it exists.
 
-    See: save_authfile
+    See Also
+    --------
+    [harborapi.auth.save_authfile][]
     """
     authfile = HarborAuthFile.parse_obj(robot.dict())
     authfile.secret = secret
@@ -98,6 +120,11 @@ def new_authfile_from_robot(
 
 
 class HarborAuthFile(Robot):
+    """Represents a Harbor robot account auth file.
+
+    Supports arbitrary extra fields to allow for future compatibility.
+    """
+
     class Config:
-        allow_population_by_field_name = True
+        allow_population_by_field_name = True  # why? do we have any aliases?
         extra = "allow"
