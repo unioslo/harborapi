@@ -478,14 +478,16 @@ def handle_gather(
     return ok
 
 
-async def get_artifact_owner(client: HarborAsyncClient, artifact: Artifact) -> UserResp:
+async def get_artifact_owner(
+    client: HarborAsyncClient, artifact: Union[Artifact, ArtifactInfo]
+) -> UserResp:
     """Get the full owner information for an artifact.
 
     Parameters
     ----------
     client : HarborAsyncClient
         The client to use for the API call.
-    artifact : Artifact
+    artifact : Union[Artifact, ArtifactInfo]
         The artifact to get the owner for.
 
     Returns
@@ -493,6 +495,8 @@ async def get_artifact_owner(client: HarborAsyncClient, artifact: Artifact) -> U
     UserResp
         The full owner information for the artifact.
     """
+    if isinstance(artifact, ArtifactInfo):
+        artifact = artifact.artifact
     project_id = artifact.project_id
     if project_id is None:
         raise ValueError("Artifact has no project_id")
