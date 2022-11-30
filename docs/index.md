@@ -1,6 +1,6 @@
 # Introduction
 
-`harborapi` is a Python wrapper for the Harbor REST API v2.0.
+`harborapi` is a Python client for the Harbor REST API v2.0.
 
 ## Features
 

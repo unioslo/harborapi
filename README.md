@@ -1,6 +1,6 @@
 # Harbor API
 
-Python async API wrapper for the Harbor  REST API v2.0.
+Python async client for the Harbor REST API v2.0.
 
 ## Features
 
