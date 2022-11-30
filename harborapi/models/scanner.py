@@ -7,7 +7,7 @@ from __future__ import annotations
 from collections import Counter
 from datetime import datetime
 from enum import Enum
-from functools import lru_cache
+from functools import cached_property
 from typing import (
     Any,
     Dict,
@@ -385,6 +385,9 @@ class HarborVulnerabilityReport(BaseModel):
         default_factory=list, description="The list of vulnerabilities found."
     )
 
+    class Config:
+        keep_untouched = (cached_property,)
+
     def __repr__(self) -> str:
         return f"HarborVulnerabilityReport(generated_at={self.generated_at}, artifact={self.artifact}, scanner={self.scanner}, severity={self.severity}, vulnerabilities=list(len={len(self.vulnerabilities)}))"
 
@@ -425,7 +428,7 @@ class HarborVulnerabilityReport(BaseModel):
     ) -> List[VulnerabilityItem]:
         return [v for v in self.vulnerabilities if v.severity == severity]
 
-    @property
+    @cached_property
     def cvss_scores(self) -> List[float]:
         """Returns a list of CVSS scores for each vulnerability.
         Vulnerabilities with a score of `None` are omitted.
