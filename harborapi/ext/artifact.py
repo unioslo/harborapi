@@ -1,4 +1,5 @@
 import re
+from functools import cached_property
 from typing import TYPE_CHECKING, Callable, Iterable, List, Optional
 
 from ..version import VersionType, get_semver
@@ -23,7 +24,10 @@ class ArtifactInfo(BaseModel):
     report: HarborVulnerabilityReport = HarborVulnerabilityReport()  # type: ignore # why complain?
     # NOTE: add Project?
 
-    @property
+    class Config:
+        keep_untouched = (cached_property,)
+
+    @cached_property
     def cvss(self) -> CVSSData:
         """Key CVSS metrics for the artifact.
 

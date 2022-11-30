@@ -76,6 +76,7 @@ def test_artifactreport(
     assert report.cvss.min == 5.0
     assert report.cvss.median == 5.0
     assert report.cvss.mean == 5.0
+    assert report.cvss.stdev == 0.0
 
     # Get fixable/unfixable vulnerabilities
     for is_fixable in [True, False]:

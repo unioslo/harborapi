@@ -85,3 +85,9 @@ def test_artifactinfo(
     assert list(artifact.vulns_with_description("test description")) == [vuln]
     # regex
     assert artifact.has_cve(".*2022-test-2")
+    assert artifact.cvss is not None
+    assert artifact.cvss.max >= 0
+    assert artifact.cvss.min >= 0
+    assert artifact.cvss.mean >= 0
+    assert artifact.cvss.median >= 0
+    assert artifact.cvss.stdev >= 0

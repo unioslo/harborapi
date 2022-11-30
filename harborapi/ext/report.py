@@ -1,6 +1,7 @@
 import re
 from collections import Counter
 from dataclasses import dataclass
+from functools import cached_property
 from typing import Iterable, List, Optional, Union
 
 from harborapi.models.scanner import Severity, VulnerabilityItem
@@ -58,6 +59,9 @@ class ArtifactReport(BaseModel):
             artifacts = []
         super().__init__(artifacts=artifacts, **kwargs)
 
+    class Config:
+        keep_untouched = (cached_property,)
+
     @classmethod
     def from_artifacts(cls, artifacts: Iterable[ArtifactInfo]) -> "ArtifactReport":
         """Create an ArtifactReport from an iterable of ArtifactInfo instances.
@@ -92,7 +96,7 @@ class ArtifactReport(BaseModel):
     def is_aggregate(self) -> bool:
         return len(self.artifacts) > 1
 
-    @property
+    @cached_property
     def cvss(self) -> CVSSData:
         """Get an aggregate of CVSS data for the artifacts in this report."""
         return CVSSData.from_report(self)
