@@ -45,7 +45,7 @@ def handle_optional_json_response(resp: Response) -> Optional[JSONType]:
     ------
     HarborAPIException
         Raised if the response body cannot be parsed as JSON.
-        The __cause__ attribute of the exception will be the original
+        The `__cause__` attribute of the exception will be the original
         JSONDecodeError.
 
     """
@@ -203,14 +203,15 @@ def parse_pagination_url(url: str) -> Optional[str]:
 
 
 def get_project_headers(project_name_or_id: Union[str, int]) -> Dict[str, str]:
-    """Get HTTP headers used to make a request given a project name or ID,
-    which distinguishes whether the request uses the project name or ID.
+    """Get HTTP header for identifying whether a Project Name or
+    Project ID is used in an API call.
 
-    If the project name or ID is an integer, it is assumed to be the project ID.
-    Otherwise, it is assumed to be the project name.
+    If the value is an integer, it is assumed to be the Project ID.
+    Otherwise, it is assumed to be the Project Name.
     This determines the value of the `X-Is-Resource-Name` header.
 
-    `True` means the value is a project name, `False` means the value is a project ID.
+    `X-Is-Resource-Name: true` means the value is a project name,
+    `X-Is-Resource-Name: false` means the value is a project ID.
 
     Parameters
     ----------
