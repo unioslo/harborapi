@@ -5,9 +5,9 @@ on:
       - main
       - docs-dev
     paths:
-      - "docs/*"
+      - "docs/**"
       - "mkdocs.yml"
-      - "harborapi/*"
+      - "harborapi/**"
 jobs:
   deploy:
     runs-on: ubuntu-latest
