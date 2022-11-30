@@ -118,6 +118,9 @@ def test_artifactreport(
         assert artifact == report.artifacts[i]
     assert len(report) == len(report.artifacts)
 
+    # Test constructing from a list of ArtifactInfo objects
+    report2 = ArtifactReport.from_artifacts(report.artifacts)
+
 
 @given(artifact_report_strategy)
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])

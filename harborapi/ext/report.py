@@ -58,6 +58,27 @@ class ArtifactReport(BaseModel):
             artifacts = []
         super().__init__(artifacts=artifacts, **kwargs)
 
+    @classmethod
+    def from_artifacts(cls, artifacts: Iterable[ArtifactInfo]) -> "ArtifactReport":
+        """Create an ArtifactReport from an iterable of ArtifactInfo instances.
+        Does not validate the artifacts for faster construction.
+
+        !!! warning
+            Only use this with artifacts that have already been validated,
+            (e.g. from an existing ArtifactReport).
+
+        Parameters
+        ----------
+        artifacts : Iterable[ArtifactInfo]
+            The artifacts to include in the report.
+
+        Returns
+        -------
+        ArtifactReport
+            A report with the given artifacts.
+        """
+        return cls.construct(artifacts=artifacts)
+
     def __bool__(self) -> bool:
         return bool(self.artifacts)
 
@@ -196,8 +217,8 @@ class ArtifactReport(BaseModel):
         ArtifactReport
             A report with all artifacts that are affected by the given CVE.
         """
-        return ArtifactReport.construct(
-            artifacts=[a for a in self.artifacts if a.has_cve(cve_id)]
+        return ArtifactReport.from_artifacts(
+            [a for a in self.artifacts if a.has_cve(cve_id)]
         )
 
     def has_description(self, description: str, case_sensitive: bool = False) -> bool:
@@ -239,8 +260,8 @@ class ArtifactReport(BaseModel):
             A report with all artifacts that have a vulnerability containing the given
             string.
         """
-        return ArtifactReport.construct(
-            artifacts=[
+        return ArtifactReport.from_artifacts(
+            [
                 a
                 for a in self.artifacts
                 if a.has_description(description, case_sensitive)
@@ -309,8 +330,8 @@ class ArtifactReport(BaseModel):
             An artifact report with all artifacts that have a vulnerability affecting
             the given package.
         """
-        return ArtifactReport.construct(
-            artifacts=[
+        return ArtifactReport.from_artifacts(
+            [
                 a
                 for a in self.artifacts
                 if a.has_package(
@@ -351,8 +372,8 @@ class ArtifactReport(BaseModel):
             An artifact report with all artifacts that have a vulnerability with the
             given severity.
         """
-        return ArtifactReport.construct(
-            artifacts=[a for a in self.artifacts if a.report.severity == severity]
+        return ArtifactReport.from_artifacts(
+            [a for a in self.artifacts if a.report.severity == severity]
         )
 
     def has_repository(self, repository: str, case_sensitive: bool = False) -> bool:
@@ -413,8 +434,8 @@ class ArtifactReport(BaseModel):
         pattern = re.compile(
             "|".join(repositories), flags=re.IGNORECASE if not case_sensitive else 0
         )
-        return ArtifactReport.construct(
-            artifacts=[a for a in self.artifacts if pattern.match(a.repository.name)]
+        return ArtifactReport.from_artifacts(
+            [a for a in self.artifacts if pattern.match(a.repository.name)]
         )
 
     def has_tag(self, tag: str) -> bool:
@@ -445,8 +466,8 @@ class ArtifactReport(BaseModel):
         ArtifactReport
             A new ArtifactReport where all artifacts have the given tag.
         """
-        return ArtifactReport.construct(
-            artifacts=[a for a in self.artifacts if a.has_tag(tag)]
+        return ArtifactReport.from_artifacts(
+            [a for a in self.artifacts if a.has_tag(tag)]
         )
 
 
