@@ -1,4 +1,4 @@
-# Report
+# harborapi.ext.report
 
 `harborapi.ext.report` defines classes and functions for aggregating the data of multiple artifacts, including their repositories and vulnerability reports.
 

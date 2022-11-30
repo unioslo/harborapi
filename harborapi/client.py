@@ -89,6 +89,8 @@ def construct_model(cls: Type[T], data: Any) -> T:
 
 
 class ResponseLogEntry(NamedTuple):
+    """A log entry for an HTTP response."""
+
     url: str
     method: str
     status_code: int

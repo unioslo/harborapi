@@ -1,4 +1,4 @@
-# Exceptions
+# harborapi.exceptions
 
 ::: harborapi.exceptions
     options:

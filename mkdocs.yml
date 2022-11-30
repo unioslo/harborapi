@@ -91,16 +91,16 @@ nav:
       - endpoints/usergroups.md
   - "Reference":
       - reference/index.md
+      - reference/auth.md
       - reference/client.md
       - reference/client_sync.md
-      - reference/auth.md
       - reference/exceptions.md
       - reference/types.md
       - reference/utils.md
-      - "Models":
+      - "harborapi.models":
           - reference/models/models.md
           - reference/models/scanner.md
-      - "Ext":
+      - "harborapi.ext":
           - reference/ext/api.md
           - reference/ext/artifact.md
           - reference/ext/cve.md

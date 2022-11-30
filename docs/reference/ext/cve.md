@@ -1,4 +1,4 @@
-# CVE
+# harborapi.ext.cve
 
 The `harborapi.ext.cve` module provides functionality for working with CVSSv3 data.
 

@@ -1,4 +1,4 @@
-# Auth
+# harborapi.auth
 
 `harborapi.auth` defines utility functions for use with `harborapi`.
 

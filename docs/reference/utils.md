@@ -1,4 +1,4 @@
-# Utils
+# harborapi.utils
 
 `harborapi.utils` defines utility functions for use with `harborapi`.
 

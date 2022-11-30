@@ -1,4 +1,4 @@
-# Types
+# harborapi.types
 
 `harborapi.types` defines custom types for use with `harborapi`.
 

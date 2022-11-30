@@ -1,4 +1,4 @@
-# Artifact
+# harborapi.ext.artifact
 
 Module that defines the `ArtifactInfo` class that aggregates information about an artifact from several Harbor API models.
 
