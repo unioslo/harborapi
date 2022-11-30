@@ -446,7 +446,7 @@ class ArtifactReport(BaseModel):
             A new ArtifactReport where all artifacts have the given tag.
         """
         return ArtifactReport.construct(
-            artifacts=[a for a in self.artifacts if a.artifact.tags[0].name == tag]
+            artifacts=[a for a in self.artifacts if a.has_tag(tag)]
         )
 
 
