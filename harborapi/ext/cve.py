@@ -1,9 +1,8 @@
-from collections import Counter
-from typing import TYPE_CHECKING, Iterable, List, Optional, Tuple
+from itertools import chain
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
 
-from ..models.scanner import SEVERITY_PRIORITY, Severity
 from . import stats
 
 if TYPE_CHECKING:
@@ -40,8 +39,8 @@ class CVSSData(BaseModel):
         """
         scores = artifact.report.cvss_scores
         return cls(
-            mean=stats.median(scores),
-            median=stats.mean(scores),
+            mean=stats.mean(scores),
+            median=stats.median(scores),
             stdev=stats.stdev(scores),
             min=stats.min(scores),
             max=stats.max(scores),
@@ -61,11 +60,14 @@ class CVSSData(BaseModel):
         CVSSData
             The CVSS data for the report.
         """
-        data = [artifact.cvss for artifact in report.artifacts]
+        # Wrap generator in list to allow for re-use
+        scores = list(
+            chain.from_iterable([a.report.cvss_scores for a in report.artifacts])
+        )
         return cls(
-            mean=stats.median([d.mean for d in data]),
-            median=stats.mean([d.median for d in data]),
-            stdev=stats.stdev([d.stdev for d in data]),
-            min=stats.min([d.min for d in data]),
-            max=stats.max([d.max for d in data]),
+            mean=stats.mean(scores),
+            median=stats.median(scores),
+            stdev=stats.stdev(scores),
+            min=stats.min(scores),
+            max=stats.max(scores),
         )
