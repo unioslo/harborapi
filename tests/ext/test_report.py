@@ -8,6 +8,10 @@ from harborapi.models.scanner import Severity, VulnerabilityItem
 
 from ..strategies.ext import artifact_report_strategy
 
+# TODO: add fixture that initializes the report with the data we do in the test below
+#       Afterwards, we can split up the tests and use the fixture to initialize the report
+#       so that we can test each method separately, instead of in one massive function.
+
 
 @given(artifact_report_strategy)
 @settings(
@@ -121,6 +125,7 @@ def test_artifactreport(
 
     # Test constructing from a list of ArtifactInfo objects
     report2 = ArtifactReport.from_artifacts(report.artifacts)
+    assert report2.artifacts == report.artifacts
 
 
 @given(artifact_report_strategy)

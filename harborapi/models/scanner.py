@@ -12,9 +12,10 @@ from functools import cached_property
 from typing import Any, Dict, Final, Iterable, List, Optional, Tuple, Union
 
 from loguru import logger
-from pydantic import AnyUrl, BaseModel, Extra, Field
+from pydantic import Extra, Field
 
 from ..version import SemVer, get_semver
+from .base import BaseModel
 
 DEFAULT_VENDORS = ("nvd", "redhat")
 

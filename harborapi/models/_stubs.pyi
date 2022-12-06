@@ -1,6 +1,6 @@
 from typing import List, Literal, Optional, overload
 
-from pydantic import BaseModel
+from .base import BaseModel
 
 class HarborVulnerabilityReport(BaseModel):
     @overload

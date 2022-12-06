@@ -9,7 +9,9 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
 from loguru import logger
-from pydantic import AnyUrl, BaseModel, Extra, Field, root_validator
+from pydantic import AnyUrl, Extra, Field, root_validator
+
+from .base import BaseModel
 
 
 class Model(BaseModel):

@@ -6,6 +6,7 @@ from typing import Iterable, List, Optional, Union
 
 from harborapi.models.scanner import Severity, VulnerabilityItem
 
+from ..models.base import BaseModel
 from ..version import VersionType
 from .api import ArtifactInfo
 from .cve import CVSSData
@@ -40,9 +41,6 @@ def _remove_duplicate_artifacts(
         if a.artifact.digest not in seen:
             seen.add(a.artifact.digest)
             yield a
-
-
-from pydantic import BaseModel
 
 
 class ArtifactReport(BaseModel):

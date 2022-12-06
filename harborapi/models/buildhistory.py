@@ -6,7 +6,7 @@ The models in this module are _NOT_ automatically generated.
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel
+from .base import BaseModel
 
 
 # Unclear what is optional and what isn't

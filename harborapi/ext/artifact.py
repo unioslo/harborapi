@@ -7,9 +7,8 @@ from ..version import VersionType, get_semver
 if TYPE_CHECKING:
     from typing import Dict
 
-from pydantic import BaseModel
-
 from ..models import Artifact, Repository
+from ..models.base import BaseModel
 from ..models.scanner import HarborVulnerabilityReport, VulnerabilityItem
 from .cve import CVSSData
 from .regex import get_pattern, match
@@ -37,6 +36,17 @@ class ArtifactInfo(BaseModel):
             Key CVSS metrics for the artifact.
         """
         return CVSSData.from_artifactinfo(self)
+
+    @cached_property
+    def cvss_max(self) -> float:
+        """Maximum CVSS score of all vulnerabilities affecting the artifact.
+
+        Returns
+        -------
+        float
+            Maximum CVSS score of all vulnerabilities affecting the artifact.
+        """
+        return max(self.report.cvss_scores, default=0.0)
 
     @property
     def name_with_digest(self) -> str:
