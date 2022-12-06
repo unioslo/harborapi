@@ -70,6 +70,41 @@ class ArtifactInfo(BaseModel):
             tag = "untagged"
         return f"{self.repository.name}:{tag}"
 
+    @property
+    def project_name(self) -> str:
+        """The name of the project that the artifact belongs to.
+
+        Returns
+        -------
+        str
+            The name of the project that the artifact belongs to.
+        """
+        return self.repository.project_name
+
+    @property
+    def repository_name(self) -> str:
+        """The name of the repository that the artifact belongs to.
+
+        Returns
+        -------
+        str
+            The name of the repository that the artifact belongs to.
+        """
+        return self.repository.base_name
+
+    @property
+    def tags(self) -> str:
+        """The tags of the artifact.
+
+        Returns
+        -------
+        str
+            The tags of the artifact.
+        """
+        if not self.artifact.tags:
+            return ""
+        return ", ".join(filter(None, (t.name for t in self.artifact.tags)))
+
     def has_cve(self, cve_id: str) -> bool:
         """Returns whether the artifact is affected by the given CVE ID.
 

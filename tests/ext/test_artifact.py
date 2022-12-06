@@ -91,3 +91,12 @@ def test_artifactinfo(
     assert artifact.cvss.mean >= 0
     assert artifact.cvss.median >= 0
     assert artifact.cvss.stdev >= 0
+
+    # Properties
+    artifact.repository.name = "test-project/test-repo"
+    artifact.artifact.digest = "sha256:1234567890abcdef"
+    artifact.artifact.tags = [Tag(name="test-tag")]
+    assert artifact.project_name == "test-project"
+    assert artifact.repository_name == "test-repo"
+    assert artifact.name_with_digest == "test-project/test-repo@sha256:12345678"
+    assert artifact.name_with_tag == "test-project/test-repo:test-tag"
