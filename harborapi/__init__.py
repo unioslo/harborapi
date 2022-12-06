@@ -1,10 +1,22 @@
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
+from . import auth, client, client_sync, exceptions, types, utils, version
 from .client import HarborAsyncClient
 from .client_sync import HarborClient
 
-# Import after client to avoid circular imports
+# Import after everything else to avoid circular imports
 from . import ext  # isort: skip
 
 
-__all__ = ["HarborAsyncClient", "HarborClient", "ext"]
+__all__ = [
+    "HarborAsyncClient",
+    "HarborClient",
+    "auth",
+    "client",
+    "client_sync",
+    "exceptions",
+    "ext",
+    "types",
+    "utils",
+    "version",
+]

@@ -419,7 +419,10 @@ class HarborVulnerabilityReport(BaseModel):
         return [v for v in self.vulnerabilities if v.severity == severity]
 
     def sort(self, descending: bool = True, use_cvss: bool = False) -> None:
-        """Sorts the vulnerabilities by severity.
+        """Sorts the vulnerabilities by severity in place.
+
+        A wrapper around `vulnerabilities.sort` that sorts by severity,
+        then optionally by CVSS score to break ties.
 
         Parameters
         ----------
