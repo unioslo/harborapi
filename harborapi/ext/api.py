@@ -23,51 +23,69 @@ from .artifact import ArtifactInfo
 T = TypeVar("T")
 
 
-async def get_artifactinfo_by_digest(
+async def get_artifact(
     client: HarborAsyncClient,
     project: str,
     repository: str,
-    tag: Optional[str] = None,
-    digest: Optional[str] = None,
-) -> Optional[ArtifactInfo]:
-    """Fetch an artifact and its vulnerability report by digest."""
-    reference = tag or digest
-    if not reference:
-        raise ValueError("Must specify either tag or digest")
-    try:
-        artifact = await client.get_artifact(
-            project_name=project,
-            repository_name=repository,
-            reference=reference,
-        )
-    except NotFound:
-        return None
+    reference: str,
+    with_report: bool = True,
+) -> ArtifactInfo:
+    """Fetch an artifact, optionally with a report.
 
-    try:
-        repo = await client.get_repository(
-            project_id=project,  # type: ignore
-            repository_name=repository,
-        )
-    except NotFound:
-        return None
+    Parameters
+    ----------
+    client : HarborAsyncClient
+        The client to use for the API call.
+    project : str
+        The artifact's project.
+    repository : str
+        The artifact's repository.
+    reference : str
+        The artifact's reference.
+    with_report : bool
+        Whether or not to fetch the artifact's report if it exists.
+    """
+    get_artifact = client.get_artifact(
+        project_name=project,
+        repository_name=repository,
+        reference=reference,
+    )
+    # TODO: use with_scan_overview to determine if we should try
+    # to fetch report?
 
-    def _no_report() -> None:
-        delim = ":" if tag else "@"
-        logger.error(
-            f"No vulnerability report for {project}/{repository}{delim}{reference}"
-        )
-        return None
+    get_repo = client.get_repository(
+        project_name=project,
+        repository_name=repository,
+    )
 
-    try:
-        report = await client.get_artifact_vulnerabilities(
-            project_name=project, repository_name=repo.base_name, reference=reference
-        )
-    except NotFound:
-        return _no_report()  # type: ignore
-    if not report:
-        return _no_report()  # type: ignore
+    coros = [get_artifact, get_repo]
+    resp = await run_coros(coros, max_connections=2)
+    res = handle_gather(resp, exc_ok=False, return_exceptions=False)
 
-    return ArtifactInfo(artifact=artifact, repository=repo, report=report)
+    artifact = repo = None
+    for r in res:
+        if isinstance(r, Artifact):
+            artifact = r
+        elif isinstance(r, Repository):
+            repo = r
+    if repo is None or artifact is None:
+        # we should never reach this
+        logger.bind(res=res).error("Unexpected response from API")
+        raise ValueError("Could not find artifact or repository")
+
+    report = None
+    if with_report:
+        try:
+            report = await client.get_artifact_vulnerabilities(
+                project_name=project,
+                repository_name=repo.base_name,
+                reference=reference,
+            )
+        except NotFound:
+            pass
+
+    kwargs = {"report": report} if report else {}
+    return ArtifactInfo(artifact=artifact, repository=repo, **kwargs)
 
 
 @overload
