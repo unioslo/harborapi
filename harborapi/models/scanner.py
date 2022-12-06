@@ -4,22 +4,12 @@
 
 from __future__ import annotations
 
+import functools
 from collections import Counter
 from datetime import datetime
 from enum import Enum
 from functools import cached_property
-from typing import (
-    Any,
-    Dict,
-    Final,
-    Iterable,
-    List,
-    Literal,
-    Optional,
-    Tuple,
-    Union,
-    overload,
-)
+from typing import Any, Dict, Final, Iterable, List, Optional, Tuple, Union
 
 from loguru import logger
 from pydantic import AnyUrl, BaseModel, Extra, Field
@@ -427,6 +417,38 @@ class HarborVulnerabilityReport(BaseModel):
         self, severity: Severity
     ) -> List[VulnerabilityItem]:
         return [v for v in self.vulnerabilities if v.severity == severity]
+
+    def sort(self, descending: bool = True, use_cvss: bool = False) -> None:
+        """Sorts the vulnerabilities by severity.
+
+        Parameters
+        ----------
+        descending : bool, optional
+            Whether to sort in descending order, by default True
+            Equivalent to `reverse=True` in `sorted()`.
+        use_cvss : bool, optional
+            Whether to use CVSS score to determine sorting order
+            when items have identical severity, by default False
+            This is somewhat experimental and may be removed in the future.
+        """
+        # TODO: implement this comparison in the VulnerabilityItem class
+        def cmp(v1: VulnerabilityItem, v2: VulnerabilityItem) -> int:
+            # First try to compare severities
+            if v1.severity > v2.severity:
+                return 1
+            elif v1.severity < v2.severity:
+                return -1
+            if not use_cvss:
+                return 0
+            # Only proceeed if severities are identical
+            diff = v1.get_cvss_score(self.scanner) - v2.get_cvss_score(self.scanner)
+            if diff > 0:
+                return 1
+            elif diff < 0:
+                return -1
+            return 0
+
+        self.vulnerabilities.sort(key=functools.cmp_to_key(cmp), reverse=descending)
 
     @cached_property
     def cvss_scores(self) -> List[float]:

@@ -58,14 +58,21 @@ artifact_strategy = st.builds(
 )
 artifact_or_none_strategy = st.one_of(st.none(), artifact_strategy)
 
+scanner_trivy_strategy = st.builds(
+    Scanner,
+    name=st.just("Trivy"),
+    vendor=st.just("Aqua Security"),
+    version=st.text(),
+)
+
+# TODO: test with other scanners + random values
+#       We rely on using "Trivy" as the scanner name in certain tests
+#       Especially in tests/models/test_scanner.py
+#       This is because the scanner name is used to retrieve the CVSS score
+#       from the vulnerability item.
 scanner_strategy = st.one_of(
     st.none(),
-    st.builds(
-        Scanner,
-        name=st.text(),
-        vendor=st.text(),
-        version=st.text(),  # should major.minor.patch
-    ),
+    scanner_trivy_strategy,
 )
 
 

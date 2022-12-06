@@ -82,8 +82,15 @@ def test_harborvulnerabilityreport(report: HarborVulnerabilityReport) -> None:
         id="CVE-2022-1337-test",
         description="test-cve",
         package="test-package",
+        severity=Severity.high,
     )
-    report.vulnerabilities.append(test_vuln)
+    test_vuln2 = VulnerabilityItem(
+        id="CVE-2022-1337-test-2",
+        description="test-cve-2",
+        package="test-package-2",
+        severity=Severity.critical,
+    )
+    report.vulnerabilities = [test_vuln, test_vuln2]
 
     # Test `has_` methods
     assert report.has_cve("CVE-2022-1337-test")
@@ -95,3 +102,30 @@ def test_harborvulnerabilityreport(report: HarborVulnerabilityReport) -> None:
     assert report.vuln_with_cve("CVE-2022-1337-test") is test_vuln
     assert list(report.vulns_with_description("test-cve"))[0] is test_vuln
     assert list(report.vulns_with_package("test-package"))[0] is test_vuln
+
+    # Test sorting
+    assert report.vulnerabilities[0] is test_vuln
+    assert report.vulnerabilities[1] is test_vuln2
+    report.sort()
+    assert report.vulnerabilities[0] is test_vuln2
+    assert report.vulnerabilities[1] is test_vuln
+    # We can only compare using cvss scores if we have a scanner
+    # (which we should probably always have)
+    if report.scanner is not None:
+        # vuln3 has identical severity to vuln2, but should be sorted before
+        # vuln 2, because it has a CVSS score, while vuln2 does not.
+        test_vuln3 = VulnerabilityItem(
+            id="CVE-2022-1337-test-3",
+            description="test-cve-3",
+            package="test-package-3",
+            severity=Severity.critical,
+            vendor_attributes={
+                "CVSS": {
+                    "nvd": {"V3Score": 7.5},  # 7.5: high
+                    "redhat": {"V3Score": 9.1},  # 9.1: critical
+                }
+            },
+        )
+        report.vulnerabilities.append(test_vuln3)
+        report.sort(use_cvss=True)
+        assert report.vulnerabilities[0] is test_vuln3
