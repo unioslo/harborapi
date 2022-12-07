@@ -11,7 +11,9 @@ class SemVer(NamedTuple):
     def __bool__(self) -> bool:
         return bool(self.major or self.minor or self.patch)
 
-    def __eq__(self, other: "VersionType") -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, SemVer):
+            raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
         other = get_semver(other)
         return (
             self.major == other.major
@@ -21,7 +23,9 @@ class SemVer(NamedTuple):
             and self.build == other.build
         )
 
-    def __gt__(self, other: "VersionType") -> bool:
+    def __gt__(self, other: object) -> bool:
+        if not isinstance(other, SemVer):
+            raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
         other = get_semver(other)
         if self.major > other.major:
             return True
@@ -40,15 +44,21 @@ class SemVer(NamedTuple):
             return True
         return False
 
-    def __ge__(self, other: "VersionType") -> bool:
+    def __ge__(self, other: object) -> bool:
+        if not isinstance(other, SemVer):
+            raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
         other = get_semver(other)
         return self > other or self == other
 
-    def __le__(self, other: "VersionType") -> bool:
+    def __le__(self, other: object) -> bool:
+        if not isinstance(other, SemVer):
+            raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
         other = get_semver(other)
         return (not self > other) or self == other
 
-    def __lt__(self, other: "VersionType") -> bool:
+    def __lt__(self, other: object) -> bool:
+        if not isinstance(other, SemVer):
+            raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
         other = get_semver(other)
         if (
             self.build != other.build
@@ -90,7 +100,7 @@ def clean_version_number(version: str, default: int = 0) -> int:
             break
     try:
         return int("".join(v))
-    except:
+    except:  # noqa: E722
         return default
 
 
@@ -137,7 +147,7 @@ def get_semver(version: Optional[VersionType]) -> SemVer:
         # Get prerelease (if exists)
         try:
             patch, prerelease = patch.split("-", 1)
-        except:
+        except:  # noqa: E722
             pass
         # Get build info (if exists)
         try:
@@ -145,7 +155,7 @@ def get_semver(version: Optional[VersionType]) -> SemVer:
                 prerelease, build = prerelease.split("+", 1)
             else:
                 patch, build = patch.split("+", 1)
-        except:
+        except:  # noqa: E722
             pass
         patch = clean_version_number(patch)
 
