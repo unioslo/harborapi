@@ -92,6 +92,41 @@ async def test_get_pagination_mock(
 
 
 @pytest.mark.asyncio
+async def test_get_pagination_next_and_prev_mock(
+    async_client: HarborAsyncClient, httpserver: HTTPServer
+) -> None:
+    """Test pagination links that contain both next and prev links."""
+    httpserver.expect_oneshot_request("/api/v2.0/users").respond_with_json(
+        [{"username": "user1"}, {"username": "user2"}],
+        headers={"link": '</api/v2.0/users?page=2>; rel="next"'},
+    )
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/users", query_string="page=2"
+    ).respond_with_json(
+        [{"username": "user3"}, {"username": "user4"}],
+        headers={
+            "link": '</api/v2.0/users?page=1>; rel="prev" , </api/v2.0/users?page=3>; rel="next"'
+        },
+    )
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/users", query_string="page=3"
+    ).respond_with_json(
+        [{"username": "user5"}, {"username": "user6"}],
+        headers={"link": '</api/v2.0/users?page=2>; rel="prev"'},
+    )
+    async_client.url = httpserver.url_for("/api/v2.0")
+    users = await async_client.get("/users")
+    assert isinstance(users, list)
+    assert len(users) == 6
+    assert users[0]["username"] == "user1"
+    assert users[1]["username"] == "user2"
+    assert users[2]["username"] == "user3"
+    assert users[3]["username"] == "user4"
+    assert users[4]["username"] == "user5"
+    assert users[5]["username"] == "user6"
+
+
+@pytest.mark.asyncio
 async def test_get_pagination_large_mock(
     async_client: HarborAsyncClient, httpserver: HTTPServer
 ):

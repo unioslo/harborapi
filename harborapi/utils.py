@@ -190,16 +190,28 @@ def parse_pagination_url(url: str) -> Optional[str]:
     Optional[str]
         The next URL, or `None` if the URL relation is `prev` and `ignore_prev` is `True`
     """
+
     # Formatting: '</api/v2.0/endpoint?page=X&page_size=Y>; rel="next"'
-    if 'rel="prev"' in url:
+    if 'rel="next"' not in url:
         return None
-    elif 'rel="next"' not in url:
-        # abnormal case, log warning and return None
-        logger.debug("No next page found in pagination URL: {}", url)
-        return None
-    url = url.split(";")[0].strip("><")
-    u = url.split("/", 3)  # remove /api/v2.0/
-    return "/" + u[-1]  # last segment is the next URL
+
+    def get_url(link: str) -> str:
+        link = link.split(";")[0].strip("><")
+        u = link.split("/", 3)  # remove /api/v2.0/
+        return "/" + u[-1]  # last segment is the next URL we want
+
+    # Pagination link can contain "prev" _and_ "next" links
+    # In cases where it does both, we first need to isolate the "next" link
+    #
+    # Example:
+    # '</api/v2.0/repositories?page=1&page_size=10>; rel="prev" , </api/v2.0/repositories?page=3&page_size=10>; rel="next"'
+    links = url.split(",")
+    if len(links) == 1:
+        return get_url(links[0])
+    # we have multiple links
+    for link in links:
+        if 'rel="next"' in link:
+            return get_url(link.strip())
 
 
 def get_project_headers(project_name_or_id: Union[str, int]) -> Dict[str, str]:
