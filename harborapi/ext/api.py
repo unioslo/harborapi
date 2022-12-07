@@ -1,7 +1,7 @@
 import asyncio
 from typing import (
     Any,
-    Coroutine,
+    Awaitable,
     List,
     Literal,
     Optional,
@@ -22,7 +22,7 @@ from .artifact import ArtifactInfo
 
 T = TypeVar("T")
 
-
+# TODO: support passing in existing project/repo objects
 async def get_artifact(
     client: HarborAsyncClient,
     project: str,
@@ -91,11 +91,8 @@ async def get_artifact(
 @overload
 async def get_artifacts(
     client: HarborAsyncClient,
-    repos: Optional[List[Repository]] = ...,
-    tags: Optional[List[str]] = ...,
-    exc_ok: bool = ...,
-    return_exceptions: Literal[True] = True,
-    max_connections: Optional[int] = ...,
+    *,
+    return_exceptions: Literal[True],
     **kwargs: Any,
 ) -> List[Union[ArtifactInfo, Exception]]:
     ...
@@ -104,11 +101,8 @@ async def get_artifacts(
 @overload
 async def get_artifacts(
     client: HarborAsyncClient,
-    repos: Optional[List[Repository]] = ...,
-    tags: Optional[List[str]] = ...,
-    exc_ok: bool = ...,
+    *,
     return_exceptions: Literal[False] = False,
-    max_connections: Optional[int] = ...,
     **kwargs: Any,
 ) -> List[ArtifactInfo]:
     ...
@@ -116,8 +110,8 @@ async def get_artifacts(
 
 async def get_artifacts(
     client: HarborAsyncClient,
-    repos: Optional[List[Repository]] = None,
     projects: Optional[List[str]] = None,
+    repositories: Optional[List[str]] = None,
     tags: Optional[List[str]] = None,
     exc_ok: bool = True,
     return_exceptions: bool = False,
@@ -134,14 +128,12 @@ async def get_artifacts(
     ----------
     client : HarborAsyncClient
         The client to use for the API call.
-    repos : Optional[List[Repository]]
-        The list of repositories to fetch artifacts from.
-        If not specified, all repositories will be used.
     projects : Optional[List[str]]
-        The list of projects to fetch repositories from which artifacts
-        are fetched from.
-        If not specified, all projects will be used.
-        Has no effect if `repos` is specified.
+        List of projects to fetch artifacts from.
+    repositories : Optional[str]]
+        List of repositories to fetch artifacts from.
+        A stricter filter than `projects`. Repositories
+        that are not part of the specified projects are ignored.
     tags : Optional[List[str]]
         The tag(s) to filter the artifacts by.
     exc_ok : bool
@@ -161,22 +153,32 @@ async def get_artifacts(
         A list of ArtifactInfo objects, without the .report field populated.
         Can contain exceptions if `return_exceptions` is True.
     """
-    if not repos:
-        repos = await get_repositories(client, projects=projects)
+    # Fetch repos first.
+    # We need these to construct the ArtifactInfo objects.
+    repos = await get_repositories(client, projects=projects)
+    if repositories:
+        repos = [r for r in repos if r.base_name in repositories]
+    # FIXME: invalid repository names are silently skipped
+
     # Fetch artifacts from each repository concurrently
-    coros = [_get_repo_artifacts(client, repo, tags=tags, **kwargs) for repo in repos]
+    coros = [
+        _get_artifacts_in_repository(client, repo, tags=tags, **kwargs)
+        for repo in repos
+    ]
     a = await run_coros(coros, max_connections=max_connections)
     return handle_gather(a, exc_ok=exc_ok, return_exceptions=return_exceptions)
-    # return list(itertools.chain.from_iterable(a))
 
 
 @backoff.on_exception(
     backoff.expo, (TimeoutException, asyncio.TimeoutError), max_tries=5
 )
-async def _get_repo_artifacts(
-    client: HarborAsyncClient, repo: Repository, tags: Optional[List[str]], **kwargs
+async def _get_artifacts_in_repository(
+    client: HarborAsyncClient,
+    repo: Repository,
+    tags: Optional[List[str]],
+    **kwargs: Any,
 ) -> List[ArtifactInfo]:
-    """Fetch all artifacts in a repository.
+    """Fetch all artifacts in a repository given a Repository object.
 
     Parameters
     ----------
@@ -197,46 +199,30 @@ async def _get_repo_artifacts(
     if not s:
         return []  # TODO: add warning or raise error
     project_name, repo_name = s
+
+    if tags:
+        t = " ".join(tags) if tags else None
+        query = f"tags=" + "{" + f"{t}" + "}"
+    else:
+        query = None
+
+    # We always fetch with scan_overview=True, so we can more easily
+    # determine if a vulnerability report exists
     artifacts = await client.get_artifacts(
         project_name,
         repo_name,
-        query=(f"tags={','.join(tags)}" if tags else None),
+        query=query,
         with_scan_overview=True,
         **kwargs,
     )
     return [ArtifactInfo(artifact=artifact, repository=repo) for artifact in artifacts]
 
 
-@overload
-async def get_repositories(
-    client: HarborAsyncClient,
-    projects: Optional[List[str]] = ...,
-    exc_ok: bool = ...,
-    return_exceptions: Literal[False] = False,
-    max_connections: Optional[int] = ...,
-) -> List[Repository]:
-    ...
-
-
-@overload
-async def get_repositories(
-    client: HarborAsyncClient,
-    projects: Optional[List[str]] = ...,
-    exc_ok: bool = ...,
-    return_exceptions: Literal[True] = True,
-    max_connections: Optional[int] = ...,
-) -> List[Union[Repository, Exception]]:
-    ...
-
-
 async def get_repositories(
     client: HarborAsyncClient,
     projects: Optional[List[str]] = None,
-    exc_ok: bool = True,
-    return_exceptions: bool = False,
-    max_connections: Optional[int] = 5,
-) -> Union[List[Repository], List[Union[Repository, Exception]]]:
-    """Fetch all repositories in a list of projects.
+) -> List[Repository]:
+    """Fetch all repositories in a list of projects or all projects.
 
     Parameters
     ----------
@@ -244,47 +230,26 @@ async def get_repositories(
         The client to use for the API call.
     projects : Optional[List[str]]
         The list of projects to fetch repositories from.
-        If not specified, all projects will be used.
-    exc_ok : bool
-        Whether or not to continue on error.
-        If True, the failed repository is skipped, and the exception
-        is logged. If False, the exception is raised.
-    return_exceptions : bool
-        Whether or not to return exceptions in the result list.
-    max_connections : Optional[int]
-        The maximum number of concurrent connections to open.
-
-    Returns
-    -------
-    Union[List[Repository], List[Union[Repository, Exception]]]
-        A list of Repository objects.
-        Can contain exceptions if `return_exceptions` is True.
-    """
-    if projects is None:
-        projects = [None]
-    coros = [_get_project_repos(client, project) for project in projects]
-    rtn = await run_coros(coros, max_connections=max_connections)
-    return handle_gather(rtn, exc_ok=exc_ok, return_exceptions=return_exceptions)
-
-
-async def _get_project_repos(
-    client: HarborAsyncClient, project: Optional[str]
-) -> List[Repository]:
-    """Fetch all repositories in a project.
-
-    Parameters
-    ----------
-    client : HarborAsyncClient
-        The client to use for the API call.
-    project : str
-        The project to fetch repositories from.
+        If not specified, will fetch repos from all projects.
 
     Returns
     -------
     List[Repository]
         A list of Repository objects.
     """
-    repos = await client.get_repositories(project_name=project)
+    # We have 2 options for fetching repositories when projects are specified:
+    # 1. Fetch all repositories from all projects, and filter the results
+    # 2. Fetch all repositories from each project concurrently
+    #
+    # We use the first option, as it is simpler, and only requires 1 API call.
+    # Simple benchmarks revealed that the second option is slightly faster
+    # for a registry with 8 projects and a total of 359 repositories,
+    # but it's probably not worth the additional complexity cost it introduces.
+
+    repos = await client.get_repositories()
+    if projects:
+        # TODO: verify that the project_name property is correct in this regard
+        repos = [r for r in repos if r.project_name in projects]
     return repos
 
 
@@ -292,8 +257,9 @@ async def get_artifact_vulnerabilities(
     client: HarborAsyncClient,
     tags: Optional[List[str]] = None,
     projects: Optional[List[str]] = None,
-    exc_ok: bool = True,
+    repositories: Optional[List[str]] = None,
     max_connections: Optional[int] = 5,
+    exc_ok: bool = True,
     **kwargs: Any,
 ) -> List[ArtifactInfo]:
     """Fetch all artifact vulnerability reports in all projects or a subset of projects,
@@ -317,17 +283,16 @@ async def get_artifact_vulnerabilities(
     projects : Optional[List[str]]
         The project(s) to fetch artifacts from.
         If not specified, all projects will be used.
-    exc_ok : bool
-        Whether or not to continue on error.
-        If True, the failed artifact is skipped, and the exception
-        is logged.
-        If False, the exception is raised.
-        For processing a large number of artifacts, it is recommended to set this to True.
-        NOTE: there is no functionality in place for scheduling retry of failed coros.
     max_connections : Optional[int]
         The maximum number of concurrent connections to the Harbor API.
         If None, the number of connections is unlimited.
         WARNING: uncapping connections will likely cause a DoS on the Harbor server.
+    exc_ok : bool
+        Whether or not to continue on error.
+        If True, the failed artifact is skipped, and the exception is logged.
+        If False, the exception is raised.
+        For processing a large number of artifacts, it is recommended to set this to True.
+        NOTE: there is no functionality in place for scheduling retry of failed coros.
     **kwargs : Any
         Additional arguments to pass to the `HarborAsyncClient.get_artifacts` method.
 
@@ -337,40 +302,42 @@ async def get_artifact_vulnerabilities(
         A list of ArtifactInfo objects, where each object's `report` field
         is populated with the vulnerability report.
     """
-    # Get all projects if not specified
-    if not projects:
-        p = await client.get_projects()
-        projects = [project.name for project in p if project.name]
-
-    repos = await get_repositories(
-        client, projects, max_connections=max_connections, exc_ok=exc_ok
-    )
 
     # We first retrieve all artifacts before we get the vulnerability reports
     # since the reports themselves lack information about the artifact.
     artifacts = await get_artifacts(
         client,
-        repos=repos,
+        projects=projects,
+        repositories=repositories,
         tags=tags,
         max_connections=max_connections,
+        exc_ok=exc_ok,
+        return_exceptions=False,
         **kwargs,
     )
-    # Filter out artifacts without a scan overview (no vulnerability report)
-    artifacts = [a for a in artifacts if a.artifact.scan_overview is not None]
+    # Filter out artifacts without a successful scan
+    # A failed scan will not produce a report
+    artifacts = [
+        a
+        for a in artifacts
+        if a.artifact.scan_overview is not None
+        and a.artifact.scan_overview.scan_status != "Error"  # type: ignore
+    ]
 
     # We must fetch each report individually, since the API doesn't support
     # getting all reports in one call.
     # This is done concurrently to speed up the process.
     coros = [_get_artifact_report(client, artifact) for artifact in artifacts]
     artifacts = await run_coros(coros, max_connections=max_connections)
-    return handle_gather(artifacts, exc_ok=exc_ok)
+    return handle_gather(artifacts, exc_ok=True, return_exceptions=False)
 
 
 async def run_coros(
-    coros: List[Coroutine[Any, Any, Any]],
+    coros: Sequence[Awaitable[T]],
     max_connections: Optional[int],
-) -> List[Any]:
-    """Runs a list of coroutines and returns the results.
+) -> List[T]:
+    """Runs an iterable of coroutines concurrently and returns the results.
+
     Given a `max_connections` value, the number of concurrent coroutines is limited.
     All coroutines are run with `asyncio.gather(..., return_exceptions=True)`,
     so the list of results can contain exceptions, which must be handled
@@ -378,14 +345,14 @@ async def run_coros(
 
     Parameters
     ----------
-    coros : List[Coroutine[Any, Any, Any]]
-        The list of coroutines to run.
+    coros : Sequence[Awaitable[T]]
+        An iterable of coroutines to run.
     max_connections : Optional[int]
         The maximum number of concurrent coroutines to run.
 
     Returns
     -------
-    List[Any]
+    List[T]
         A list of results from running the coroutines, which may contain exceptions.
     """
     results = []
@@ -398,7 +365,7 @@ async def run_coros(
     # Instead of passing the semaphore to each coroutine, we wrap each coroutine
     # in a function that acquires the semaphore before calling the coroutine.
     # This lets us run any coroutine without having to explicitly pass the semaphore.
-    async def _wrap_coro(coro: Coroutine[Any, Any, Any]) -> Any:
+    async def _wrap_coro(coro: Awaitable[T]) -> T:
         async with sem:
             return await coro
 
@@ -412,7 +379,8 @@ async def run_coros(
 async def _get_artifact_report(
     client: HarborAsyncClient, artifact: ArtifactInfo
 ) -> ArtifactInfo:
-    """Get the vulnerability report for an artifact.
+    """Given an ArtifactInfo, fetches the vulnerability report for the artifact,
+    and assigns it to the `report` field of the ArtifactInfo object.
 
     Parameters
     ----------
@@ -426,9 +394,10 @@ async def _get_artifact_report(
     ArtifactInfo
         The `ArtifactInfo` object with the vulnerability report attached.
     """
-    tag = artifact.artifact.tags[0].name if artifact.artifact.tags else None
-    if not tag:
-        tag = "latest"
+    digest = artifact.artifact.digest
+    if digest is None:  # should never happen
+        logger.error(f"Artifact {artifact.name_with_tag} has no digest")
+        return artifact
 
     s = artifact.repository.split_name()
     if not s:
@@ -440,17 +409,44 @@ async def _get_artifact_report(
     report = await client.get_artifact_vulnerabilities(
         project_name,
         repo_name,
-        tag,
+        digest,
     )
     if report is None:
         logger.debug(
             "No vulnerabilities found for artifact '{}'".format(
-                f"{project_name}/{repo_name}:{tag}"
+                f"{project_name}/{repo_name}@{digest}"
             )
         )
     else:
         artifact.report = report
     return artifact
+
+
+@overload
+def handle_gather(
+    results: Sequence[Union[T, Sequence[T], Exception]],
+    exc_ok: bool,
+    return_exceptions: Literal[True],
+) -> List[Union[T, Exception]]:
+    ...
+
+
+@overload
+def handle_gather(
+    results: Sequence[Union[T, Sequence[T], Exception]],
+    exc_ok: bool,
+    return_exceptions: Literal[False],
+) -> List[T]:
+    ...
+
+
+@overload
+def handle_gather(
+    results: Sequence[Union[T, Sequence[T], Exception]],
+    exc_ok: bool,
+    return_exceptions: bool = ...,
+) -> List[Union[T, Exception]]:
+    ...
 
 
 def handle_gather(
@@ -479,7 +475,7 @@ def handle_gather(
     List[T]
         The list of results with exceptions removed.
     """
-    ok = []  # type: Union[List[T], List[Union[T, Exception]]]
+    ok = []  # type: List[Union[T, Exception]]
     for res_or_exc in results:
         if isinstance(res_or_exc, Exception):
             if exc_ok:
