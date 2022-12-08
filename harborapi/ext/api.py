@@ -1,15 +1,5 @@
 import asyncio
-from typing import (
-    Any,
-    Awaitable,
-    List,
-    Literal,
-    Optional,
-    Sequence,
-    TypeVar,
-    Union,
-    overload,
-)
+from typing import Any, Awaitable, Callable, List, Optional, Sequence, TypeVar, Union
 
 import backoff
 from httpx import TimeoutException
@@ -21,6 +11,8 @@ from ..models import Artifact, Repository, UserResp
 from .artifact import ArtifactInfo
 
 T = TypeVar("T")
+
+ExceptionCallback = Callable[[List[Exception]], None]
 
 # TODO: support passing in existing project/repo objects
 async def get_artifact(
@@ -45,33 +37,26 @@ async def get_artifact(
     with_report : bool
         Whether or not to fetch the artifact's report if it exists.
     """
-    get_artifact = client.get_artifact(
-        project_name=project,
-        repository_name=repository,
-        reference=reference,
+    artifact_task = asyncio.create_task(
+        client.get_artifact(
+            project_name=project,
+            repository_name=repository,
+            reference=reference,
+        )
     )
-    # TODO: use with_scan_overview to determine if we should try
-    # to fetch report?
-
-    get_repo = client.get_repository(
-        project_name=project,
-        repository_name=repository,
+    repo_task = asyncio.create_task(
+        client.get_repository(
+            project_name=project,
+            repository_name=repository,
+        )
     )
 
-    coros = [get_artifact, get_repo]
-    resp = await run_coros(coros, max_connections=2)
-    res = handle_gather(resp, exc_ok=False, return_exceptions=False)
+    # Wait for both tasks to complete
+    await asyncio.wait([artifact_task, repo_task])  # type: ignore # not sure why mypy doesn't like this
 
-    artifact = repo = None
-    for r in res:
-        if isinstance(r, Artifact):
-            artifact = r
-        elif isinstance(r, Repository):
-            repo = r
-    if repo is None or artifact is None:
-        # we should never reach this
-        logger.bind(res=res).error("Unexpected response from API")
-        raise ValueError("Could not find artifact or repository")
+    # Get the results of the coroutines
+    artifact = artifact_task.result()
+    repo = repo_task.result()
 
     report = None
     if with_report:
@@ -88,36 +73,18 @@ async def get_artifact(
     return ArtifactInfo(artifact=artifact, repository=repo, **kwargs)
 
 
-@overload
-async def get_artifacts(
-    client: HarborAsyncClient,
-    *,
-    return_exceptions: Literal[True],
-    **kwargs: Any,
-) -> List[Union[ArtifactInfo, Exception]]:
-    ...
-
-
-@overload
-async def get_artifacts(
-    client: HarborAsyncClient,
-    *,
-    return_exceptions: Literal[False] = False,
-    **kwargs: Any,
-) -> List[ArtifactInfo]:
-    ...
-
-
+# TODO: add with_<references, labels, scan_overview> kwargs for parity
+#       with the client.get_artifacts method
 async def get_artifacts(
     client: HarborAsyncClient,
     projects: Optional[List[str]] = None,
     repositories: Optional[List[str]] = None,
-    tags: Optional[List[str]] = None,
-    exc_ok: bool = True,
-    return_exceptions: bool = False,
+    tag: Optional[str] = None,
+    query: Optional[str] = None,
+    callback: Optional[Callable[[List[Exception]], None]] = None,
     max_connections: Optional[int] = 5,
     **kwargs: Any,
-) -> Union[List[ArtifactInfo], List[Union[ArtifactInfo, Exception]]]:
+) -> List[ArtifactInfo]:
     """Fetch all artifacts in all repositories.
     Optionally specify a list of repositories or projects to fetch from.
 
@@ -134,14 +101,19 @@ async def get_artifacts(
         List of repositories to fetch artifacts from.
         A stricter filter than `projects`. Repositories
         that are not part of the specified projects are ignored.
-    tags : Optional[List[str]]
-        The tag(s) to filter the artifacts by.
-    exc_ok : bool
-        Whether or not to continue on error.
-        If True, the failed artifact is skipped, and the exception
-        is logged. If False, the exception is raised.
-    return_exceptions : bool
-        Whether or not to return exceptions in the result list.
+    tag : Optional[str]
+        The tag to filter the artifacts by.
+        A shorthand for `query="tags=<tag>"`.
+        If specified, the `query` argument is ignored.
+    query : Optional[str]
+        The query to filter the artifacts by.
+        Follows the same format as the Harbor API.
+        Has no effect if `tag` is specified.
+    callback : Optional[Callable[[List[Exception]], None]]
+        A callback function to handle exceptions raised by the API calls.
+        The function takes a list of exceptions as its only argument.
+        If not specified, exceptions are ignored.
+        The function always fires even if there are no exceptions.
     max_connections : Optional[int]
         The maximum number of concurrent connections to open.
     **kwargs : Any
@@ -149,9 +121,8 @@ async def get_artifacts(
 
     Returns
     -------
-    Union[List[ArtifactInfo], List[Union[ArtifactInfo, Exception]]]
+    List[ArtifactInfo]
         A list of ArtifactInfo objects, without the .report field populated.
-        Can contain exceptions if `return_exceptions` is True.
     """
     # Fetch repos first.
     # We need these to construct the ArtifactInfo objects.
@@ -162,11 +133,11 @@ async def get_artifacts(
 
     # Fetch artifacts from each repository concurrently
     coros = [
-        _get_artifacts_in_repository(client, repo, tags=tags, **kwargs)
+        _get_artifacts_in_repository(client, repo, tag=tag, query=query, **kwargs)
         for repo in repos
     ]
     a = await run_coros(coros, max_connections=max_connections)
-    return handle_gather(a, exc_ok=exc_ok, return_exceptions=return_exceptions)
+    return handle_gather(a, callback=callback)
 
 
 @backoff.on_exception(
@@ -175,7 +146,8 @@ async def get_artifacts(
 async def _get_artifacts_in_repository(
     client: HarborAsyncClient,
     repo: Repository,
-    tags: Optional[List[str]],
+    tag: Optional[str] = None,
+    query: Optional[str] = None,
     **kwargs: Any,
 ) -> List[ArtifactInfo]:
     """Fetch all artifacts in a repository given a Repository object.
@@ -186,8 +158,12 @@ async def _get_artifacts_in_repository(
         The client to use for the API call.
     repo : Repository
         The repository to get the artifacts from.
-    tags : Optional[List[str]]
-        The tag(s) to filter the artifacts by.
+    tag : Optional[str]
+        The tag to filter the artifacts by.
+        If specified, the `query` argument is ignored.
+    query : Optional[str]
+        The query to filter the artifacts by.
+        Follows the same format as the Harbor API.
 
     Returns
     -------
@@ -200,11 +176,9 @@ async def _get_artifacts_in_repository(
         return []  # TODO: add warning or raise error
     project_name, repo_name = s
 
-    if tags:
-        t = " ".join(tags) if tags else None
-        query = f"tags=" + "{" + f"{t}" + "}"
-    else:
-        query = None
+    # If a tag is specified, it takes precedence over the query
+    if query is None and tag is not None:
+        query = f"tags={tag}"
 
     # We always fetch with scan_overview=True, so we can more easily
     # determine if a vulnerability report exists
@@ -259,7 +233,7 @@ async def get_artifact_vulnerabilities(
     projects: Optional[List[str]] = None,
     repositories: Optional[List[str]] = None,
     max_connections: Optional[int] = 5,
-    exc_ok: bool = True,
+    callback: Optional[Callable[[List[Exception]], None]] = None,
     **kwargs: Any,
 ) -> List[ArtifactInfo]:
     """Fetch all artifact vulnerability reports in all projects or a subset of projects,
@@ -287,12 +261,11 @@ async def get_artifact_vulnerabilities(
         The maximum number of concurrent connections to the Harbor API.
         If None, the number of connections is unlimited.
         WARNING: uncapping connections will likely cause a DoS on the Harbor server.
-    exc_ok : bool
-        Whether or not to continue on error.
-        If True, the failed artifact is skipped, and the exception is logged.
-        If False, the exception is raised.
-        For processing a large number of artifacts, it is recommended to set this to True.
-        NOTE: there is no functionality in place for scheduling retry of failed coros.
+    callback : Optional[Callable[[List[Exception]], None]]
+        A callback function to handle exceptions raised by the API calls.
+        The function takes a list of exceptions as its only argument.
+        If not specified, exceptions are ignored.
+        The function always fires even if there are no exceptions.
     **kwargs : Any
         Additional arguments to pass to the `HarborAsyncClient.get_artifacts` method.
 
@@ -311,8 +284,7 @@ async def get_artifact_vulnerabilities(
         repositories=repositories,
         tags=tags,
         max_connections=max_connections,
-        exc_ok=exc_ok,
-        return_exceptions=False,
+        callback=callback,
         **kwargs,
     )
     # Filter out artifacts without a successful scan
@@ -329,7 +301,7 @@ async def get_artifact_vulnerabilities(
     # This is done concurrently to speed up the process.
     coros = [_get_artifact_report(client, artifact) for artifact in artifacts]
     artifacts = await run_coros(coros, max_connections=max_connections)
-    return handle_gather(artifacts, exc_ok=True, return_exceptions=False)
+    return handle_gather(artifacts, callback=callback)
 
 
 async def run_coros(
@@ -422,73 +394,43 @@ async def _get_artifact_report(
     return artifact
 
 
-@overload
 def handle_gather(
     results: Sequence[Union[T, Sequence[T], Exception]],
-    exc_ok: bool,
-    return_exceptions: Literal[True],
-) -> List[Union[T, Exception]]:
-    ...
-
-
-@overload
-def handle_gather(
-    results: Sequence[Union[T, Sequence[T], Exception]],
-    exc_ok: bool,
-    return_exceptions: Literal[False],
+    callback: Optional[Callable[[List[Exception]], None]] = None,
 ) -> List[T]:
-    ...
-
-
-@overload
-def handle_gather(
-    results: Sequence[Union[T, Sequence[T], Exception]],
-    exc_ok: bool,
-    return_exceptions: bool = ...,
-) -> List[Union[T, Exception]]:
-    ...
-
-
-def handle_gather(
-    results: Sequence[Union[T, Sequence[T], Exception]],
-    exc_ok: bool,
-    return_exceptions: bool = False,
-) -> Union[List[T], List[Union[T, Exception]]]:
     """Handles the returned values of an `asyncio.gather()` call, handling
     any exceptions and returning a list of the results with exceptions removed.
     Flattens lists of results. TODO: toggle this?
 
     Parameters
     ----------
-    results : List[Union[T, List[T], Exception]]
-        The results of an `asyncio.gather)` call.
-    exc_ok : bool
-        Whether to log and skip exceptions, or raise them.
-        If True, exceptions are logged and skipped.
-        If False, exceptions are raised.
-    return_exceptions : bool
-        Whether to return exceptions in the list of results.
-        If True, exceptions are returned in the list of results.
+    results : Sequence[Union[T, Sequence[T], Exception]],
+        The results of an `asyncio.gather()` call.
+    callback : Optional[Callable[[List[Exception]], None]]
+        A callback function to handle exceptions raised by the API calls.
+        The function takes a list of exceptions as its only argument.
+        If not specified, exceptions are ignored.
+        The function always fires even if there are no exceptions.
 
     Returns
     -------
     List[T]
         The list of results with exceptions removed.
     """
-    ok = []  # type: List[Union[T, Exception]]
+    ok = []  # type: List[T]
+    err = []  # type: List[Exception]
     for res_or_exc in results:
         if isinstance(res_or_exc, Exception):
-            if exc_ok:
-                logger.error(res_or_exc)
-                if return_exceptions:
-                    ok.append(res_or_exc)
-            else:
-                raise res_or_exc
+            err.append(res_or_exc)
         else:
             if isinstance(res_or_exc, Sequence):
                 ok.extend(res_or_exc)
             else:
                 ok.append(res_or_exc)
+
+    if callback is not None:
+        callback(err)
+
     return ok
 
 

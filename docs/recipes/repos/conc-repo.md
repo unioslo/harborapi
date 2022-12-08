@@ -51,8 +51,4 @@ async def main() -> None:
 This will fetch all repositories from all projects concurrently.
 
 !!! note
-    The function has a named parameter [`return_exceptions`][harborapi.ext.api.get_repositories], which makes the function ignore exceptions when encountered, and simply log them (if `exc_ok` is `True`)
-
-    If you wish to handle the exceptions yourself, set `return_exceptions` to `False`.
-
-    The default kwarg `return_exceptions=False`is passed to `get_repositories()` in the examples, which means exceptions are not returned in the list of results. If `return_exceptions` is `True`, these exceptions should be filtered out and handled as you see fit. If `exc_ok=False`, these exceptions will be raised automatically. And as such, `exc_ok` should always be set to `False` if you wish to handle exceptions yourself with `return_exceptions=True`.
+    The function has a named parameter [`callback`][harborapi.ext.api.get_repositories], which takes a function that receives a list of exceptions as its only argument. This can be used to handle exceptions that occur during the concurrent requests. The function always fires even if there are no exceptions. If no callback function is specified, exceptions are ignored.

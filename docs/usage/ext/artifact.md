@@ -19,7 +19,7 @@ The `ArtifactInfo` thus provides the complete information for a given artifact, 
 
 Several helper methods are defined to make use of the information available in the `ArtifactInfo` object. See the [ArtifactInfo reference][harborapi.ext.artifact.ArtifactInfo] for more information.
 
-Most functions defined in `ext.api` return `ArtifactInfo` objects.
+Most functions defined in `ext.api` return `ArtifactInfo` objects (or lists of them), unless otherwise specified.
 
 
 ## Why `ArtifactInfo`?
@@ -29,9 +29,3 @@ The [`ArtifactInfo`][harborapi.ext.artifact.ArtifactInfo] class exists because t
 To that end, we also need to fetch the artifact's [`Repository`][harborapi.models.models.Repository] in a separate API call. This gives us the project name and the repository name for the artifact, among other things.
 
 Furthermore, if we wish to fetch the vulnerabilities of an Artifact, we need to fetch its [`HarborVulnerabilityReport`][harborapi.models.scanner.HarborVulnerabilityReport]. This is, again, a separate API call, and it is not returned by [`HarborAsyncClient.get_artifact`][harborapi.client.HarborAsyncClient.get_artifact] either (though you can get a summary of the vulnerability report with `get_artifact(..., with_scan_overview=True)`).
-
-## What is `ArtifactInfo`?
-
-[`ArtifactInfo`][harborapi.ext.artifact.ArtifactInfo] is a class that is composed of the 3 aforementioned classes in order to provide a single object with the complete information of an artifact, and an interface that is more convenient to work with than having to manually stitch together the information from the 3 different classes.
-
-The `ext.report` module contains functionality for taking multiple `ArtifactInfo` objects and aggregating them into a single `ArtifactReport` object. This can then in turn be used to query the aggregated data for all artifacts affected by a given vulnerability, all artifacts who have a given vulnerable package, and more. See [`ext.report`](./report.md) for more information.
