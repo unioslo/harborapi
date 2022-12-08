@@ -63,26 +63,27 @@ class BaseModel(PydanticBaseModel):
 
         def as_table(
             self,
-            depth: int = 0,
             with_description: bool = False,
             max_depth: Optional[int] = None,
+            _depth: int = 0,
         ) -> Iterable[Table]:
             """Returns a Rich table representation of the model, and any nested models.
 
             Parameters
             ----------
-            depth : int, optional
-                The current depth level, by default 0
-            with_description : bool, optional
-                Whether to include the description of the model fields, by default False
-            max_depth : Optional[int], optional
-                The maximum depth to print nested models, by default None
-                None means no limit.
+            with_description : bool
+                Whether to include the description of the model fields.
+            max_depth : Optional[int]
+                The maximum depth to print nested models.
+                `None` means no limit.
+            _depth : int
+                DO NOT SET THIS.
+                This is used internally to track the current depth level.
 
             Returns
             -------
-            Table
-                The table representation of the model.
+            Iterable[Table]
+                A generator of Rich tables representing the model and any nested models.
             """
             title = self._table_title
 
@@ -97,10 +98,10 @@ class BaseModel(PydanticBaseModel):
                     Column(header="Description", style="yellow", justify="left"),
                 )
 
-            depth_indicator = "." * depth
+            depth_indicator = "." * _depth
             table = Table(
                 title=f"[bold]{depth_indicator}{title}[/bold]",
-                title_style=DEPTH_TITLE_COLORS.get(depth, "magenta"),
+                title_style=DEPTH_TITLE_COLORS.get(_depth, "magenta"),
                 title_justify="left",
                 expand=True,
                 *columns,
@@ -115,15 +116,17 @@ class BaseModel(PydanticBaseModel):
                 try:
                     # issubclass is prone to TypeError, so we use try/except
                     if issubclass(field.type_, BaseModel):
-                        if max_depth is None or depth < max_depth:
+                        if max_depth is None or _depth < max_depth:
                             if isinstance(attr, (list, set)):
                                 subtables.extend(
-                                    a.as_table(depth=depth + 1, max_depth=max_depth)
+                                    a.as_table(_depth=_depth + 1, max_depth=max_depth)
                                     for a in attr
                                 )
                             else:
                                 subtables.append(
-                                    attr.as_table(depth=depth + 1, max_depth=max_depth)
+                                    attr.as_table(
+                                        _depth=_depth + 1, max_depth=max_depth
+                                    )
                                 )
                             # TODO: only add see below if we actually added a subtable
                             attr = f"[bold]See below[/bold]"
