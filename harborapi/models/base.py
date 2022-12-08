@@ -21,6 +21,17 @@ except ImportError:
 
 
 class BaseModel(PydanticBaseModel):
+    @property
+    def _table_title(self) -> str:
+        """The title to use for the table representation of the model.
+        By default, the model's class name is be used.
+        """
+        try:
+            title = self.__name__  # type: ignore # this is populated by Pydantic
+        except AttributeError:
+            title = self.__class__.__name__
+        return title
+
     if rich is not None:
 
         def __rich_console__(
