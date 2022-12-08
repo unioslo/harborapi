@@ -8,7 +8,7 @@ for more information: https://rich.readthedocs.io/en/latest/protocol.html#consol
 Other functionality in the future will be added here as well.
 """
 
-from typing import Iterable
+from typing import Iterable, Optional
 
 from pydantic import BaseModel as PydanticBaseModel
 
@@ -20,7 +20,7 @@ except ImportError:
     rich = None
 
 
-NESTING_TITLE_COLORS = {
+DEPTH_TITLE_COLORS = {
     0: "magenta",
     1: "cyan",
     2: "blue",
@@ -59,21 +59,25 @@ class BaseModel(PydanticBaseModel):
             nested models, but not tested.
             See: https://rich.readthedocs.io/en/latest/protocol.html#console-render
             """
-            return self.as_table(with_description=False)
+            yield from self.as_table(with_description=False)
 
         def as_table(
-            self, nesting: int = 0, with_description: bool = False
+            self,
+            depth: int = 0,
+            with_description: bool = False,
+            max_depth: Optional[int] = None,
         ) -> Iterable[Table]:
             """Returns a Rich table representation of the model, and any nested models.
 
             Parameters
             ----------
-            model : BaseModel
-                The model to represent as a table.
-            nesting : int, optional
-                The current nesting level, by default 0
+            depth : int, optional
+                The current depth level, by default 0
             with_description : bool, optional
                 Whether to include the description of the model fields, by default False
+            max_depth : Optional[int], optional
+                The maximum depth to print nested models, by default None
+                None means no limit.
 
             Returns
             -------
@@ -93,10 +97,10 @@ class BaseModel(PydanticBaseModel):
                     Column(header="Description", style="yellow", justify="left"),
                 )
 
-            depth_indicator = "." * nesting
+            depth_indicator = "." * depth
             table = Table(
                 title=f"[bold]{depth_indicator}{title}[/bold]",
-                title_style=NESTING_TITLE_COLORS.get(nesting, "magenta"),
+                title_style=DEPTH_TITLE_COLORS.get(depth, "magenta"),
                 title_justify="left",
                 expand=True,
                 *columns,
@@ -110,15 +114,19 @@ class BaseModel(PydanticBaseModel):
                 attr = getattr(self, field_name)
                 try:
                     # issubclass is prone to TypeError, so we use try/except
-                    if issubclass(field.type_, BaseModel) and attr is not None:
-                        if isinstance(attr, (list, set)):
-                            subtables.extend(
-                                a.as_table(nesting=nesting + 1) for a in attr
-                            )
-                        else:
-                            subtables.append(attr.as_table(nesting=nesting + 1))
-                        # TODO: only add see below if we actually added a subtable
-                        attr = f"[bold]See below[/bold]"
+                    if issubclass(field.type_, BaseModel):
+                        if max_depth is None or depth < max_depth:
+                            if isinstance(attr, (list, set)):
+                                subtables.extend(
+                                    a.as_table(depth=depth + 1, max_depth=max_depth)
+                                    for a in attr
+                                )
+                            else:
+                                subtables.append(
+                                    attr.as_table(depth=depth + 1, max_depth=max_depth)
+                                )
+                            # TODO: only add see below if we actually added a subtable
+                            attr = f"[bold]See below[/bold]"
                 except:
                     pass
                 row = [field_title, str(attr)]
