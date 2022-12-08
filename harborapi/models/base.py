@@ -8,7 +8,7 @@ for more information: https://rich.readthedocs.io/en/latest/protocol.html#consol
 Other functionality in the future will be added here as well.
 """
 
-from typing import TYPE_CHECKING
+from typing import Iterable
 
 from pydantic import BaseModel as PydanticBaseModel
 
@@ -20,7 +20,22 @@ except ImportError:
     rich = None
 
 
+NESTING_TITLE_COLORS = {
+    0: "magenta",
+    1: "cyan",
+    2: "blue",
+    3: "green",
+    4: "yellow",
+    5: "red",
+}
+
+
 class BaseModel(PydanticBaseModel):
+    class Config:
+        # Account for additions to the spec
+        # These fields will not be validated however
+        extra = "allow"
+
     @property
     def _table_title(self) -> str:
         """The title to use for the table representation of the model.
@@ -44,21 +59,50 @@ class BaseModel(PydanticBaseModel):
             nested models, but not tested.
             See: https://rich.readthedocs.io/en/latest/protocol.html#console-render
             """
-            try:
-                name = self.__name__  # type: ignore # this is populated by Pydantic
-            except AttributeError:
-                name = self.__class__.__name__
-            table = Table(
+            return self.as_table(with_description=False)
+
+        def as_table(
+            self, nesting: int = 0, with_description: bool = False
+        ) -> Iterable[Table]:
+            """Returns a Rich table representation of the model, and any nested models.
+
+            Parameters
+            ----------
+            model : BaseModel
+                The model to represent as a table.
+            nesting : int, optional
+                The current nesting level, by default 0
+            with_description : bool, optional
+                Whether to include the description of the model fields, by default False
+
+            Returns
+            -------
+            Table
+                The table representation of the model.
+            """
+            title = self._table_title
+
+            columns = [
                 Column(
                     header="Setting", justify="left", style="green", header_style="bold"
                 ),
                 Column(header="Value", style="blue", justify="left"),
-                Column(header="Description", style="yellow", justify="left"),
-                title=f"[bold]{name}[/bold]",
-                title_style="magenta",
+            ]
+            if with_description:
+                columns.append(
+                    Column(header="Description", style="yellow", justify="left"),
+                )
+
+            depth_indicator = "." * nesting
+            table = Table(
+                title=f"[bold]{depth_indicator}{title}[/bold]",
+                title_style=NESTING_TITLE_COLORS.get(nesting, "magenta"),
                 title_justify="left",
+                expand=True,
+                *columns,
             )
-            subtables = []
+
+            subtables = []  # type: list[Iterable[Table]]
             for field_name, field in self.__fields__.items():
                 # Try to use field title if available
                 field_title = field.field_info.title or field_name
@@ -68,19 +112,22 @@ class BaseModel(PydanticBaseModel):
                     # issubclass is prone to TypeError, so we use try/except
                     if issubclass(field.type_, BaseModel) and attr is not None:
                         if isinstance(attr, (list, set)):
-                            subtables.extend(attr)
+                            subtables.extend(
+                                a.as_table(nesting=nesting + 1) for a in attr
+                            )
                         else:
-                            subtables.append(attr)
-                        continue
+                            subtables.append(attr.as_table(nesting=nesting + 1))
+                        # TODO: only add see below if we actually added a subtable
+                        attr = f"[bold]See below[/bold]"
                 except:
                     pass
-                table.add_row(field_title, str(attr), field.field_info.description)
+                row = [field_title, str(attr)]
+                if with_description:
+                    row.append(field.field_info.description)
+                table.add_row(*row)
 
-            if table.rows:
-                yield table
-            yield from subtables
+            # TODO: sort table rows by field name
 
-    class Config:
-        # Account for additions to the spec
-        # These fields will not be validated however
-        extra = "allow"
+            yield table
+            for subtable in subtables:
+                yield from subtable
