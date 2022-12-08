@@ -88,7 +88,7 @@ class BaseModel(PydanticBaseModel):
 
             columns = [
                 Column(
-                    header="Setting", justify="left", style="green", header_style="bold"
+                    header="Field", justify="left", style="green", header_style="bold"
                 ),
                 Column(header="Value", style="blue", justify="left"),
             ]
