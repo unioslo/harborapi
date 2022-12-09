@@ -3,13 +3,13 @@
 ::: harborapi.client.HarborAsyncClient
     options:
         members:
-        - get_users
-        - search_users_by_username
         - get_user
         - get_user_by_username
         - create_user
+        - update_user
         - delete_user
-        - update_user_profile
+        - get_users
+        - search_users_by_username
         - set_user_admin
         - set_user_password
         - set_user_cli_secret

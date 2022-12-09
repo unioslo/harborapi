@@ -405,7 +405,7 @@ class HarborAsyncClient:
         return [construct_model(UserResp, u) for u in users_resp]
 
     # PUT /users/{user_id}
-    async def update_user_profile(self, user_id: int, user: UserProfile) -> None:
+    async def update_user(self, user_id: int, user: UserProfile) -> None:
         """Update a user's profile.
 
         Parameters

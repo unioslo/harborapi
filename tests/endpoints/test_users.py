@@ -183,7 +183,7 @@ async def test_create_user_mock(
 @pytest.mark.asyncio
 @given(st.builds(UserProfile))
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-async def test_update_user_profile_mock(
+async def test_update_user_mock(
     async_client: HarborAsyncClient,
     httpserver: HTTPServer,
     user: UserProfile,
@@ -194,7 +194,7 @@ async def test_update_user_profile_mock(
         json=user.dict(),
     ).respond_with_data(status=200)
     async_client.url = httpserver.url_for("/api/v2.0")
-    await async_client.update_user_profile(1234, user)
+    await async_client.update_user(1234, user)
 
 
 @pytest.mark.asyncio
