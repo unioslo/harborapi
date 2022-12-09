@@ -1886,7 +1886,7 @@ class HarborAsyncClient:
         tag_name: str,
         missing_ok: bool = False,
     ) -> None:
-        """Get the tags for an artifact.
+        """Delete a tag for an artifact.
 
         Parameters
         ----------
