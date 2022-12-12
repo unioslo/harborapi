@@ -44,7 +44,10 @@ def test_rich_console_protocol(
     spy.assert_called()
 
 
-def test_as_table() -> None:
+def test_as_table_artifact() -> None:
+    """Tests the as_table method of the Artifact model (and by extension all models)
+
+    This should be representative of all models, but it is not guaranteed yet."""
     a = Artifact(
         digest="sha256:123",
     )
@@ -92,3 +95,13 @@ def test_as_table() -> None:
     assert len(list(a.as_table(max_depth=1))) == 4
     # Artifact + tag + customnested + customnested + custom + custom
     assert len(list(a.as_table(max_depth=2))) == 6
+
+
+def test_as_table_long_value() -> None:
+    """Tests that the value of a cell is not cut off if it is very long."""
+    digest = "extremelylongdigest" * 100
+    a = Artifact(digest=digest)
+    t = list(a.as_table())[0]
+    digest_idx = t.columns[0]._cells.index("digest")
+    value = t.columns[1]._cells[digest_idx]
+    assert value == digest

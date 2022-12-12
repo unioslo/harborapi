@@ -91,7 +91,7 @@ class BaseModel(PydanticBaseModel):
                 Column(
                     header="Field", justify="left", style="green", header_style="bold"
                 ),
-                Column(header="Value", style="blue", justify="left"),
+                Column(header="Value", style="blue", justify="left", overflow="fold"),
             ]
             if with_description:
                 columns.append(
@@ -124,7 +124,6 @@ class BaseModel(PydanticBaseModel):
             # defined in the model, but are added dynamically ("extra" fields).
             # Extra fields do not show up in __fields__, hence we use __dict__.
             for field_name, value in self.__dict__.items():
-
                 # Prioritize getting field info from __fields__ dict
                 # since this dict contains more metadata for the field
                 field = self.__fields__.get(field_name)
