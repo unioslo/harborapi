@@ -8,7 +8,7 @@ for more information: https://rich.readthedocs.io/en/latest/protocol.html#consol
 Other functionality in the future will be added here as well.
 """
 
-from typing import Iterable, Optional
+from typing import Any, Iterable, NamedTuple, Optional
 
 from pydantic import BaseModel as PydanticBaseModel
 
@@ -108,33 +108,69 @@ class BaseModel(PydanticBaseModel):
             )
 
             subtables = []  # type: list[Iterable[Table]]
-            for field_name, field in self.__fields__.items():
-                # Try to use field title if available
-                field_title = field.field_info.title or field_name
 
-                attr = getattr(self, field_name)
-                try:
-                    # issubclass is prone to TypeError, so we use try/except
-                    if issubclass(field.type_, BaseModel):
-                        if max_depth is None or _depth < max_depth:
-                            if isinstance(attr, (list, set)):
-                                subtables.extend(
-                                    a.as_table(_depth=_depth + 1, max_depth=max_depth)
-                                    for a in attr
-                                )
-                            else:
-                                subtables.append(
-                                    attr.as_table(
-                                        _depth=_depth + 1, max_depth=max_depth
-                                    )
-                                )
-                            # TODO: only add see below if we actually added a subtable
-                            attr = f"[bold]See below[/bold]"
-                except:
-                    pass
-                row = [field_title, str(attr)]
+            def add_submodel_table(submodel: "BaseModel") -> None:
+                """Adds a submodel table to the subtables list."""
+                submodel_table = submodel.as_table(
+                    with_description=with_description,
+                    max_depth=max_depth,
+                    _depth=_depth + 1,
+                )
+                subtables.append(submodel_table)
+
+            # Iterate over __dict__, but try to get the field values from the
+            # __fields__ dict since it contains more metadata.
+            # We iterate over __dict__ to account for fields that are not
+            # defined in the model, but are added dynamically ("extra" fields).
+            # Extra fields do not show up in __fields__, hence we use __dict__.
+            for field_name, value in self.__dict__.items():
+
+                # Prioritize getting field info from __fields__ dict
+                # since this dict contains more metadata for the field
+                field = self.__fields__.get(field_name)
+                if field is not None:
+                    # Try to use field title if available
+                    field_title = str(field.field_info.title or field_name)
+                    # Get the field value
+                    value = getattr(self, field_name)
+                else:
+                    # If the field was not found in __fields__, then it is an
+                    # "extra" field that is not a part of the model spec.
+                    # We still want to print it, but we don't have any metadata
+                    # for it, so we just print the field name and value.
+                    # We can never have a description for these fields.
+                    field_title = field_name
+                    description = ""
+
+                submodels = []  # type: Iterable[BaseModel]
+
+                # Check if we are dealing with a nested model or list of nested models
+                # In that case, we need to recurse and fetch the nested model table(s).
+                # We don't print them right away, but instead store them in the subtables
+                # list, which we yield at the end (after the main table).
+                if isinstance(value, BaseModel):
+                    submodels = [value]
+                # Have to check this after BaseModel check, because all
+                # BaseModels are also Iterables
+                elif isinstance(value, Iterable):
+                    if all(isinstance(v, BaseModel) for v in value):
+                        submodels = value
+
+                # Only print the submodel table if we are not at the max depth
+                # If we don't enter this, we print the string representation of the
+                # submodel(s) in the main table.
+                if submodels and (max_depth is None or _depth < max_depth):
+                    # consume iterable immediately so we can get table title
+                    # It's likely this is NOT a generator, but we don't want to
+                    # assume that.
+                    submodels = list(submodels)
+                    value = f"[bold]See below ({submodels[0]._table_title})[/bold]"
+                    for submodel in submodels:
+                        add_submodel_table(submodel)
+
+                row = [field_title, str(value)]
                 if with_description:
-                    row.append(field.field_info.description)
+                    row.append(description)
                 table.add_row(*row)
 
             # TODO: sort table rows by field name
