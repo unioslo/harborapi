@@ -848,7 +848,7 @@ class HarborAsyncClient:
 
     # DELETE /usergroups/{group_id}
     # Delete user group
-    async def delete_usergroup(self, group_id: int, missing_ok: bool = True) -> None:
+    async def delete_usergroup(self, group_id: int, missing_ok: bool = False) -> None:
         """Delete a user group.
 
         Parameters
@@ -1063,11 +1063,10 @@ class HarborAsyncClient:
 
         Parameters
         ----------
-        project_name_or_id: Union[str, int]
+        project_name_or_id: str
             The name or ID of the project
-
-                * String arguments are treated as project names.
-                * Integer arguments are treated as project IDs.
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
 
             Strings arguments set the `"X-Is-Resource-Name"` header to `true`.
         scanner_uuid: str
@@ -1087,12 +1086,10 @@ class HarborAsyncClient:
 
         Parameters
         ----------
-        project_name_or_id: Union[str, int]
+        project_name_or_id: str
             The name or ID of the project
-
-                * String arguments are treated as project names.
-                * Integer arguments are treated as project IDs.
-
+            Integer arguments are treated as project IDs.
+            String arguments are treated as project names.
             Strings arguments set the `"X-Is-Resource-Name"` header to `true`.
 
         Returns
@@ -1181,7 +1178,18 @@ class HarborAsyncClient:
 
     # POST /projects
     async def create_project(self, project: ProjectReq) -> str:
-        """Create a new project. Returns location of the created project."""
+        """Create a new project. Returns location of the created project.
+
+        Parameters
+        ----------
+        project: ProjectReq
+            The project to create
+
+        Returns
+        -------
+        str
+            The location of the created project.
+        """
         resp = await self.post(
             "/projects", json=project, headers={"X-Resource-Name-In-Location": "true"}
         )
@@ -1266,9 +1274,8 @@ class HarborAsyncClient:
         ----------
         project_name_or_id: str
             The name or ID of the project
-
-                * String arguments are treated as project names.
-                * Integer arguments are treated as project IDs.
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
         project: ProjectReq
             The updated project
         """
@@ -1283,9 +1290,8 @@ class HarborAsyncClient:
         ----------
         project_name_or_id: str
             The name or ID of the project
-
-                * String arguments are treated as project names.
-                * Integer arguments are treated as project IDs.
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
         """
         headers = get_project_headers(project_name_or_id)
         project = await self.get(f"/projects/{project_name_or_id}", headers=headers)
@@ -1301,9 +1307,8 @@ class HarborAsyncClient:
         ----------
         project_name_or_id: str
             The name or ID of the project
-
-                * String arguments are treated as project names.
-                * Integer arguments are treated as project IDs.
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
         missing_ok: bool
             If true, ignore 404 error when the project is not found.
         """
@@ -1327,9 +1332,8 @@ class HarborAsyncClient:
         ----------
         project_name_or_id: str
             The name or ID of the project
-
-                * String arguments are treated as project names.
-                * Integer arguments are treated as project IDs.
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
         query: Optional[str]
             Query string to query resources.
 
@@ -1381,9 +1385,13 @@ class HarborAsyncClient:
         ----------
         project_name_or_id: str
             The name or ID of the project
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
 
-                * String arguments are treated as project names.
-                * Integer arguments are treated as project IDs.
+        Returns
+        -------
+        ProjectSummary
+            The summary of a project.
         """
         headers = get_project_headers(project_name_or_id)
         summary = await self.get(
@@ -1401,15 +1409,13 @@ class HarborAsyncClient:
         ----------
         project_name_or_id: str
             The name or ID of the project
-
-                * String arguments are treated as project names.
-                * Integer arguments are treated as project IDs.
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
 
         Returns
         -------
         ProjectDeletable
             The deletable status of a project.
-
             If `.deletable` is `None`, the project is not deletable.
             This is an implementation detail, and might change in the future.
         """
