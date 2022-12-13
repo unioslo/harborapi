@@ -132,6 +132,7 @@ class BaseModel(PydanticBaseModel):
                     field_title = str(field.field_info.title or field_name)
                     # Get the field value
                     value = getattr(self, field_name)
+                    description = str(field.field_info.description) or ""
                 else:
                     # If the field was not found in __fields__, then it is an
                     # "extra" field that is not a part of the model spec.
