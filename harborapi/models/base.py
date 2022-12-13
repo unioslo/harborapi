@@ -8,7 +8,7 @@ for more information: https://rich.readthedocs.io/en/latest/protocol.html#consol
 Other functionality in the future will be added here as well.
 """
 
-from typing import Any, Iterable, NamedTuple, Optional
+from typing import Iterable, Optional
 
 from pydantic import BaseModel as PydanticBaseModel
 
@@ -65,6 +65,7 @@ class BaseModel(PydanticBaseModel):
             self,
             with_description: bool = False,
             max_depth: Optional[int] = None,
+            parent_field: Optional[str] = None,
             _depth: int = 0,
         ) -> Iterable[Table]:
             """Returns a Rich table representation of the model, and any nested models.
@@ -76,6 +77,9 @@ class BaseModel(PydanticBaseModel):
             max_depth : Optional[int]
                 The maximum depth to print nested models.
                 `None` means no limit.
+            parent_field : Optional[str]
+                The title of the parent field that contains this model.
+                Used when printing submodels.
             _depth : int
                 DO NOT SET THIS.
                 This is used internally to track the current depth level.
@@ -85,7 +89,16 @@ class BaseModel(PydanticBaseModel):
             Iterable[Table]
                 A generator of Rich tables representing the model and any nested models.
             """
+            # VOCABULARY:
+            # "field" -> a field in the model spec
+            # "field name" -> the name of the field in the model spec
+            # "submodel" -> a nested model
+            # "submodel table" -> the table representation of a nested model
+
+            # TODO: add list index indicator for list fields
             title = self._table_title
+            if parent_field:
+                title = f"{parent_field}: {title}"
 
             columns = [
                 Column(
@@ -98,9 +111,8 @@ class BaseModel(PydanticBaseModel):
                     Column(header="Description", style="yellow", justify="left"),
                 )
 
-            depth_indicator = "." * _depth
             table = Table(
-                title=f"[bold]{depth_indicator}{title}[/bold]",
+                title=f"[bold]{title}[/bold]",
                 title_style=DEPTH_TITLE_COLORS.get(_depth, "magenta"),
                 title_justify="left",
                 expand=True,
@@ -109,12 +121,13 @@ class BaseModel(PydanticBaseModel):
 
             subtables = []  # type: list[Iterable[Table]]
 
-            def add_submodel_table(submodel: "BaseModel") -> None:
+            def add_submodel_table(field_title: str, submodel: "BaseModel") -> None:
                 """Adds a submodel table to the subtables list."""
                 submodel_table = submodel.as_table(
                     with_description=with_description,
                     max_depth=max_depth,
                     _depth=_depth + 1,
+                    parent_field=field_title,
                 )
                 subtables.append(submodel_table)
 
@@ -150,8 +163,6 @@ class BaseModel(PydanticBaseModel):
                 # list, which we yield at the end (after the main table).
                 if isinstance(value, BaseModel):
                     submodels = [value]
-                # Have to check this after BaseModel check, because all
-                # BaseModels are also Iterables
                 elif isinstance(value, Iterable):
                     if all(isinstance(v, BaseModel) for v in value):
                         submodels = value
@@ -166,7 +177,7 @@ class BaseModel(PydanticBaseModel):
                     submodels = list(submodels)
                     value = f"[bold]See below ({submodels[0]._table_title})[/bold]"
                     for submodel in submodels:
-                        add_submodel_table(submodel)
+                        add_submodel_table(field_title, submodel)
 
                 row = [field_title, str(value)]
                 if with_description:
