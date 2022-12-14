@@ -2737,7 +2737,7 @@ class HarborAsyncClient:
 
     # CATEGORY: ping
     # GET /ping
-    async def ping_harbor_api(self) -> str:
+    async def ping(self) -> str:
         """Pings the Harbor server to check if it is alive.
 
         Returns
