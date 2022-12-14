@@ -1961,7 +1961,7 @@ class HarborAsyncClient:
         mime_type: str = "application/vnd.security.vulnerability.report; version=1.1",
         retrieve_all: bool = True,
     ) -> List[Artifact]:
-        """Get the artifacts for a repository.
+        """Get the artifacts in a repository.
 
         Parameters
         ----------
