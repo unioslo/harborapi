@@ -1057,13 +1057,13 @@ class HarborAsyncClient:
 
     # PUT /projects/{project_name_or_id}/scanner
     async def set_project_scanner(
-        self, project_name_or_id: str, scanner_uuid: str
+        self, project_name_or_id: Union[str, int], scanner_uuid: str
     ) -> None:
         """Set one of the system configured scanner registration as the indepndent scanner of the specified project.
 
         Parameters
         ----------
-        project_name_or_id: str
+        project_name_or_id: Union[str, int]
             The name or ID of the project
             String arguments are treated as project names.
             Integer arguments are treated as project IDs.
@@ -1080,13 +1080,15 @@ class HarborAsyncClient:
         )
 
     # GET /projects/{project_name_or_id}/scanner
-    async def get_project_scanner(self, project_name_or_id: str) -> ScannerRegistration:
+    async def get_project_scanner(
+        self, project_name_or_id: Union[str, int]
+    ) -> ScannerRegistration:
         """Get the scanner registration of the specified project.
         If no scanner registration is configured for the specified project, the system default scanner registration will be returned.
 
         Parameters
         ----------
-        project_name_or_id: str
+        project_name_or_id: Union[str, int]
             The name or ID of the project
             Integer arguments are treated as project IDs.
             String arguments are treated as project names.
@@ -1272,7 +1274,7 @@ class HarborAsyncClient:
 
         Parameters
         ----------
-        project_name_or_id: str
+        project_name_or_id: Union[str, int]
             The name or ID of the project
             String arguments are treated as project names.
             Integer arguments are treated as project IDs.
@@ -1288,7 +1290,7 @@ class HarborAsyncClient:
 
         Parameters
         ----------
-        project_name_or_id: str
+        project_name_or_id: Union[str, int]
             The name or ID of the project
             String arguments are treated as project names.
             Integer arguments are treated as project IDs.
@@ -1305,7 +1307,7 @@ class HarborAsyncClient:
 
         Parameters
         ----------
-        project_name_or_id: str
+        project_name_or_id: Union[str, int]
             The name or ID of the project
             String arguments are treated as project names.
             Integer arguments are treated as project IDs.
@@ -1330,7 +1332,7 @@ class HarborAsyncClient:
 
         Parameters
         ----------
-        project_name_or_id: str
+        project_name_or_id: Union[str, int]
             The name or ID of the project
             String arguments are treated as project names.
             Integer arguments are treated as project IDs.
@@ -1383,7 +1385,7 @@ class HarborAsyncClient:
 
         Parameters
         ----------
-        project_name_or_id: str
+        project_name_or_id: Union[str, int]
             The name or ID of the project
             String arguments are treated as project names.
             Integer arguments are treated as project IDs.
@@ -1407,7 +1409,7 @@ class HarborAsyncClient:
 
         Parameters
         ----------
-        project_name_or_id: str
+        project_name_or_id: Union[str, int]
             The name or ID of the project
             String arguments are treated as project names.
             Integer arguments are treated as project IDs.
