@@ -3,10 +3,10 @@
 ::: harborapi.client.HarborAsyncClient
     options:
         members:
-        - create_scanner
-        - get_scanners
         - get_scanner
+        - create_scanner
+        - update_scanner
         - delete_scanner
+        - get_scanners
         - set_default_scanner
         - ping_scanner_adapter
-        - update_scanner
