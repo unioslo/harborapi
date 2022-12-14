@@ -70,7 +70,7 @@ nav:
   - "Endpoints":
       - endpoints/index.md
       - endpoints/artifacts.md
-      - endpoints/audit.md
+      - endpoints/auditlogs.md
       - endpoints/configure.md
       - endpoints/gc.md
       - endpoints/cveallowlist.md

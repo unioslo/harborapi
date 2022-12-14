@@ -1,4 +1,4 @@
-# Audit
+# Audit Logs
 
 ::: harborapi.client.HarborAsyncClient
     options:
