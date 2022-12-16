@@ -173,7 +173,7 @@ async def test_create_user_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/users",
         method="POST",
-        json=user.dict(),
+        json=user.dict(exclude_unset=True),
     ).respond_with_data(status=201, headers={"Location": "/api/v2.0/users/1234"})
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.create_user(user)
@@ -191,7 +191,7 @@ async def test_update_user_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/users/1234",
         method="PUT",
-        json=user.dict(),
+        json=user.dict(exclude_unset=True),
     ).respond_with_data(status=200)
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.update_user(1234, user)

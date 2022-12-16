@@ -59,7 +59,7 @@ def test_severity_enum():
     assert Severity.medium != Severity.high
 
     # Ensure that the enum values are ordered from least to most severe
-    severities = list(iter(Severity))
+    severities = list(Severity)
     for i, severity in enumerate(severities):
         if i == 0:
             assert severity < severities[i + 1]

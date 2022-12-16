@@ -35,7 +35,7 @@ async def test_create_artifact_tag_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/tags",
         method="POST",
-        json=tag.dict(),
+        json=tag.dict(exclude_unset=True),
     ).respond_with_data(
         headers={"Location": expect_location},
         status=status_code,
@@ -246,7 +246,7 @@ async def test_add_artifact_label_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/labels",
         method="POST",
-        json=label.dict(),
+        json=label.dict(exclude_unset=True),
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.add_artifact_label(

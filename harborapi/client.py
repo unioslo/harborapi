@@ -95,10 +95,15 @@ def model_to_dict(model: BaseModel) -> JSONType:
     """Creates a JSON-serializable dict from a Pydantic model."""
     # Round-trip through BaseModel.json() to ensure that all dict values
     # are JSON-serializable.
+    #
     # Until https://github.com/pydantic/pydantic/issues/1409 is fixed,
     # this is the easiest way to do this without having to implement
     # custom encoders for all Pydantic models.
-    return json.loads(model.json())
+    #
+    # This is of course not ideal, but since we are dealing with network
+    # requests here, this extra encoding should only represent a small
+    # fraction of the overall time spent.
+    return json.loads(model.json(exclude_unset=True))
 
 
 class ResponseLogEntry(NamedTuple):

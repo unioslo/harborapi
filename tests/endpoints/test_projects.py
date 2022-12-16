@@ -93,7 +93,7 @@ async def test_create_project_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/projects",
         method="POST",
-        json=project.dict(),
+        json=project.dict(exclude_unset=True),
     ).respond_with_data(headers={"Location": "%2Fapi%2Fv2.0%2Fprojects%2F1234"})
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.create_project(project)

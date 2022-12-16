@@ -44,7 +44,7 @@ async def test_create_gc_schedule_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/system/gc/schedule",
         method="POST",
-        json=schedule.dict(),
+        json=schedule.dict(exclude_unset=True),
     ).respond_with_data(
         headers={"Location": expect_location},
         status=201,
@@ -65,7 +65,7 @@ async def test_update_gc_schedule_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/system/gc/schedule",
         method="PUT",
-        json=schedule.dict(),
+        json=schedule.dict(exclude_unset=True),
     ).respond_with_data()
     await async_client.update_gc_schedule(schedule)
 

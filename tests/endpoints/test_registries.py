@@ -28,7 +28,7 @@ async def test_check_registry_status_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/registries/ping",
         method="POST",
-        json=ping.dict(),
+        json=ping.dict(exclude_unset=True),
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.check_registry_status(ping)
@@ -93,7 +93,7 @@ async def test_update_registry_mock(
     registry: RegistryUpdate,
 ):
     httpserver.expect_oneshot_request(
-        "/api/v2.0/registries/123", method="PUT", json=registry.dict()
+        "/api/v2.0/registries/123", method="PUT", json=registry.dict(exclude_unset=True)
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.update_registry(123, registry)
@@ -137,7 +137,7 @@ async def test_create_registry_mock(
     registry: Registry,
 ):
     httpserver.expect_oneshot_request(
-        "/api/v2.0/registries", method="POST", json=registry.dict()
+        "/api/v2.0/registries", method="POST", json=registry.dict(exclude_unset=True)
     ).respond_with_data(headers={"Location": "/api/v2.0/registries/123"})
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.create_registry(registry)
