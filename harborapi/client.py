@@ -1,3 +1,4 @@
+import json
 from collections import deque
 from pathlib import Path
 from typing import Any, Dict, List, NamedTuple, Optional, Tuple, Type, TypeVar, Union
@@ -79,6 +80,8 @@ __all__ = ["HarborAsyncClient"]
 
 T = TypeVar("T", bound=BaseModel)
 
+# TODO: move pydantic model functions to separate module
+
 
 def construct_model(cls: Type[T], data: Any) -> T:
     try:
@@ -86,6 +89,16 @@ def construct_model(cls: Type[T], data: Any) -> T:
     except ValidationError as e:
         logger.error("Failed to construct {} with {}", cls, data)
         raise e
+
+
+def model_to_dict(model: BaseModel) -> JSONType:
+    """Creates a JSON-serializable dict from a Pydantic model."""
+    # Round-trip through BaseModel.json() to ensure that all dict values
+    # are JSON-serializable.
+    # Until https://github.com/pydantic/pydantic/issues/1409 is fixed,
+    # this is the easiest way to do this without having to implement
+    # custom encoders for all Pydantic models.
+    return json.loads(model.json())
 
 
 class ResponseLogEntry(NamedTuple):
@@ -3014,7 +3027,7 @@ class HarborAsyncClient:
         headers: Optional[Dict[str, Any]] = None,
     ) -> Response:
         if isinstance(json, BaseModel):
-            json = json.dict()
+            json = model_to_dict(json)
         resp = await self.client.post(
             self.url + path,
             json=json,
@@ -3052,7 +3065,7 @@ class HarborAsyncClient:
         **kwargs: Any,
     ) -> Response:
         if isinstance(json, BaseModel):
-            json = json.dict()
+            json = model_to_dict(json)
         resp = await self.client.put(
             self.url + path,
             json=json,
@@ -3091,7 +3104,7 @@ class HarborAsyncClient:
         **kwargs: Any,
     ) -> Response:
         if isinstance(json, BaseModel):
-            json = json.dict()
+            json = model_to_dict(json)
 
         resp = await self.client.patch(
             self.url + path,
