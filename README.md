@@ -40,7 +40,7 @@ Documentation is available [here](https://pederhan.github.io/harborapi/)
 - [ ] webhook
 - [x] scan
 - [ ] member
-- [ ] ldap
+- [x] ldap
 - [x] registry
 - [x] search
 - [x] artifact
