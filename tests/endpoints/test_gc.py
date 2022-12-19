@@ -1,4 +1,4 @@
-from contextlib import nullcontext
+import json
 from typing import List
 
 import pytest
@@ -7,15 +7,13 @@ from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
 from harborapi.client import HarborAsyncClient
-from harborapi.exceptions import StatusError
 from harborapi.models.models import GCHistory, Schedule
 
-from ..strategies.artifact import get_hbv_strategy
 from ..utils import json_from_list
 
 
 @pytest.mark.asyncio
-@given(st.builds(Schedule))
+@given(st.builds(Schedule, creation_time=st.datetimes()))
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 async def test_get_gc_schedule_mock(
     async_client: HarborAsyncClient,
@@ -32,7 +30,7 @@ async def test_get_gc_schedule_mock(
 
 
 @pytest.mark.asyncio
-@given(st.builds(Schedule))
+@given(st.builds(Schedule, creation_time=st.datetimes()))
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 async def test_create_gc_schedule_mock(
     async_client: HarborAsyncClient,
@@ -44,7 +42,7 @@ async def test_create_gc_schedule_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/system/gc/schedule",
         method="POST",
-        json=schedule.dict(),
+        json=json.loads(schedule.json(exclude_unset=True)),
     ).respond_with_data(
         headers={"Location": expect_location},
         status=201,
@@ -65,7 +63,7 @@ async def test_update_gc_schedule_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/system/gc/schedule",
         method="PUT",
-        json=schedule.dict(),
+        json=schedule.dict(exclude_unset=True),
     ).respond_with_data()
     await async_client.update_gc_schedule(schedule)
 

@@ -61,7 +61,7 @@ async def test_update_config_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/configurations",
         method="PUT",
-        json=config.dict(),
+        json=config.dict(exclude_unset=True),
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.update_config(config)

@@ -12,7 +12,7 @@ from harborapi.models import HarborVulnerabilityReport
 from harborapi.models.buildhistory import BuildHistoryEntry
 from harborapi.models.models import Accessory, Artifact, Label, Tag
 
-from ..strategies.artifact import get_hbv_strategy
+from ..strategies.artifact import artifact_strategy, get_hbv_strategy
 from ..utils import json_from_list
 
 
@@ -35,7 +35,7 @@ async def test_create_artifact_tag_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/tags",
         method="POST",
-        json=tag.dict(),
+        json=tag.dict(exclude_unset=True),
     ).respond_with_data(
         headers={"Location": expect_location},
         status=status_code,
@@ -210,7 +210,7 @@ async def test_copy_artifact(
 
 
 @pytest.mark.asyncio
-@given(st.lists(st.builds(Artifact)))
+@given(st.lists(artifact_strategy))
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 async def test_get_artifacts_mock(
     async_client: HarborAsyncClient,
@@ -246,7 +246,7 @@ async def test_add_artifact_label_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/labels",
         method="POST",
-        json=label.dict(),
+        json=label.dict(exclude_unset=True),
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.add_artifact_label(
@@ -258,7 +258,7 @@ async def test_add_artifact_label_mock(
 
 
 @pytest.mark.asyncio
-@given(st.builds(Artifact))
+@given(artifact_strategy)
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 async def test_get_artifact_mock(
     async_client: HarborAsyncClient,

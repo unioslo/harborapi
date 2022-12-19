@@ -127,7 +127,7 @@ async def test_ping_scanner_adapter_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/scanners/ping",
         method="POST",
-        json=settings.dict(),
+        json=settings.dict(exclude_unset=True),
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.ping_scanner_adapter(settings)
@@ -144,7 +144,7 @@ async def test_update_scanner_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/scanners/1234",
         method="PUT",
-        json=scanner.dict(),
+        json=scanner.dict(exclude_unset=True),
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.update_scanner(1234, scanner)

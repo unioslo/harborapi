@@ -38,7 +38,7 @@ async def test_update_repository_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/projects/testproj/repositories/testrepo",
         method="PUT",
-        json=repository.dict(),
+        json=repository.dict(exclude_unset=True),
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.update_repository(
