@@ -7,9 +7,15 @@ codegen/
 # Single files
 swagger.yaml
 .coverage
+.DS_Store
 
 # Cache
 .pytest_cache
 .mypy_cache
 .hypothesis
-*.pyc
+*.py[ci]
+
+# Packaging
+dist
+build
+*.egg-info
