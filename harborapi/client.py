@@ -91,10 +91,11 @@ def construct_model(cls: Type[T], data: Any) -> T:
         raise e
 
 
-def model_to_dict(model: BaseModel) -> JSONType:
+def model_to_dict(model: BaseModel) -> Any:
     """Creates a JSON-serializable dict from a Pydantic model."""
     # Round-trip through BaseModel.json() to ensure that all dict values
-    # are JSON-serializable.
+    # are JSON-serializable. BaseModel.dict() can contain Python objects
+    # that are not natively serializable by the built-in JSON encoder.
     #
     # Until https://github.com/pydantic/pydantic/issues/1409 is fixed,
     # this is the easiest way to do this without having to implement
@@ -103,6 +104,10 @@ def model_to_dict(model: BaseModel) -> JSONType:
     # This is of course not ideal, but since we are dealing with network
     # requests here, this extra encoding should only represent a small
     # fraction of the overall time spent.
+    #
+    # This does put a spanner in the works with regards to typing, since
+    # json.loads() returns Any. However, HTTPX expects Any for the `json`
+    # parameter on its HTTP methods, so it's not a huge deal.
     return json.loads(model.json(exclude_unset=True))
 
 
