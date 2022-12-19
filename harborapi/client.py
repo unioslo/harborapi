@@ -3052,7 +3052,7 @@ class HarborAsyncClient:
     async def put(
         self,
         path: str,
-        json: Union[BaseModel, JSONType],
+        json: Optional[Union[BaseModel, JSONType]] = None,
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
@@ -3069,7 +3069,7 @@ class HarborAsyncClient:
     async def _put(
         self,
         path: str,
-        json: Union[BaseModel, JSONType],
+        json: Optional[Union[BaseModel, JSONType]] = None,
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
