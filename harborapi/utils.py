@@ -1,6 +1,6 @@
 from base64 import b64encode
 from json import JSONDecodeError
-from typing import Dict, Optional, Union
+from typing import Any, Dict, Optional, Union
 from urllib.parse import quote_plus, unquote_plus
 
 from httpx import Response
@@ -236,3 +236,25 @@ def get_project_headers(project_name_or_id: Union[str, int]) -> Dict[str, str]:
         The headers to use for the request.
     """
     return {"X-Is-Resource-Name": str(isinstance(project_name_or_id, str)).lower()}
+
+
+def get_params(**kwargs: Any) -> Dict[str, Any]:
+    """Get parameters for an API call, where `None` values are ignored.
+
+    Parameters
+    ----------
+    **kwargs
+        The parameters to use for the request.
+
+    Returns
+    -------
+    Dict[str, Any]
+        The parameters to use for the request.
+    """
+    params = {k: v for k, v in kwargs.items() if v is not None}
+    # Ensure that the "query" parameter is renamed to "q"
+    # We use "query" as the parameter name in the API, but "q" is the
+    # parameter name used by Harbor.
+    if "query" in params and not params.get("q"):
+        params["q"] = params.pop("query")
+    return params

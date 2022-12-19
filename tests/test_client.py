@@ -406,6 +406,6 @@ async def test_log_response(async_client: HarborAsyncClient, httpserver: HTTPSer
     last_response = async_client.last_response
     assert last_response is not None
     assert last_response.status_code == 200
-    assert last_response.url == async_client.url + "/users"
+    assert last_response.url == async_client.url + "/users?page=1&page_size=10"
     assert last_response.method == "GET"
     assert last_response.response_size > 0

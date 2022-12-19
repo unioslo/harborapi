@@ -69,6 +69,7 @@ from .types import JSONType
 from .utils import (
     get_artifact_path,
     get_credentials,
+    get_params,
     get_project_headers,
     get_repo_path,
     handle_optional_json_response,
@@ -287,7 +288,7 @@ class HarborAsyncClient:
         retrieve_all : bool
             If True, retrieve all results, otherwise, retrieve only the first page
         """
-        params = {"username": username, "page": page, "page_size": page_size}
+        params = get_params(username=username, page=page, page_size=page_size)
         users_resp = await self.get(
             "/users/search",
             params=params,
@@ -314,10 +315,7 @@ class HarborAsyncClient:
         List[Permission]
             A list of Permission objects for the current user.
         """
-        params = {}  # type: Dict[str, Any]
-        if scope:
-            params["scope"] = scope
-            params["relative"] = relative
+        params = get_params(scope=scope, relative=relative)
         resp = await self.get("/users/current/permissions", params=params)
         return [construct_model(Permission, p) for p in resp]
 
@@ -407,23 +405,50 @@ class HarborAsyncClient:
 
     # GET /users
     async def get_users(
-        self, sort: Optional[str] = None, **kwargs: Any
+        self,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 10,
     ) -> List[UserResp]:
         """Get all users.
 
         Parameters
         ----------
+        query : Optional[str]
+            Query string to filter the users.
+
+            Supported query patterns are:
+
+                * exact match(`"k=v"`)
+                * fuzzy match(`"k=~v"`)
+                * range(`"k=[min~max]"`)
+                * list with union releationship(`"k={v1 v2 v3}"`)
+                * list with intersection relationship(`"k=(v1 v2 v3)"`).
+
+            The value of range and list can be:
+
+                * string(enclosed by `"` or `'`)
+                * integer
+                * time(in format `"2020-04-09 02:36:00"`)
+
+            All of these query patterns should be put in the query string
+            and separated by `","`. e.g. `"k1=v1,k2=~v2,k3=[min~max]"`
         sort : Optional[str]
-            The sort order for the results.
+            Comma-separated string of fields to sort by.
+            Prefix with `-` to sort descending.
+            E.g. `"username,-email"`
+        page : int
+            The page number to retrieve
+        page_size : int
+            The number of users to retrieve per page
 
         Returns
         -------
         List[UserResp]
             A list of users.
         """
-        params = {**kwargs}
-        if sort:
-            params["sort"] = sort
+        params = get_params(q=query, sort=sort, page=page, page_size=page_size)
         users_resp = await self.get("/users", params=params)
         return [construct_model(UserResp, u) for u in users_resp]
 
@@ -590,13 +615,7 @@ class HarborAsyncClient:
             List of Garbage Collection logs.
         """
         # TODO: refactor this and use with every method that uses queries + pagination
-        params = {
-            "q": query,
-            "sort": sort,
-            "page": page,
-            "page_size": page_size,
-        }
-        params = {k: v for k, v in params.items() if v is not None}
+        params = get_params(q=query, sort=sort, page=page, page_size=page_size)
         resp = await self.get("/system/gc")
         return [construct_model(GCHistory, g) for g in resp]
 
@@ -780,12 +799,7 @@ class HarborAsyncClient:
         List[UserGroupSearchItem]
             List of user groups.
         """
-        params = {
-            "groupname": group_name,
-            "page": page,
-            "page_size": page_size,
-        }
-        params = {k: v for k, v in params.items() if v is not None}
+        params = get_params(groupname=group_name, page=page, page_size=page_size)
         resp = await self.get("/usergroups/search", params=params)
         return [construct_model(UserGroupSearchItem, g) for g in resp]
 
@@ -828,12 +842,7 @@ class HarborAsyncClient:
         List[UserGroup]
             List of user groups.
         """
-        params = {
-            "ldap_group_dn": ldap_group_dn,
-            "page": page,
-            "page_size": page_size,
-        }
-        params = {k: v for k, v in params.items() if v is not None}
+        params = get_params(ldap_group_dn=ldap_group_dn, page=page, page_size=page_size)
         resp = await self.get("/usergroups", params=params)
         return [construct_model(UserGroup, g) for g in resp]
 
@@ -1006,13 +1015,7 @@ class HarborAsyncClient:
         List[Robot]
             A list of registered robot accounts matching the query.
         """
-        params = {
-            "page": page,
-            "page_size": page_size,
-            "q": query,
-            "sort": sort,
-        }
-        params = {k: v for k, v in params.items() if v is not None}
+        params = get_params(q=query, sort=sort, page=page, page_size=page_size)
         resp = await self.get("/robots", params=params)
         return [construct_model(Robot, r) for r in resp]
 
@@ -1174,13 +1177,7 @@ class HarborAsyncClient:
             If true, retrieve all the resources,
             otherwise, retrieve only the number of resources specified by `page_size`.
         """
-        params = {
-            "q": query,
-            "sort": sort,
-            "page": page,
-            "page_size": page_size,
-        }
-        params = {k: v for k, v in params.items() if v is not None}
+        params = get_params(q=query, sort=sort, page=page, page_size=page_size)
         logs = await self.get(
             f"/projects/{project_name}/logs", params=params, follow_links=retrieve_all
         )
@@ -1275,17 +1272,16 @@ class HarborAsyncClient:
             If true, retrieve all the resources,
             otherwise, retrieve only the number of resources specified by `page_size`.
         """
-        params = {
-            "q": query,
-            "sort": sort,
-            "name": name,
-            "public": public,
-            "owner": owner,
-            "with_detail": with_detail,
-            "page": page,
-            "page_size": page_size,
-        }
-        params = {k: v for k, v in params.items() if v is not None}
+        params = get_params(
+            q=query,
+            sort=sort,
+            name=name,
+            public=public,
+            owner=owner,
+            with_detail=with_detail,
+            page=page,
+            page_size=page_size,
+        )
         projects = await self.get("/projects", params=params, follow_links=retrieve_all)
         return [construct_model(Project, p) for p in projects]
 
@@ -1386,13 +1382,7 @@ class HarborAsyncClient:
             The number of results to return per page
         """
         headers = get_project_headers(project_name_or_id)
-        params = {
-            "q": query,
-            "sort": sort,
-            "page": page,
-            "page_size": page_size,
-        }
-        params = {k: v for k, v in params.items() if v is not None}
+        params = get_params(q=query, sort=sort, page=page, page_size=page_size)
         candidates = await self.get(
             f"/projects/{project_name_or_id}/scanner/candidates",
             params=params,
@@ -1694,14 +1684,9 @@ class HarborAsyncClient:
         List[Registry]
             A list of Registry objects.
         """
-        params = {
-            "q": query,
-            "sort": sort,
-            "page": page,
-            "page_size": page_size,
-            "name": name,
-        }
-        params = {k: v for k, v in params.items() if v is not None}
+        params = get_params(
+            q=query, sort=sort, page=page, page_size=page_size, name=name
+        )
         resp = await self.get("/registries", params=params, follow_links=retrieve_all)
         return [construct_model(Registry, r) for r in resp]
 
@@ -1827,17 +1812,19 @@ class HarborAsyncClient:
             A list of Tag objects for the artifact.
         """
         path = get_artifact_path(project_name, repository_name, reference)
-        params = {
-            "page": page,
-            "page_size": page_size,
-            "with_signature": with_signature,
-            "with_immutable_status": with_immutable_status,
-        }  # type: Dict[str, Any]
-        if query:
-            params["q"] = query
-        if sort:
-            params["sort"] = sort
-        resp = await self.get(f"{path}/tags", follow_links=retrieve_all)
+        params = get_params(
+            q=query,
+            sort=sort,
+            page=page,
+            page_size=page_size,
+            with_signature=with_signature,
+            with_immutable_status=with_immutable_status,
+        )
+        resp = await self.get(
+            f"{path}/tags",
+            params=params,
+            follow_links=retrieve_all,
+        )
         return [construct_model(Tag, t) for t in resp]
 
     # GET /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags
@@ -1897,15 +1884,10 @@ class HarborAsyncClient:
             A list of Accessory objects for the artifact.
         """
         path = get_artifact_path(project_name, repository_name, reference)
-        params = {
-            "page": page,
-            "page_size": page_size,
-        }  # type: Dict[str, Any]
-        if query:
-            params["q"] = query
-        if sort:
-            params["sort"] = sort
-        resp = await self.get(f"{path}/accessories", follow_links=retrieve_all)
+        params = get_params(q=query, sort=sort, page=page, page_size=page_size)
+        resp = await self.get(
+            f"{path}/accessories", params=params, follow_links=retrieve_all
+        )
         return [construct_model(Accessory, a) for a in resp]
 
     # DELETE /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags
@@ -2047,19 +2029,18 @@ class HarborAsyncClient:
             A list of artifacts in the repository matching the query.
         """
         path = f"{get_repo_path(project_name, repository_name)}/artifacts"
-        params = {
-            "q": query,
-            "sort": sort,
-            "page": page,
-            "page_size": page_size,
-            "with_tag": with_tag,
-            "with_label": with_label,
-            "with_scan_overview": with_scan_overview,
-            "with_signature": with_signature,
-            "with_immutable_status": with_immutable_status,
-            "with_accessory": with_accessory,
-        }
-        params = {k: v for k, v in params.items() if v is not None}
+        params = get_params(
+            q=query,
+            sort=sort,
+            page=page,
+            page_size=page_size,
+            with_tag=with_tag,
+            with_label=with_label,
+            with_scan_overview=with_scan_overview,
+            with_signature=with_signature,
+            with_immutable_status=with_immutable_status,
+            with_accessory=with_accessory,
+        )
         resp = await self.get(
             path,
             params=params,
@@ -2357,13 +2338,7 @@ class HarborAsyncClient:
         List[ScannerRegistration]
             _description_
         """
-        params = {
-            "q": query,
-            "sort": sort,
-            "page": page,
-            "page_size": page_size,
-        }
-        params = {k: v for k, v in params.items() if v is not None}
+        params = get_params(q=query, sort=sort, page=page, page_size=page_size)
         scanners = await self.get("/scanners", params=params)
         return [construct_model(ScannerRegistration, s) for s in scanners]
 
@@ -2573,14 +2548,13 @@ class HarborAsyncClient:
         List[Quota]
             The quotas
         """
-        params = {
-            "reference": reference,
-            "reference_id": reference_id,
-            "sort": sort,
-            "page": page,
-            "page_size": page_size,
-        }
-        params = {k: v for k, v in params.items() if v is not None}
+        params = get_params(
+            reference=reference,
+            reference_id=reference_id,
+            sort=sort,
+            page=page,
+            page_size=page_size,
+        )
         quotas = await self.get("/quotas", params=params, follow_links=retrieve_all)
         return [construct_model(Quota, q) for q in quotas]
 
@@ -2746,13 +2720,7 @@ class HarborAsyncClient:
         List[Repository]
             A list of repositories matching the query.
         """
-        params = {
-            "q": query,
-            "sort": sort,
-            "page": page,
-            "page_size": page_size,
-        }
-        params = {k: v for k, v in params.items() if v is not None}
+        params = get_params(q=query, sort=sort, page=page, page_size=page_size)
         if project_name:
             url = f"/projects/{project_name}/repositories"
         else:
@@ -2878,13 +2846,7 @@ class HarborAsyncClient:
         List[AuditLog]
             The list of audit logs.
         """
-        params = {
-            "q": query,
-            "sort": sort,
-            "page": page,
-            "page_size": page_size,
-        }
-        params = {k: v for k, v in params.items() if v is not None}
+        params = get_params(q=query, sort=sort, page=page, page_size=page_size)
         resp = await self.get("/audit-logs", params=params, follow_links=retrieve_all)
         return [construct_model(AuditLog, r) for r in resp]
 

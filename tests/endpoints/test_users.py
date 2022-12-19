@@ -19,22 +19,19 @@ from ..utils import json_from_list
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("sort", ["username", None, ""])
 @given(st.builds(UserResp), st.builds(UserResp))
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 async def test_get_users_mock(
     async_client: HarborAsyncClient,
     httpserver: HTTPServer,
-    sort: Optional[str],
     user1: UserResp,
     user2: UserResp,
 ):
-    q = f"sort={sort}" if sort else None
     httpserver.expect_oneshot_request(
-        "/api/v2.0/users", method="GET", query_string=q
+        "/api/v2.0/users", method="GET"
     ).respond_with_json([user1.dict(), user2.dict()])
     async_client.url = httpserver.url_for("/api/v2.0")
-    users = await async_client.get_users(sort)
+    users = await async_client.get_users()
     assert len(users) == 2
     assert users[0] == user1
     assert users[1] == user2
@@ -74,10 +71,10 @@ async def test_search_users_by_username_mock(
     [
         ("user", False, {"scope": "user", "relative": False}),
         ("user", True, {"scope": "user", "relative": True}),
-        (None, False, {}),
-        (None, True, {}),
-        ("", True, {}),
-        ("", True, {}),
+        (None, False, {"relative": False}),
+        (None, True, {"relative": True}),
+        ("", True, {"scope": "", "relative": True}),
+        ("", False, {"scope": "", "relative": False}),
     ],
 )
 @given(st.lists(st.builds(Permission)))
@@ -92,7 +89,9 @@ async def test_get_current_user_permissions_mock(
 ):
     # for some reason, pytest-httpserver will not match the query string
     # when passing it as a dict, so we need to convert it to a string
-    query_string = "&".join(f"{k}={v}".lower() for k, v in expected_query.items())
+    query_string = "&".join(
+        f"{k}={v}".lower() for k, v in expected_query.items() if v is not None
+    )
     httpserver.expect_oneshot_request(
         "/api/v2.0/users/current/permissions",
         method="GET",
