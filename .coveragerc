@@ -1,0 +1,25 @@
+[run]
+    source =
+        ./
+
+    omit =
+        */*.pyi
+
+[paths]
+source =
+    src/harborapi
+    */harborapi
+    *\harborapi
+
+[report]
+exclude_lines =
+    except ImportError
+    except ModuleNotFoundError
+    pragma: no cover
+    @overload
+    def __repr__
+    pass
+    import
+    raise NotImplementedError
+    if TYPE_CHECKING:
+    ^\s*?\.\.\.\s*$
