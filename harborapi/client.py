@@ -6,12 +6,11 @@ from typing import Any, Dict, List, NamedTuple, Optional, Tuple, Type, TypeVar, 
 import backoff
 import httpx
 from httpx import RequestError, Response, Timeout
+from httpx._urls import URL
 from loguru import logger
 from pydantic import BaseModel, ValidationError
 
-from harborapi.auth import load_harbor_auth_file, new_authfile_from_robotcreate
-from harborapi.models.buildhistory import BuildHistoryEntry
-
+from .auth import load_harbor_auth_file, new_authfile_from_robotcreate
 from .exceptions import BadRequest, HarborAPIException, NotFound, check_response_status
 from .models import (
     Accessory,
@@ -41,6 +40,9 @@ from .models import (
     RegistryPing,
     RegistryProviderInfo,
     RegistryUpdate,
+    ReplicationExecution,
+    ReplicationPolicy,
+    ReplicationTask,
     Repository,
     Robot,
     RobotCreate,
@@ -52,6 +54,7 @@ from .models import (
     ScannerRegistrationSettings,
     Schedule,
     Search,
+    StartReplicationExecution,
     Statistic,
     Stats,
     SystemInfo,
@@ -64,6 +67,7 @@ from .models import (
     UserSearchRespItem,
     UserSysAdminFlag,
 )
+from .models.buildhistory import BuildHistoryEntry
 from .models.scanner import HarborVulnerabilityReport
 from .types import JSONType
 from .utils import (
@@ -115,7 +119,7 @@ def model_to_dict(model: BaseModel) -> Any:
 class ResponseLogEntry(NamedTuple):
     """A log entry for an HTTP response."""
 
-    url: str
+    url: URL
     method: str
     status_code: int
     duration: float
@@ -898,36 +902,280 @@ class HarborAsyncClient:
 
     # PUT /replication/executions/{id}
     # Stop the specific replication execution
+    async def stop_replication(self, execution_id: int) -> None:
+        """Stop a replication execution
+
+        Parameters
+        ----------
+        execution_id : int
+            The execution ID to stop.
+        """
+        await self.put(f"/replication/executions/{execution_id}")
 
     # GET /replication/executions/{id}
     # Get the specific replication execution
+    async def get_replication(self, execution_id: int) -> ReplicationExecution:
+        """Get a replication execution by ID.
+
+        Parameters
+        ----------
+        execution_id : int
+            The ID of the replication execution to get.
+
+        Returns
+        -------
+        ReplicationExecution
+            The replication execution.
+        """
+        resp = await self.get(f"/replication/executions/{execution_id}")
+        return construct_model(ReplicationExecution, resp)
 
     # GET /replication/executions/{id}/tasks
     # List replication tasks for a specific execution
+    async def get_replication_tasks(
+        self,
+        execution_id: int,
+        sort: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 10,
+        status: Optional[str] = None,
+        resource_type: Optional[str] = None,
+    ) -> List[ReplicationTask]:
+        """Get a list of replication tasks for a specific execution.
+
+        Parameters
+        ----------
+        execution_id : int
+            The ID of the replication execution to get tasks for.
+        sort : Optional[str]
+            The sort order of the results.
+        page : int
+            The page of results to return.
+        page_size : int
+            The number of results to return per page.
+        status : Optional[str]
+            The status of the tasks to filter by.
+        resource_type : Optional[str]
+            The resource type of the tasks to filter by.
+
+        Returns
+        -------
+        List[ReplicationTask]
+            The list of replication tasks.
+        """
+        params = get_params(
+            sort=sort,
+            page=page,
+            page_size=page_size,
+            status=status,
+            resource_type=resource_type,
+        )
+        resp = await self.get(
+            f"/replication/executions/{execution_id}/tasks", params=params
+        )
+        return [construct_model(ReplicationTask, t) for t in resp]
 
     # POST /replication/policies
     # Create a replication policy
+    async def create_replication_policy(self, policy: ReplicationPolicy) -> str:
+        """Create a replication policy.
+
+        Parameters
+        ----------
+        policy : ReplicationPolicy
+            The policy to create.
+
+        Returns
+        -------
+        str
+            The location of the created policy.
+        """
+        resp = await self.post("/replication/policies", json=policy)
+        return urldecode_header(resp, "Location")
 
     # GET /replication/policies
     # List replication policies
+    async def get_replication_policies(
+        self,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 10,
+        name: Optional[str] = None,
+    ) -> List[ReplicationPolicy]:
+        """Get a list of replication policies.
+
+        Parameters
+        ----------
+        query : Optional[str]
+            Query string to filter the logs.
+
+            Supported query patterns are:
+
+                * exact match(`"k=v"`)
+                * fuzzy match(`"k=~v"`)
+                * range(`"k=[min~max]"`)
+                * list with union releationship(`"k={v1 v2 v3}"`)
+                * list with intersection relationship(`"k=(v1 v2 v3)"`).
+
+            The value of range and list can be:
+
+                * string(enclosed by `"` or `'`)
+                * integer
+                * time(in format `"2020-04-09 02:36:00"`)
+
+            All of these query patterns should be put in the query string
+            and separated by `","`. e.g. `"k1=v1,k2=~v2,k3=[min~max]"`
+        sort : Optional[str]
+            The sort order of the results.
+        page : int
+            The page of results to return.
+        page_size : int
+            The number of results to return per page.
+        name : Optional[str]
+            (DEPRECATED: use `query`) The name of the policy to filter by.
+
+        Returns
+        -------
+        List[ReplicationPolicy]
+            The list of replication policies.
+        """
+        params = get_params(
+            q=query, sort=sort, page=page, page_size=page_size, name=name
+        )
+        resp = await self.get("/replication/policies", params=params)
+        return [construct_model(ReplicationPolicy, p) for p in resp]
 
     # POST /replication/executions
     # Start one replication execution
+    async def start_replication(self, policy_id: int) -> str:
+        """Start a replication execution.
+
+        Parameters
+        ----------
+        policy_id : int
+            The ID of the policy to start an execution for.
+
+        Returns
+        -------
+        str
+            The location of the replication execution.
+        """
+        execution = StartReplicationExecution(policy_id=policy_id)
+        resp = await self.post("/replication/executions", json=execution)
+        return urldecode_header(resp, "Location")
 
     # GET /replication/executions
     # List replication executions
+    async def get_replications(
+        self,
+        sort: Optional[str] = None,
+        policy_id: Optional[int] = None,
+        status: Optional[str] = None,
+        trigger: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 10,
+    ) -> List[ReplicationExecution]:
+        """Get a list of replication executions.
+
+        Parameters
+        ----------
+        sort : Optional[str]
+            The sort order of the results.
+        policy_id : Optional[int]
+            The ID of the policy to filter by.
+        status : Optional[str]
+            The status of the executions to filter by.
+        trigger : Optional[str]
+            The trigger of the executions to filter by.
+        page : int
+            The page of results to return.
+        page_size : int
+            The number of results to return per page.
+
+        Returns
+        -------
+        List[ReplicationExecution]
+            The list of replication executions.
+        """
+        params = get_params(
+            sort=sort,
+            policy_id=policy_id,
+            status=status,
+            trigger=trigger,
+            page=page,
+            page_size=page_size,
+        )
+        resp = await self.get("/replication/executions", params=params)
+        return [construct_model(ReplicationExecution, e) for e in resp]
 
     # PUT /replication/policies/{id}
     # Update the replication policy
+    async def update_replication_policy(
+        self, policy_id: int, policy: ReplicationPolicy
+    ) -> None:
+        """Update a replication policy.
+
+        Parameters
+        ----------
+        policy_id : int
+            The ID of the policy to update.
+        policy : ReplicationPolicy
+            The updated policy.
+        """
+        await self.put(f"/replication/policies/{policy_id}", json=policy)
 
     # GET /replication/policies/{id}
     # Get the specific replication policy
+    async def get_replication_policy(self, policy_id: int) -> ReplicationPolicy:
+        """Get a specific replication policy.
+
+        Parameters
+        ----------
+        policy_id : int
+            The ID of the policy to get.
+
+        Returns
+        -------
+        ReplicationPolicy
+            The replication policy.
+        """
+        resp = await self.get(f"/replication/policies/{policy_id}")
+        return construct_model(ReplicationPolicy, resp)
 
     # DELETE /replication/policies/{id}
     # Delete the specific replication policy
+    async def delete_replication_policy(self, policy_id: int) -> None:
+        """Delete a replication policy.
+
+        Parameters
+        ----------
+        policy_id : int
+            The ID of the policy to delete.
+        """
+        await self.delete(f"/replication/policies/{policy_id}")
 
     # GET /replication/executions/{id}/tasks/{task_id}/log
     # Get the log of the specific replication task
+    async def get_replication_task_log(self, execution_id: int, task_id: int) -> str:
+        """Get the log of a replication task.
+
+        Parameters
+        ----------
+        execution_id : int
+            The ID of the execution the task belongs to.
+        task_id : int
+            The ID of the task to get the log for.
+
+        Returns
+        -------
+        str
+            The log of the task.
+        """
+        resp = await self.get_text(
+            f"/replication/executions/{execution_id}/tasks/{task_id}/log"
+        )
+        return resp
 
     # CATEGORY: label
     # CATEGORY: robot

@@ -31,7 +31,7 @@ Documentation is available [here](https://pederhan.github.io/harborapi/)
 - [x] configure
 - [x] usergroup
 - [ ] preheat
-- [ ] replication
+- [x] replication
 - [ ] label
 - [x] robot
 - [ ] webhookjob

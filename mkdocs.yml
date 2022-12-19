@@ -80,6 +80,7 @@ nav:
       - endpoints/projects.md
       - endpoints/quota.md
       - endpoints/registries.md
+      - endpoints/replication.md
       - endpoints/repositories.md
       - endpoints/robots.md
       - endpoints/scan.md
