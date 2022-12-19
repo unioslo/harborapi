@@ -56,7 +56,7 @@ Documentation is available [here](https://pederhan.github.io/harborapi/)
 - [x] SystemCVEAllowlist
 - [x] Health
 - [ ] robotv1
-- [ ] projectMetadata
+- [x] projectMetadata
 - [x] auditlog
 
 \*\* `/systeminfo/getcert` NYI

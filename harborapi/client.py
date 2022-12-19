@@ -3041,6 +3041,135 @@ class HarborAsyncClient:
 
     # CATEGORY: robotv1
     # CATEGORY: projectMetadata
+
+    # POST /projects/{project_name_or_id}/metadatas/
+    async def add_project_metadata(
+        self,
+        project_name_or_id: Union[str, int],
+        metadata: Dict[str, Any],
+    ) -> None:
+        """Add metadata for a project. The metadata takes form of a dict,
+        where each key is the name of the metadata, and each value is the value of the metadata.
+
+        Parameters
+        ----------
+        project_name_or_id : str
+            The name or ID of the project to add metadata to.
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+        metadata : Dict[str, Any]
+            The metadata to add to the project.
+            Should be a dict where each key is the name of the metadata,
+            and each value is the value of the metadata.
+        """
+        headers = get_project_headers(project_name_or_id)
+        await self.post(
+            f"/projects/{project_name_or_id}/metadatas", json=metadata, headers=headers
+        )
+
+    # GET /projects/{project_name_or_id}/metadatas/
+    async def get_project_metadata(
+        self, project_name_or_id: Union[str, int]
+    ) -> Dict[str, Any]:
+        """Get the metadata of a specific project.
+
+        Parameters
+        ----------
+        project_name_or_id : str
+            The name or ID of the project to get metadata from.
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+
+        Returns
+        -------
+        Dict[str, Any]
+            The metadata of the project.
+        """
+        headers = get_project_headers(project_name_or_id)
+        resp = await self.get(
+            f"/projects/{project_name_or_id}/metadatas", headers=headers
+        )
+        return resp  # type: ignore # TODO: verify that we always get dict back
+
+    # PUT /projects/{project_name_or_id}/metadatas/{meta_name}
+    async def update_project_metadata_entry(
+        self,
+        project_name_or_id: Union[str, int],
+        metadata_name: str,
+        metadata: Dict[str, Any],
+    ) -> None:
+        """Update a specific metadata entry for a project.
+
+        NOTE: It's unclear what the request body should be for this endpoint.
+        The API docs specifies that it should be a dict, but since we provide
+        the name of entry to update in the endpoint, it seems like the value
+        can be anything.
+
+        Parameters
+        ----------
+        project_name_or_id : str
+            The name or ID of the project to update metadata for.
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+        metadata_name: str
+            The name of the metadata to update.
+        metadata : Dict[str, Any]
+            The metadata to update for the project.
+            Should be a dict where each key is the name of the metadata,
+            and each value is the value of the metadata.
+        """
+        headers = get_project_headers(project_name_or_id)
+        await self.put(
+            f"/projects/{project_name_or_id}/metadatas/{metadata_name}",
+            json=metadata,
+            headers=headers,
+        )
+
+    # GET /projects/{project_name_or_id}/metadatas/{meta_name}
+    async def get_project_metadata_entry(
+        self, project_name_or_id: Union[str, int], metadata_name: str
+    ) -> Dict[str, Any]:
+        """Get a specific metadata for a project.
+
+        Parameters
+        ----------
+        project_name_or_id : str
+            The name or ID of the project to get metadata from.
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+        metadata_name : str
+            The name of the metadata to get.
+
+        Returns
+        -------
+        Dict[str, Any]
+            The metadata with the given name.
+        """
+        resp = await self.get(
+            f"/projects/{project_name_or_id}/metadatas/{metadata_name}"
+        )
+        return resp  # type: ignore
+
+    # DELETE /projects/{project_name_or_id}/metadatas/{meta_name}
+    async def delete_project_metadata_entry(
+        self, project_name_or_id: Union[str, int], metadata_name: str
+    ) -> None:
+        """Delete a specific metadata for a project.
+
+        Parameters
+        ----------
+        project_name_or_id : str
+            The name or ID of the project to delete metadata for.
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+        metadata_name : str
+            The name of the metadata to delete.
+        """
+        headers = get_project_headers(project_name_or_id)
+        await self.delete(
+            f"/projects/{project_name_or_id}/metadatas/{metadata_name}", headers=headers
+        )
+
     # CATEGORY: auditlog
     # GET /audit-logs
     async def get_audit_logs(

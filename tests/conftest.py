@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+from typing import Union
 
 import pytest
 from _pytest.logging import LogCaptureFixture
@@ -86,3 +87,9 @@ def credentials_file(tmp_path: Path, credentials_dict: dict) -> Path:
     credentials_file = tmp_path / "credentials.json"
     credentials_file.write_text(json.dumps(credentials_dict))
     return credentials_file
+
+
+@pytest.fixture(params=["test", 1234])
+def project_name_or_id(request: pytest.FixtureRequest) -> Union[str, int]:
+    """Parametrized fixture that returns a project name (str) and/or id (int)"""
+    return request.param  # type: ignore
