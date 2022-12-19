@@ -75,9 +75,11 @@ nav:
       - endpoints/gc.md
       - endpoints/cveallowlist.md
       - endpoints/health.md
+      - endpoints/ldap.md
       - endpoints/oidc.md
       - endpoints/ping.md
       - endpoints/projects.md
+      - endpoints/projectmetadata.md
       - endpoints/quota.md
       - endpoints/registries.md
       - endpoints/replication.md

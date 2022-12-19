@@ -24,6 +24,10 @@ from .models import (
     InternalConfigurationsResponse,
     IsDefault,
     Label,
+    LdapConf,
+    LdapImportUsers,
+    LdapPingResult,
+    LdapUser,
     OIDCTestReq,
     OverallHealthStatus,
     PasswordReq,
@@ -1768,6 +1772,94 @@ class HarborAsyncClient:
 
     # CATEGORY: member
     # CATEGORY: ldap
+
+    # POST /ldap/ping
+    # Ping available ldap service.
+    async def ping_ldap(
+        self, configuration: Optional[LdapConf] = None
+    ) -> LdapPingResult:
+        """Pings the LDAP service with a configuration.
+        If the configuration is empty, the current configuration is loaded.
+
+        !!! note
+            The original documentation for this endpoint has extremely
+            broken english, and it's unclear what its purpose is.
+
+        Parameters
+        ----------
+        configuration : Optional[LdapConf]
+            The configuration to use for the ping.
+            Uses current system configuration if `None`.
+
+        Returns
+        -------
+        LdapPingResult
+            The result of the ping
+        """
+        resp = await self.post("/ldap/ping", json=configuration)
+        j = handle_optional_json_response(resp)
+        if not j:  # pragma: no cover # this shouldn't happen
+            logger.warning(
+                f"Empty response from LDAP ping ({resp.request.method} {resp.request.url})"
+            )
+            return LdapPingResult()
+        return construct_model(LdapPingResult, j)
+
+    # GET /ldap/groups/search
+    # Search available ldap groups.
+    async def search_ldap_groups(
+        self, group_name: Optional[str] = None, group_dn: Optional[str] = None
+    ) -> List[UserGroup]:
+        """Search for LDAP groups with a name or DN.
+
+        Parameters
+        ----------
+        group_name : str
+            The name of the LDAP group to search for.
+
+        group_dn : str
+            The DN of the LDAP group to search for.
+
+        Returns
+        -------
+        List[UserGroup]
+            The list of LDAP groups that match the search.
+        """
+        # TODO: investigate if we can search without a name or DN
+        if not group_dn and not group_name:
+            raise ValueError("Must specify either group_dn or group_name")
+
+        params = get_params(group_name=group_name, group_dn=group_dn)
+        resp = await self.get("/ldap/groups/search", params=params)
+        return [construct_model(UserGroup, g) for g in resp]
+
+    # GET /ldap/users/search
+    # Search available ldap users.
+    async def search_ldap_users(self, username: str) -> List[LdapUser]:
+        """Search for LDAP users with a given username."""
+        params = get_params(username=username)
+        resp = await self.get("/ldap/users/search", params=params)
+        return [construct_model(LdapUser, u) for u in resp]
+
+    # POST /ldap/users/import
+    # Import selected available ldap users.
+    async def import_ldap_users(self, user_ids: List[str]) -> None:
+        """Import LDAP users with the given IDs.
+
+        In case of failure, check the resulting exception's `errors` attribute for
+        more information on which users failed to import.
+
+        Parameters
+        ----------
+        user_ids : List[str]
+            A list of strings representing the IDs of the users to import.
+            The system attempts to determine the remaining user information
+            based on each user's ID.
+        """
+        req = LdapImportUsers(
+            ldap_uid_list=user_ids,
+        )
+        await self.post("/ldap/users/import", json=req)
 
     # CATEGORY: registry
     # POST /registries/ping
