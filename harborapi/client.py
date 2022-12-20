@@ -34,6 +34,7 @@ from .models import (
     Permission,
     Project,
     ProjectDeletable,
+    ProjectMetadata,
     ProjectReq,
     ProjectScanner,
     ProjectSummary,
@@ -3141,13 +3142,12 @@ class HarborAsyncClient:
     # CATEGORY: projectMetadata
 
     # POST /projects/{project_name_or_id}/metadatas/
-    async def add_project_metadata(
+    async def set_project_metadata(
         self,
         project_name_or_id: Union[str, int],
-        metadata: Dict[str, Any],
+        metadata: ProjectMetadata,
     ) -> None:
-        """Add metadata for a project. The metadata takes form of a dict,
-        where each key is the name of the metadata, and each value is the value of the metadata.
+        """Add metadata for a project.
 
         Parameters
         ----------
@@ -3155,10 +3155,9 @@ class HarborAsyncClient:
             The name or ID of the project to add metadata to.
             String arguments are treated as project names.
             Integer arguments are treated as project IDs.
-        metadata : Dict[str, Any]
+        metadata : ProjectMetadata
             The metadata to add to the project.
-            Should be a dict where each key is the name of the metadata,
-            and each value is the value of the metadata.
+            Supports adding arbitrary fields
         """
         headers = get_project_headers(project_name_or_id)
         await self.post(
@@ -3168,7 +3167,7 @@ class HarborAsyncClient:
     # GET /projects/{project_name_or_id}/metadatas/
     async def get_project_metadata(
         self, project_name_or_id: Union[str, int]
-    ) -> Dict[str, Any]:
+    ) -> ProjectMetadata:
         """Get the metadata of a specific project.
 
         Parameters
@@ -3180,28 +3179,40 @@ class HarborAsyncClient:
 
         Returns
         -------
-        Dict[str, Any]
+        ProjectMetadata
             The metadata of the project.
         """
         headers = get_project_headers(project_name_or_id)
         resp = await self.get(
             f"/projects/{project_name_or_id}/metadatas", headers=headers
         )
-        return resp  # type: ignore # TODO: verify that we always get dict back
+        return construct_model(ProjectMetadata, resp)
 
     # PUT /projects/{project_name_or_id}/metadatas/{meta_name}
     async def update_project_metadata_entry(
         self,
         project_name_or_id: Union[str, int],
         metadata_name: str,
-        metadata: Dict[str, Any],
+        metadata: Union[ProjectMetadata, Dict[str, Any]],
     ) -> None:
         """Update a specific metadata entry for a project.
 
-        NOTE: It's unclear what the request body should be for this endpoint.
-        The API docs specifies that it should be a dict, but since we provide
-        the name of entry to update in the endpoint, it seems like the value
-        can be anything.
+        !!! warning "Possibly incorrect implementation"
+            It's unclear what the request body should be for this endpoint.
+            The API docs specifies that it should be a dict, but not its structure.
+            We assume the dict is of the form:
+            ```json
+            {
+                "<metadata_name>": "<metadata_value>",
+            }
+            ```
+
+        !!! note "Validation"
+            To validate the metadata before updating it, pass in
+            `ProjectMetadata(field_to_set=value).dict(exclude_unset=True)`
+            as the `metadata` argument.
+            This will ensure that the metadata is valid according to the
+            current version of the API spec that this client is using.
 
         Parameters
         ----------
@@ -3211,15 +3222,19 @@ class HarborAsyncClient:
             Integer arguments are treated as project IDs.
         metadata_name: str
             The name of the metadata to update.
-        metadata : Dict[str, Any]
+        metadata : Union[ProjectMetadata, Dict[str, Any]]
             The metadata to update for the project.
-            Should be a dict where each key is the name of the metadata,
-            and each value is the value of the metadata.
+            Can be a ProjectMetadata object with the relevant field
+            set to the desired value, or a dict where the key is the
+            metadata name and the value is the metadata value.
         """
         headers = get_project_headers(project_name_or_id)
+        # Parse the metadata as a ProjectMetadata object
+        # to ensure that it's valid according to the API spec.
+        m = ProjectMetadata.parse_obj(metadata)
         await self.put(
             f"/projects/{project_name_or_id}/metadatas/{metadata_name}",
-            json=metadata,
+            json=m,
             headers=headers,
         )
 
