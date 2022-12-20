@@ -8,9 +8,10 @@ for more information: https://rich.readthedocs.io/en/latest/protocol.html#consol
 Other functionality in the future will be added here as well.
 """
 
-from typing import Iterable, Optional
+from typing import Any, Dict, Iterable, Optional, Type
 
 from pydantic import BaseModel as PydanticBaseModel
+from pydantic import root_validator
 
 try:
     import rich
@@ -30,11 +31,50 @@ DEPTH_TITLE_COLORS = {
 }
 
 
+def convert_bool_to_lower_str(
+    cls: Type["BaseModel"], values: Dict[str, Any]
+) -> Dict[str, Any]:
+    """Harbor API has some models where the accepted values are 'true' and 'false',
+    for fields that have a string type. This validator converts bool arguments
+    to the correct string values.
+
+    Pydantic has built-in conversion from bool to str, but it yields
+    'True' and 'False' instead of 'true' and 'false'.
+
+    Furthermore, this validator only converts the values if the field
+    description contains the phrases '"true"' and '"false"' (with quotes).
+    """
+    for field_name, field in cls.__fields__.items():
+        # TODO: optimize order of evaluation
+        # so we can short-circuit/return early
+        # if the field is not a string
+        if field.field_info.description is None:
+            continue
+
+        # We can only convert the singletons True and False
+        value = values.get(field_name)
+        if not (value is True or value is False):
+            continue
+
+        if all(
+            phrase in field.field_info.description for phrase in ['"true"', '"false"']
+        ):
+            if field_name in values:
+                if isinstance(values[field_name], bool):
+                    values[field_name] = str(values[field_name]).lower()
+    return values
+
+
 class BaseModel(PydanticBaseModel):
     class Config:
         # Account for additions to the spec
         # These fields will not be validated however
         extra = "allow"
+
+    # Validators
+    bool_converter = root_validator(pre=True, allow_reuse=True)(
+        convert_bool_to_lower_str
+    )
 
     @property
     def _table_title(self) -> str:
