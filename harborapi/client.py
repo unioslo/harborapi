@@ -1785,6 +1785,12 @@ class HarborAsyncClient:
             The original documentation for this endpoint has extremely
             broken english, and it's unclear what its purpose is.
 
+        ??? quote "Original documentation"
+            This endpoint ping the available ldap service for test related configuration parameters.
+
+            **param** `ldapconf`: ldap configuration. support input ldap service configuration. If it is a empty request, will load current configuration from the system
+
+
         Parameters
         ----------
         configuration : Optional[LdapConf]
