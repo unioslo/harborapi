@@ -1,4 +1,10 @@
-# Harbor API
+# harborapi
+
+[![PyPI - Version](https://img.shields.io/pypi/v/harborapi.svg)](https://pypi.org/project/harborapi)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/harborapi.svg)](https://pypi.org/project/harborapi)
+
+-----
+
 
 Python async client for the Harbor REST API v2.0.
 
