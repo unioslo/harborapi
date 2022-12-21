@@ -537,7 +537,11 @@ class ReplicationTriggerSettings(BaseModel):
 
 class ReplicationFilter(BaseModel):
     type: Optional[str] = Field(None, description="The replication policy filter type.")
-    value: Optional[Dict[str, Any]] = Field(
+    # NOTE: type of 'value' changed from Dict[str, Any], as the type of
+    # values this field was observed to receive was exclusively strings.
+    # In order to not completely break if we do receive a dict, this field
+    # also accepts a dict.
+    value: Optional[Union[str, Dict[str, Any]]] = Field(
         None, description="The value of replication policy filter."
     )
     decoration: Optional[str] = Field(
