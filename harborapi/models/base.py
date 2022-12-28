@@ -15,7 +15,8 @@ from pydantic import root_validator
 
 try:
     import rich
-    from rich.console import Console, ConsoleOptions, RenderResult
+    from rich.console import Console, ConsoleOptions, Group, RenderResult, group
+    from rich.panel import Panel
     from rich.table import Column, Table
 except ImportError:
     rich = None
@@ -83,9 +84,10 @@ class BaseModel(PydanticBaseModel):
         """
         try:
             title = self.__name__  # type: ignore # this is populated by Pydantic
-        except AttributeError:
+            assert isinstance(title, str)
+        except (AttributeError, AssertionError):
             title = self.__class__.__name__
-        return title
+        return title  # type: ignore # not sure why mypy complains after assert
 
     if rich is not None:
 
@@ -99,7 +101,18 @@ class BaseModel(PydanticBaseModel):
             nested models, but not tested.
             See: https://rich.readthedocs.io/en/latest/protocol.html#console-render
             """
-            yield from self.as_table(with_description=False)
+            yield self.as_panel(with_description=False)
+
+        def as_panel(self, **kwargs: Any) -> Panel:
+            """Returns table representation of model wrapped in a Panel.
+            Passes all keyword arguments to `as_table`.
+
+            Returns
+            -------
+            Panel
+                A Rich panel containing the table representation of the model.
+            """
+            return Panel(Group(*self.as_table(**kwargs)))
 
         def as_table(
             self,

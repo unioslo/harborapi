@@ -105,3 +105,27 @@ def test_as_table_long_value() -> None:
     digest_idx = t.columns[0]._cells.index("digest")
     value = t.columns[1]._cells[digest_idx]
     assert value == digest
+
+
+@given(
+    st.one_of(
+        artifact_strategy,
+        get_hbv_strategy(),
+        artifact_info_strategy,
+        artifact_report_strategy,
+    )
+)
+@settings(
+    suppress_health_check=[HealthCheck.function_scoped_fixture, HealthCheck.too_slow]
+)
+def test_model_as_panel(
+    mocker: MockerFixture,
+    model: Union[Artifact, HarborVulnerabilityReport, ArtifactInfo, ArtifactReport],
+) -> None:
+    """Test that rich console protocol is implemented."""
+    console = Console()
+    # TODO: test kwargs
+    assert model.as_panel() is not None
+    spy = mocker.spy(model, "as_panel")
+    console.print(model)
+    spy.assert_called()
