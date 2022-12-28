@@ -1,4 +1,4 @@
-__version__ = "0.4.1"
+__version__ = "0.4.2"
 
 from . import auth, client, client_sync, exceptions, types, utils, version
 from .client import HarborAsyncClient
