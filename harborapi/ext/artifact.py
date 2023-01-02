@@ -26,6 +26,10 @@ class ArtifactInfo(BaseModel):
     class Config:
         keep_untouched = (cached_property,)
 
+    @property
+    def __rich_panel_title__(self) -> str:
+        return self.name_with_digest
+
     @cached_property
     def cvss(self) -> CVSSData:
         """Key CVSS metrics for the artifact.
