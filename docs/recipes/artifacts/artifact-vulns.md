@@ -2,11 +2,11 @@
 
 This page describes how to fetch all vulnerabilities from all artifacts in all repositories in all (or a subset of) projects using the helper functions defined in [`ext.api`](/reference/ext/api.md).
 
-The recipe below demonstrates how to fetch all artifacts that have vulnerabilities affecting OpenSSL version 3.x.
-
-The recipe makes use of the built-in rate limiting implemented in [`get_artifact_vulnerabilities`][harborapi.ext.api.get_artifact_vulnerabilities]. By default, a maximum of 5 requests are sent concurrently, which prevents accidentally performing a DoS attack on your Harbor instance.
+The recipe demonstrates how to fetch all artifacts that have vulnerabilities affecting OpenSSL version 3.x. It makes use of the built-in rate limiting implemented in [`get_artifact_vulnerabilities`][harborapi.ext.api.get_artifact_vulnerabilities]. By default, a maximum of 5 requests are sent concurrently, which prevents the program from accidentally performing a DoS attack on your Harbor instance.
 
 Attempting to fetch too many resources simultaneously can lead to extreme slowdowns and in some cases completely locking up your Harbor instance. Experiment with the `max_connections` argument of [`get_artifact_vulnerabilities`][harborapi.ext.api.get_artifact_vulnerabilities] to find the optimal value for your Harbor instance.
+
+
 
 ```py
 import asyncio
@@ -65,12 +65,11 @@ other-project/bar@sha256:b498b376: OpenSSL version: 3.0.2-0ubuntu1.6
 legacy/baz@sha256:ddf6b9db: OpenSSL version: 3.0.2-0ubuntu1.6
 ```
 
-In the example above, we make use of [ArtifactReport.with_package][harborapi.ext.report.ArtifactReport.with_package] to filter the report to only include artifacts with vulnerabilities affecting OpenSSL version 3.x. See the [ArtifactReport documentation][harborapi.ext.report.ArtifactReport] for more information on other methods that can be used to filter the report.
+In the example above, we make use of [`ArtifactReport.with_package`][harborapi.ext.report.ArtifactReport.with_package] to filter the report to only include artifacts with vulnerabilities affecting OpenSSL version 3.x. See the [ArtifactReport reference][harborapi.ext.report.ArtifactReport] for more information on other methods that can be used to filter the report.
 
 ## Fetching from a subset of projects
 
-Instead of fetching all artifacts from all projects, we can also fetch artifacts from a subset of projects. This is useful if you want to limit the scope of the search to a specific set of projects.
-
+In the example above we omitted the `projects` parameter for [`get_artifact_vulnerabilities`][harborapi.ext.api.get_artifact_vulnerabilities], which means that all projects will be queried. If you only want to query a subset of projects, you can pass a list of project names to the `projects` parameter.
 
 ```py hl_lines="3"
 artifacts = await get_artifact_vulnerabilities(

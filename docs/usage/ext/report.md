@@ -28,7 +28,7 @@ All `ArtifactReport.with_*` methods return new ArtifactReport objects.
 
 ## More granular package filtering
 
-We can also query report for all artifacts who have a given vulnerable package:
+We can also query the report for all artifacts who have a given vulnerable package:
 
 ```py
 filtered_report = report.with_package("openssl")
@@ -38,12 +38,12 @@ The search is case-insensitive by default, but can be made case-sensitive by set
 
 ```py hl_lines="3"
 filtered_report = report.with_package(
-    "OpenSSL", # BEWARE: package is likely named openssl! This is an example
+    "OpenSSL", # WARNING: package is likely named openssl!
     case_sensitive=True,
 )
 ```
 
-We can also further narrow down the results by specifying minimum and/or maximum versions of the package:
+We can further narrow down the results by specifying minimum and/or maximum versions of the package:
 
 ```py hl_lines="3 4"
 filtered_report = report.with_package(
@@ -61,7 +61,7 @@ filtered_report = report.with_package("openssl.*")
 
 ## Chaining filters
 
-As previously mentioned, all `ArtifactReport.with_*` methods return new ArtifactReport objects, so they can be chained together to easily filter a report with multiple criteria.
+As previously mentioned, all `ArtifactReport.with_*` methods return new [`ArtifactReport`][harborapi.ext.report.ArtifactReport] objects, so they can be chained together to easily filter a report with multiple criteria.
 
 ```py
 filtered_report = (
