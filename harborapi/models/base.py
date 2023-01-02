@@ -77,8 +77,11 @@ class BaseModel(PydanticBaseModel):
         convert_bool_to_lower_str
     )
 
+    # The __rich* properties are only used by methods defined when Rich
+    # is installed, but they are defined here, so that static typing works
+    # when overriding the properties in subclasses.
     @property
-    def _table_title(self) -> str:
+    def __rich_table_title__(self) -> str:
         """The title to use for the table representation of the model.
         By default, the model's class name is be used.
         """
@@ -89,21 +92,27 @@ class BaseModel(PydanticBaseModel):
             title = self.__class__.__name__
         return title  # type: ignore # not sure why mypy complains after assert
 
+    @property
+    def __rich_panel_title__(self) -> Optional[str]:
+        """Title of the panel that wraps the table representation of the model."""
+        return None
+
     if rich is not None:
 
         def __rich_console__(
             self, console: Console, options: ConsoleOptions
         ) -> RenderResult:
             """Rich console representation of the model.
-            Returns a table with the model's fields and values.
+            Returns a panel containing tables representing the model's
+            fields and values.
             If the model has a nested model, the nested model's table representation
-            is printed after the main table. Should support multiple levels of
-            nested models, but not tested.
+            is printed after the main table.
+
             See: https://rich.readthedocs.io/en/latest/protocol.html#console-render
             """
             yield self.as_panel(with_description=False)
 
-        def as_panel(self, **kwargs: Any) -> Panel:
+        def as_panel(self, title: Optional[str] = None, **kwargs: Any) -> Panel:
             """Returns table representation of model wrapped in a Panel.
             Passes all keyword arguments to `as_table`.
 
@@ -112,7 +121,8 @@ class BaseModel(PydanticBaseModel):
             Panel
                 A Rich panel containing the table representation of the model.
             """
-            return Panel(Group(*self.as_table(**kwargs)))
+            title = title or self.__rich_panel_title__
+            return Panel(Group(*self.as_table(**kwargs)), title=title)
 
         def as_table(
             self,
@@ -149,9 +159,10 @@ class BaseModel(PydanticBaseModel):
             # "submodel table" -> the table representation of a nested model
 
             # TODO: add list index indicator for list fields
-            title = self._table_title
-            if parent_field:
-                title = f"{parent_field}: {title}"
+            if not parent_field:
+                title = type(self).__qualname__
+            else:
+                title = f"{parent_field}"
 
             columns = [
                 Column(
@@ -176,13 +187,18 @@ class BaseModel(PydanticBaseModel):
 
             def add_submodel_table(field_title: str, submodel: "BaseModel") -> None:
                 """Adds a submodel table to the subtables list."""
+                if parent_field:
+                    pfield = f"{parent_field}.{field_title}"
+                else:
+                    pfield = f"{type(self).__qualname__}.{field_title}"
                 submodel_table = submodel.as_table(
                     with_description=with_description,
                     max_depth=max_depth,
                     _depth=_depth + 1,
-                    parent_field=field_title,
+                    parent_field=pfield,
                 )
                 subtables.append(submodel_table)
+                return pfield
 
             # Iterate over __dict__, but try to get the field values from the
             # __fields__ dict since it contains more metadata.
@@ -228,9 +244,9 @@ class BaseModel(PydanticBaseModel):
                     # It's likely this is NOT a generator, but we don't want to
                     # assume that.
                     submodels = list(submodels)
-                    value = f"[bold]See below ({submodels[0]._table_title})[/bold]"
                     for submodel in submodels:
-                        add_submodel_table(field_title, submodel)
+                        table_title = add_submodel_table(field_title, submodel)
+                    value = f"[bold]See below ({table_title})[/bold]"
 
                 row = [field_title, str(value)]
                 if with_description:
