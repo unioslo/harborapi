@@ -99,8 +99,12 @@ async def get_artifacts(
         List of projects to fetch artifacts from.
     repositories : Optional[str]]
         List of repositories to fetch artifacts from.
-        A stricter filter than `projects`. Repositories
-        that are not part of the specified projects are ignored.
+        Can be either the full name or only the repository name:
+        `project/repo` or `repo`. `repo` matches all repositories in the
+        specified projects with that name, while `project/repo` only matches
+        the exact repository name.
+        Names are case-sensitive.
+        Missing repositories are silently skipped.
     tag : Optional[str]
         The tag to filter the artifacts by.
         A shorthand for `query="tags=<tag>"`.
@@ -128,7 +132,9 @@ async def get_artifacts(
     # We need these to construct the ArtifactInfo objects.
     repos = await get_repositories(client, projects=projects)
     if repositories:
-        repos = [r for r in repos if r.base_name in repositories]
+        repos = [
+            r for r in repos if r.name in repositories or r.base_name in repositories
+        ]
     # FIXME: invalid repository names are silently skipped
 
     # Fetch artifacts from each repository concurrently
