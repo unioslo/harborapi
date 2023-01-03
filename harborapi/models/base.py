@@ -2,10 +2,8 @@
 that adds shared functionality and capabilities to all models.
 
 Special support for printing the models as Rich tables is added through the
-use of the special __rich_console__ method. See the Rich documentation
-for more information: https://rich.readthedocs.io/en/latest/protocol.html#console-render.
-
-Other functionality in the future will be added here as well.
+use of the special `__rich_console__` method. See the Rich documentation
+for more information: <https://rich.readthedocs.io/en/latest/protocol.html#console-render/>.
 """
 
 from typing import Any, Dict, Iterable, Optional, Type
