@@ -1,5 +1,7 @@
 # CVE Allowlist
 
+Manage the system CVE allowlist.
+
 ::: harborapi.client.HarborAsyncClient
     options:
         members:
