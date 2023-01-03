@@ -1836,7 +1836,7 @@ class HarborAsyncClient:
         if not group_dn and not group_name:
             raise ValueError("Must specify either group_dn or group_name")
 
-        params = get_params(group_name=group_name, group_dn=group_dn)
+        params = get_params(groupname=group_name, groupdn=group_dn)
         resp = await self.get("/ldap/groups/search", params=params)
         return [construct_model(UserGroup, g) for g in resp]
 
