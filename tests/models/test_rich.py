@@ -31,7 +31,12 @@ from ..strategies.ext import artifact_info_strategy, artifact_report_strategy
     )
 )
 @settings(
-    suppress_health_check=[HealthCheck.function_scoped_fixture, HealthCheck.too_slow]
+    suppress_health_check=[HealthCheck.function_scoped_fixture, HealthCheck.too_slow],
+    # Printing extremely large tables can be slow
+    # To rectify this, we could limit the size of the generated examples,
+    # but we just limit the number of examples for now
+    deadline=timedelta(milliseconds=500),
+    max_examples=10,
 )
 def test_rich_console_protocol(
     mocker: MockerFixture,
@@ -43,7 +48,6 @@ def test_rich_console_protocol(
     assert model.__rich_console__ is not None
     proto_spy = mocker.spy(model, "__rich_console__")
     panel_spy = mocker.spy(model, "as_panel")
-
     console.print(model)
     proto_spy.assert_called()
     panel_spy.assert_called()
@@ -122,6 +126,7 @@ def test_as_table_long_value() -> None:
 )
 @settings(
     suppress_health_check=[HealthCheck.function_scoped_fixture, HealthCheck.too_slow],
+    max_examples=10,  # large models are slow, see `test_rich_console_protocol`
 )
 def test_model_as_panel(
     model: Union[Artifact, HarborVulnerabilityReport, ArtifactInfo, ArtifactReport]
