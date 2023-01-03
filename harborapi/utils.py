@@ -1,12 +1,12 @@
 from base64 import b64encode
 from json import JSONDecodeError
-from typing import Any, Dict, Optional, Union
+from typing import Dict, Optional, Union
 from urllib.parse import quote_plus, unquote_plus
 
 from httpx import Response
 from loguru import logger
 
-from .types import JSONType
+from ._types import JSONType, ParamType
 
 
 def is_json(response: Response) -> bool:
@@ -212,6 +212,7 @@ def parse_pagination_url(url: str) -> Optional[str]:
     for link in links:
         if 'rel="next"' in link:
             return get_url(link.strip())
+    return None
 
 
 def get_project_headers(project_name_or_id: Union[str, int]) -> Dict[str, str]:
@@ -238,18 +239,18 @@ def get_project_headers(project_name_or_id: Union[str, int]) -> Dict[str, str]:
     return {"X-Is-Resource-Name": str(isinstance(project_name_or_id, str)).lower()}
 
 
-def get_params(**kwargs: Any) -> Dict[str, Any]:
-    """Get parameters for an API call, where `None` values are ignored.
+def get_params(**kwargs: ParamType) -> Dict[str, ParamType]:
+    """Get parameters for an API call as a dict, where `None` values are ignored.
 
     Parameters
     ----------
-    **kwargs
+    **kwarg
         The parameters to use for the request.
 
     Returns
     -------
     Dict[str, Any]
-        The parameters to use for the request.
+        The dict representation of the parameters with `None` values removed.
     """
     params = {k: v for k, v in kwargs.items() if v is not None}
     # Ensure that the "query" parameter is renamed to "q"

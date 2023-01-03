@@ -10,6 +10,7 @@ from httpx._urls import URL
 from loguru import logger
 from pydantic import BaseModel, ValidationError
 
+from ._types import JSONType
 from .auth import load_harbor_auth_file, new_authfile_from_robotcreate
 from .exceptions import BadRequest, HarborAPIException, NotFound, check_response_status
 from .models import (
@@ -74,7 +75,6 @@ from .models import (
 )
 from .models.buildhistory import BuildHistoryEntry
 from .models.scanner import HarborVulnerabilityReport
-from .types import JSONType
 from .utils import (
     get_artifact_path,
     get_credentials,

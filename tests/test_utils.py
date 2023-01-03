@@ -3,8 +3,8 @@ from typing import Dict, Optional, Type, Union
 import pytest
 from httpx import Request, Response
 
+from harborapi._types import JSONType
 from harborapi.exceptions import HarborAPIException
-from harborapi.types import JSONType
 from harborapi.utils import (
     get_artifact_path,
     get_credentials,
