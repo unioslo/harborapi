@@ -13,13 +13,15 @@ from typing import Any, Dict, Iterable, Optional, Type
 from pydantic import BaseModel as PydanticBaseModel
 from pydantic import root_validator
 
+# fmt: off
 try:
-    import rich
     from rich.console import Console, ConsoleOptions, Group, RenderResult, group
     from rich.panel import Panel
     from rich.table import Column, Table
+    rich_installed = True
 except ImportError:
-    rich = None
+    rich_installed = False
+# fmt: on
 
 
 DEPTH_TITLE_COLORS = {
@@ -97,7 +99,7 @@ class BaseModel(PydanticBaseModel):
         """Title of the panel that wraps the table representation of the model."""
         return None
 
-    if rich is not None:
+    if rich_installed:
 
         def __rich_console__(
             self, console: Console, options: ConsoleOptions
@@ -185,7 +187,7 @@ class BaseModel(PydanticBaseModel):
 
             subtables = []  # type: list[Iterable[Table]]
 
-            def add_submodel_table(field_title: str, submodel: "BaseModel") -> None:
+            def add_submodel_table(field_title: str, submodel: "BaseModel") -> str:
                 """Adds a submodel table to the subtables list."""
                 if parent_field:
                     pfield = f"{parent_field}.{field_title}"
