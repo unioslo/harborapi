@@ -1,11 +1,14 @@
 """Tests for rich rendering of models."""
 
+from datetime import timedelta
 from typing import Union
 
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 from pytest_mock import MockerFixture
-from rich.console import Console
+from rich.console import Console, Group
+from rich.panel import Panel
+from rich.table import Table
 
 from harborapi.ext.api import ArtifactInfo
 from harborapi.ext.report import ArtifactReport
@@ -38,10 +41,12 @@ def test_rich_console_protocol(
     console = Console()
 
     assert model.__rich_console__ is not None
-    spy = mocker.spy(model, "__rich_console__")
+    proto_spy = mocker.spy(model, "__rich_console__")
+    panel_spy = mocker.spy(model, "as_panel")
 
     console.print(model)
-    spy.assert_called()
+    proto_spy.assert_called()
+    panel_spy.assert_called()
 
 
 def test_as_table_artifact() -> None:
@@ -116,16 +121,20 @@ def test_as_table_long_value() -> None:
     )
 )
 @settings(
-    suppress_health_check=[HealthCheck.function_scoped_fixture, HealthCheck.too_slow]
+    suppress_health_check=[HealthCheck.function_scoped_fixture, HealthCheck.too_slow],
 )
 def test_model_as_panel(
-    mocker: MockerFixture,
-    model: Union[Artifact, HarborVulnerabilityReport, ArtifactInfo, ArtifactReport],
+    model: Union[Artifact, HarborVulnerabilityReport, ArtifactInfo, ArtifactReport]
 ) -> None:
-    """Test that rich console protocol is implemented."""
-    console = Console()
+    """Test that the as_panel method on various models works."""
     # TODO: test kwargs
-    assert model.as_panel() is not None
-    spy = mocker.spy(model, "as_panel")
-    console.print(model)
-    spy.assert_called()
+
+    # Get panel
+    panel = model.as_panel()
+    assert isinstance(panel, Panel)
+
+    # Panel should contain a Group of Tables
+    r = panel.renderable
+    assert r is not None
+    assert isinstance(r, Group)
+    assert all(isinstance(t, Table) for t in r.renderables)
