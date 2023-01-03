@@ -56,7 +56,7 @@ def convert_bool_to_lower_str(
 
         # We can only convert the singletons True and False
         value = values.get(field_name)
-        if not (value is True or value is False):
+        if not value in [True, False]:
             continue
 
         if all(
