@@ -72,8 +72,8 @@ nav:
       - endpoints/artifacts.md
       - endpoints/auditlogs.md
       - endpoints/configure.md
-      - endpoints/gc.md
       - endpoints/cveallowlist.md
+      - endpoints/gc.md
       - endpoints/health.md
       - endpoints/ldap.md
       - endpoints/oidc.md
