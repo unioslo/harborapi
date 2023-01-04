@@ -2992,22 +2992,22 @@ class HarborAsyncClient:
     # DELETE /projects/{project_name}/repositories/{repository_name}
     async def delete_repository(
         self,
-        project_id: str,
+        project_name: str,
         repository_name: str,
         missing_ok: bool = False,
     ) -> None:
-        """Get a repository.
+        """Delete a repository.
 
         Parameters
         ----------
-        project_id : int
-            The id of the project the repository belongs to.
+        project_name : str
+            The name of the project the repository belongs to.
         repository_name : str
             The name of the repository.
         missing_ok : bool
             If true, do not raise an error if the repository does not exist.
         """
-        path = get_repo_path(project_id, repository_name)
+        path = get_repo_path(project_name, repository_name)
         await self.delete(
             path,
             missing_ok=missing_ok,
