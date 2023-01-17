@@ -10,12 +10,13 @@ The **third number** is the patch version (bug fixes)
 
 <!-- changelog follows -->
 
-## [Unreleased]
-## [0.5.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.5.0) - 2023-xx-yy
+<!-- ## [Unreleased] -->
+## [0.5.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.5.0) - 2023-01-17
 
 ### Added
 
 - Changelog
+- Rich as optional dependency: `pip install harborapi[rich]`
 
 ### Changed
 
