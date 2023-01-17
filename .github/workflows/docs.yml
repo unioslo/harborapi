@@ -5,6 +5,7 @@ on:
       - main
       - hatch
     paths:
+      - ".github/workflows/docs.yml"
       - "docs/**"
       - "mkdocs.yml"
       - "harborapi/**"
