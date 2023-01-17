@@ -409,3 +409,16 @@ async def test_log_response(async_client: HarborAsyncClient, httpserver: HTTPSer
     assert last_response.url == async_client.url + "/users?page=1&page_size=10"
     assert last_response.method == "GET"
     assert last_response.response_size > 0
+
+
+async def test_cookies(async_client: HarborAsyncClient, httpserver: HTTPServer):
+    """Test the client to make sure cookies are properly discarded after each request."""
+    httpserver.expect_oneshot_request("/api/v2.0/users").respond_with_json(
+        [{"username": "user1"}, {"username": "user2"}],
+        status=200,
+        headers={"Set-Cookie": "foo=bar"},
+    )
+    async_client.url = httpserver.url_for("/api/v2.0")
+    await async_client.get_users()
+    assert async_client.client.cookies.get("foo") is None
+    assert len(async_client.client.cookies) == 0

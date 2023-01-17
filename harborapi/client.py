@@ -1,5 +1,6 @@
 import json
 from collections import deque
+from http.cookiejar import CookieJar
 from pathlib import Path
 from typing import Any, Dict, List, NamedTuple, Optional, Tuple, Type, TypeVar, Union
 
@@ -121,6 +122,15 @@ def model_to_dict(model: BaseModel) -> Any:
     return json.loads(model.json(exclude_unset=True))
 
 
+class CookieDiscarder(CookieJar):
+    """A CookieJar that discards all cookies."""
+
+    def set_cookie(self, *args: Any, **kwargs: Any) -> None:
+        # Overriding this method causes any attempt to set cookies
+        # by the client to be ignored.
+        pass
+
+
 class ResponseLogEntry(NamedTuple):
     """A log entry for an HTTP response."""
 
@@ -204,7 +214,9 @@ class HarborAsyncClient:
         # Instantiate persistent HTTP client using the redirect policy
         # NOTE: any reason we don't specify headers here too?
         self.client = httpx.AsyncClient(
-            follow_redirects=follow_redirects, timeout=timeout
+            follow_redirects=follow_redirects,
+            timeout=timeout,
+            cookies=CookieDiscarder(),
         )
 
         # NOTE: make env var?
