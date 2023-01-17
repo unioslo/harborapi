@@ -26,6 +26,9 @@ dependencies = [
 ]
 dynamic = ["version", "readme"]
 
+[project.optional-dependencies]
+rich = ["rich>=12.6.0"]
+
 [project.urls]
 Source = "https://github.com/pederhan/harborapi"
 Documentation = "https://pederhan.github.io/harborapi/"
