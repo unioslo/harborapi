@@ -1,42 +1,107 @@
-[tool.poetry]
-name = "harborapi"
-version = "0.4.4"
-description = "Async Harbor API v2.0 wrapper"
-readme = "README.md"
-authors = ["Peder Hovdan Andresen <pederhan@usit.uio.no>"]
-
-[tool.poetry.dependencies]
-python = "^3.8"
-httpx = "^0.23.0"
-pydantic = "^1.9.1"
-backoff = "^2.1.2"
-loguru = "^0.6.0"
-
-[tool.poetry.dev-dependencies]
-pytest = "7.1.2"
-mypy = "^0.961"
-black = "^22.6.0"
-pre-commit = "^2.19.0"
-pytest-cov = "^3.0.0"
-hypothesis = "^6.48.1"
-pytest-asyncio = "^0.18.3"
-pytest-httpserver = "^1.0.4"
-mkdocs = "^1.3.0"
-mkdocs-material = "^8.3.9"
-mkdocstrings = { version = "^0.19.0", extras = ["python"] }
-rich = "^12.6.0"
-pytest-mock = "^3.10.0"
-
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling", "hatch-fancy-pypi-readme"]
+build-backend = "hatchling.build"
 
-[tool.datamodel-codegen]
-field-constraints = true
-snake-case-field = true
-strip-default-none = false
-target-python-version = "3.8"
-use-schema-description = false # bad docs coverage and numerous spelling errors (as of 2022-06-29)
+[project]
+name = "harborapi"
+description = "Async Harbor API v2.0 client"
+requires-python = ">=3.8"
+license = "MIT"
+keywords = []
+authors = [{ name = "pederhan", email = "pederhan@uio.no" }]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: Implementation :: CPython",
+]
+dependencies = [
+  "httpx>=0.23.0",
+  "pydantic>=1.9.1",
+  "backoff>=2.1.2",
+  "loguru>=0.6.0",
+]
+dynamic = ["version", "readme"]
+
+[project.optional-dependencies]
+rich = ["rich>=12.6.0"]
+
+[project.urls]
+Source = "https://github.com/pederhan/harborapi"
+Documentation = "https://pederhan.github.io/harborapi/"
+Changelog = "https://github.com/pederhan/harborapi/blob/main/CHANGELOG.md"
+Issues = "https://github.com/pederhan/harborapi/issues"
+
+[project.scripts]
+harbor = "harborapi.main:main"
+
+[tool.hatch.metadata.hooks.fancy-pypi-readme]
+content-type = "text/markdown"
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+path = "README.md"
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+path = "CHANGELOG.md"
+pattern = "<!-- changelog follows -->\n\n(.*)"
+
+[tool.hatch.version]
+path = "harborapi/__about__.py"
+
+[tool.hatch.envs.default]
+dependencies = [
+  "black>=22.10.0",
+  "mypy>=0.991",
+  "pytest>=7.2.0",
+  "pytest-asyncio>=0.18.3",
+  "pytest-cov>=4.0.0",
+  "pytest-httpserver>=1.0.4",
+  "pytest-mock>=3.10.0",
+  "hypothesis>=6.62.1",
+  "rich>=12.6.0",
+  "typer>=0.7.0",
+
+]
+[tool.hatch.envs.default.scripts]
+test = "pytest {args}"
+cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=harborapi --cov=tests {args}"
+no-cov = "cov --no-cov {args}"
+bump = "python scripts/bump_version.py {args}"
+
+[tool.hatch.envs.docs]
+dependencies = ["mkdocs", "mkdocs-material", "mkdocstrings[python]"]
+[tool.hatch.envs.docs.scripts]
+build = "mkdocs build --clean --strict"
+serve = "mkdocs serve --dev-addr localhost:8001"
+
+[[tool.hatch.envs.test.matrix]]
+python = ["38", "39", "310", "311"]
+
+[tool.coverage.run]
+branch = true
+parallel = true
+omit = ["harborapi/__about__.py"]
+
+[tool.coverage.report]
+exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
+include = ["./harborapi/*.py", "./tests/*.py"]
+
+[tool.ruff]
+ignore = [
+  "E501", # line too long (we let black handle this)
+  "F541", # f-string is missing placeholders
+]
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["E402", "F401", "F403"]
+
+[tool.mypy]
+python_version = "3.8"
+ignore_missing_imports = true
+strict = true
+exclude = ["tests"]
 
 [tool.isort]
 profile = "black"
@@ -44,9 +109,9 @@ profile = "black"
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 
-[tool.coverage.report]
-include = ["./harborapi/*.py", "./tests/*.py"]
-
-[tool.mypy]
-strict = true
-exclude = ["tests/"]
+[tool.datamodel-codegen]
+field-constraints = true
+snake-case-field = true
+strip-default-none = false
+target-python-version = "3.8"
+use-schema-description = false # bad docs coverage and numerous spelling errors (as of 2022-06-29)
