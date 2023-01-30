@@ -129,7 +129,7 @@ class BaseModel(PydanticBaseModel):
             with_description: bool = False,
             max_depth: Optional[int] = None,
             parent_field: Optional[str] = None,
-            _depth: int = 0,
+            _depth: int = 1,
         ) -> Iterable[Table]:
             """Returns a Rich table representation of the model, and any nested models.
 
@@ -157,6 +157,10 @@ class BaseModel(PydanticBaseModel):
             # "field name" -> the name of the field in the model spec
             # "submodel" -> a nested model
             # "submodel table" -> the table representation of a nested model
+
+            # None and n <= 0 means no limit to recursion depth
+            if max_depth is not None and max_depth <= 0:
+                max_depth = None
 
             # TODO: add list index indicator for list fields
             if not parent_field:

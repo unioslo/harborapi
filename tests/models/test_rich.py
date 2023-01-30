@@ -67,8 +67,8 @@ def test_as_table_artifact() -> None:
     a.tags = [Tag(name="latest")]
     assert len(list(a.as_table())) == 2
     # Test recursion limit (max_depth)
-    assert len(list(a.as_table(max_depth=0))) == 1
-    assert len(list(a.as_table(max_depth=1))) == 2
+    assert len(list(a.as_table(max_depth=1))) == 1
+    assert len(list(a.as_table(max_depth=2))) == 2
 
     # Test custom nested model not part of the spec
     class CustomModel(BaseModel):
@@ -99,11 +99,14 @@ def test_as_table_artifact() -> None:
     # Test recursion limit with nested models
 
     # Artifact
-    assert len(list(a.as_table(max_depth=0))) == 1
+    assert len(list(a.as_table(max_depth=1))) == 1
     # Artifact + tag + customnested + customnested
-    assert len(list(a.as_table(max_depth=1))) == 4
+    assert len(list(a.as_table(max_depth=2))) == 4
     # Artifact + tag + customnested + customnested + custom + custom
-    assert len(list(a.as_table(max_depth=2))) == 6
+    assert len(list(a.as_table(max_depth=3))) == 6
+    assert len(list(a.as_table(max_depth=0))) == 6
+    assert len(list(a.as_table(max_depth=-1))) == 6
+    assert len(list(a.as_table(max_depth=0))) == len(list(a.as_table(max_depth=None)))
 
 
 def test_as_table_long_value() -> None:
