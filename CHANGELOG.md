@@ -29,6 +29,5 @@ The **third number** is the patch version (bug fixes)
 ### Changed
 
 - Use Hatch as build system.
-- **BREAKING**: The `max_depth` parameter of `BaseModel.as_table()` and `BaseModel.as_panel()` now starts counting from 1 instead of 0. `max_depth=0` now means "no limit", and `max_depth=1` means "only show the top level" (previously `max_depth=0` meant "only show the top level" and `max_depth=1` meant "show the top level and one level below")
 
 <!-- ### Fixed -->
