@@ -10,7 +10,20 @@ The **third number** is the patch version (bug fixes)
 
 <!-- changelog follows -->
 
-<!-- ## [Unreleased] -->
+## [Unreleased]
+
+### Added
+
+- New models (TBD)
+
+### Changed
+
+- Updated models (TBD)
+- Generated models are now defined in `models._models`, and the overrides for these models are defined in `models.models`. This is to make it easier to regenerate the models in the future. Furthermore, the `models._models` module is accessible via `models.models`, which should make this change backwards compatible.
+
+### Fixed
+
+- Fixed models (TBD)
 
 ## [0.6.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.6.0) - 2023-01-30
 
