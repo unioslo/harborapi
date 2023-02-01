@@ -25,6 +25,11 @@ The **third number** is the patch version (bug fixes)
 
 - Fixed models (TBD)
 
+
+### Removed
+
+- **BREAKING**: `HarborAsyncClient.get_internal_config()`. This endpoint is meant for internal usage only, and the new model definitions don't seem to play well with it. If you need this endpoint, please open an issue.
+
 ## [0.6.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.6.0) - 2023-01-30
 
 ### Changed

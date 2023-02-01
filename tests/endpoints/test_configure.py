@@ -7,30 +7,7 @@ from pytest_httpserver import HTTPServer
 
 from harborapi.client import HarborAsyncClient
 from harborapi.models import CVEAllowlist, CVEAllowlistItem, UserResp
-from harborapi.models.models import (
-    Configurations,
-    ConfigurationsResponse,
-    InternalConfigurationsResponse,
-)
-
-from ..strategies import cveallowlist_strategy
-
-
-@pytest.mark.asyncio
-@given(st.builds(InternalConfigurationsResponse))
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-async def test_get_internal_config_mock(
-    async_client: HarborAsyncClient,
-    httpserver: HTTPServer,
-    internalconfig: InternalConfigurationsResponse,
-):
-    httpserver.expect_oneshot_request(
-        "/api/v2.0/internalconfig",
-        method="GET",
-    ).respond_with_json(internalconfig.dict())
-    async_client.url = httpserver.url_for("/api/v2.0")
-    resp = await async_client.get_internal_config()
-    assert resp == internalconfig
+from harborapi.models.models import Configurations, ConfigurationsResponse
 
 
 @pytest.mark.asyncio
