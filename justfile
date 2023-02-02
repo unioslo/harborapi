@@ -22,6 +22,12 @@ pcrun:
 # Recipes for generating Pydantic models from Swagger API schemas
 codegendir := "codegen"
 default_scanner_version := "1.1"
+#multiline variable with common datamodel-codegen options
+# FIXME: any better way to do this?
+datamodel_codegen_opts := (
+    "--use-double-quotes " +
+    "--base-class .base.BaseModel "
+)
 
 # Make codegen directory
 mkcodegendir:
@@ -34,8 +40,8 @@ genapi: mkcodegendir
         --output codegen/swagger.yaml
     datamodel-codegen \
         --input codegen/swagger.yaml  \
-        --output codegen/_models.py \
-        --base-class .base.BaseModel
+        --output ./harborapi/models/_models.py \
+        {{datamodel_codegen_opts}}
     # Finished fetching new definitions and generating models for the Harbor API
 
 # Generate new Scanner API models
@@ -45,8 +51,9 @@ genscanner version=default_scanner_version: mkcodegendir
         --output {{codegendir}}/scanner-adapter-openapi-v1.1.yaml
     datamodel-codegen \
         --input codegen/scanner-adapter-openapi-v{{version}}.yaml \
-        --input-file-type openapi --output codegen/_scanner.py \
-        --base-class .base.BaseModel
+        --output ./harborapi/models/_scanner.py \
+        --input-file-type openapi \
+        {{datamodel_codegen_opts}}
     # Finished fetching new definitions and generating models for the Harbor Pluggable Scanner API
 
 docs_addr := "localhost:8000"
