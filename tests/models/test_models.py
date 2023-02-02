@@ -1,3 +1,4 @@
+import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 from pydantic import BaseModel
@@ -12,60 +13,11 @@ from harborapi.models.models import (
     VulnerabilitySummary,
 )
 
-
-def _override_class_check(modified: BaseModel, generated: BaseModel) -> None:
-    assert modified.__module__ != generated.__module__
-    assert modified.__class__ != generated.__class__
-    assert generated.__class__ in modified.__class__.__bases__
-
-
-def _override_compat_check(modified: BaseModel, generated: BaseModel) -> None:
-    """Tests that the superclass (generated) is compatible with the subclass (modified).
-
-    When the definition for a field is expanded to be more lenient, this
-    test should generally pass. In cases where the field type is changed
-    in a non-compatible way, this test will fail and should not be invoked."""
-    # we need to serialize by alias, since we can't populate by alias
-    m = modified.parse_obj(generated.dict(by_alias=True))
-    assert m == generated
-
-
-def _override_field_check(
-    modified: BaseModel, generated: BaseModel, field: str
-) -> None:
-    attrs = [
-        "allow_mutation",
-        "alias",
-        "const",
-        "decimal_places",
-        "default_factory",
-        "description",
-        "discriminator",
-        "exclude",
-        "extra",
-        "ge",
-        "gt",
-        "include",
-        "le",
-        "lt",
-        "max_digits",
-        "max_items",
-        "max_length",
-        "min_items",
-        "min_length",
-        "multiple_of",
-        "regex",
-        "title",
-        "unique_items",
-    ]
-    for attr in attrs:
-        assert getattr(modified.__fields__[field].field_info, attr) == getattr(
-            generated.__fields__[field].field_info, attr
-        )
+from .utils import _override_class_check, _override_compat_check, _override_field_check
 
 
 @given(st.builds(ChartMetadata), st.builds(ChartMetadataGenerated))
-def test_chart_metadata(
+def test_chartmetadata_override(
     modified: ChartMetadata, generated: ChartMetadataGenerated
 ) -> None:
     fields = [
@@ -83,8 +35,8 @@ def test_chart_metadata(
 
 
 @given(st.builds(ScannerRegistration), st.builds(ScannerRegistrationGenerated))
-def test_scanner_registration(
-    modified: ChartMetadata, generated: ChartMetadataGenerated
+def test_scannerregistration_override(
+    modified: ScannerRegistration, generated: ScannerRegistrationGenerated
 ) -> None:
     fields = ["url"]
     for field in fields:
@@ -94,7 +46,7 @@ def test_scanner_registration(
 
 
 @given(st.builds(ReplicationFilter), st.builds(ReplicationFilterGenerated))
-def test_replication_filter(
+def test_replicationfilter_override(
     modified: ReplicationFilter, generated: ReplicationFilterGenerated
 ) -> None:
     fields = ["value"]
@@ -104,18 +56,28 @@ def test_replication_filter(
     _override_compat_check(modified, generated)
 
 
-def test_vulnerability_summary() -> None:
+@pytest.mark.parametrize("uppercase", [True, False])
+def test_vulnerabilitysummary_override(uppercase: bool) -> None:
     # This model is not backwards compatible with the generated model
     # since we add the fields "low", "medium", "high" and "critical"
+
+    # the keys of the summary dict have been observed to have the first
+    # letter capitalized, so we test both cases.
     summary = {
         "low": 1,
         "medium": 2,
         "high": 3,
-        "critical": 4,
+        "Critical": 4,
+    }
+    if uppercase:
+        summary = {k.title(): v for k, v in summary.items()}
+
+    values = {
+        "summary": summary,
         "total": 10,
         "fixable": 5,
     }
-    v = VulnerabilitySummary(**summary)
+    v = VulnerabilitySummary(**values)
     assert v.low == 1
     assert v.medium == 2
     assert v.high == 3

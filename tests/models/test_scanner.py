@@ -1,5 +1,11 @@
 from hypothesis import HealthCheck, given, settings
+from hypothesis import strategies as st
 
+from harborapi.models._scanner import (
+    HarborVulnerabilityReport as HarborVulnerabilityReportGenerated,
+)
+from harborapi.models._scanner import Severity as SeverityGenerated
+from harborapi.models._scanner import VulnerabilityItem as VulnerabilityItemGenerated
 from harborapi.models.scanner import (
     HarborVulnerabilityReport,
     Severity,
@@ -7,6 +13,58 @@ from harborapi.models.scanner import (
 )
 
 from ..strategies.artifact import get_hbv_strategy
+from .utils import (
+    _enum_members_check,
+    _override_class_check,
+    _override_compat_check,
+    _override_field_check,
+)
+
+## Test the modified models against the generated models
+
+
+@given(st.builds(VulnerabilityItem), st.builds(VulnerabilityItemGenerated))
+def test_vulnerability_item_override(
+    modified: VulnerabilityItem, generated: VulnerabilityItemGenerated
+) -> None:
+    _override_field_check(
+        modified, generated, "severity", attr_ignore=["extra", "description"]
+    )
+    _override_field_check(modified, generated, "links", attr_ignore="extra")
+
+
+def test_severity_enum_override():
+    _enum_members_check(Severity, SeverityGenerated)
+
+
+@given(
+    st.builds(HarborVulnerabilityReport), st.builds(HarborVulnerabilityReportGenerated)
+)
+def test_harborvulnerabilityreport_override(
+    modified: HarborVulnerabilityReport, generated: HarborVulnerabilityReportGenerated
+):
+    # New descriptions
+    _override_field_check(
+        modified, generated, "generated_at", attr_ignore="description"
+    )
+    _override_field_check(modified, generated, "artifact", attr_ignore="description")
+    _override_field_check(modified, generated, "scanner", attr_ignore="description")
+    # New descriptions + defaults
+    _override_field_check(
+        modified,
+        generated,
+        "severity",
+        attr_ignore=["default", "description"],
+    )
+    _override_field_check(
+        modified,
+        generated,
+        "vulnerabilities",
+        attr_ignore=["default_factory", "description"],
+    )
+
+
+## Test the new methods on the modified models
 
 
 def test_vulnerabilityitem_get_severity_highest():
@@ -56,7 +114,8 @@ def test_severity_enum():
     assert Severity.medium <= Severity.medium
     assert Severity.medium >= Severity.medium
     assert Severity.medium == Severity.medium
-    assert Severity.medium != Severity.high
+    assert Severity.medium <= Severity.high
+    assert Severity.medium < Severity.high
 
     # Ensure that the enum values are ordered from least to most severe
     severities = list(Severity)
