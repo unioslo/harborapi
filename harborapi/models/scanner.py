@@ -11,12 +11,45 @@ from loguru import logger
 from pydantic import Extra, Field
 
 from ..version import SemVer, get_semver
-from ._scanner import *
+from ._scanner import Artifact as ScanArtifact
+from ._scanner import CVSSDetails, Error, ErrorResponse
+from ._scanner import HarborVulnerabilityReport as _HarborVulnerabilityReport
+from ._scanner import Registry
+from ._scanner import Scanner as _Scanner  # Severity not imported (see below)
+from ._scanner import (
+    ScannerAdapterMetadata,
+    ScannerCapability,
+    ScannerProperties,
+    ScanRequest,
+    ScanRequestId,
+    ScanResponse,
+)
+from ._scanner import VulnerabilityItem as _VulnerabilityItem
+from ._utils import optional_field, override_field
+
+__all__ = [
+    "Scanner",
+    "ScannerProperties",
+    "ScannerCapability",
+    "ScanRequestId",
+    "Registry",
+    "ScanArtifact",
+    "Severity",
+    "Error",
+    "Severity",
+    "CVSSDetails",
+    "ScannerAdapterMetadata",
+    "ScanRequest",
+    "ScanResponse",
+    "VulnerabilityItem",
+    "ErrorResponse",
+    "HarborVulnerabilityReport",
+]
 
 DEFAULT_VENDORS = ("nvd", "redhat")
 
 
-class Scanner(Scanner):
+class Scanner(_Scanner):
     @property
     def semver(self) -> SemVer:
         return get_semver(self.version)
@@ -51,19 +84,18 @@ SEVERITY_PRIORITY = {
 """The priority of severity levels, from lowest to highest. Used for sorting."""
 
 
-class VulnerabilityItem(VulnerabilityItem):
+class VulnerabilityItem(_VulnerabilityItem):
     # Changed from spec: Severity.unknown as default instead of None
-    severity: Severity = Field(
-        Severity.unknown,
+    #                    Add description and example
+    severity: Severity = override_field(
+        _VulnerabilityItem,
+        "severity",
+        default=Severity.unknown,
         description="The severity of the vulnerability.",
         example=Severity.high.value,
-    )
+    )  # type: ignore
     # AnyUrl has been known to fail on some URLs, so we use str instead
-    links: Optional[List[str]] = Field(
-        None,
-        description="The list of links to the upstream databases with the full description of the vulnerability.\n",
-        example=["https://security-tracker.debian.org/tracker/CVE-2017-8283"],
-    )
+    links: Optional[List[str]] = optional_field(_VulnerabilityItem, "links")  # type: ignore
 
     @property
     def semver(self) -> SemVer:
@@ -108,7 +140,7 @@ class VulnerabilityItem(VulnerabilityItem):
         if isinstance(scanner, str):
             scanner_name = scanner
         elif isinstance(scanner, Scanner):
-            scanner_name = scanner.name
+            scanner_name = scanner.name or ""
 
         if scanner_name.lower() == "trivy":
             return self._get_trivy_cvss_score(
@@ -136,7 +168,7 @@ class VulnerabilityItem(VulnerabilityItem):
 
         for prio in vendor_priority:
             # Trivy uses the vendor name as the key for the CVSS data
-            vendor_cvss = cvss_data.get(prio, {})  # type: dict
+            vendor_cvss = cvss_data.get(prio, {})  # type: Dict[str, float]
             if not vendor_cvss:
                 continue
             elif not isinstance(vendor_cvss, dict):
@@ -194,35 +226,35 @@ class VulnerabilityItem(VulnerabilityItem):
 
 
 # TODO: find a more suitable place for this
-def most_severe(severities: Iterable[Severity]) -> Optional[Severity]:
+def most_severe(severities: Iterable[Severity]) -> Severity:
     """Returns the highest severity in a list of severities."""
-    return max(severities, key=lambda x: SEVERITY_PRIORITY[x], default=None)
+    return max(severities, key=lambda x: SEVERITY_PRIORITY[x], default=Severity.unknown)
 
 
 def sort_distribution(distribution: "Counter[Severity]") -> List[Tuple[Severity, int]]:
-    """Sort the distribution of severities by severity."""
+    """Turn a counter of Severities into a sorted list of (severity, count) tuples."""
     return [
         (k, v)
-        for k, v in sorted(distribution.items(), key=lambda x: SEVERITY_PRIORITY[x])
+        for k, v in sorted(distribution.items(), key=lambda x: SEVERITY_PRIORITY[x[0]])
     ]
 
 
-class HarborVulnerabilityReport(HarborVulnerabilityReport):
+class HarborVulnerabilityReport(_HarborVulnerabilityReport):
     # Changes: added descriptions
     generated_at: Optional[datetime] = Field(
         None, description="The time the report was generated."
     )
-    artifact: Optional[Artifact] = Field(None, description="The artifact scanned.")
+    artifact: Optional[ScanArtifact] = Field(None, description="The artifact scanned.")
     scanner: Optional[Scanner] = Field(
         None, description="The scanner used to generate the report."
     )
     # Changes from spec: these two fields have been given defaults
     severity: Severity = Field(
         Severity.unknown, description="The overall severity of the vulnerabilities."
-    )
+    )  # type: ignore
     vulnerabilities: List[VulnerabilityItem] = Field(
         default_factory=list, description="The list of vulnerabilities found."
-    )
+    )  # type: ignore
 
     class Config:
         keep_untouched = (cached_property,)
@@ -337,6 +369,8 @@ class HarborVulnerabilityReport(HarborVulnerabilityReport):
 
         """
         # TODO: implement UNfixable
+        vulns: Iterable[VulnerabilityItem] = []  # declare type for mypy
+
         if fixable:
             vulns = self.fixable
         else:
