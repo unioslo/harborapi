@@ -22,85 +22,347 @@ Furthermore, some models are extended with new validators and/or methods.
 # field type itself.
 
 
-from typing import Any, Dict, List, Optional
-from typing import Type as TType
-from typing import Union
+from typing import Any, Dict, List, Optional, Union
 
 from loguru import logger
-from pydantic import AnyUrl, Extra, Field, root_validator
-from pydantic.fields import FieldInfo
+from pydantic import Extra, Field, root_validator
 
 # TODO: import each model individually, and avoid * import
-from ._models import *
-from .base import BaseModel
+from ._models import (
+    Access,
+    Accessory,
+    Action,
+    ActionRequest,
+    AdditionLink,
+    AdditionLinks,
+    Annotations,
+    Artifact,
+    AuditLog,
+    AuthproxySetting,
+    BoolConfigItem,
+)
+from ._models import ChartMetadata as _ChartMetadata
+from ._models import (
+    ChartVersion,
+    ComponentHealthStatus,
+    Configurations,
+    ConfigurationsResponse,
+    CVEAllowlist,
+    CVEAllowlistItem,
+    Error,
+    Errors,
+    EventType,
+    ExecHistory,
+    Execution,
+    ExtraAttrs,
+    FilterStyle,
+    GCHistory,
+    GeneralInfo,
+    Icon,
+    ImmutableRule,
+    ImmutableSelector,
+    Instance,
+    IntegerConfigItem,
+    InternalConfigurationsResponse,
+    InternalConfigurationValue,
+    IsDefault,
+    JobQueue,
+    Label,
+    LdapConf,
+    LdapFailedImportUser,
+    LdapImportUsers,
+    LdapPingResult,
+    LdapUser,
+    Metadata,
+    Metrics,
+    Model,
+    NativeReportSummary,
+    NotifyType,
+    OIDCCliSecretReq,
+    OIDCUserInfo,
+    OverallHealthStatus,
+    Parameter,
+    PasswordReq,
+    Permission,
+    Platform,
+    PreheatPolicy,
+    Project,
+    ProjectDeletable,
+    ProjectMember,
+    ProjectMemberEntity,
+    ProjectMetadata,
+    ProjectReq,
+    ProjectScanner,
+    ProjectSummary,
+    ProjectSummaryQuota,
+    ProviderUnderProject,
+    Quota,
+    QuotaRefObject,
+    QuotaUpdateReq,
+    Reference,
+    Registry,
+    RegistryCredential,
+    RegistryEndpoint,
+    RegistryInfo,
+    RegistryPing,
+    RegistryProviderCredentialPattern,
+    RegistryProviderEndpointPattern,
+    RegistryProviderInfo,
+    RegistryUpdate,
+    ReplicationExecution,
+)
+from ._models import ReplicationFilter as _ReplicationFilter
+from ._models import (
+    ReplicationPolicy,
+    ReplicationTask,
+    ReplicationTrigger,
+    ReplicationTriggerSettings,
+)
+from ._models import Repository as _Repository
+from ._models import (
+    ResourceList,
+    RetentionExecution,
+    RetentionExecutionTask,
+    RetentionMetadata,
+    RetentionPolicy,
+    RetentionPolicyScope,
+    RetentionRule,
+    RetentionRuleMetadata,
+    RetentionRuleParamMetadata,
+    RetentionRuleTrigger,
+    RetentionSelector,
+    RetentionSelectorMetadata,
+    Robot,
+    RobotCreate,
+    RobotCreated,
+    RobotCreateV1,
+    RobotPermission,
+    RobotSec,
+    RoleRequest,
+    ScanAllPolicy,
+    ScanDataExportExecution,
+    ScanDataExportExecutionList,
+    ScanDataExportJob,
+    ScanDataExportRequest,
+    Scanner,
+    ScannerAdapterMetadata,
+    ScannerCapability,
+)
+from ._models import ScannerRegistration as _ScannerRegistration
+from ._models import ScannerRegistrationReq, ScannerRegistrationSettings
+from ._models import ScanOverview as _ScanOverview
+from ._models import (
+    Schedule,
+    ScheduleObj,
+    SchedulerStatus,
+    ScheduleTask,
+    Search,
+    SearchRepository,
+    SearchResult,
+    StartReplicationExecution,
+    Statistic,
+    Stats,
+    Storage,
+    StringConfigItem,
+    SupportedWebhookEventTypes,
+    SystemInfo,
+    Tag,
+    Task,
+    Trigger,
+    Type,
+    UserCreationReq,
+    UserEntity,
+    UserGroup,
+    UserGroupSearchItem,
+    UserProfile,
+    UserResp,
+    UserSearch,
+    UserSearchRespItem,
+    UserSysAdminFlag,
+)
+from ._models import VulnerabilitySummary as _VulnerabilitySummary
+from ._models import (
+    WebhookJob,
+    WebhookLastTrigger,
+    WebhookPolicy,
+    WebhookTargetObject,
+    Worker,
+    WorkerPool,
+)
+from ._utils import optional_field
 
+# Explicit re-export of all models
 
-def _field_info(model: TType[BaseModel], field: str) -> FieldInfo:
-    return model.__fields__[field].field_info
-
-
-def optional_field(model: TType[BaseModel], field: str, **kwargs: Any) -> FieldInfo:
-    finfo = _field_info(model, field)
-    field_kwargs = dict(
-        allow_mutation=finfo.allow_mutation,
-        alias=finfo.alias,
-        const=finfo.const,
-        decimal_places=finfo.decimal_places,
-        default_factory=finfo.default_factory,
-        description=finfo.description,
-        discriminator=finfo.discriminator,
-        exclude=finfo.exclude,
-        ge=finfo.ge,
-        gt=finfo.gt,
-        include=finfo.include,
-        le=finfo.le,
-        lt=finfo.lt,
-        max_digits=finfo.max_digits,
-        max_items=finfo.max_items,
-        max_length=finfo.max_length,
-        min_items=finfo.min_items,
-        min_length=finfo.min_length,
-        multiple_of=finfo.multiple_of,
-        regex=finfo.regex,
-        title=finfo.title,
-        unique_items=finfo.unique_items,
-    )
-
-    # extra is the name of the extra kwargs passed to the Field constructor
-    # Pop it from kwargs, and update it with the extra kwargs from the
-    # original field
-    extra = kwargs.pop("extra", {})
-    field_extra = finfo.extra or {}
-    extra.update(field_extra)
-
-    # Use remaining kwargs to update the field kwargs
-    field_kwargs.update(kwargs)
-
-    # pydantic.Field has Any as type, but it seems to return FieldInfo (?)
-    return Field(  # type: ignore
-        None,
-        **field_kwargs,
-        **extra,
-    )
-
+__all__ = [
+    "Model",
+    "Error",
+    "SearchRepository",
+    "ChartMetadata",
+    "Repository",
+    "Tag",
+    "ExtraAttrs",
+    "Annotations",
+    "AdditionLink",
+    "Platform",
+    "Label",
+    "Scanner",
+    "VulnerabilitySummary",
+    "AuditLog",
+    "Metadata",
+    "Instance",
+    "PreheatPolicy",
+    "Metrics",
+    "Execution",
+    "Task",
+    "ProviderUnderProject",
+    "Icon",
+    "ProjectDeletable",
+    "ProjectMetadata",
+    "ProjectScanner",
+    "CVEAllowlistItem",
+    "ReplicationTriggerSettings",
+    "ReplicationFilter",
+    "RegistryCredential",
+    "Registry",
+    "RegistryUpdate",
+    "RegistryPing",
+    "RegistryProviderCredentialPattern",
+    "RegistryEndpoint",
+    "FilterStyle",
+    "ResourceList",
+    "ReplicationExecution",
+    "StartReplicationExecution",
+    "ReplicationTask",
+    "RobotCreated",
+    "RobotSec",
+    "Access",
+    "RobotCreateV1",
+    "Storage",
+    "AuthproxySetting",
+    "SystemInfo",
+    "Type",
+    "ScheduleObj",
+    "Trigger",
+    "Stats",
+    "RetentionRuleParamMetadata",
+    "RetentionSelectorMetadata",
+    "RetentionRuleTrigger",
+    "RetentionPolicyScope",
+    "RetentionSelector",
+    "RetentionExecution",
+    "RetentionExecutionTask",
+    "QuotaUpdateReq",
+    "QuotaRefObject",
+    "Quota",
+    "ScannerRegistration",
+    "ScannerRegistrationReq",
+    "ScannerRegistrationSettings",
+    "IsDefault",
+    "ScannerCapability",
+    "ScannerAdapterMetadata",
+    "ImmutableSelector",
+    "LdapConf",
+    "LdapPingResult",
+    "LdapImportUsers",
+    "LdapFailedImportUser",
+    "LdapUser",
+    "UserGroup",
+    "UserGroupSearchItem",
+    "EventType",
+    "NotifyType",
+    "WebhookTargetObject",
+    "WebhookPolicy",
+    "WebhookLastTrigger",
+    "WebhookJob",
+    "InternalConfigurationValue",
+    "Parameter",
+    "ScanAllPolicy",
+    "Configurations",
+    "StringConfigItem",
+    "BoolConfigItem",
+    "IntegerConfigItem",
+    "ProjectMemberEntity",
+    "RoleRequest",
+    "UserEntity",
+    "UserProfile",
+    "UserCreationReq",
+    "OIDCUserInfo",
+    "UserResp",
+    "UserSysAdminFlag",
+    "UserSearch",
+    "PasswordReq",
+    "UserSearchRespItem",
+    "Permission",
+    "OIDCCliSecretReq",
+    "ComponentHealthStatus",
+    "Statistic",
+    "Accessory",
+    "ScanDataExportRequest",
+    "ScanDataExportJob",
+    "ScanDataExportExecution",
+    "ScanDataExportExecutionList",
+    "WorkerPool",
+    "Worker",
+    "Action",
+    "ActionRequest",
+    "JobQueue",
+    "ScheduleTask",
+    "SchedulerStatus",
+    "Errors",
+    "ChartVersion",
+    "AdditionLinks",
+    "Reference",
+    "NativeReportSummary",
+    "ProjectSummaryQuota",
+    "CVEAllowlist",
+    "ReplicationTrigger",
+    "RegistryInfo",
+    "RegistryProviderEndpointPattern",
+    "RobotPermission",
+    "GeneralInfo",
+    "GCHistory",
+    "ExecHistory",
+    "Schedule",
+    "RetentionRuleMetadata",
+    "RetentionRule",
+    "ImmutableRule",
+    "SupportedWebhookEventTypes",
+    "InternalConfigurationsResponse",
+    "ConfigurationsResponse",
+    "ProjectMember",
+    "OverallHealthStatus",
+    "SearchResult",
+    "ScanOverview",
+    "ProjectReq",
+    "Project",
+    "ProjectSummary",
+    "ReplicationPolicy",
+    "RegistryProviderInfo",
+    "Robot",
+    "RobotCreate",
+    "RetentionMetadata",
+    "RetentionPolicy",
+    "Search",
+    "Artifact",
+]
 
 # Shadow broken models with new definitions
 
 
-class ChartMetadata(ChartMetadata):
+class ChartMetadata(_ChartMetadata):
     # NOTE: only 'engine' has proven to be broken so far, but that makes
     # me less likely to trust that other "required" fields are actually
     # required. So we make all fields optional for now.
-    name: Optional[str] = optional_field(ChartMetadata, "name")  # type: ignore
-    version: Optional[str] = optional_field(ChartMetadata, "version")  # type: ignore
-    engine: Optional[str] = optional_field(ChartMetadata, "engine")  # type: ignore
-    icon: Optional[str] = optional_field(ChartMetadata, "icon")  # type: ignore
-    api_version: Optional[str] = optional_field(ChartMetadata, "api_version")  # type: ignore
-    app_version: Optional[str] = optional_field(ChartMetadata, "app_version")  # type: ignore
+    name: Optional[str] = optional_field(_ChartMetadata, "name")  # type: ignore
+    version: Optional[str] = optional_field(_ChartMetadata, "version")  # type: ignore
+    engine: Optional[str] = optional_field(_ChartMetadata, "engine")  # type: ignore
+    icon: Optional[str] = optional_field(_ChartMetadata, "icon")  # type: ignore
+    api_version: Optional[str] = optional_field(_ChartMetadata, "api_version")  # type: ignore
+    app_version: Optional[str] = optional_field(_ChartMetadata, "app_version")  # type: ignore
 
 
 # Add new methods to the model
-class Repository(Repository):
+class Repository(_Repository):
     @property
     def base_name(self) -> str:
         """The repository name without the project name
@@ -146,7 +408,7 @@ class Repository(Repository):
         return components
 
 
-class ScanOverview(ScanOverview):
+class ScanOverview(_ScanOverview):
     """Constructs a scan overview from a dict of `mime_type:scan_overview`
 
     The API spec does not specify the contents of the scan overview, but from
@@ -186,7 +448,7 @@ class ScanOverview(ScanOverview):
         extra = Extra.allow
 
 
-class VulnerabilitySummary(VulnerabilitySummary):
+class VulnerabilitySummary(_VulnerabilitySummary):
     # We expand the model with these fields, which are usually
     # present in the summary dict. To provide a better interface
     # for accessing these values, they are exposed as top-level
@@ -216,17 +478,17 @@ class VulnerabilitySummary(VulnerabilitySummary):
         return {**values, **summary}
 
 
-class ScannerRegistration(ScannerRegistration):
+class ScannerRegistration(_ScannerRegistration):
     # this has been observed to have values that do not comply with
     # the AnyUrl pydantic type
-    url: Optional[str] = optional_field(ScannerRegistration, "url")  # type: ignore
+    url: Optional[str] = optional_field(_ScannerRegistration, "url")  # type: ignore
 
 
-class ReplicationFilter(ReplicationFilter):
+class ReplicationFilter(_ReplicationFilter):
     # Type of 'value' changed from Dict[str, Any], as the type of
     # values this field was observed to receive was exclusively strings.
     # In order to not completely break if we do receive a dict, this field
     # also accepts a dict.
     value: Optional[Union[str, Dict[str, Any]]] = optional_field(
-        ReplicationFilter, "value"
+        _ReplicationFilter, "value"
     )  # type: ignore
