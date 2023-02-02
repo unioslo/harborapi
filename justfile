@@ -28,7 +28,7 @@ mkcodegendir:
     mkdir -p {{codegendir}}
 
 # Generate new Harbor API models
-genapimodels: mkcodegendir
+genapi: mkcodegendir
     curl \
         https://raw.githubusercontent.com/goharbor/harbor/main/api/v2.0/swagger.yaml \
         --output codegen/swagger.yaml
@@ -39,7 +39,7 @@ genapimodels: mkcodegendir
     # Finished fetching new definitions and generating models for the Harbor API
 
 # Generate new Scanner API models
-genscannermodels version=default_scanner_version: mkcodegendir
+genscanner version=default_scanner_version: mkcodegendir
     curl \
         https://raw.githubusercontent.com/goharbor/pluggable-scanner-spec/master/api/spec/scanner-adapter-openapi-v1.1.yaml \
         --output {{codegendir}}/scanner-adapter-openapi-v1.1.yaml
