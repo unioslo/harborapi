@@ -67,7 +67,7 @@ def test_vulnerabilitysummary_override(uppercase: bool) -> None:
         "low": 1,
         "medium": 2,
         "high": 3,
-        "Critical": 4,
+        "critical": 4,
     }
     if uppercase:
         summary = {k.title(): v for k, v in summary.items()}
