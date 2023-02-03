@@ -27,7 +27,8 @@ from typing import Any, Dict, List, Optional, Union
 from loguru import logger
 from pydantic import Extra, Field, root_validator
 
-# TODO: import each model individually, and avoid * import
+# isort kind of mangles these imports by sorting them alphabetically
+# but still splitting each "as _" import into its own line.
 from ._models import (
     Access,
     Accessory,
