@@ -1,7 +1,6 @@
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
-from pydantic import BaseModel
 
 from harborapi.models._models import ChartMetadata as ChartMetadataGenerated
 from harborapi.models._models import ReplicationFilter as ReplicationFilterGenerated

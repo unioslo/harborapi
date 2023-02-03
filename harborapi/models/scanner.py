@@ -5,10 +5,10 @@ from collections import Counter
 from datetime import datetime
 from enum import Enum
 from functools import cached_property
-from typing import Any, Dict, Final, Iterable, List, Optional, Tuple, Union
+from typing import Dict, Final, Iterable, List, Optional, Tuple, Union
 
 from loguru import logger
-from pydantic import Extra, Field
+from pydantic import Field
 
 from ..version import SemVer, get_semver
 from ._scanner import Artifact as ScanArtifact

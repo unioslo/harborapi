@@ -13,12 +13,7 @@ from harborapi.models.scanner import (
 )
 
 from ..strategies.artifact import get_hbv_strategy
-from .utils import (
-    _enum_members_check,
-    _override_class_check,
-    _override_compat_check,
-    _override_field_check,
-)
+from .utils import _enum_members_check, _override_field_check
 
 ## Test the modified models against the generated models
 
