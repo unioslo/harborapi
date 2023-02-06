@@ -1,7 +1,9 @@
 from enum import Enum
-from typing import Optional, Sequence, Type, Union
+from typing import Any, Optional, Sequence, Type, Union
 
 from pydantic import BaseModel
+
+from harborapi.models.base import BaseModel as HarborAPIBaseModel
 
 
 def _override_class_check(
@@ -80,3 +82,44 @@ def _enum_members_check(modified: Type[Enum], generated: Type[Enum]) -> None:
     # We can expand the enum, but not shrink it
     for member in generated:
         assert modified(member.value), f"Enum member {member} not in modified enum"
+
+
+def _no_references_check(
+    module: Any, no_references: Sequence[Type[HarborAPIBaseModel]]
+) -> None:
+    """We assume these models are not referenced by other models when
+    overriding them. In order to verify this assumption, we check all
+    fields of all models and ensure that they do not reference the models
+    in the `no_references` list.
+
+    This test ensures that spec updates do not introduce new references
+    to these models undetected. Should any of these models be referenced
+    by other models, this test will fail.
+
+    When we add a more dynamic way to override the models, this test will be
+    obsolete.
+
+    Parameters
+    ----------
+    module : Any
+        The module containing the models to check
+    no_references : List[BaseModel]
+        The list of models that we do not expect to be referenced by other
+        models.
+    """
+
+    # List of models we have updated that we believe are not referenced
+    # by any other models
+    # no_references = [Repository, Artifact, LdapConf]
+
+    for model in module.__all__:
+        assert model in dir(module)
+        m = getattr(module, model)
+        try:
+            # some of the models are enums,
+            if not issubclass(m, BaseModel):
+                continue
+        except:
+            continue
+        for field in m.__fields__.values():
+            assert field.type_ not in no_references
