@@ -7,8 +7,9 @@ from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 from pydantic import ValidationError
 from pytest_httpserver import HTTPServer
+from pytest_mock import MockerFixture
 
-from harborapi.client import HarborAsyncClient, construct_model
+from harborapi.client import HarborAsyncClient
 from harborapi.exceptions import (
     BadRequest,
     Forbidden,
@@ -225,17 +226,70 @@ async def test_get_retry_mock(async_client: HarborAsyncClient, httpserver: HTTPS
 
 
 @pytest.mark.asyncio
-async def test_construct_model():
+async def test_construct_model(async_client: HarborAsyncClient, mocker: MockerFixture):
+    c = async_client
+    construct_spy = mocker.spy(UserResp, "construct")
+    parse_spy = mocker.spy(UserResp, "parse_obj")
+
     # TODO: test create_model with all models
-    m = construct_model(UserResp, {"username": "user1"})
+    m = c.construct_model(UserResp, {"username": "user1"})
     assert isinstance(m, UserResp)
     assert m.username == "user1"
+    assert parse_spy.call_count == 1
+    assert construct_spy.call_count == 0
 
     # Invalid value for "username"
     with pytest.raises(ValidationError) as e:
-        construct_model(UserResp, {"username": {}})
+        c.construct_model(UserResp, {"username": {}})
     assert e.value.errors()[0]["loc"] == ("username",)
     assert len(e.value.errors()) == 1
+    assert parse_spy.call_count == 2
+    assert construct_spy.call_count == 0
+
+
+@pytest.mark.asyncio
+async def test_construct_model_no_validation(
+    async_client: HarborAsyncClient,
+    mocker: MockerFixture,
+):
+    c = async_client
+    c.validate = False
+    construct_spy = mocker.spy(UserResp, "construct")
+    parse_spy = mocker.spy(UserResp, "parse_obj")
+
+    # Extra field "foo" is added to the model
+    m = c.construct_model(UserResp, {"username": "user1", "foo": "bar"})
+    assert isinstance(m, UserResp)
+    assert m.username == "user1"
+    assert m.foo == "bar"
+    assert construct_spy.call_count == 1
+    assert parse_spy.call_count == 0
+
+    # Invalid value for "username" if validation was enabled
+    m = c.construct_model(UserResp, {"username": {}})
+    assert m.username == {}
+    assert construct_spy.call_count == 2
+    assert parse_spy.call_count == 0
+
+
+@pytest.mark.asyncio
+async def test_construct_model_raw(
+    async_client: HarborAsyncClient,
+    mocker: MockerFixture,
+):
+    c = async_client
+    c.raw = True
+    construct_spy = mocker.spy(UserResp, "construct")
+    parse_spy = mocker.spy(UserResp, "parse_obj")
+
+    # Extra field "foo" is added to the model
+    expect_resp = {"username": "user1", "foo": "bar"}
+    m = c.construct_model(UserResp, expect_resp)
+    assert m == expect_resp
+    assert m["username"] == "user1"
+    assert m["foo"] == "bar"
+    assert construct_spy.call_count == 0
+    assert parse_spy.call_count == 0
 
 
 @pytest.mark.asyncio
