@@ -748,23 +748,7 @@ class HarborAsyncClient:
         await self.post("/system/scanAll/stop")
 
     # CATEGORY: configure
-    # GET /internalconfig
-    async def get_internal_config(self) -> InternalConfigurationsResponse:
-        """
-        Get the internal configuration. Cannot be called by normal user accounts.
-
-        !!! danger
-
-            It is likely not possible to call this method due to its internal account
-            requirement, but it is included for completeness and to allow for future use.
-
-        Returns
-        -------
-        InternalConfigurationsResponse
-            Internal system configuration.
-        """
-        resp = await self.get("/internalconfig")
-        return construct_model(InternalConfigurationsResponse, resp)
+    # GET /internalconfig (not supported)
 
     # PUT /internalconfig
     async def update_config(self, config: Configurations) -> None:

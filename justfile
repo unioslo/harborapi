@@ -20,37 +20,41 @@ pcrun:
 
 
 # Recipes for generating Pydantic models from Swagger API schemas
-
+codegendir := "codegen"
 default_scanner_version := "1.1"
+#multiline variable with common datamodel-codegen options
+# FIXME: any better way to do this?
+datamodel_codegen_opts := (
+    "--base-class .base.BaseModel "
+)
 
-# Fetch newest swagger.yaml from Harbor repo
-_fetchswagger:
-    mkdir -p codgen && curl https://raw.githubusercontent.com/goharbor/harbor/main/api/v2.0/swagger.yaml --output codegen/swagger.yaml
-
-# Generate models from swagger.yaml
-_codegen:
-    datamodel-codegen --input codegen/swagger.yaml --output codegen/model.py
-
-_fetchswagger_scanner_1_0:
-    mkdir -p codgen && curl https://raw.githubusercontent.com/goharbor/pluggable-scanner-spec/master/api/spec/scanner-adapter-openapi-v1.0.yaml --output codegen/scanner-adapter-openapi-v1.0.yaml
-
-_fetchswagger_scanner_1_1:
-    mkdir -p codgen && curl https://raw.githubusercontent.com/goharbor/pluggable-scanner-spec/master/api/spec/scanner-adapter-openapi-v1.1.yaml --output codegen/scanner-adapter-openapi-v1.1.yaml
-
-_fetchswagger_scanner version:
-    @echo "Fetching Pluggable Scanner API Spec version {{ version }}"
-    mkdir -p codgen && curl https://raw.githubusercontent.com/goharbor/pluggable-scanner-spec/master/api/spec/scanner-adapter-openapi-v{{version}}.yaml --output codegen/scanner-adapter-openapi-v{{version}}.yaml
-
-_codegen_scanner version:
-    @echo "Creating Pluggable Scanner Models"
-    datamodel-codegen --input codegen/scanner-adapter-openapi-v{{version}}.yaml --input-file-type openapi --output codegen/model_scanner.{{version}}.py
+# Make codegen directory
+mkcodegendir:
+    mkdir -p {{codegendir}}
 
 # Generate new Harbor API models
-genapimodels: _fetchswagger _codegen
+genapi: mkcodegendir
+    curl \
+        https://raw.githubusercontent.com/goharbor/harbor/main/api/v2.0/swagger.yaml \
+        --output codegen/swagger.yaml
+    datamodel-codegen \
+        --input codegen/swagger.yaml  \
+        --output ./harborapi/models/_models.py \
+        {{datamodel_codegen_opts}}
+    black ./harborapi/models/_models.py
     # Finished fetching new definitions and generating models for the Harbor API
 
 # Generate new Scanner API models
-genscannermodels version=default_scanner_version: (_fetchswagger_scanner version) (_codegen_scanner version)
+genscanner version=default_scanner_version: mkcodegendir
+    curl \
+        https://raw.githubusercontent.com/goharbor/pluggable-scanner-spec/master/api/spec/scanner-adapter-openapi-v1.1.yaml \
+        --output {{codegendir}}/scanner-adapter-openapi-v1.1.yaml
+    datamodel-codegen \
+        --input codegen/scanner-adapter-openapi-v{{version}}.yaml \
+        --output ./harborapi/models/_scanner.py \
+        --input-file-type openapi \
+        {{datamodel_codegen_opts}}
+    black ./harborapi/models/_scanner.py
     # Finished fetching new definitions and generating models for the Harbor Pluggable Scanner API
 
 docs_addr := "localhost:8000"

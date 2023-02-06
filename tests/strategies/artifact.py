@@ -10,9 +10,9 @@ from harborapi.models.models import (
     ScanOverview,
     Tag,
 )
-from harborapi.models.scanner import Artifact as ScannerArtifact
 from harborapi.models.scanner import (
     HarborVulnerabilityReport,
+    ScanArtifact,
     Scanner,
     Severity,
     VulnerabilityItem,
@@ -94,7 +94,7 @@ def get_hbv_strategy() -> st.SearchStrategy[HarborVulnerabilityReport]:
     return st.builds(
         HarborVulnerabilityReport,
         generated_at=st.datetimes(),
-        artifact=st.builds(ScannerArtifact),
+        artifact=st.builds(ScanArtifact),
         scanner=scanner_strategy,
         vulnerabilities=st.lists(get_vulnerability_item_strategy()),
     )
