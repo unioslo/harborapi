@@ -341,7 +341,7 @@ __all__ = [
     "Artifact",
 ]
 
-# Shadow broken models with new definitions and update references
+# Shadow broken models with new definitions, and update references
 
 # START ChartMetadata
 class ChartMetadata(_ChartMetadata):
