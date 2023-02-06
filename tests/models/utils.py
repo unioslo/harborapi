@@ -4,10 +4,13 @@ from typing import Optional, Sequence, Type, Union
 from pydantic import BaseModel
 
 
-def _override_class_check(modified: BaseModel, generated: BaseModel) -> None:
+def _override_class_check(
+    modified: BaseModel, generated: BaseModel, check_bases: bool = True
+) -> None:
     assert modified.__module__ != generated.__module__
     assert modified.__class__ != generated.__class__
-    assert generated.__class__ in modified.__class__.__bases__
+    if check_bases:
+        assert generated.__class__ in modified.__class__.__bases__
 
 
 def _override_compat_check(modified: BaseModel, generated: BaseModel) -> None:

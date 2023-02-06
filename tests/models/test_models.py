@@ -1,14 +1,22 @@
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
+from pydantic import ValidationError
 
 from harborapi.models._models import ChartMetadata as ChartMetadataGenerated
+from harborapi.models._models import ChartVersion as ChartVersionGenerated
 from harborapi.models._models import ReplicationFilter as ReplicationFilterGenerated
-from harborapi.models._models import ScannerRegistration as ScannerRegistrationGenerated
+from harborapi.models._models import Search as SearchGenerated
+from harborapi.models._models import SearchResult as SearchResultGenerated
+from harborapi.models.base import BaseModel
 from harborapi.models.models import (
+    Artifact,
     ChartMetadata,
+    ChartVersion,
     ReplicationFilter,
-    ScannerRegistration,
+    Repository,
+    Search,
+    SearchResult,
     VulnerabilitySummary,
 )
 
@@ -33,13 +41,31 @@ def test_chartmetadata_override(
     _override_compat_check(modified, generated)
 
 
-@given(st.builds(ScannerRegistration), st.builds(ScannerRegistrationGenerated))
-def test_scannerregistration_override(
-    modified: ScannerRegistration, generated: ScannerRegistrationGenerated
+@given(st.builds(ChartVersion), st.builds(ChartVersionGenerated))
+def test_chartversion_override(
+    modified: ChartVersion, generated: ChartVersionGenerated
 ) -> None:
-    fields = ["url"]
-    for field in fields:
-        _override_field_check(modified, generated, field)
+    # we already checked fields in the ChartMetadata test
+
+    # Don't check bases (we subclassed ChartVersion, not ChartMetadata)
+    _override_class_check(modified, generated, check_bases=False)
+    _override_compat_check(modified, generated)
+
+
+@given(st.builds(SearchResult), st.builds(SearchResultGenerated))
+def test_searchresult_override(
+    modified: SearchResult, generated: SearchResultGenerated
+) -> None:
+    # we already checked fields in the ChartMetadata test
+    _override_field_check(modified, generated, "chart")
+    _override_class_check(modified, generated)
+    _override_compat_check(modified, generated)
+
+
+@given(st.builds(Search), st.builds(SearchGenerated))
+def test_search_override(modified: Search, generated: SearchGenerated) -> None:
+    # we already checked fields in the ChartMetadata test
+    _override_field_check(modified, generated, "chart")
     _override_class_check(modified, generated)
     _override_compat_check(modified, generated)
 
@@ -83,5 +109,70 @@ def test_vulnerabilitysummary_override(uppercase: bool) -> None:
     assert v.critical == 4
     assert v.total == 10
     assert v.fixable == 5
-    # NOTE: not testing with Low, Medium, High, Critical aliases
-    # which should actually be the keys in the summary dict
+
+
+def test_search() -> None:
+    # Real search result
+    data = {
+        "chart": [
+            {
+                "Chart": {
+                    "apiVersion": "v2",
+                    "appVersion": "1.23.1",
+                    "description": "NGINX Open Source is a web server that can be also used as a reverse proxy, load balancer, and HTTP cache. Recommended for high-demanding sites due to its ability to provide faster content.",
+                    "engine": None,
+                    "home": "https://github.com/bitnami/charts/tree/master/bitnami/nginx",
+                    "icon": "https://bitnami.com/assets/stacks/nginx/img/nginx-stack-220x234.png",
+                    "keywords": ["nginx", "http", "web", "www", "reverse proxy"],
+                    "name": "myproject/nginx",
+                    "sources": [
+                        "https://github.com/bitnami/containers/tree/main/bitnami/nginx",
+                        "https://www.nginx.org",
+                    ],
+                    "version": "13.1.6",
+                    "created": "2023-02-03T09:38:19.867594256Z",
+                    "digest": "56663051192d296847e60ea81cebe03a26a703c3c6eef8f976509f80dc5e87ea",
+                    "urls": ["myproject/charts/nginx-13.1.6.tgz"],
+                    "labels": None,
+                },
+                "Name": "myproject/nginx",
+            }
+        ],
+        "project": [],
+        "repository": [],
+    }
+    # The original model fails to validate because the "engine" field
+    # is None. This is a problem with the spec, and thus we have updated
+    # the model to allow None values for this field.
+    with pytest.raises(ValidationError):
+        SearchGenerated(**data)
+    s2 = Search(**data)
+    assert s2.chart[0].chart.engine is None
+
+
+def test_no_references() -> None:
+    """We assume these models are not referenced by other models when
+    overriding them, and as such, we have not modified other classes
+    to reference them.
+
+    This test ensures that spec updates do not introduce new references
+    to these models undetected.
+
+    When we add a more dynamic way to override the mdoels, this test will be
+    obsolete.
+    """
+    from harborapi.models import models
+
+    no_references = [Repository, Artifact]
+
+    for model in models.__all__:
+        assert model in dir(models)
+        m = getattr(models, model)
+        try:
+            # some of the models are enums,
+            if not issubclass(m, BaseModel):
+                continue
+        except:
+            continue
+        for field in m.__fields__.values():
+            assert field.type_ not in no_references

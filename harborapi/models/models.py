@@ -6,26 +6,26 @@ and then overrides the models that have broken or incomplete definitions.
 Furthermore, some models are extended with new validators and/or methods.
 """
 
-# In the future, it would maybe be better to use a metaclass
-# to override specific attributes on model fields, but that's
-# a bit too complicated for now.
-# Alternatively, we could add some sort of _fields_override field to each model,
-# where we could specify the fields that need to be overridden. But how to
-# specify WHAT to override could be very complicated. Overriding field values
-# is one thing, but changing the type of the field is another thing entirely.
-# To override field values, look at the optional_field function below, but this
-# only gives us a new FieldInfo object, and does nothing to the actual field type
-# that Pydantic uses.
+# Right now, the redefining of models is done in the most naive way possible.
+# We just redefine the models that have broken or incomplete definitions...
 #
-# If we want to make the process of overriding fields more dynamic and
-# less error prone, we need to look at how we can override the
-# field type itself.
-
+# !!IMPORTANT!!
+# However, we also have to redefine/subclass the models that are extended
+# from or reference the models that are redefined here. This is because
+# the field type of Pydantic models are defined on the class level, and
+# redefining a model here will not change the field type of the model in
+# the _models module. Thus, if we change the model `Repository` here,
+# models that reference `Repository` will still use the old definition.
+# To that end, we currently have to redefine all models that reference
+# `Repository` here as well. In the future, this should be done more dynamically
+# to ensure that we don't miss any models that need to be redefined.
 
 from typing import Any, Dict, List, Optional, Union
 
 from loguru import logger
 from pydantic import Extra, Field, root_validator
+
+from . import _models
 
 # isort kind of mangles these imports by sorting them alphabetically
 # but still splitting each "as _" import into its own line.
@@ -37,14 +37,12 @@ from ._models import (
     AdditionLink,
     AdditionLinks,
     Annotations,
-    Artifact,
-    AuditLog,
-    AuthproxySetting,
-    BoolConfigItem,
 )
+from ._models import Artifact as _Artifact
+from ._models import AuditLog, AuthproxySetting, BoolConfigItem
 from ._models import ChartMetadata as _ChartMetadata
+from ._models import ChartVersion as _ChartVersion
 from ._models import (
-    ChartVersion,
     ComponentHealthStatus,
     Configurations,
     ConfigurationsResponse,
@@ -77,7 +75,9 @@ from ._models import (
     Metadata,
     Metrics,
     Model,
-    NativeReportSummary,
+)
+from ._models import NativeReportSummary as _NativeReportSummary
+from ._models import (
     NotifyType,
     OIDCCliSecretReq,
     OIDCUserInfo,
@@ -113,12 +113,8 @@ from ._models import (
     ReplicationExecution,
 )
 from ._models import ReplicationFilter as _ReplicationFilter
-from ._models import (
-    ReplicationPolicy,
-    ReplicationTask,
-    ReplicationTrigger,
-    ReplicationTriggerSettings,
-)
+from ._models import ReplicationPolicy as _ReplicationPolicy
+from ._models import ReplicationTask, ReplicationTrigger, ReplicationTriggerSettings
 from ._models import Repository as _Repository
 from ._models import (
     ResourceList,
@@ -148,18 +144,16 @@ from ._models import (
     Scanner,
     ScannerAdapterMetadata,
     ScannerCapability,
+    ScannerRegistration,
+    ScannerRegistrationReq,
+    ScannerRegistrationSettings,
 )
-from ._models import ScannerRegistration as _ScannerRegistration
-from ._models import ScannerRegistrationReq, ScannerRegistrationSettings
 from ._models import ScanOverview as _ScanOverview
+from ._models import Schedule, ScheduleObj, SchedulerStatus, ScheduleTask
+from ._models import Search as _Search
+from ._models import SearchRepository
+from ._models import SearchResult as _SearchResult
 from ._models import (
-    Schedule,
-    ScheduleObj,
-    SchedulerStatus,
-    ScheduleTask,
-    Search,
-    SearchRepository,
-    SearchResult,
     StartReplicationExecution,
     Statistic,
     Stats,
@@ -190,7 +184,7 @@ from ._models import (
     Worker,
     WorkerPool,
 )
-from ._utils import optional_field
+from ._utils import optional_field, update_refs
 
 # Explicit re-export of all models
 
@@ -347,9 +341,9 @@ __all__ = [
     "Artifact",
 ]
 
-# Shadow broken models with new definitions
+# Shadow broken models with new definitions and update references
 
-
+# START ChartMetadata
 class ChartMetadata(_ChartMetadata):
     # NOTE: only 'engine' has proven to be broken so far, but that makes
     # me less likely to trust that other "required" fields are actually
@@ -362,7 +356,21 @@ class ChartMetadata(_ChartMetadata):
     app_version: Optional[str] = optional_field(_ChartMetadata, "app_version")  # type: ignore
 
 
-# Add new methods to the model
+class ChartVersion(ChartMetadata):
+    pass
+
+
+class SearchResult(_SearchResult):
+    chart: Optional[ChartVersion] = optional_field(_SearchResult, "chart")  # type: ignore
+
+
+class Search(_Search):
+    chart: Optional[List[SearchResult]] = optional_field(_Search, "chart")  # type: ignore
+
+
+# END ChartMetadata
+
+# START Repository
 class Repository(_Repository):
     @property
     def base_name(self) -> str:
@@ -409,6 +417,52 @@ class Repository(_Repository):
         return components
 
 
+# END Repository
+
+
+# START VulnerabilitySummary
+
+
+class VulnerabilitySummary(_VulnerabilitySummary):
+    # We expand the model with these fields, which are usually
+    # present in the summary dict. To provide a better interface
+    # for accessing these values, they are exposed as top-level
+    # fields.
+    critical: int = Field(
+        0,
+        alias="Critical",
+        description="The number of critical vulnerabilities detected.",
+    )
+    high: int = Field(
+        0, alias="High", description="The number of critical vulnerabilities detected."
+    )
+    medium: int = Field(
+        0,
+        alias="Medium",
+        description="The number of critical vulnerabilities detected.",
+    )
+    low: int = Field(
+        0, alias="Low", description="The number of critical vulnerabilities detected."
+    )
+
+    @root_validator(pre=True)
+    def assign_severity_breakdown(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        summary = values.get("summary", {})
+        if not isinstance(summary, dict):
+            raise ValueError("'summary' must be a dict")
+        return {**values, **summary}
+
+
+class NativeReportSummary(_NativeReportSummary):
+    summary: Optional[VulnerabilitySummary] = optional_field(
+        _NativeReportSummary, "summary"
+    )  # type: ignore
+
+
+# END VulnerabilitySummary
+
+
+# START ScanOverview
 class ScanOverview(_ScanOverview):
     """Constructs a scan overview from a dict of `mime_type:scan_overview`
 
@@ -449,40 +503,14 @@ class ScanOverview(_ScanOverview):
         extra = Extra.allow
 
 
-class VulnerabilitySummary(_VulnerabilitySummary):
-    # We expand the model with these fields, which are usually
-    # present in the summary dict. To provide a better interface
-    # for accessing these values, they are exposed as top-level
-    # fields.
-    critical: int = Field(
-        0,
-        alias="Critical",
-        description="The number of critical vulnerabilities detected.",
-    )
-    high: int = Field(
-        0, alias="High", description="The number of critical vulnerabilities detected."
-    )
-    medium: int = Field(
-        0,
-        alias="Medium",
-        description="The number of critical vulnerabilities detected.",
-    )
-    low: int = Field(
-        0, alias="Low", description="The number of critical vulnerabilities detected."
-    )
-
-    @root_validator(pre=True)
-    def assign_severity_breakdown(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        summary = values.get("summary", {})
-        if not isinstance(summary, dict):
-            raise ValueError("'summary' must be a dict")
-        return {**values, **summary}
+class Artifact(_Artifact):
+    scan_overview: Optional[ScanOverview] = optional_field(_Artifact, "scan_overview")  # type: ignore
 
 
-class ScannerRegistration(_ScannerRegistration):
-    # this has been observed to have values that do not comply with
-    # the AnyUrl pydantic type
-    url: Optional[str] = optional_field(_ScannerRegistration, "url")  # type: ignore
+# END ScanOverview
+
+
+# START ReplicationFilter
 
 
 class ReplicationFilter(_ReplicationFilter):
@@ -493,3 +521,12 @@ class ReplicationFilter(_ReplicationFilter):
     value: Optional[Union[str, Dict[str, Any]]] = optional_field(
         _ReplicationFilter, "value"
     )  # type: ignore
+
+
+class ReplicationPolicy(_ReplicationPolicy):
+    filters: Optional[List[ReplicationFilter]] = optional_field(
+        _ReplicationPolicy, "filters"
+    )  # type: ignore
+
+
+# END ReplicationFilter
