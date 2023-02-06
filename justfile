@@ -25,7 +25,6 @@ default_scanner_version := "1.1"
 #multiline variable with common datamodel-codegen options
 # FIXME: any better way to do this?
 datamodel_codegen_opts := (
-    "--use-double-quotes " +
     "--base-class .base.BaseModel "
 )
 
@@ -42,6 +41,7 @@ genapi: mkcodegendir
         --input codegen/swagger.yaml  \
         --output ./harborapi/models/_models.py \
         {{datamodel_codegen_opts}}
+    black ./harborapi/models/_models.py
     # Finished fetching new definitions and generating models for the Harbor API
 
 # Generate new Scanner API models
@@ -54,6 +54,7 @@ genscanner version=default_scanner_version: mkcodegendir
         --output ./harborapi/models/_scanner.py \
         --input-file-type openapi \
         {{datamodel_codegen_opts}}
+    black ./harborapi/models/_scanner.py
     # Finished fetching new definitions and generating models for the Harbor Pluggable Scanner API
 
 docs_addr := "localhost:8000"
