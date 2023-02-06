@@ -354,7 +354,7 @@ class ChartMetadata(_ChartMetadata):
     app_version: Optional[str] = optional_field(_ChartMetadata, "app_version")  # type: ignore
 
 
-class ChartVersion(ChartMetadata):
+class ChartVersion(ChartMetadata, _ChartVersion):
     pass
 
 

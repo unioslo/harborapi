@@ -147,7 +147,30 @@ def test_search() -> None:
     with pytest.raises(ValidationError):
         SearchGenerated(**data)
     s2 = Search(**data)
-    assert s2.chart[0].chart.engine is None
+    c = s2.chart[0].chart
+    assert c.engine is None
+    # check that we have inherited from ChartVersion correctly
+    assert c.created == "2023-02-03T09:38:19.867594256Z"
+    assert c.removed is None
+    assert (
+        c.digest == "56663051192d296847e60ea81cebe03a26a703c3c6eef8f976509f80dc5e87ea"
+    )
+    assert c.urls == ["myproject/charts/nginx-13.1.6.tgz"]
+    assert c.labels is None
+    chartversion_fields = [
+        "created",
+        "removed",
+        "digest",
+        "urls",
+        "labels",
+    ]
+
+    # Check that the fields from the generated ChartVersion
+    # are inherited properly
+    for field in chartversion_fields:
+        _override_field_check(c, ChartVersion, field)
+
+    # TODO: maybe test MRO of the class?
 
 
 def test_no_references() -> None:
