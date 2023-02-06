@@ -16,8 +16,8 @@ from ._scanner import CVSSDetails, Error, ErrorResponse
 from ._scanner import HarborVulnerabilityReport as _HarborVulnerabilityReport
 from ._scanner import Registry
 from ._scanner import Scanner as _Scanner  # Severity not imported (see below)
+from ._scanner import ScannerAdapterMetadata as _ScannerAdapterMetadata
 from ._scanner import (
-    ScannerAdapterMetadata,
     ScannerCapability,
     ScannerProperties,
     ScanRequest,
@@ -48,6 +48,8 @@ __all__ = [
 
 DEFAULT_VENDORS = ("nvd", "redhat")
 
+# START Scanner
+
 
 class Scanner(_Scanner):
     @property
@@ -55,8 +57,20 @@ class Scanner(_Scanner):
         return get_semver(self.version)
 
 
+class ScannerAdapterMetadata(_ScannerAdapterMetadata):
+    scanner: Scanner
+
+
+# NOTE: HarborVulnerabilityReport is defined below
+
+# END Scanner
+
 # We can't extend enums, so we redefine it here.
 # Since the enum is based on CVSS v3.x, it shouldn't change
+
+# START Severity
+
+
 class Severity(Enum):
     unknown = "Unknown"
     negligible = "Negligible"
@@ -82,6 +96,10 @@ SEVERITY_PRIORITY = {
     s: i for i, s in enumerate(Severity)
 }  # type: Final[Dict[Severity, int]]
 """The priority of severity levels, from lowest to highest. Used for sorting."""
+
+# END Severity
+
+# START VulnerabilityItem
 
 
 class VulnerabilityItem(_VulnerabilityItem):
@@ -239,15 +257,25 @@ def sort_distribution(distribution: "Counter[Severity]") -> List[Tuple[Severity,
     ]
 
 
+# NOTE: HarborVulnerabilityReport (which references this model) is defined below
+
+# END VulnerabilityItem
+
+# START HarborVulnerabilityReport
+
+
 class HarborVulnerabilityReport(_HarborVulnerabilityReport):
     # Changes: added descriptions
     generated_at: Optional[datetime] = Field(
         None, description="The time the report was generated."
     )
     artifact: Optional[ScanArtifact] = Field(None, description="The artifact scanned.")
+
+    # Changes: references the overridden Scanner class
     scanner: Optional[Scanner] = Field(
         None, description="The scanner used to generate the report."
     )
+
     # Changes from spec: these two fields have been given defaults
     severity: Severity = Field(
         Severity.unknown, description="The overall severity of the vulnerabilities."
@@ -529,3 +557,6 @@ class HarborVulnerabilityReport(_HarborVulnerabilityReport):
 
             if description in vuln_description:
                 yield vuln
+
+
+# END HarborVulnerabilityReport
