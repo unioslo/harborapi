@@ -65,7 +65,9 @@ from ._models import (
     IsDefault,
     JobQueue,
     Label,
-    LdapConf,
+)
+from ._models import LdapConf as _LdapConf
+from ._models import (
     LdapFailedImportUser,
     LdapImportUsers,
     LdapPingResult,
@@ -528,3 +530,15 @@ class ReplicationPolicy(_ReplicationPolicy):
 
 
 # END ReplicationFilter
+
+# START LdapConf
+
+
+class LdapConf(_LdapConf):
+    # Changes from spec: fix typos in field descriptions
+    ldap_filter: Optional[str] = optional_field(_LdapConf, "ldap_filter", description="The search filter of ldap service.")  # type: ignore
+    ldap_uid: Optional[str] = optional_field(_LdapConf, "ldap_uid", description="The search uid from ldap service attributes.")  # type: ignore
+    ldap_scope: Optional[int] = optional_field(_LdapConf, "ldap_scope", description="The search scope of ldap service.")  # type: ignore
+
+
+# END LdapConf

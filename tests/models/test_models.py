@@ -8,11 +8,11 @@ from harborapi.models._models import ChartVersion as ChartVersionGenerated
 from harborapi.models._models import ReplicationFilter as ReplicationFilterGenerated
 from harborapi.models._models import Search as SearchGenerated
 from harborapi.models._models import SearchResult as SearchResultGenerated
-from harborapi.models.base import BaseModel
 from harborapi.models.models import (
     Artifact,
     ChartMetadata,
     ChartVersion,
+    LdapConf,
     ReplicationFilter,
     Repository,
     Search,
@@ -20,7 +20,12 @@ from harborapi.models.models import (
     VulnerabilitySummary,
 )
 
-from .utils import _override_class_check, _override_compat_check, _override_field_check
+from .utils import (
+    _no_references_check,
+    _override_class_check,
+    _override_compat_check,
+    _override_field_check,
+)
 
 
 @given(st.builds(ChartMetadata), st.builds(ChartMetadataGenerated))
@@ -175,27 +180,20 @@ def test_search() -> None:
 
 def test_no_references() -> None:
     """We assume these models are not referenced by other models when
-    overriding them, and as such, we have not modified other classes
-    to reference them.
+    overriding them. In order to verify this assumption, we check all
+    fields of all models and ensure that they do not reference the models
+    in the `no_references` list.
 
     This test ensures that spec updates do not introduce new references
-    to these models undetected.
+    to these models undetected. Should any of these models be referenced
+    by other models, this test will fail.
 
-    When we add a more dynamic way to override the mdoels, this test will be
+    When we add a more dynamic way to override the models, this test will be
     obsolete.
     """
     from harborapi.models import models
 
-    no_references = [Repository, Artifact]
-
-    for model in models.__all__:
-        assert model in dir(models)
-        m = getattr(models, model)
-        try:
-            # some of the models are enums,
-            if not issubclass(m, BaseModel):
-                continue
-        except:
-            continue
-        for field in m.__fields__.values():
-            assert field.type_ not in no_references
+    # List of models we have updated that we believe are not referenced
+    # by any other models
+    no_references = [Repository, Artifact, LdapConf]
+    _no_references_check(models, no_references)
