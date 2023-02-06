@@ -25,8 +25,6 @@ from typing import Any, Dict, List, Optional, Union
 from loguru import logger
 from pydantic import Extra, Field, root_validator
 
-from . import _models
-
 # isort kind of mangles these imports by sorting them alphabetically
 # but still splitting each "as _" import into its own line.
 from ._models import (
@@ -184,7 +182,7 @@ from ._models import (
     Worker,
     WorkerPool,
 )
-from ._utils import optional_field, update_refs
+from ._utils import optional_field
 
 # Explicit re-export of all models
 
