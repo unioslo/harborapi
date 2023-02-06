@@ -51,12 +51,13 @@ nav:
       - usage/creating-system-robot.md
       - usage/exceptions.md
       - usage/async-sync.md
+      - usage/validation.md
+      - usage/rich.md
       - "Extended functionality":
           - "usage/ext/index.md"
           - "usage/ext/artifact.md"
           - "usage/ext/api.md"
           - "usage/ext/report.md"
-      - usage/rich.md
   - "Recipes":
       - recipes/index.md
       - "Artifacts":

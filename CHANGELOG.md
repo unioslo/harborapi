@@ -12,7 +12,13 @@ The **third number** is the patch version (bug fixes)
 
 <!-- ## [Unreleased] -->
 
-## [0.7.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.6.0) - 2023-02-06
+## [0.7.1](https://github.com/pederhan/harborapi/tree/harborapi-v0.7.1) - 2023-02-06
+
+### Added
+
+- New parameters `raw` and `validate` to `HarborAsyncClient` and `HarborClient` to control whether the client returns the raw data from the API, and whether the client validates the data from the API, respectively. See the [docs](https://pederhan.github.io/harborapi/usage/validation/) for more details.
+
+## [0.7.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.7.0) - 2023-02-06
 
 ### Added
 

@@ -244,7 +244,7 @@ def get_params(**kwargs: ParamType) -> Dict[str, ParamType]:
 
     Parameters
     ----------
-    **kwarg
+    **kwargs: ParamType
         The parameters to use for the request.
 
     Returns
@@ -254,8 +254,8 @@ def get_params(**kwargs: ParamType) -> Dict[str, ParamType]:
     """
     params = {k: v for k, v in kwargs.items() if v is not None}
     # Ensure that the "query" parameter is renamed to "q"
-    # We use "query" as the parameter name in the API, but "q" is the
-    # parameter name used by Harbor.
+    # We use "query" as the parameter name in this library, but "q" is the
+    # parameter name used by the Harbor API.
     if "query" in params and not params.get("q"):
         params["q"] = params.pop("query")
     return params
