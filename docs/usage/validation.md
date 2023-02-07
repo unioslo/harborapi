@@ -31,6 +31,17 @@ client.raw = True
 
 The `raw=True` attribute on the client object will cause the client to return the raw data from the API, while the `validate=False` attribute will cause the client to skip validation of the data from the API, but still return the corresponding Pydantic model. `validate=False` is equivalent to constructing Pydantic models with [`BaseModel.construct()`](https://docs.pydantic.dev/usage/models/#creating-models-without-validation) instead of [`BaseModel.parse_obj()`](https://docs.pydantic.dev/usage/models/#parsing-data-into-a-specified-type).
 
+
+`raw` always takes precedence over `validate` if it is set. By default, `raw` is set to `False` and `validate` is set to `True`. I.e.:
+
+```py
+client = HarborAsyncClient(
+    ...,
+    raw=False,
+    validate=True
+)
+```
+
 ### Examples
 
 #### `validate=False`
@@ -40,7 +51,6 @@ from harborapi import HarborAsyncClient
 
 client = HarborAsyncClient(
     ...,
-    raw=False, # This is the default
     validate=False
 )
 
@@ -65,8 +75,9 @@ GeneralInfo.construct(
     authproxy_settings=None,
 )
 ```
+In the example, the model is constructed, but the values of the fields aren't validated and/or converted into the types specified in the model. `current_time` is still a string, even though the model says this is a datetime field. When validation is enabled, this field is converted into a datetime object.
 
-If, for example, `notification_enable` happened to be an integer instead of `True` or `False` as the spec states (bool), the model would still be constructed, since validation is disabled. If we enabled Validation, and the value of `notification_enable` was an integer, we would get an error:
+Furthermore, in this fictional example, the API returned an integer value for the `notification_enable` field, even though the spec says this is a boolean field. With validation disabled, the model is still constructed, and the value of `notification_enable` is still an integer. If we had enabled validation, and the value of `notification_enable` was an integer, we would get an error:
 
 ```
 pydantic.error_wrappers.ValidationError: 1 validation error for GeneralInfo
