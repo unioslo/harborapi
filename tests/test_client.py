@@ -293,6 +293,71 @@ async def test_construct_model_raw(
 
 
 @pytest.mark.asyncio
+async def test_construct_model_raw_is_list(
+    async_client: HarborAsyncClient,
+    mocker: MockerFixture,
+):
+    c = async_client
+    c.raw = True
+    construct_spy = mocker.spy(UserResp, "construct")
+    parse_spy = mocker.spy(UserResp, "parse_obj")
+
+    expect_resp = [{"username": "user1", "foo": "bar"}, {"username": "user2"}]
+    m = c.construct_model(UserResp, expect_resp, is_list=True)
+    assert m == expect_resp
+    assert m[0]["username"] == "user1"
+    assert m[0]["foo"] == "bar"
+    assert m[1]["username"] == "user2"
+    assert construct_spy.call_count == 0
+    assert parse_spy.call_count == 0
+
+
+@pytest.mark.asyncio
+async def test_construct_model_raw_list_without_is_list(
+    async_client: HarborAsyncClient,
+    mocker: MockerFixture,
+):
+    """Receives list value, but is_list is set to False.
+    Since we are in raw mode, this is not an error.
+    """
+    c = async_client
+    c.raw = True
+    construct_spy = mocker.spy(UserResp, "construct")
+    parse_spy = mocker.spy(UserResp, "parse_obj")
+
+    expect_resp = [{"username": "user1", "foo": "bar"}, {"username": "user2"}]
+    m = c.construct_model(UserResp, expect_resp, is_list=False)
+    assert m == expect_resp
+    assert m[0]["username"] == "user1"
+    assert m[0]["foo"] == "bar"
+    assert m[1]["username"] == "user2"
+    assert construct_spy.call_count == 0
+    assert parse_spy.call_count == 0
+
+
+@pytest.mark.asyncio
+async def test_construct_model_raw_is_list_without_list(
+    async_client: HarborAsyncClient,
+    mocker: MockerFixture,
+):
+    """is_list is set to True, but receives non-list value.
+    Since we are in raw mode, this is not an error.
+    """
+    c = async_client
+    c.raw = True
+    construct_spy = mocker.spy(UserResp, "construct")
+    parse_spy = mocker.spy(UserResp, "parse_obj")
+
+    expect_resp = {"username": "user1", "foo": "bar"}
+    m = c.construct_model(UserResp, expect_resp, is_list=True)
+    assert m == expect_resp
+    assert m["username"] == "user1"
+    assert m["foo"] == "bar"
+    assert construct_spy.call_count == 0
+    assert parse_spy.call_count == 0
+
+
+@pytest.mark.asyncio
 async def test_get_invalid_data(
     async_client: HarborAsyncClient, httpserver: HTTPServer
 ):
