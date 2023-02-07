@@ -22,9 +22,44 @@ Python async client for the Harbor REST API v2.0.
 pip install harborapi
 ```
 
+## Quick Start
+
+```python
+import asyncio
+from harborapi import HarborAsyncClient
+
+client = HarborAsyncClient(
+    url="https://demo.goharbor.io/api/v2.0/",
+    username="username",
+    secret="secret",
+    # OR
+    credentials="base64-basic-auth-credentials",
+    # OR
+    credentials_file="path/to/robot-credentials-file.json",
+)
+
+
+async def main() -> None:
+    # Get all projects
+    projects = await client.get_projects()
+    for project in projects:
+        print(project.name)
+
+    # If you have rich installed:
+    import rich
+
+    for project in projects:
+        rich.print(project)
+
+
+asyncio.run(main())
+```
+
 ## Documentation
 
 Documentation is available [here](https://pederhan.github.io/harborapi/)
+
+
 
 ## Implemented endpoints
 
