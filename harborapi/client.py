@@ -2,7 +2,19 @@ import json
 from collections import deque
 from http.cookiejar import CookieJar
 from pathlib import Path
-from typing import Any, Dict, List, NamedTuple, Optional, Tuple, Type, TypeVar, Union
+from typing import (
+    Any,
+    Dict,
+    List,
+    Literal,
+    NamedTuple,
+    Optional,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+    overload,
+)
 
 import backoff
 import httpx
@@ -263,10 +275,34 @@ class HarborAsyncClient:
 
     # NOTE: add destructor that closes client?
 
-    def construct_model(self, cls: Type[T], data: Any) -> T:
+    @overload
+    def construct_model(
+        self, cls: Type[T], data: Any, is_list: Literal[True]
+    ) -> List[T]:
+        ...
+
+    @overload
+    def construct_model(
+        self, cls: Type[T], data: Any, is_list: Literal[False] = False
+    ) -> T:
+        ...
+
+    def construct_model(
+        self, cls: Type[T], data: Any, is_list: bool = False
+    ) -> Union[T, List[T]]:
+        # NOTE: `raw` is an escape hatch, and should not be treated as part
+        # of the normal flow of the client, or indeed a stable interface.
+        # We provide it as a way to get the raw response from the API, but
+        # we give no guarantees about the type of the response.
         if self.raw:
             return data  # type: ignore # this is not type-safe
 
+        if is_list:
+            return [self._construct_model(cls, item) for item in data]
+        else:
+            return self._construct_model(cls, data)
+
+    def _construct_model(self, cls: Type[T], data: Any, is_list: bool = False) -> T:
         try:
             if self.validate:
                 return cls.parse_obj(data)
@@ -334,7 +370,7 @@ class HarborAsyncClient:
             params=params,
             follow_links=retrieve_all,
         )
-        return [self.construct_model(UserSearchRespItem, u) for u in users_resp]
+        return self.construct_model(UserSearchRespItem, users_resp, is_list=True)
 
     # GET /users/current/permissions
     async def get_current_user_permissions(
@@ -357,7 +393,7 @@ class HarborAsyncClient:
         """
         params = get_params(scope=scope, relative=relative)
         resp = await self.get("/users/current/permissions", params=params)
-        return [self.construct_model(Permission, p) for p in resp]
+        return self.construct_model(Permission, resp, is_list=True)
 
     # GET /users/current
     async def get_current_user(self) -> UserResp:
@@ -490,7 +526,7 @@ class HarborAsyncClient:
         """
         params = get_params(q=query, sort=sort, page=page, page_size=page_size)
         users_resp = await self.get("/users", params=params)
-        return [self.construct_model(UserResp, u) for u in users_resp]
+        return self.construct_model(UserResp, users_resp, is_list=True)
 
     # PUT /users/{user_id}
     async def update_user(self, user_id: int, user: UserProfile) -> None:
@@ -657,7 +693,7 @@ class HarborAsyncClient:
         # TODO: refactor this and use with every method that uses queries + pagination
         params = get_params(q=query, sort=sort, page=page, page_size=page_size)
         resp = await self.get("/system/gc")
-        return [self.construct_model(GCHistory, g) for g in resp]
+        return self.construct_model(GCHistory, resp, is_list=True)
 
     # GET /system/gc/{gc_id}/log
     # Get gc job log.
@@ -825,7 +861,7 @@ class HarborAsyncClient:
         """
         params = get_params(groupname=group_name, page=page, page_size=page_size)
         resp = await self.get("/usergroups/search", params=params)
-        return [self.construct_model(UserGroupSearchItem, g) for g in resp]
+        return self.construct_model(UserGroupSearchItem, resp, is_list=True)
 
     # POST /usergroups
     # Create user group
@@ -868,7 +904,7 @@ class HarborAsyncClient:
         """
         params = get_params(ldap_group_dn=ldap_group_dn, page=page, page_size=page_size)
         resp = await self.get("/usergroups", params=params)
-        return [self.construct_model(UserGroup, g) for g in resp]
+        return self.construct_model(UserGroup, resp, is_list=True)
 
     # PUT /usergroups/{group_id}
     # Update group information
@@ -993,7 +1029,7 @@ class HarborAsyncClient:
         resp = await self.get(
             f"/replication/executions/{execution_id}/tasks", params=params
         )
-        return [self.construct_model(ReplicationTask, t) for t in resp]
+        return self.construct_model(ReplicationTask, resp, is_list=True)
 
     # POST /replication/policies
     # Create a replication policy
@@ -1064,7 +1100,7 @@ class HarborAsyncClient:
             q=query, sort=sort, page=page, page_size=page_size, name=name
         )
         resp = await self.get("/replication/policies", params=params)
-        return [self.construct_model(ReplicationPolicy, p) for p in resp]
+        return self.construct_model(ReplicationPolicy, resp, is_list=True)
 
     # POST /replication/executions
     # Start one replication execution
@@ -1127,7 +1163,7 @@ class HarborAsyncClient:
             page_size=page_size,
         )
         resp = await self.get("/replication/executions", params=params)
-        return [self.construct_model(ReplicationExecution, e) for e in resp]
+        return self.construct_model(ReplicationExecution, resp, is_list=True)
 
     # PUT /replication/policies/{id}
     # Update the replication policy
@@ -1285,7 +1321,7 @@ class HarborAsyncClient:
         """
         params = get_params(q=query, sort=sort, page=page, page_size=page_size)
         resp = await self.get("/robots", params=params)
-        return [self.construct_model(Robot, r) for r in resp]
+        return self.construct_model(Robot, resp, is_list=True)
 
     # GET /robots/{robot_id}
     async def get_robot(self, robot_id: int) -> Robot:
@@ -1449,7 +1485,7 @@ class HarborAsyncClient:
         logs = await self.get(
             f"/projects/{project_name}/logs", params=params, follow_links=retrieve_all
         )
-        return [self.construct_model(AuditLog, l) for l in logs]
+        return self.construct_model(AuditLog, logs, is_list=True)
 
     # HEAD /projects
     async def project_exists(self, project_name: str) -> bool:
@@ -1551,7 +1587,7 @@ class HarborAsyncClient:
             page_size=page_size,
         )
         projects = await self.get("/projects", params=params, follow_links=retrieve_all)
-        return [self.construct_model(Project, p) for p in projects]
+        return self.construct_model(Project, projects, is_list=True)
 
     # PUT /projects/{project_name_or_id}
     async def update_project(
@@ -1656,7 +1692,7 @@ class HarborAsyncClient:
             params=params,
             headers=headers,
         )
-        return [self.construct_model(ScannerRegistration, c) for c in candidates]
+        return self.construct_model(ScannerRegistration, candidates, is_list=True)
 
     # GET /projects/{project_name_or_id}/summary
     async def get_project_summary(
@@ -1853,7 +1889,7 @@ class HarborAsyncClient:
 
         params = get_params(groupname=group_name, groupdn=group_dn)
         resp = await self.get("/ldap/groups/search", params=params)
-        return [self.construct_model(UserGroup, g) for g in resp]
+        return self.construct_model(UserGroup, resp, is_list=True)
 
     # GET /ldap/users/search
     # Search available ldap users.
@@ -1861,7 +1897,7 @@ class HarborAsyncClient:
         """Search for LDAP users with a given username."""
         params = get_params(username=username)
         resp = await self.get("/ldap/users/search", params=params)
-        return [self.construct_model(LdapUser, u) for u in resp]
+        return self.construct_model(LdapUser, resp, is_list=True)
 
     # POST /ldap/users/import
     # Import selected available ldap users.
@@ -1934,7 +1970,7 @@ class HarborAsyncClient:
             A list of RegistryProviderInfo objects.
         """
         resp = await self.get("/replication/adapterinfos")
-        return [self.construct_model(RegistryProviderInfo, p) for p in resp]
+        return self.construct_model(RegistryProviderInfo, resp, is_list=True)
 
     # PUT /registries/{id}
     async def update_registry(self, id: int, registry: RegistryUpdate) -> None:
@@ -2050,7 +2086,7 @@ class HarborAsyncClient:
             q=query, sort=sort, page=page, page_size=page_size, name=name
         )
         resp = await self.get("/registries", params=params, follow_links=retrieve_all)
-        return [self.construct_model(Registry, r) for r in resp]
+        return self.construct_model(Registry, resp, is_list=True)
 
     # CATEGORY: search
     # GET /search
@@ -2187,7 +2223,7 @@ class HarborAsyncClient:
             params=params,
             follow_links=retrieve_all,
         )
-        return [self.construct_model(Tag, t) for t in resp]
+        return self.construct_model(Tag, resp, is_list=True)
 
     # GET /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags
     async def get_artifact_accessories(
@@ -2250,7 +2286,7 @@ class HarborAsyncClient:
         resp = await self.get(
             f"{path}/accessories", params=params, follow_links=retrieve_all
         )
-        return [self.construct_model(Accessory, a) for a in resp]
+        return self.construct_model(Accessory, resp, is_list=True)
 
     # DELETE /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags
     async def delete_artifact_tag(
@@ -2409,7 +2445,7 @@ class HarborAsyncClient:
             headers={"X-Accept-Vulnerabilities": mime_type},
             follow_links=retrieve_all,
         )
-        return [self.construct_model(Artifact, a) for a in resp]
+        return self.construct_model(Artifact, resp, is_list=True)
 
     # POST /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/labels
     async def add_artifact_label(
@@ -2628,7 +2664,7 @@ class HarborAsyncClient:
         path = get_artifact_path(project_name, repository_name, reference)
         url = f"{path}/additions/build_history"
         resp = await self.get(url)
-        return [self.construct_model(BuildHistoryEntry, build) for build in resp]
+        return self.construct_model(BuildHistoryEntry, resp, is_list=True)
 
     # NYI:
     # GET /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/values.yaml
@@ -2702,7 +2738,7 @@ class HarborAsyncClient:
         """
         params = get_params(q=query, sort=sort, page=page, page_size=page_size)
         scanners = await self.get("/scanners", params=params)
-        return [self.construct_model(ScannerRegistration, s) for s in scanners]
+        return self.construct_model(ScannerRegistration, scanners, is_list=True)
 
     # PUT /scanners/{registration_id}
     async def update_scanner(
@@ -2918,7 +2954,7 @@ class HarborAsyncClient:
             page_size=page_size,
         )
         quotas = await self.get("/quotas", params=params, follow_links=retrieve_all)
-        return [self.construct_model(Quota, q) for q in quotas]
+        return self.construct_model(Quota, quotas, is_list=True)
 
     async def update_quota(self, id: int, quota: QuotaUpdateReq) -> None:
         """Update a quota.
@@ -3088,7 +3124,7 @@ class HarborAsyncClient:
         else:
             url = "/repositories"
         resp = await self.get(url, params=params, follow_links=retrieve_all)
-        return [self.construct_model(Repository, r) for r in resp]
+        return self.construct_model(Repository, resp, is_list=True)
 
     # CATEGORY: ping
     # GET /ping
@@ -3353,7 +3389,7 @@ class HarborAsyncClient:
         """
         params = get_params(q=query, sort=sort, page=page, page_size=page_size)
         resp = await self.get("/audit-logs", params=params, follow_links=retrieve_all)
-        return [self.construct_model(AuditLog, r) for r in resp]
+        return self.construct_model(AuditLog, resp, is_list=True)
 
     def _get_headers(self, headers: Optional[Dict[str, Any]] = None) -> Dict[str, str]:
         headers = headers or {}
