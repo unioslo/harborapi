@@ -41,8 +41,7 @@ except StatusError as e:
 
 ## Inspecting errors
 
-The [`StatusError.errors`][harborapi.exceptions.StatusError.errors] attribute is a list of [`Error`][harborapi.models.models.Error] objects that contain
-more detailed information about the error(s) that have occured.
+The [`StatusError.errors`][harborapi.exceptions.StatusError.errors] attribute is a list of [`Error`][harborapi.models.models.Error] objects that contains more detailed information about the error(s) that have occured.
 
 ```py
 try:
