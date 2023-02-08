@@ -13,10 +13,17 @@ client.validate = False
 
 This will cause the client to skip validation of data from the API, and instead return the data as a Pydantic model where none of the fields have been validated. This can be useful if you are using a version of Harbor that is not yet supported by the latest version of `harborapi`, but stil want to use dot notation to access the data, and use the various helper methods on the Pydantic models.
 
+!!! warning
+    Nested models will not be constructed when `validate=False` is set. This means that if you have a model that has a field that is a Pydantic model, the value of the field will be a `dict` instead of a Pydantic model.
+
+    Pydantic does not support constructing nested models without validation. This is a limitation of Pydantic, and not `harborapi`.
+
 
 ## Getting Raw Data
 
-If you want to get the raw JSON data from the API, you can set the `raw` attribute on the client object. When we say "raw" we mean the response's JSON body after it has been serialized into a Python dict, but before any other processing has been done. In cases where an endpoint stops returning a JSON response when expected to do so, `raw` will not help. In that case, you should use a tool like curl or something similar to fetch the data, as this library will be of little use at that point.
+If you want to get the raw JSON data from the API, you can set the `raw` attribute on the client object. When we say "raw" we mean the response's JSON body after it has been serialized into a Python dict, but before any other processing has been done.
+
+In cases where an endpoint stops returning JSON responses altogether when expected to do so, `raw` will not help. In that case, you should use a tool like curl or something similar to fetch the data, as this library will be of little use at that point.
 
 ```python
 from harborapi import HarborAsyncClient
