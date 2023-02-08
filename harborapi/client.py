@@ -2082,6 +2082,7 @@ class HarborAsyncClient:
             The maximum number of results to return. If not specified, all
         name: str: Optional[str]
             The name of the registry (deprecated, use `query` instead)
+
         Returns
         -------
         List[Registry]
@@ -2280,6 +2281,7 @@ class HarborAsyncClient:
             The number of results to return per page
         limit : Optional[int]
             The maximum number of results to return.
+
         Returns
         -------
         List[Accessory]
@@ -2942,6 +2944,7 @@ class HarborAsyncClient:
             The number of resources to retrieve per page.
         limit : int
             The maximum number of quotas to retrieve.
+
         Returns
         -------
         List[Quota]
