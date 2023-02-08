@@ -176,6 +176,53 @@ async def test_get_pagination_no_follow(
 
 
 @pytest.mark.asyncio
+async def test_get_pagination_limit(
+    async_client: HarborAsyncClient, httpserver: HTTPServer
+):
+    """Test pagination by mocking paginated /users results."""
+    httpserver.expect_oneshot_request("/api/v2.0/users").respond_with_json(
+        [{"username": "user1"}, {"username": "user2"}],
+        headers={"link": '</api/v2.0/users?page=2>; rel="next"'},
+    )
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/users", query_string=f"page=2"
+    ).respond_with_json(
+        [{"username": "user3"}],
+        headers={"link": '</api/v2.0/users?page=1>; rel="prev"'},
+    )
+    async_client.url = httpserver.url_for("/api/v2.0")
+    users = await async_client.get("/users", limit=2)  # type: ignore
+    assert isinstance(users, list)
+    assert len(users) == 2
+    assert users[0]["username"] == "user1"
+    assert users[1]["username"] == "user2"
+
+
+@pytest.mark.asyncio
+async def test_get_pagination_no_limit(
+    async_client: HarborAsyncClient, httpserver: HTTPServer
+):
+    """Test pagination by mocking paginated /users results."""
+    httpserver.expect_oneshot_request("/api/v2.0/users").respond_with_json(
+        [{"username": "user1"}, {"username": "user2"}],
+        headers={"link": '</api/v2.0/users?page=2>; rel="next"'},
+    )
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/users", query_string=f"page=2"
+    ).respond_with_json(
+        [{"username": "user3"}],
+        headers={"link": '</api/v2.0/users?page=1>; rel="prev"'},
+    )
+    async_client.url = httpserver.url_for("/api/v2.0")
+    users = await async_client.get("/users", limit=None)  # type: ignore
+    assert isinstance(users, list)
+    assert len(users) == 3
+    assert users[0]["username"] == "user1"
+    assert users[1]["username"] == "user2"
+    assert users[2]["username"] == "user3"
+
+
+@pytest.mark.asyncio
 async def test_get_pagination_invalid_mock(
     async_client: HarborAsyncClient,
     httpserver: HTTPServer,

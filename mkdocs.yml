@@ -51,6 +51,7 @@ nav:
       - usage/creating-system-robot.md
       - usage/exceptions.md
       - usage/async-sync.md
+      - usage/limit.md
       - usage/validation.md
       - usage/rich.md
       - "Extended functionality":
@@ -103,6 +104,8 @@ nav:
       - reference/types.md
       - reference/utils.md
       - "harborapi.models":
+          - reference/models/_models.md
+          - reference/models/_scanner.md
           - reference/models/base.md
           - reference/models/models.md
           - reference/models/scanner.md
