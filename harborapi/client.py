@@ -349,7 +349,8 @@ class HarborAsyncClient:
         username: str,
         page: int = 1,
         page_size: int = 100,
-        retrieve_all: bool = True,
+        limit: Optional[int] = None,
+        **kwargs: Any,
     ) -> List[UserSearchRespItem]:
         """Search for users by username.
 
@@ -361,14 +362,14 @@ class HarborAsyncClient:
             The page of results to return
         page_size : int
             The number of results to return per page
-        retrieve_all : bool
-            If True, retrieve all results, otherwise, retrieve only the first page
+        limit: Optional[int]
+            The maximum number of results to return.
         """
         params = get_params(username=username, page=page, page_size=page_size)
         users_resp = await self.get(
             "/users/search",
             params=params,
-            follow_links=retrieve_all,
+            limit=limit,
         )
         return self.construct_model(UserSearchRespItem, users_resp, is_list=True)
 
@@ -1443,7 +1444,8 @@ class HarborAsyncClient:
         sort: Optional[str] = None,
         page: int = 1,
         page_size: int = 10,
-        retrieve_all: bool = False,
+        limit: Optional[int] = None,
+        **kwargs,
     ) -> List[AuditLog]:
         """
         Get the audit logs of the specified project.
@@ -1477,13 +1479,12 @@ class HarborAsyncClient:
             The page of results to return
         page_size : int
             The number of results to return per page
-        retrieve_all: bool
-            If true, retrieve all the resources,
-            otherwise, retrieve only the number of resources specified by `page_size`.
+        limit : Optional[int]
+            The maximum number of results to return
         """
         params = get_params(q=query, sort=sort, page=page, page_size=page_size)
         logs = await self.get(
-            f"/projects/{project_name}/logs", params=params, follow_links=retrieve_all
+            f"/projects/{project_name}/logs", params=params, limit=limit
         )
         return self.construct_model(AuditLog, logs, is_list=True)
 
@@ -1533,7 +1534,8 @@ class HarborAsyncClient:
         with_detail: bool = True,
         page: int = 1,
         page_size: int = 10,
-        retrieve_all: bool = True,
+        limit: Optional[int] = None,
+        **kwargs,
     ) -> List[Project]:
         """Get all projects, optionally filtered by query.
 
@@ -1572,9 +1574,13 @@ class HarborAsyncClient:
             The page of results to return
         page_size : int
             The number of results to return per page
-        retrieve_all: bool
-            If true, retrieve all the resources,
-            otherwise, retrieve only the number of resources specified by `page_size`.
+        limit : Optional[int]
+            The maximum number of results to return
+
+        Returns
+        -------
+        List[Project]
+            The list of projects
         """
         params = get_params(
             q=query,
@@ -1586,7 +1592,7 @@ class HarborAsyncClient:
             page=page,
             page_size=page_size,
         )
-        projects = await self.get("/projects", params=params, follow_links=retrieve_all)
+        projects = await self.get("/projects", params=params, limit=limit)
         return self.construct_model(Project, projects, is_list=True)
 
     # PUT /projects/{project_name_or_id}
@@ -2039,8 +2045,9 @@ class HarborAsyncClient:
         sort: Optional[str] = None,
         page: int = 1,
         page_size: int = 10,
+        limit: Optional[int] = None,
         name: Optional[str] = None,
-        retrieve_all: bool = True,
+        **kwargs: Any,
     ) -> List[Registry]:
         """Get all registries.
 
@@ -2071,12 +2078,10 @@ class HarborAsyncClient:
             The page of results to return
         page_size : int
             The number of results to return per page
+        limit : Optional[int]
+            The maximum number of results to return. If not specified, all
         name: str: Optional[str]
             The name of the registry (deprecated, use `query` instead)
-        retrieve_all: bool
-            If true, retrieve all the resources,
-            otherwise, retrieve only the number of resources specified by `page_size`.
-
         Returns
         -------
         List[Registry]
@@ -2085,7 +2090,7 @@ class HarborAsyncClient:
         params = get_params(
             q=query, sort=sort, page=page, page_size=page_size, name=name
         )
-        resp = await self.get("/registries", params=params, follow_links=retrieve_all)
+        resp = await self.get("/registries", params=params, limit=limit)
         return self.construct_model(Registry, resp, is_list=True)
 
     # CATEGORY: search
@@ -2157,9 +2162,10 @@ class HarborAsyncClient:
         sort: Optional[str] = None,
         page: int = 1,
         page_size: int = 10,
+        limit: Optional[int] = None,
         with_signature: bool = False,
         with_immutable_status: bool = False,
-        retrieve_all: bool = True,
+        **kwargs: Any,
     ) -> List[Tag]:
         """Get the tags for an artifact.
 
@@ -2196,13 +2202,12 @@ class HarborAsyncClient:
             The page of results to return
         page_size : int
             The number of results to return per page
+        limit : Optional[int]
+            The maximum number of results to return.
         with_signature : bool
             Whether to include the signature of the tag in the response
         with_immutable_status : bool
             Whether to include the immutable status of the tag in the response
-        retrieve_all: bool
-            If true, retrieve all the resources,
-            otherwise, retrieve only the number of resources specified by `page_size`.
 
         Returns
         -------
@@ -2221,7 +2226,7 @@ class HarborAsyncClient:
         resp = await self.get(
             f"{path}/tags",
             params=params,
-            follow_links=retrieve_all,
+            limit=limit,
         )
         return self.construct_model(Tag, resp, is_list=True)
 
@@ -2235,7 +2240,8 @@ class HarborAsyncClient:
         sort: Optional[str] = None,
         page: int = 1,
         page_size: int = 10,
-        retrieve_all: bool = True,
+        limit: Optional[int] = None,
+        **kwargs: Any,
     ) -> List[Accessory]:
         """Get the tags for an artifact.
 
@@ -2272,10 +2278,8 @@ class HarborAsyncClient:
             The page of results to return
         page_size : int
             The number of results to return per page
-        retrieve_all: bool
-            If true, retrieve all the resources,
-            otherwise, retrieve only the number of resources specified by `page_size`.
-
+        limit : Optional[int]
+            The maximum number of results to return.
         Returns
         -------
         List[Accessory]
@@ -2283,9 +2287,7 @@ class HarborAsyncClient:
         """
         path = get_artifact_path(project_name, repository_name, reference)
         params = get_params(q=query, sort=sort, page=page, page_size=page_size)
-        resp = await self.get(
-            f"{path}/accessories", params=params, follow_links=retrieve_all
-        )
+        resp = await self.get(f"{path}/accessories", params=params, limit=limit)
         return self.construct_model(Accessory, resp, is_list=True)
 
     # DELETE /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags
@@ -2355,6 +2357,7 @@ class HarborAsyncClient:
         sort: Optional[str] = None,
         page: int = 1,
         page_size: int = 10,
+        limit: Optional[int] = None,
         with_tag: bool = True,
         with_label: bool = False,
         with_scan_overview: bool = False,
@@ -2362,7 +2365,7 @@ class HarborAsyncClient:
         with_immutable_status: bool = False,
         with_accessory: bool = False,
         mime_type: str = "application/vnd.security.vulnerability.report; version=1.1",
-        retrieve_all: bool = True,
+        **kwargs: Any,
     ) -> List[Artifact]:
         """Get the artifacts in a repository.
 
@@ -2397,6 +2400,8 @@ class HarborAsyncClient:
             The page of results to return
         page_size : int
             The number of results to return per page
+        limit : Optional[int]
+            The maximum number of results to return.
         with_tag : bool
             Whether to include the tags of the artifact in the response
         with_label : bool
@@ -2417,9 +2422,6 @@ class HarborAsyncClient:
 
                 * application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0
                 * application/vnd.security.vulnerability.report; version=1.1
-        retrieve_all: bool
-            If true, retrieve all the resources,
-            otherwise, retrieve only the number of resources specified by `page_size`.
 
         Returns
         -------
@@ -2443,7 +2445,7 @@ class HarborAsyncClient:
             path,
             params=params,
             headers={"X-Accept-Vulnerabilities": mime_type},
-            follow_links=retrieve_all,
+            limit=limit,
         )
         return self.construct_model(Artifact, resp, is_list=True)
 
@@ -2910,7 +2912,8 @@ class HarborAsyncClient:
         sort: Optional[str] = None,
         page: int = 1,
         page_size: int = 10,
-        retrieve_all: bool = True,
+        limit: Optional[int] = None,
+        **kwargs: Any,
     ) -> List[Quota]:
         """Get quotas.
 
@@ -2937,10 +2940,8 @@ class HarborAsyncClient:
             The page number to retrieve resources from.
         page_size: int
             The number of resources to retrieve per page.
-        retrieve_all: bool
-            If true, retrieve all the resources,
-            otherwise, retrieve only the number of resources specified by `page_size`.
-
+        limit : int
+            The maximum number of quotas to retrieve.
         Returns
         -------
         List[Quota]
@@ -2953,7 +2954,7 @@ class HarborAsyncClient:
             page=page,
             page_size=page_size,
         )
-        quotas = await self.get("/quotas", params=params, follow_links=retrieve_all)
+        quotas = await self.get("/quotas", params=params, limit=limit)
         return self.construct_model(Quota, quotas, is_list=True)
 
     async def update_quota(self, id: int, quota: QuotaUpdateReq) -> None:
@@ -3074,7 +3075,8 @@ class HarborAsyncClient:
         sort: Optional[str] = None,
         page: int = 1,
         page_size: int = 10,
-        retrieve_all: bool = True,
+        limit: Optional[int] = None,
+        **kwargs: Any,
     ) -> List[Repository]:
         """Get a list of all repositories, optionally only in a specific project.
 
@@ -3109,9 +3111,8 @@ class HarborAsyncClient:
             The page of results to return
         page_size : int
             The number of results to return per page
-        retrieve_all : bool
-            If true, retrieve all the resources,
-            otherwise, retrieve only the number of resources specified by `page_size`.
+        limit : Optional[int]
+            The maximum number of results to return.
 
         Returns
         -------
@@ -3123,7 +3124,7 @@ class HarborAsyncClient:
             url = f"/projects/{project_name}/repositories"
         else:
             url = "/repositories"
-        resp = await self.get(url, params=params, follow_links=retrieve_all)
+        resp = await self.get(url, params=params, limit=limit)
         return self.construct_model(Repository, resp, is_list=True)
 
     # CATEGORY: ping
@@ -3342,13 +3343,14 @@ class HarborAsyncClient:
         sort: Optional[str] = None,
         page: int = 1,
         page_size: int = 10,
-        retrieve_all: bool = False,
+        limit: Optional[int] = None,
+        **kwargs: Any,
     ) -> List[AuditLog]:
         """Get a list of audit logs for the projects the user is a member of.
 
         !!! note
 
-            Set `retrieve_all` to `True` to retrieve the entire audit log for all projects.
+            The audit log can be massive, so setting a `limit` is highly recommended.
 
         Parameters
         ----------
@@ -3378,9 +3380,8 @@ class HarborAsyncClient:
             The page number to fetch resources from.
         page_size: int
             The number of resources to fetch per page.
-        retrieve_all: bool
-            If true, retrieve all the resources,
-            otherwise, retrieve only the number of resources specified by `page_size`.
+        limit: Optional[int]
+            The maximum number of audit logs to retrieve.
 
         Returns
         -------
@@ -3388,7 +3389,7 @@ class HarborAsyncClient:
             The list of audit logs.
         """
         params = get_params(q=query, sort=sort, page=page, page_size=page_size)
-        resp = await self.get("/audit-logs", params=params, follow_links=retrieve_all)
+        resp = await self.get("/audit-logs", params=params, limit=limit)
         return self.construct_model(AuditLog, resp, is_list=True)
 
     def _get_headers(self, headers: Optional[Dict[str, Any]] = None) -> Dict[str, str]:
@@ -3407,6 +3408,7 @@ class HarborAsyncClient:
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, Any]] = None,
         follow_links: bool = True,
+        limit: Optional[int] = None,
         **kwargs: Any,
     ) -> JSONType:
         j, next_url = await self._get(
@@ -3450,6 +3452,12 @@ class HarborAsyncClient:
                 #       but right now it's unclear whether this can ever happen
                 continue
             j.extend(paginated)
+
+            # Check if we have reached our limit
+            if limit is not None:
+                if len(j) > limit:
+                    j = j[:limit]
+                    break
 
         return j
 
