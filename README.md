@@ -11,10 +11,11 @@ Python async client for the Harbor REST API v2.0.
 ## Features
 
 - Async API
-- Fully typed
-- Data validation with [Pydantic](https://pydantic-docs.helpmanual.io/)
-- HTTP handled by [HTTPX](https://www.python-httpx.org/)
-- Extensive test coverage powered by [Hypothesis](https://hypothesis.works/)
+- Extensive type hint coverage
+- Data validation with [Pydantic](https://github.com/pydantic/pydantic)
+- Built-in retry functionality with [backoff](https://github.com/litl/backoff)
+- Extensive test coverage powered by [Hypothesis](https://github.com/HypothesisWorks/hypothesis)
+- Optional [rich](https://github.com/Textualize/rich/) support
 
 ## Installation
 
