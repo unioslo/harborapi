@@ -16,7 +16,7 @@ This will cause the client to skip validation of data from the API, and instead 
 
 ## Getting Raw Data
 
-If you want to get the raw data from the API, you can set the `raw` attribute on the client object:
+If you want to get the raw JSON data from the API, you can set the `raw` attribute on the client object. When we say "raw" we mean the response's JSON body after it has been serialized into a Python dict, but before any other processing has been done. In cases where an endpoint stops returning a JSON response when expected to do so, `raw` will not help. In that case, you should use a tool like curl or something similar to fetch the data, as this library will be of little use at that point.
 
 ```python
 from harborapi import HarborAsyncClient
@@ -29,7 +29,7 @@ client.raw = True
 
 ## The difference between `raw` and `validate`
 
-The `raw=True` attribute on the client object will cause the client to return the raw data from the API, while the `validate=False` attribute will cause the client to skip validation of the data from the API, but still return the corresponding Pydantic model. `validate=False` is equivalent to constructing Pydantic models with [`BaseModel.construct()`](https://docs.pydantic.dev/usage/models/#creating-models-without-validation) instead of [`BaseModel.parse_obj()`](https://docs.pydantic.dev/usage/models/#parsing-data-into-a-specified-type).
+The `raw=True` attribute on the client object will cause the client to return the raw JSON data from the API, while the `validate=False` attribute will cause the client to skip validation of the data from the API, but still return the corresponding Pydantic model. `validate=False` is equivalent to constructing Pydantic models with [`BaseModel.construct()`](https://docs.pydantic.dev/usage/models/#creating-models-without-validation) instead of [`BaseModel.parse_obj()`](https://docs.pydantic.dev/usage/models/#parsing-data-into-a-specified-type).
 
 
 `raw` always takes precedence over `validate` if it is set. By default, `raw` is set to `False` and `validate` is set to `True`. I.e.:
