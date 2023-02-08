@@ -47,6 +47,6 @@ jobs:
         run: pip install hatch
 
       - name: Run tests
-        run: hatch run test:test -vv
+        run: hatch run test -vv
         env:
           HYPOTHESIS_PROFILE: debug
