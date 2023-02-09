@@ -25,7 +25,13 @@ from pydantic import BaseModel, ValidationError
 
 from ._types import JSONType
 from .auth import load_harbor_auth_file, new_authfile_from_robotcreate
-from .exceptions import BadRequest, HarborAPIException, NotFound, check_response_status
+from .exceptions import (
+    RETRY_ERRORS,
+    BadRequest,
+    HarborAPIException,
+    NotFound,
+    check_response_status,
+)
 from .models import (
     Accessory,
     Artifact,
@@ -3404,7 +3410,7 @@ class HarborAsyncClient:
         base_headers.update(headers)  # Override defaults with provided headers
         return base_headers
 
-    @backoff.on_exception(backoff.expo, RequestError, max_time=30)
+    @backoff.on_exception(backoff.expo, RETRY_ERRORS, max_time=30)
     async def get(
         self,
         path: str,
@@ -3464,7 +3470,7 @@ class HarborAsyncClient:
 
         return j
 
-    @backoff.on_exception(backoff.expo, RequestError, max_time=30)
+    @backoff.on_exception(backoff.expo, RETRY_ERRORS, max_time=30)
     async def get_text(
         self,
         path: str,
@@ -3527,7 +3533,7 @@ class HarborAsyncClient:
         return j, None
 
     # NOTE: POST is not idempotent, should we still retry?
-    @backoff.on_exception(backoff.expo, RequestError, max_tries=1)
+    @backoff.on_exception(backoff.expo, RETRY_ERRORS, max_tries=1)
     async def post(
         self,
         path: str,
@@ -3562,7 +3568,7 @@ class HarborAsyncClient:
         check_response_status(resp)
         return resp
 
-    @backoff.on_exception(backoff.expo, RequestError, max_time=30)
+    @backoff.on_exception(backoff.expo, RETRY_ERRORS, max_time=30)
     async def put(
         self,
         path: str,
@@ -3601,7 +3607,7 @@ class HarborAsyncClient:
         check_response_status(resp)
         return resp
 
-    @backoff.on_exception(backoff.expo, RequestError, max_time=30)
+    @backoff.on_exception(backoff.expo, RETRY_ERRORS, max_time=30)
     async def patch(
         self,
         path: str,
@@ -3641,7 +3647,7 @@ class HarborAsyncClient:
         check_response_status(resp)
         return resp
 
-    @backoff.on_exception(backoff.expo, RequestError, max_time=30)
+    @backoff.on_exception(backoff.expo, RETRY_ERRORS, max_time=30)
     async def delete(
         self,
         path: str,
@@ -3677,7 +3683,7 @@ class HarborAsyncClient:
         self.log_response(resp)
         return resp
 
-    @backoff.on_exception(backoff.expo, RequestError, max_time=30)
+    @backoff.on_exception(backoff.expo, RETRY_ERRORS, max_time=30)
     async def head(
         self,
         path: str,
