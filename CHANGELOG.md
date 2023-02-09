@@ -12,6 +12,12 @@ The **third number** is the patch version (bug fixes)
 
 <!-- ## [Unreleased] -->
 
+## [0.8.1](https://github.com/pederhan/harborapi/tree/harborapi-v0.8.1) - 2023-02-09
+
+### Changed
+
+- Backoff handlers for HTTP methods now handle a more strict subset of `httpx.RequestError` exceptions. This is to avoid retrying on exceptions that will never succeed such as [`httpx.UnsupportedProtocol`](https://www.python-httpx.org/exceptions/).
+
 ## [0.8.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.8.0) - 2023-02-08
 
 ### Added
