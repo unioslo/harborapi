@@ -1979,8 +1979,8 @@ class HarborAsyncClient:
 
         Returns
         -------
-        List[RegistryProviderInfo]
-            A list of RegistryProviderInfo objects.
+        RegistryProviders
+            An overview of the registered registry providers.
         """
         resp = await self.get("/replication/adapterinfos")
         return self.construct_model(RegistryProviders, resp)
