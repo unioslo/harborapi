@@ -93,6 +93,7 @@ from .models import (
     UserSysAdminFlag,
 )
 from .models.buildhistory import BuildHistoryEntry
+from .models.models import RegistryProviders
 from .models.scanner import HarborVulnerabilityReport
 from .utils import (
     get_artifact_path,
@@ -1973,7 +1974,7 @@ class HarborAsyncClient:
         return self.construct_model(RegistryInfo, resp)
 
     # GET /replication/adapterinfos
-    async def get_registry_providers(self) -> List[RegistryProviderInfo]:
+    async def get_registry_providers(self) -> RegistryProviders:
         """Get all registered registry provider information.
 
         Returns
@@ -1982,7 +1983,7 @@ class HarborAsyncClient:
             A list of RegistryProviderInfo objects.
         """
         resp = await self.get("/replication/adapterinfos")
-        return self.construct_model(RegistryProviderInfo, resp, is_list=True)
+        return self.construct_model(RegistryProviders, resp)
 
     # PUT /registries/{id}
     async def update_registry(self, id: int, registry: RegistryUpdate) -> None:

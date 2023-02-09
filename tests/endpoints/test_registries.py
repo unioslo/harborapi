@@ -10,7 +10,7 @@ from harborapi.models import (
     Registry,
     RegistryInfo,
     RegistryPing,
-    RegistryProviderInfo,
+    RegistryProviders,
     RegistryUpdate,
 )
 
@@ -66,17 +66,17 @@ async def test_get_registry_info_mock(
 
 
 @pytest.mark.asyncio
-@given(st.lists(st.builds(RegistryProviderInfo)))
+@given(st.builds(RegistryProviders))
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 async def test_get_registry_providers_mock(
     async_client: HarborAsyncClient,
     httpserver: HTTPServer,
-    providers: List[RegistryProviderInfo],
+    providers: RegistryProviders,
 ):
     httpserver.expect_oneshot_request(
         "/api/v2.0/replication/adapterinfos", method="GET"
     ).respond_with_data(
-        json_from_list(providers),
+        providers.json(),
         headers={"Content-Type": "application/json"},
     )
     async_client.url = httpserver.url_for("/api/v2.0")

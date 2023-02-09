@@ -12,6 +12,13 @@ The **third number** is the patch version (bug fixes)
 
 <!-- ## [Unreleased] -->
 
+## [0.8.2](https://github.com/pederhan/harborapi/tree/harborapi-v0.8.2) - 2023-02-09
+
+### Fixed
+
+- `HarborAsyncClient.get_registry_providers` now returns a `RegistryProviders` object, which is a model whose only attribute `providers` is a dict of `RegistryProviderInfo` objects. Previously this method attempted to return a list of `RegistryProviderInfo` objects, but this was incorrect.
+
+
 ## [0.8.1](https://github.com/pederhan/harborapi/tree/harborapi-v0.8.1) - 2023-02-09
 
 ### Changed
