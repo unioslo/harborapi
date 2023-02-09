@@ -1,11 +1,19 @@
 from typing import Any, List, Optional
 
-from httpx import HTTPStatusError, Response
+from httpx import HTTPStatusError, NetworkError, Response, TimeoutException
 from loguru import logger
 
 from harborapi.utils import is_json
 
 from .models import Error, Errors
+
+# NOTE: this should probably be configurable somehow
+# However, backoff.on_retry needs to receive a TUPLE of exception types
+# (despite claiming it can be a sequence), so it can't be a list
+RETRY_ERRORS = (
+    TimeoutException,
+    NetworkError,
+)
 
 
 class HarborAPIException(Exception):
