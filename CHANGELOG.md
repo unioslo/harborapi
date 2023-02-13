@@ -10,7 +10,11 @@ The **third number** is the patch version (bug fixes)
 
 <!-- changelog follows -->
 
-<!-- ## [Unreleased] -->
+## [Unreleased]
+
+### Changed
+
+- **BREAKING**: `HarborAsyncClient.update_robot_token` renamed to `HarborAsyncClient.refresh_robot_token` to better reflect the API endpoint name and purpose.
 
 ## [0.8.2](https://github.com/pederhan/harborapi/tree/harborapi-v0.8.2) - 2023-02-09
 

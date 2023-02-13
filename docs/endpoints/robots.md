@@ -6,6 +6,6 @@
         - get_robot
         - create_robot
         - update_robot
-        - update_robot_secret
+        - refresh_robot_secret
         - delete_robot
         - get_robots

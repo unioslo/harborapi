@@ -94,7 +94,7 @@ async def test_delete_robot_mock(
 @pytest.mark.asyncio
 @given(st.text())
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-async def test_update_robot_secret_mock(
+async def test_refresh_robot_secret_mock(
     async_client: HarborAsyncClient,
     httpserver: HTTPServer,
     secret: str,
@@ -106,5 +106,5 @@ async def test_update_robot_secret_mock(
         json=expected_resp.dict(),
     ).respond_with_data(expected_resp.json(), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
-    resp = await async_client.update_robot_secret(1234, secret)
+    resp = await async_client.refresh_robot_secret(1234, secret)
     assert resp == expected_resp

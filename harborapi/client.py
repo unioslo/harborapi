@@ -1375,15 +1375,20 @@ class HarborAsyncClient:
         await self.delete(f"/robots/{robot_id}", missing_ok=missing_ok)
 
     # PATCH /robots/{robot_id}
-    async def update_robot_secret(self, robot_id: int, secret: str) -> RobotSec:
-        """Give the robot account a new secret.
+    async def refresh_robot_secret(self, robot_id: int, secret: str) -> RobotSec:
+        """Refresh the secret of a robot account.
 
         Parameters
         ----------
         robot_id : int
             The ID of the robot account to refresh.
         secret : str
-            The new secret for the robot account.
+            The secret of the robot account.
+
+        Returns
+        -------
+        RobotSec
+            The updated Robot secret.
         """
         resp = await self.patch(f"/robots/{robot_id}", json=RobotSec(secret=secret))
         return self.construct_model(RobotSec, resp)
