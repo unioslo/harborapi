@@ -69,7 +69,11 @@ asyncio.run(main())
 
 ### Idiomatic REST updating
 
-The update endpoints are exposed as HTTP `PUT` endpoints, which according to [RFC 7231](https://datatracker.ietf.org/doc/html/rfc7231#section-4.3.4) should expect the full resource definition, not just the fields to update. Manual testing has revealed this to not be the case however: the API will only update the fields that are passed in the request body. However, it is recommended to pass the full resource definition to the `update_*` methods, as this behavior may change in the future independently of this library.
+The update endpoints are exposed as HTTP `PUT` endpoints, which according to [RFC 7231](https://datatracker.ietf.org/doc/html/rfc7231#section-4.3.4) should expect the full resource definition, not just the fields to update. Manual testing has revealed this to not be the case, however; the API supports updating with partial models, and only updates the fields that are present in the request body. When HarborAPI serializes models, it only includes fields that have been set, so this is the default behavior.
+
+It is, however, recommended to pass the full resource definition to the `update_*` methods, as the support for partial updates may change in the future independently of this library.
+
+Below is an example demonstrating how to fetch the existing resource, use it to construct the update model, and then update the resource with the new model.
 
 ```py
 import asyncio
@@ -85,9 +89,10 @@ async def main() -> None:
     # Create the update model from the existing project
     req = ProjectReq.parse_obj(
         project,
+        # OR
         # optionally only include fields from the request model:
-        # include=ProjectReq.__fields__.keys(),
-        )
+        # project.dict(include=ProjectReq.__fields__.keys()),
+    )
     req.metadata.enable_content_trust = "true"
 
     # Update the project
