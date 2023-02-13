@@ -1635,6 +1635,11 @@ class HarborAsyncClient:
             The name or ID of the project
             String arguments are treated as project names.
             Integer arguments are treated as project IDs.
+
+        Returns
+        -------
+        Project
+            The project with the given name or ID.
         """
         headers = get_project_headers(project_name_or_id)
         project = await self.get(f"/projects/{project_name_or_id}", headers=headers)
@@ -1702,6 +1707,11 @@ class HarborAsyncClient:
             The page of results to return
         page_size : int
             The number of results to return per page
+
+        Returns
+        -------
+        List[ScannerRegistration]
+            The list of scanner candidates
         """
         headers = get_project_headers(project_name_or_id)
         params = get_params(q=query, sort=sort, page=page, page_size=page_size)
@@ -1912,7 +1922,18 @@ class HarborAsyncClient:
     # GET /ldap/users/search
     # Search available ldap users.
     async def search_ldap_users(self, username: str) -> List[LdapUser]:
-        """Search for LDAP users with a given username."""
+        """Search for LDAP users with a given username.
+
+        Parameters
+        ----------
+        username : str
+            The username to search for.
+
+        Returns
+        -------
+        List[LdapUser]
+            The list of LDAP users that match the search.
+        """
         params = get_params(username=username)
         resp = await self.get("/ldap/users/search", params=params)
         return self.construct_model(LdapUser, resp, is_list=True)
