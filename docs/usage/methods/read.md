@@ -39,7 +39,7 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-Methods that return multiple resources have a number of optional arguments that can be provided to filter, sort and limit the results. These arguments are described in the following sections
+Methods that return multiple resources have a number of optional arguments that can be provided to filter, sort and limit the results. These arguments are documented below.
 
 
 ### `query`
