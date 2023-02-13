@@ -11,11 +11,7 @@ We can use a list of project names to fetch repositories from.
 from harborapi import HarborAsyncClient
 from harborapi.ext import api
 
-client = HarborAsyncClient(
-    url="https://your-harbor-instance.com/api/v2.0",
-    username="username",
-    secret="secret",
-)
+client = HarborAsyncClient(...)
 
 async def main() -> None:
     repos = await api.get_repositories(
@@ -35,11 +31,7 @@ We can also fetch the repositories from all projects by passing `None` in as the
 from harborapi import HarborAsyncClient
 from harborapi.ext import api
 
-client = HarborAsyncClient(
-    url="https://your-harbor-instance.com/api/v2.0",
-    username="username",
-    secret="secret",
-)
+client = HarborAsyncClient(...)
 
 async def main() -> None:
     repos = await api.get_repositories(

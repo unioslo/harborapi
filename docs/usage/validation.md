@@ -54,15 +54,18 @@ client = HarborAsyncClient(
 #### `validate=False`
 
 ```python
+import asyncio
 from harborapi import HarborAsyncClient
 
 client = HarborAsyncClient(
     ...,
     validate=False
 )
-
 # This will print the Pydantic model with validation disabled
-print(client.get_system_info())
+async def main():
+  print(await client.get_system_info())
+
+asyncio.run(main())
 ```
 ```py
 GeneralInfo.construct(
@@ -95,12 +98,16 @@ notification_enable
 #### `raw=True`
 
 ```python
+import asyncio
 from harborapi import HarborAsyncClient
 
 client = HarborAsyncClient(..., raw=True)
 
 # This will return the raw data from the API
-print(client.get_system_info())
+async def main():
+  print(await client.get_system_info())
+
+asyncio.run(main())
 ```
 ```py
 {
@@ -120,3 +127,35 @@ print(client.get_system_info())
   "authproxy_settings": None
 }
 ```
+
+## Disabling validation on requests
+
+An undocumented feature of the various HarborAPI endpoints is that the argument they accept can be a dict representing the model the endpoint expects. Even though the type hints say that it expects a specific model, any dict can be passed in. This is useful if the endpoint changes in a backwards-incompatible way, and HarborAPI has not yet been updated.
+
+```python
+import asyncio
+from harborapi import HarborAsyncClient
+
+client = HarborAsyncClient(...)
+
+
+async def main() -> None:
+    # Create a project
+    project_path = await client.create_project(
+        {
+            "project_name": "test-project",
+            "metadata": {
+                "public": "false",
+                "enable_content_trust": "false",
+                "prevent_vul": "false",
+                "auto_scan": "false",
+                "severity": "low",
+            },
+        }
+    )
+    print(f"Project created: {project_path}")
+
+asyncio.run(main())
+```
+
+In the future, the type hints will be updated to reflect this behavior, but for now it remains undocumented in the code itself.

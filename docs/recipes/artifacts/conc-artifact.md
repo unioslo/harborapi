@@ -9,11 +9,7 @@ By default, `get_artifacts()` will fetch all artifacts in all repositories in al
 from harborapi import HarborAsyncClient
 from harborapi.ext import api
 
-client = HarborAsyncClient(
-    url="https://your-harbor-instance.com/api/v2.0",
-    username="username",
-    secret="secret",
-)
+client = HarborAsyncClient(...)
 
 async def main() -> None:
     artifacts = await api.get_artifacts(client)
@@ -27,11 +23,7 @@ Passing a list of project names to the `projects` argument will fetch artifacts 
 from harborapi import HarborAsyncClient
 from harborapi.ext import api
 
-client = HarborAsyncClient(
-    url="https://your-harbor-instance.com/api/v2.0",
-    username="username",
-    secret="secret",
-)
+client = HarborAsyncClient(...)
 
 async def main() -> None:
     projects = ["library", "my-project-1"]
@@ -48,11 +40,7 @@ Passing a list of [`Repository`][harborapi.models.models.Repository] objects to 
 from harborapi import HarborAsyncClient
 from harborapi.ext import api
 
-client = HarborAsyncClient(
-    url="https://your-harbor-instance.com/api/v2.0",
-    username="username",
-    secret="secret",
-)
+client = HarborAsyncClient(...)
 
 async def main() -> None:
     projects = ["library", "my-project-1"]

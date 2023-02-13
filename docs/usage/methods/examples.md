@@ -1,73 +1,15 @@
-# Getting started
+# Examples
 
-This page contains basic examples on how to instantiate and use [`HarborAsyncClient`][harborapi.client.HarborAsyncClient].
-For more specialized uses, check out [Recipes](./recipes).
+This page contains some basic examples showing the general usage of `harborapi`. Consult the [Endpoints Reference](/endpoints) for an overview of all the available client methods that conform to the Harbor API specification. For more specialized uses, check out [Recipes](/recipes).
 
-## Instantiate client
-
-The client can be instatiated with either a username and password, a base64-encoded [HTTP Basic Access Authentication](https://en.wikipedia.org/wiki/Basic_access_authentication) credential string, or Harbor JSON credentials file.
-
-### Username and password
-
-Username and password (titled `secret` to conform with Harbor naming schemes) can be used by instantiating the client with the `username` and `secret` parameters. This is the most straight forward method of authenticating.
-
-```py title="user_pw.py"
-from harborapi import HarborAsyncClient
-
-client = HarborAsyncClient(
-    url="https://your-harbor-instance.com/api/v2.0",
-    username="username",
-    secret="secret",
-)
-```
-
-### Basic access authentication aredentials
-
-In place of `username` and `secret`, a Base64-encoded [HTTP Basic Access Authentication](https://en.wikipedia.org/wiki/Basic_access_authentication) credentials string can be used to authenticate.
-This string is simply `username:secret` encoded to Base64, and as such provides no stronger security than username and password authentication; it only obscures the text.
-
-```py title="base64_credentials.py"
-from harborapi import HarborAsyncClient
-
-client = HarborAsyncClient(
-    url="https://your-harbor-instance.com/api/v2.0",
-    credentials="base64_string_here",
-)
-```
-
-### Credentials file
-
-When [creating Robot accounts](https://goharbor.io/docs/1.10/working-with-projects/project-configuration/create-robot-accounts/), the robot account's credentials can be exported as a JSON file. The `credentials_file` parameter takes an argument specifying the path to such a file.
-
-
-```py title="credentials_file.py"
-from harborapi import HarborAsyncClient
-
-client = HarborAsyncClient(
-    url="https://your-harbor-instance.com/api/v2.0",
-    credentials_file="/path/to/file.json",
-)
-```
-
-See [Creating Privileged Robot Accounts](creating-system-robot.md) for information about how to create Robot accounts with extended privileges using `harborapi`.
-
-
-## Examples
-
-This section contains some basic examples showing the general usage of `harborapi`. Consult the [Endpoints Reference](/endpoints) for an overview of all the available client methods that conform to the Harbor API specification. For more specialized uses, check out [Recipes](/recipes).
-
-### Get current user
+## Get current user
 
 ```py title="current_user.py"
 import asyncio
 
 from harborapi import HarborAsyncClient
 
-client = HarborAsyncClient(
-    url="https://your-harbor-instance.com/api/v2.0",
-    username="username",
-    secret="secret",
-)
+client = HarborAsyncClient(...)
 
 
 async def main():
@@ -95,18 +37,14 @@ UserResp(
 )
 ```
 
-### Get artifacts in a specific project and repository
+## Get artifacts in a specific project and repository
 
 ```py title="get_artifacts.py" hl_lines="13"
 import asyncio
 
 from harborapi import HarborAsyncClient
 
-client = HarborAsyncClient(
-    url="https://your-harbor-instance.com/api/v2.0",
-    username="username",
-    secret="secret",
-)
+client = HarborAsyncClient(...)
 
 
 async def main():
@@ -149,7 +87,7 @@ Produces:
 ]
 ```
 
-#### Filter by tag
+### Filter by tag
 
 Providing an argument for `query` can help narrow down the results. For example, if you only want to retrieve artifacts tagged `latest`, you can pass `"tags=latest"` to `query`:
 
@@ -158,11 +96,7 @@ import asyncio
 
 from harborapi import HarborAsyncClient
 
-client = HarborAsyncClient(
-    url="https://your-harbor-instance.com/api/v2.0",
-    username="username",
-    secret="secret",
-)
+client = HarborAsyncClient(...)
 
 
 async def main():
@@ -176,7 +110,7 @@ async def main():
 
 See [`HarborAsyncClient.get_artifacts`][harborapi.HarborAsyncClient.get_artifacts] for more information about possible queries.
 
-#### Including scan overview (summary)
+### Including scan overview (summary)
 
 Passing `with_scan_overview=True` will also include a [`NativeReportSummary`][harborapi.models.NativeReportSummary] in the Artifact's `summary` field. This is _not_ the full vulnerability report, but rather a summary of the report's findings.
 
@@ -186,11 +120,7 @@ import asyncio
 
 from harborapi import HarborAsyncClient
 
-client = HarborAsyncClient(
-    url="https://your-harbor-instance.com/api/v2.0",
-    username="username",
-    secret="secret",
-)
+client = HarborAsyncClient(...)
 
 
 async def main():
@@ -228,7 +158,7 @@ Artifact(
 )
 ```
 
-#### Fetching an artifact's full vulnerability report
+### Fetching an artifact's full vulnerability report
 
 In order to fetch the full full vulnerability report of an artifact, you can use the [`HarborAsyncClient.get_artifact_vulnerabilities`][harborapi.HarborAsyncClient.get_artifact_vulnerabilities] method. This method takes the artifact's project name, repository name and digest/tag as arguments.
 
@@ -237,11 +167,7 @@ import asyncio
 
 from harborapi import HarborAsyncClient
 
-client = HarborAsyncClient(
-    url="https://your-harbor-instance.com/api/v2.0",
-    username="username",
-    secret="secret",
-)
+client = HarborAsyncClient(...)
 
 
 async def main():

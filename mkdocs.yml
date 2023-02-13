@@ -47,12 +47,16 @@ nav:
   - index.md
   - "Usage":
       - usage/index.md
-      - usage/getting-started.md
-      - usage/creating-system-robot.md
+      - usage/authentication.md
+      - "Methods":
+          - usage/methods/fetch.md
+          - usage/methods/create-update.md
+          - usage/methods/delete.md
+          - usage/methods/examples.md
       - usage/exceptions.md
-      - usage/async-sync.md
-      - usage/limit.md
       - usage/validation.md
+      - usage/async-sync.md
+      - usage/creating-system-robot.md
       - usage/rich.md
       - "Extended functionality":
           - "usage/ext/index.md"

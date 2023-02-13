@@ -12,11 +12,7 @@ import asyncio
 from harborapi import HarborAsyncClient
 from harborapi.ext import api
 
-client = HarborAsyncClient(
-    url="https://your-harbor-instance.com/api/v2.0",
-    username="username",
-    secret="secret",
-)
+client = HarborAsyncClient(...)
 
 sync def main() -> None:
     artifacts = await api.get_artifacts(client, projects=["library"])
