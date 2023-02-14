@@ -16,6 +16,7 @@ theme:
     - navigation.tabs.sticky
     - navigation.expand
     - navigation.indexes
+    - content.code.copy
 
 plugins:
   - search
