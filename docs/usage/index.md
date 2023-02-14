@@ -13,4 +13,4 @@ from harborapi import HarborAsyncClient
 client = HarborAsyncClient(...)
 ```
 
-There are multiple ways to authenticate with the Harbor API, and they are documented on the [Authentication](authentication.md) page, along with a few examples of basic usage. For more advanced usage, check out the [Recipes](/recipes) section.
+There are multiple ways to authenticate with the Harbor API, and they are documented on the [Authentication](authentication.md) page. The [Methods](methods) page shows basic usage of the different types of methods exposed by the client object. For more advanced usage, check out the [Recipes](/recipes) section.

@@ -6,11 +6,7 @@ The endpoint methods themselves have no parameters beyond the single model insta
 
 ## Create
 
-Creating resources is done by calling the `create_*` methods on the client object. The model type expected for these methods is usually subtly different from the ones returned by `get_*` methods, and is usually named `*Req`. For example, the [`create_project()`][harborapi.client.HarborAsyncClient.create_project] method expects a [`ProjectReq`][harborapi.models.Project] model, while the [`get_project()`][harborapi.client.HarborAsyncClient.get_project] method returns a [`Project`][harborapi.models.Project] model.
-
-However, we can use the `Project` model to create a `ProjectReq` by passing into the `parse_obj` method on the `ProjectReq` class.
-
-``
+Creating resources is done by calling the `create_*` methods on the client object. The model type expected for these methods is usually subtly different from the ones returned by `get_*` methods, and is usually named `*Req`.
 
 ```python
 import asyncio
@@ -63,13 +59,13 @@ async def main() -> None:
 
 
 asyncio.run(main())
-
 ```
 
+The API implicitly updates only the fields that are set on the model instance, and leaves the rest of the values unchanged. This is not idiomatic REST when you consider that these are HTTP PUT requests, but in practice this is quite convenient for now. See the [Idiomatic REST updating](#idiomatic-rest-updating) section for more information on why this _might_ change in the future.
 
 ### Idiomatic REST updating
 
-The update endpoints are exposed as HTTP `PUT` endpoints, which according to [RFC 7231](https://datatracker.ietf.org/doc/html/rfc7231#section-4.3.4) should expect the full resource definition, not just the fields to update. Manual testing has revealed this to not be the case, however; the API supports updating with partial models, and only updates the fields that are present in the request body. When HarborAPI serializes models, it only includes fields that have been set, so this is the default behavior.
+The update endpoints are exposed as HTTP PUT endpoints, which according to [RFC 7231](https://datatracker.ietf.org/doc/html/rfc7231#section-4.3.4) should expect the full resource definition, not just the fields to update[^1]. Manual testing has revealed this to not be the case, however; the API supports updating with partial models, and it only updates the fields that are present in the request body. When HarborAPI serializes models, it, too, only includes fields that have been set, so this behavior is supported out of the box.
 
 It is, however, recommended to pass the full resource definition to the `update_*` methods, as the support for partial updates may change in the future independently of this library.
 
@@ -101,3 +97,16 @@ async def main() -> None:
 
 asyncio.run(main())
 ```
+
+
+[`update_project()`][harborapi.client.HarborAsyncClient.update_project] expects a [`ProjectReq`][harborapi.models.Project] model, while the [`get_project()`][harborapi.client.HarborAsyncClient.get_project] method returns a [`Project`][harborapi.models.Project] model. How do we use the `Project` model to create a `ProjectReq`?
+
+We can create a `ProjectReq` by passing the `Project` instance to the `parse_obj()` method on the `ProjectReq` class. This will create a new `ProjectReq` instance with the same values as the `Project` instance.
+
+To only include values that are present in the `ProjectReq` model, we can first convert the model to a dictionary and use the `include` parameter with `ProjectReq.__fields__.keys()` as the argument, before passing it to `ProjectReq.parse_obj()`.
+
+
+[^1]: You can defend this behavior with certain interpretations of this quote from the RFC: *When a PUT
+   representation is inconsistent with the target resource, the origin
+   server SHOULD either make them consistent, by transforming the
+   representation or changing the resource configuration [...]*. However, this is implicit behavior that is not documented anywhere.

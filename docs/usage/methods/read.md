@@ -48,7 +48,7 @@ A query string to filter the results by.
 
 #### Syntax
 
-`field1[operator][value],field2[operator][value],...`
+`field1[operator][value],[field2[operator][value]],...`
 
 #### Query patterns
 
@@ -104,14 +104,15 @@ For certain methods, such as [`HarborAsyncClient.get_audit_logs()`][harborapi.Ha
 
 ### `page`
 
-The page number to start fetching from. This is a parameter that controls the page to start fetching from, and is used in conjunction with `page_size` to control how results are fetched from the API. In the vast majority of cases, this specific parameter should not be changed.
+The page number to start fetching from. This is a parameter that is used in conjunction with `page_size` to control how results are fetched from the API. In the vast majority of cases, this specific parameter does not need to be changed.
 
 ----
 
 ### `page_size`
 
-The number of results to return per page. This is a parameter that controls the number of results to return per page, and is used in conjunction with `page` to control how results are fetched from the API. In cases where you want to either reduce or increase the number of requests made to the API, this parameter can be used.
+The number of results to return per page. This is a parameter that is used in conjunction with `page` to control how results are fetched from the API. Used in situtations where you want to either reduce or increase the number of requests to the API, and conversely the size of each response. (Higher page size = fewer requests, but larger responses).
 
+As with `page`, this specific parameter does not need to be changed in the vast majority of cases.
 
 ### Example (with parameters)
 

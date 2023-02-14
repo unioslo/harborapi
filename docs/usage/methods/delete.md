@@ -1,6 +1,6 @@
 # Delete
 
-Endpoints that delete resources usually require a resource identifier or name as the first parameter. Most of these endpoints return `None` on success. Failure to delete a resource will raise an exception.
+Endpoints that delete resources usually require a resource identifier or name as the first argument. Most of these endpoints return `None` on success. Failure to delete a resource will raise an exception.
 
 ```py
 import asyncio

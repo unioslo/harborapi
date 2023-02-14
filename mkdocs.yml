@@ -38,6 +38,7 @@ markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
   - admonition
+  - footnotes
   - pymdownx.details
   - pymdownx.inlinehilite
   - pymdownx.snippets
