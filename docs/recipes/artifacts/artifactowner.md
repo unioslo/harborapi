@@ -6,7 +6,7 @@ Retrieve user information about the owners of artifacts in a project.
 !!! note
     The function [`api.get_artifact_owner`][harborapi.ext.api.get_artifact_owner] requires elevated privileges in order to to work. This is because the API endpoint used to fetch the owner information requires permissions to view user info.
 
-```py title="artifactowner.py"
+```py
 import asyncio
 
 from harborapi import HarborAsyncClient

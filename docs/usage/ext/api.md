@@ -12,7 +12,7 @@ To handle these exceptions, a `callback` parameter is available for these functi
 
 ### Example
 
-```py title="callback.py" hl_lines="15-23 30"
+```py hl_lines="15-23 30"
 import asyncio
 import os
 from typing import List
@@ -65,7 +65,7 @@ Using the `project`, `repository` and `tag` parameters, we can limit the artifac
 
 ### Example
 
-```py title="get_artifacts.py" hl_lines="15-17"
+```py hl_lines="15-17"
 import asyncio
 import os
 

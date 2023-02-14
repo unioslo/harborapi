@@ -4,7 +4,7 @@ This page contains some basic examples showing the general usage of `harborapi`.
 
 ## Get current user
 
-```py title="current_user.py"
+```py
 import asyncio
 
 from harborapi import HarborAsyncClient
@@ -39,7 +39,7 @@ UserResp(
 
 ## Get artifacts in a specific project and repository
 
-```py title="get_artifacts.py" hl_lines="13"
+```py hl_lines="13"
 import asyncio
 
 from harborapi import HarborAsyncClient
@@ -91,7 +91,7 @@ Produces:
 
 Providing an argument for `query` can help narrow down the results. For example, if you only want to retrieve artifacts tagged `latest`, you can pass `"tags=latest"` to `query`:
 
-```py title="get_artifacts_filter_tag.py" hl_lines="16"
+```py hl_lines="16"
 import asyncio
 
 from harborapi import HarborAsyncClient
@@ -115,7 +115,7 @@ See [`HarborAsyncClient.get_artifacts`][harborapi.HarborAsyncClient.get_artifact
 Passing `with_scan_overview=True` will also include a [`NativeReportSummary`][harborapi.models.NativeReportSummary] in the Artifact's `summary` field. This is _not_ the full vulnerability report, but rather a summary of the report's findings.
 
 
-```py title="get_artifacts_with_summary.py" hl_lines="16"
+```py hl_lines="16"
 import asyncio
 
 from harborapi import HarborAsyncClient
@@ -162,7 +162,7 @@ Artifact(
 
 In order to fetch the full full vulnerability report of an artifact, you can use the [`HarborAsyncClient.get_artifact_vulnerabilities`][harborapi.HarborAsyncClient.get_artifact_vulnerabilities] method. This method takes the artifact's project name, repository name and digest/tag as arguments.
 
-```py title="get_scan_report.py"
+```py
 import asyncio
 
 from harborapi import HarborAsyncClient

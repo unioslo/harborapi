@@ -5,7 +5,7 @@ The number of concurrent connections can be controlled by the `max_connections` 
 
 By default, `get_artifacts()` will fetch all artifacts in all repositories in all projects.
 
-```py title="all_artifacts.py"
+```py
 from harborapi import HarborAsyncClient
 from harborapi.ext import api
 
@@ -19,7 +19,7 @@ async def main() -> None:
 
 Passing a list of project names to the `projects` argument will fetch artifacts from all repositories in the specified projects.
 
-```py title="artifacts_in_projects.py" hl_lines="11 12"
+```py hl_lines="11 12"
 from harborapi import HarborAsyncClient
 from harborapi.ext import api
 
@@ -36,7 +36,7 @@ This will fetch all artifacts in all repositories in the projects `library` and 
 
 Passing a list of [`Repository`][harborapi.models.models.Repository] objects to the `repos` argument will fetch artifacts from the specified repositories.
 
-```py title="artifacts_in_repos.py" hl_lines="12-14"
+```py hl_lines="12-14"
 from harborapi import HarborAsyncClient
 from harborapi.ext import api
 

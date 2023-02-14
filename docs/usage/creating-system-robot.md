@@ -14,7 +14,7 @@ Following the example provided in the GitHub comment above, `harborapi` provides
 
 When creating privileged robot accounts, `HarborAsyncClient` must be instantiated with a privileged user's credentials.
 
-```py title="createrobot.py"
+```py
 from harborapi.models import RobotCreate, RobotPermission, Access
 
 # Client is instantiated with administrator account.
@@ -75,7 +75,7 @@ await client.create_robot(
 
 The resulting file can then be used when instantiating `HarborAsyncClient` to authenticate with the Robot account.
 
-```py title="from_credentials_file.py" hl_lines="5"
+```py hl_lines="5"
 from harborapi import HarborAsyncClient
 
 client = HarborAsyncClient(

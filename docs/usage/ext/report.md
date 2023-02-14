@@ -6,7 +6,7 @@ This allows for a deeper analysis of the vulnerabilities affecting your artifact
 
 Given a list of ArtifactInfo objects, we can query the aggregated data to find all artifacts affected by a given vulnerability:
 
-```py title="report_filter_cve.py" hl_lines="11"
+```py hl_lines="11"
 from harborapi import HarborAsyncClient
 from harborapi.ext.api import get_artifact_vulnerabilities
 from harborapi.ext.report import ArtifactReport
