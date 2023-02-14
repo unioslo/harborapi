@@ -369,7 +369,7 @@ class HarborAsyncClient:
             The page of results to return
         page_size : int
             The number of results to return per page
-        limit: Optional[int]
+        limit : Optional[int]
             The maximum number of results to return.
         """
         params = get_params(username=username, page=page, page_size=page_size)
@@ -494,6 +494,7 @@ class HarborAsyncClient:
         sort: Optional[str] = None,
         page: int = 1,
         page_size: int = 10,
+        limit: Optional[int] = None,
     ) -> List[UserResp]:
         """Get all users.
 
@@ -526,6 +527,8 @@ class HarborAsyncClient:
             The page number to retrieve
         page_size : int
             The number of users to retrieve per page
+        limit: Optional[int]
+            The maximum number of users to retrieve.
 
         Returns
         -------
@@ -533,7 +536,7 @@ class HarborAsyncClient:
             A list of users.
         """
         params = get_params(q=query, sort=sort, page=page, page_size=page_size)
-        users_resp = await self.get("/users", params=params)
+        users_resp = await self.get("/users", params=params, limit=limit)
         return self.construct_model(UserResp, users_resp, is_list=True)
 
     # PUT /users/{user_id}
@@ -661,8 +664,8 @@ class HarborAsyncClient:
         sort: Optional[str] = None,
         page: int = 1,
         page_size: int = 10,
+        limit: Optional[int] = None,
     ) -> List[GCHistory]:
-        # TODO: limit number of results?
         """Get Garbage Collection history for all jobs, optionally filtered by query.
 
         Parameters
@@ -692,15 +695,15 @@ class HarborAsyncClient:
             The page of results to return
         page_size : int
             The number of results to return per page
-
+        limit : Optional[int]
+            The maximum number of results to return.
         Returns
         -------
         List[GCHistory]
             List of Garbage Collection logs.
         """
-        # TODO: refactor this and use with every method that uses queries + pagination
         params = get_params(q=query, sort=sort, page=page, page_size=page_size)
-        resp = await self.get("/system/gc")
+        resp = await self.get("/system/gc", params=params, limit=limit)
         return self.construct_model(GCHistory, resp, is_list=True)
 
     # GET /system/gc/{gc_id}/log
@@ -1066,6 +1069,7 @@ class HarborAsyncClient:
         page: int = 1,
         page_size: int = 10,
         name: Optional[str] = None,
+        limit: Optional[int] = None,
     ) -> List[ReplicationPolicy]:
         """Get a list of replication policies.
 
@@ -1098,6 +1102,8 @@ class HarborAsyncClient:
             The number of results to return per page.
         name : Optional[str]
             (DEPRECATED: use `query`) The name of the policy to filter by.
+        limit : Optional[int]
+            The maximum number of results to return.
 
         Returns
         -------
@@ -1107,7 +1113,7 @@ class HarborAsyncClient:
         params = get_params(
             q=query, sort=sort, page=page, page_size=page_size, name=name
         )
-        resp = await self.get("/replication/policies", params=params)
+        resp = await self.get("/replication/policies", params=params, limit=limit)
         return self.construct_model(ReplicationPolicy, resp, is_list=True)
 
     # POST /replication/executions
@@ -1139,6 +1145,7 @@ class HarborAsyncClient:
         trigger: Optional[str] = None,
         page: int = 1,
         page_size: int = 10,
+        limit: Optional[int] = None,
     ) -> List[ReplicationExecution]:
         """Get a list of replication executions.
 
@@ -1156,6 +1163,8 @@ class HarborAsyncClient:
             The page of results to return.
         page_size : int
             The number of results to return per page.
+        limit : Optional[int]
+            The maximum number of results to return.
 
         Returns
         -------
@@ -1170,7 +1179,7 @@ class HarborAsyncClient:
             page=page,
             page_size=page_size,
         )
-        resp = await self.get("/replication/executions", params=params)
+        resp = await self.get("/replication/executions", params=params, limit=limit)
         return self.construct_model(ReplicationExecution, resp, is_list=True)
 
     # PUT /replication/policies/{id}
@@ -1291,6 +1300,7 @@ class HarborAsyncClient:
         sort: Optional[str] = None,
         page: int = 1,
         page_size: int = 10,
+        limit: Optional[int] = None,
     ) -> List[Robot]:
         """Get all robot accounts, optionally filtered by query.
 
@@ -1321,6 +1331,8 @@ class HarborAsyncClient:
             The page of results to return
         page_size : int
             The number of results to return per page
+        limit : Optional[int]
+            The maximum number of results to return.
 
         Returns
         -------
@@ -1328,7 +1340,7 @@ class HarborAsyncClient:
             A list of registered robot accounts matching the query.
         """
         params = get_params(q=query, sort=sort, page=page, page_size=page_size)
-        resp = await self.get("/robots", params=params)
+        resp = await self.get("/robots", params=params, limit=limit)
         return self.construct_model(Robot, resp, is_list=True)
 
     # GET /robots/{robot_id}
@@ -1457,7 +1469,7 @@ class HarborAsyncClient:
         page: int = 1,
         page_size: int = 10,
         limit: Optional[int] = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> List[AuditLog]:
         """
         Get the audit logs of the specified project.
@@ -1547,7 +1559,7 @@ class HarborAsyncClient:
         page: int = 1,
         page_size: int = 10,
         limit: Optional[int] = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> List[Project]:
         """Get all projects, optionally filtered by query.
 
@@ -1673,6 +1685,7 @@ class HarborAsyncClient:
         sort: Optional[str] = None,
         page: int = 1,
         page_size: int = 10,
+        limit: Optional[int] = None,
     ) -> List[ScannerRegistration]:
         """Get the scanner candidates for a project.
 
@@ -1707,6 +1720,8 @@ class HarborAsyncClient:
             The page of results to return
         page_size : int
             The number of results to return per page
+        limit : Optional[int]
+            The maximum number of results to return
 
         Returns
         -------
@@ -1719,6 +1734,7 @@ class HarborAsyncClient:
             f"/projects/{project_name_or_id}/scanner/candidates",
             params=params,
             headers=headers,
+            limit=limit,
         )
         return self.construct_model(ScannerRegistration, candidates, is_list=True)
 
@@ -2737,6 +2753,7 @@ class HarborAsyncClient:
         sort: Optional[str] = None,
         page: int = 1,
         page_size: int = 10,
+        limit: Optional[int] = None,
     ) -> List[ScannerRegistration]:
         """Get a list of scanners.
 
@@ -2767,6 +2784,8 @@ class HarborAsyncClient:
             The page of results to return
         page_size : int
             The number of results to return per page
+        limit : Optional[int]
+            The maximum number of results to return
 
         Returns
         -------
@@ -2774,7 +2793,7 @@ class HarborAsyncClient:
             _description_
         """
         params = get_params(q=query, sort=sort, page=page, page_size=page_size)
-        scanners = await self.get("/scanners", params=params)
+        scanners = await self.get("/scanners", params=params, limit=limit)
         return self.construct_model(ScannerRegistration, scanners, is_list=True)
 
     # PUT /scanners/{registration_id}
