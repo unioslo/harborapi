@@ -12,6 +12,14 @@ The **third number** is the patch version (bug fixes)
 
 <!-- ## [Unreleased] -->
 
+## [0.8.4](https://github.com/pederhan/harborapi/tree/harborapi-v0.8.4) - 2023-02-14
+
+### Fixed
+
+- Certain resource enumeration methods missing the `limit` parameter.
+- `HarborAsyncClient.get_gc_jobs()` ignoring user parameters.
+
+
 ## [0.8.3](https://github.com/pederhan/harborapi/tree/harborapi-v0.8.3) - 2023-02-14
 
 ### Changed
