@@ -65,9 +65,9 @@ The API implicitly updates only the fields that are set on the model instance, a
 
 ### Idiomatic REST updating
 
-The update endpoints are exposed as HTTP PUT endpoints, which according to [RFC 7231](https://datatracker.ietf.org/doc/html/rfc7231#section-4.3.4) should expect the full resource definition, not just the fields to update[^1]. Manual testing has revealed this to not be the case, however; the API supports updating with partial models, and it only updates the fields that are present in the request body. When HarborAPI serializes models, it, too, only includes fields that have been set, so this behavior is supported out of the box.
+The update endpoints are exposed as HTTP PUT endpoints, which according to [RFC 7231](https://datatracker.ietf.org/doc/html/rfc7231#section-4.3.4) should expect the full resource definition, not just the fields to update[^1]. However, manual testing has revealed this to not be the case; the API supports updating with partial models, and it only updates the fields that are present in the request body. When `harborapi` serializes models, it, too, only includes fields that have been set, so this behavior is supported out of the box.
 
-It is, however, recommended to pass the full resource definition to the `update_*` methods, as the support for partial updates may change in the future independently of this library.
+Despite this behavior, it's probably a good idea to pass the full resource definition to the `update_*` methods, as the support for partial updates through the API may change in the future independently of this library.
 
 Below is an example demonstrating how to fetch the existing resource, use it to construct the update model, and then update the resource with the new model.
 
