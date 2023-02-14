@@ -11,6 +11,7 @@ from harborapi.utils import (
     get_project_headers,
     handle_optional_json_response,
     is_json,
+    parse_pagination_url,
     urldecode_header,
 )
 
@@ -169,3 +170,71 @@ def test_get_artifact_path(
 def test_urldecode_header(header: Dict[str, str], key: str, expected: str):
     resp = Response(200, headers=header)
     assert urldecode_header(resp, key) == expected
+
+
+@pytest.mark.parametrize(
+    "url, expected",
+    [
+        # Just next link
+        (
+            '</api/v2.0/projects?page=3&page_size=10&sort=resource_type&with_detail=true>; rel="next"',
+            "/projects?page=3&page_size=10&sort=resource_type&with_detail=true",
+        ),
+        # No next link
+        (
+            '</api/v2.0/projects?page=1&page_size=10&sort=resource_type,op_time&with_detail=true>; rel="prev"',
+            None,
+        ),
+        # Next link with comma in query string
+        (
+            '</api/v2.0/projects?page=2&page_size=10&sort=resource_type,op_time&with_detail=true>; rel="next"',
+            "/projects?page=2&page_size=10&sort=resource_type,op_time&with_detail=true",
+        ),
+        # Next and prev links with comma in query string
+        (
+            '</api/v2.0/projects?page=1&page_size=10&sort=resource_type,op_time&with_detail=true>; rel="prev" , </api/v2.0/projects?page=3&page_size=10&sort=resource_type,op_time&with_detail=true>; rel="next"',
+            "/projects?page=3&page_size=10&sort=resource_type,op_time&with_detail=true",
+        ),
+        # Next link with no /api/v2.0 prefix
+        (
+            '</projects?page=3&page_size=10&sort=resource_type,op_time&with_detail=true>; rel="next"',
+            "/projects?page=3&page_size=10&sort=resource_type,op_time&with_detail=true",
+        ),
+    ],
+)
+def test_parse_pagination_url(url: str, expected: Optional[str]) -> None:
+    assert parse_pagination_url(url, strip=True) == expected
+
+
+@pytest.mark.parametrize(
+    "url, expected",
+    [
+        # Just next link
+        (
+            '</api/v2.0/projects?page=3&page_size=10&sort=resource_type&with_detail=true>; rel="next"',
+            "/api/v2.0/projects?page=3&page_size=10&sort=resource_type&with_detail=true",
+        ),
+        # No next link
+        (
+            '</api/v2.0/projects?page=1&page_size=10&sort=resource_type,op_time&with_detail=true>; rel="prev"',
+            None,
+        ),
+        # Next link with comma in query string
+        (
+            '</api/v2.0/projects?page=2&page_size=10&sort=resource_type,op_time&with_detail=true>; rel="next"',
+            "/api/v2.0/projects?page=2&page_size=10&sort=resource_type,op_time&with_detail=true",
+        ),
+        # Next and prev links with comma in query string
+        (
+            '</api/v2.0/projects?page=1&page_size=10&sort=resource_type,op_time&with_detail=true>; rel="prev" , </api/v2.0/projects?page=3&page_size=10&sort=resource_type,op_time&with_detail=true>; rel="next"',
+            "/api/v2.0/projects?page=3&page_size=10&sort=resource_type,op_time&with_detail=true",
+        ),
+        # Next link with no /api/v2.0 prefix
+        (
+            '</projects?page=3&page_size=10&sort=resource_type,op_time&with_detail=true>; rel="next"',
+            "/projects?page=3&page_size=10&sort=resource_type,op_time&with_detail=true",
+        ),
+    ],
+)
+def test_parse_pagination_url_nostrip(url: str, expected: Optional[str]) -> None:
+    assert parse_pagination_url(url, strip=False) == expected

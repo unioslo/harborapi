@@ -1,3 +1,4 @@
+import re
 from base64 import b64encode
 from json import JSONDecodeError
 from typing import Dict, Optional, Union
@@ -177,13 +178,23 @@ def get_credentials(username: str, secret: str) -> str:
     return b64encode(f"{username}:{secret}".encode("utf-8")).decode("utf-8")
 
 
-def parse_pagination_url(url: str) -> Optional[str]:
+# Finds the next url in a pagination header (e.g. Link: </api/v2.0/endpoint?page=X&page_size=Y>; rel="next")
+# Ripped from: https://docs.github.com/en/rest/guides/using-pagination-in-the-rest-api?apiVersion=2022-11-28#example-creating-a-pagination-method
+PAGINATION_NEXT_PATTERN = re.compile(r"(?<=<)([\S]*)(?=>; rel=\"next\")")
+
+# Finds the API path in a URL (e.g. /api/v2.0/)
+API_PATH_PATTERN = re.compile(r"\/api\/v[0-9]\.[0-9]{1,2}")
+
+
+def parse_pagination_url(url: str, strip: bool = True) -> Optional[str]:
     """Parse pagination URL and return the next URL
 
     Parameters
     ----------
     url : str
         The pagination URL to parse
+    strip : bool, optional
+        Whether to strip the /api/v2.x/ path from the URL
 
     Returns
     -------
@@ -191,28 +202,18 @@ def parse_pagination_url(url: str) -> Optional[str]:
         The next URL, or `None` if the URL relation is `prev` and `ignore_prev` is `True`
     """
 
-    # Formatting: '</api/v2.0/endpoint?page=X&page_size=Y>; rel="next"'
-    if 'rel="next"' not in url:
+    match = PAGINATION_NEXT_PATTERN.search(url)
+    if not match:
         return None
 
-    def get_url(link: str) -> str:
-        link = link.split(";")[0].strip("><")
-        u = link.split("/", 3)  # remove /api/v2.0/
-        return "/" + u[-1]  # last segment is the next URL we want
+    m = match.group(0)
+    if not strip:
+        return m
 
-    # Pagination link can contain "prev" _and_ "next" links
-    # In cases where it does both, we first need to isolate the "next" link
-    #
-    # Example:
-    # '</api/v2.0/repositories?page=1&page_size=10>; rel="prev" , </api/v2.0/repositories?page=3&page_size=10>; rel="next"'
-    links = url.split(",")
-    if len(links) == 1:
-        return get_url(links[0])
-    # we have multiple links
-    for link in links:
-        if 'rel="next"' in link:
-            return get_url(link.strip())
-    return None
+    # Remove /api/v2.0/ from next link
+    # Yeah, this is a result of not including /api/v2.0/ in the URLs we call
+    # in the first place, but it's too late to change that now.
+    return API_PATH_PATTERN.sub("", m)
 
 
 def get_project_headers(project_name_or_id: Union[str, int]) -> Dict[str, str]:
