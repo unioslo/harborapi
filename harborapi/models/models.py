@@ -20,6 +20,7 @@ Furthermore, some models are extended with new validators and/or methods.
 # `Repository` here as well. In the future, this should be done more dynamically
 # to ensure that we don't miss any models that need to be redefined.
 
+from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
 from loguru import logger
@@ -49,11 +50,11 @@ from ._models import (
     Error,
     Errors,
     EventType,
-    ExecHistory,
-    Execution,
-    ExtraAttrs,
-    FilterStyle,
-    GCHistory,
+)
+from ._models import ExecHistory as _ExecHistory
+from ._models import Execution, ExtraAttrs, FilterStyle
+from ._models import GCHistory as _GCHistory
+from ._models import (
     GeneralInfo,
     Icon,
     ImmutableRule,
@@ -149,7 +150,9 @@ from ._models import (
     ScannerRegistrationSettings,
 )
 from ._models import ScanOverview as _ScanOverview
-from ._models import Schedule, ScheduleObj, SchedulerStatus, ScheduleTask
+from ._models import Schedule as _Schedule
+from ._models import ScheduleObj as _ScheduleObj
+from ._models import SchedulerStatus, ScheduleTask
 from ._models import Search as _Search
 from ._models import SearchRepository
 from ._models import SearchResult as _SearchResult
@@ -164,7 +167,6 @@ from ._models import (
     Tag,
     Task,
     Trigger,
-    Type,
     UserCreationReq,
     UserEntity,
     UserGroup,
@@ -576,3 +578,30 @@ class RegistryProviders(BaseModel):
 
     def __getitem__(self, key: str) -> RegistryProviderInfo:
         return self.__root__[key]
+
+
+# Enums can't be subclassed, so they are redefined here.
+class Type(Enum):
+    hourly = "Hourly"
+    daily = "Daily"
+    weekly = "Weekly"
+    custom = "Custom"
+    manual = "Manual"
+    none = "None"
+    schedule = "Schedule"
+
+
+class ScheduleObj(_ScheduleObj):
+    type: Optional[Type] = optional_field(_ScheduleObj, "type")  # type: ignore
+
+
+class GCHistory(_GCHistory):
+    schedule: Optional[ScheduleObj] = optional_field(_GCHistory, "schedule")  # type: ignore
+
+
+class ExecHistory(_ExecHistory):
+    schedule: Optional[ScheduleObj] = optional_field(_ExecHistory, "schedule")  # type: ignore
+
+
+class Schedule(_Schedule):
+    schedule: Optional[ScheduleObj] = optional_field(_Schedule, "schedule")  # type: ignore
