@@ -12,6 +12,14 @@ The **third number** is the patch version (bug fixes)
 
 <!-- ## [Unreleased] -->
 
+## [0.8.6](https://github.com/pederhan/harborapi/tree/harborapi-v0.8.6) - 2023-02-20
+
+
+### Fixed
+
+- Models with `harborapi.models.ScheduleObj` fields are now correctly validated when the Harbor API responds with a value of `"Schedule"` for the field `ScheduleObj.type`, which is not a valid value for the enum according to their own spec.
+
+
 ## [0.8.5](https://github.com/pederhan/harborapi/tree/harborapi-v0.8.5) - 2023-02-20
 
 ### Added
