@@ -12,6 +12,17 @@ The **third number** is the patch version (bug fixes)
 
 <!-- ## [Unreleased] -->
 
+## [0.8.5](https://github.com/pederhan/harborapi/tree/harborapi-v0.8.5) - 2023-02-20
+
+### Added
+
+`NativeReportSummary.severity_enum` which returns the severity of the report as a `harborarpi.scanner.Severity` enum, which can be used for comparisons between reports.
+
+
+### Fixed
+
+`harborarpi.scanner.Severity` enum not having a `None` value, which is observed when a report has no vulnerabilities.
+
 ## [0.8.4](https://github.com/pederhan/harborapi/tree/harborapi-v0.8.4) - 2023-02-14
 
 ### Fixed

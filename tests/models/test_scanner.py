@@ -91,6 +91,7 @@ def test_severity_enum():
     # Defined in order from least to most severe
     severities = [
         "Unknown",
+        "None",
         "Negligible",
         "Low",
         "Medium",

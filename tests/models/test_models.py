@@ -13,12 +13,14 @@ from harborapi.models.models import (
     ChartMetadata,
     ChartVersion,
     LdapConf,
+    NativeReportSummary,
     ReplicationFilter,
     Repository,
     Search,
     SearchResult,
     VulnerabilitySummary,
 )
+from harborapi.models.scanner import Severity
 
 from .utils import (
     _no_references_check,
@@ -197,3 +199,14 @@ def test_no_references() -> None:
     # by any other models
     no_references = [Repository, Artifact, LdapConf]
     _no_references_check(models, no_references)
+
+
+# Only pass valid enum values to the severity field
+@given(
+    st.builds(
+        NativeReportSummary, severity=st.sampled_from([s.value for s in Severity])
+    )
+)
+def test_nativereportsummary_severity_enum(report: NativeReportSummary) -> None:
+    """Test that the severity enum is correctly parsed from the string"""
+    assert isinstance(report.severity_enum, Severity) or report.severity is None

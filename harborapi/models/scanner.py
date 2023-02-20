@@ -73,6 +73,7 @@ class ScannerAdapterMetadata(_ScannerAdapterMetadata):
 
 class Severity(Enum):
     unknown = "Unknown"
+    none = "None"
     negligible = "Negligible"
     low = "Low"
     medium = "Medium"

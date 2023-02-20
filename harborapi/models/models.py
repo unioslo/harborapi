@@ -1,4 +1,4 @@
-"""Models for the Harbor API.
+"""## Models for the Harbor API.
 
 This module imports all auto generated models from the _models module,
 and then overrides the models that have broken or incomplete definitions.
@@ -186,6 +186,7 @@ from ._models import (
 )
 from ._utils import optional_field
 from .base import BaseModel
+from .scanner import Severity
 
 # Explicit re-export of all models
 
@@ -459,6 +460,19 @@ class NativeReportSummary(_NativeReportSummary):
     summary: Optional[VulnerabilitySummary] = optional_field(
         _NativeReportSummary, "summary"
     )  # type: ignore
+
+    @property
+    def severity_enum(self) -> Optional[Severity]:
+        """The severity of the vulnerability
+
+        Returns
+        -------
+        Optional[Severity]
+            The severity of the vulnerability
+        """
+        if self.severity:
+            return Severity(self.severity)
+        return None
 
 
 # END VulnerabilitySummary
