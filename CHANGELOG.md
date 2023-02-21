@@ -12,7 +12,7 @@ The **third number** is the patch version (bug fixes)
 
 <!-- ## [Unreleased] -->
 
-## [0.9.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.9.0) - 2023-02-20
+## [0.9.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.9.0) - 2023-02-21
 
 ### Changed
 
