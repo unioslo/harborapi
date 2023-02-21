@@ -12,6 +12,14 @@ The **third number** is the patch version (bug fixes)
 
 <!-- ## [Unreleased] -->
 
+## [0.9.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.9.0) - 2023-02-20
+
+### Changed
+
+- Updated `harborapi.models` to match the latest version of the Harbor API spec [goharbor/harbor@d03f0dc](https://github.com/goharbor/harbor/blob/99b37117e15ee25e54c4d67f4a9bd14d6df95d5a/api/v2.0/swagger.yaml).
+
+- `harborapi.models.GeneralInfo.with_chartmuseum` has been removed from the API spec, but remains on the model for backwards compatibility. In the future, this field will be removed, as the API will never return this it in sufficiently new versions of Harbor.
+
 ## [0.8.6](https://github.com/pederhan/harborapi/tree/harborapi-v0.8.6) - 2023-02-20
 
 

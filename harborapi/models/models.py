@@ -54,8 +54,8 @@ from ._models import (
 from ._models import ExecHistory as _ExecHistory
 from ._models import Execution, ExtraAttrs, FilterStyle
 from ._models import GCHistory as _GCHistory
+from ._models import GeneralInfo as _GeneralInfo
 from ._models import (
-    GeneralInfo,
     Icon,
     ImmutableRule,
     ImmutableSelector,
@@ -605,3 +605,11 @@ class ExecHistory(_ExecHistory):
 
 class Schedule(_Schedule):
     schedule: Optional[ScheduleObj] = optional_field(_Schedule, "schedule")  # type: ignore
+
+
+class GeneralInfo(_GeneralInfo):
+    with_chartmuseum: Optional[bool] = Field(
+        None,
+        description="If the Harbor instance is deployed with nested chartmuseum.",
+        deprecated=True,
+    )

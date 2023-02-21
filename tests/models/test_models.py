@@ -1,5 +1,5 @@
 import pytest
-from hypothesis import given
+from hypothesis import assume, given
 from hypothesis import strategies as st
 from pydantic import ValidationError
 
@@ -12,12 +12,17 @@ from harborapi.models.models import (
     Artifact,
     ChartMetadata,
     ChartVersion,
+    ExecHistory,
+    GCHistory,
     LdapConf,
     NativeReportSummary,
     ReplicationFilter,
     Repository,
+    Schedule,
+    ScheduleObj,
     Search,
     SearchResult,
+    Type,
     VulnerabilitySummary,
 )
 from harborapi.models.scanner import Severity
@@ -210,3 +215,46 @@ def test_no_references() -> None:
 def test_nativereportsummary_severity_enum(report: NativeReportSummary) -> None:
     """Test that the severity enum is correctly parsed from the string"""
     assert isinstance(report.severity_enum, Severity) or report.severity is None
+
+
+# Strategy for testing the overriden ScheduleObj model and the models that
+# reference it
+schedule_enum_values = list(
+    set([s.value for s in Type] + ["Schedule"])
+)  # explicitly make sure "Schedule" is included
+
+
+type_strategy = st.sampled_from(schedule_enum_values)
+schedule_strategy = st.builds(ScheduleObj, type=type_strategy)
+
+
+@given(schedule_strategy)
+def test_scheduleobj_override(schedule: ScheduleObj) -> None:
+    """Test the overriding of the ScheduleObj model"""
+    assert isinstance(schedule.type, Type)
+    assume(schedule.type == Type.schedule)
+    assert schedule.type == Type.schedule
+
+
+@given(st.builds(GCHistory, schedule=schedule_strategy))
+def test_gchistory_override(history: GCHistory) -> None:
+    """Test the overriding of the GCHistory model"""
+    assert isinstance(history.schedule.type, Type)
+    assume(history.schedule.type == Type.schedule)
+    assert history.schedule.type == Type.schedule
+
+
+@given(st.builds(ExecHistory, schedule=schedule_strategy))
+def test_exechistory_override(history: ExecHistory) -> None:
+    """Test the overriding of the ExecHistory model"""
+    assert isinstance(history.schedule.type, Type)
+    assume(history.schedule.type == Type.schedule)
+    assert history.schedule.type == Type.schedule
+
+
+@given(st.builds(Schedule, schedule=schedule_strategy))
+def test_schedule_override(history: Schedule) -> None:
+    """Test the overriding of the Schedule model"""
+    assert isinstance(history.schedule.type, Type)
+    assume(history.schedule.type == Type.schedule)
+    assert history.schedule.type == Type.schedule
