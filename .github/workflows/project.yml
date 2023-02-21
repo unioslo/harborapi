@@ -1,4 +1,4 @@
-name: Adds all issues to the project board
+name: Add all opened issues to the project board
 
 on:
   issues:
