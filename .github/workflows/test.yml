@@ -8,6 +8,8 @@ on:
       - "docs/**"
       - "*.md"
       - "mkdocs.yml"
+      - ".github/workflows/docs.yml"
+      - ".github/workflows/project.yml"
   pull_request:
     branches:
       - main
