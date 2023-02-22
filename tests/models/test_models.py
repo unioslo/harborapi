@@ -258,3 +258,11 @@ def test_schedule_override(history: Schedule) -> None:
     assert isinstance(history.schedule.type, Type)
     assume(history.schedule.type == Type.schedule)
     assert history.schedule.type == Type.schedule
+
+
+@given(st.builds(Repository))
+def test_repository_new_methods(repository: Repository) -> None:
+    repository.name = "myproject/myrepo"
+    assert repository.project_name == "myproject"
+    assert repository.base_name == "myrepo"
+    assert repository.split_name() == ("myproject", "myrepo")

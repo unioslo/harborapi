@@ -10,7 +10,12 @@ The **third number** is the patch version (bug fixes)
 
 <!-- changelog follows -->
 
-<!-- ## [Unreleased] -->
+## [Unreleased]
+
+### Changed
+
+- `harborapi.models.Repository.split_name()` now returns a tuple instead of a list, as its docstring states it should.
+
 
 ## [0.9.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.9.0) - 2023-02-21
 

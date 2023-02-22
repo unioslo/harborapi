@@ -21,7 +21,7 @@ Furthermore, some models are extended with new validators and/or methods.
 # to ensure that we don't miss any models that need to be redefined.
 
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from loguru import logger
 from pydantic import Extra, Field, root_validator
@@ -402,24 +402,24 @@ class Repository(_Repository):
         return s[0] if s else ""
 
     # TODO: cache?
-    def split_name(self) -> Optional[List[str]]:
+    def split_name(self) -> Optional[Tuple[str, str]]:
         """Split name into tuple of project and repository name
 
         Returns
         -------
-        Optional[List[str]]
-            The tuple of <project> and <repo>
+        Optional[Tuple[str, str]]
+            Tuple of project name and repo name
         """
         if not self.name:
             return None
         components = self.name.split("/", 1)
-        if len(components) == 1:  # no slash in name
+        if len(components) != 2:  # no slash in name
             # Shouldn't happen, but we account for it anyway
             logger.warning(
                 "Repository '{}' name is not in the format <project>/<repo>", self.name
             )
             return None
-        return components
+        return components[0], components[1]
 
 
 # END Repository
