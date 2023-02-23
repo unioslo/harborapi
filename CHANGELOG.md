@@ -12,6 +12,10 @@ The **third number** is the patch version (bug fixes)
 
 ## [Unreleased]
 
+### Added
+
+- `harborapi.ext.artifact.ArtifactInfo.name_with_digest_full` which returns the artifact name with the full SHA256 digest, not just the first 15 characters like `name_with_digest`.
+
 ### Changed
 
 - `harborapi.models.Repository.split_name()` now returns a tuple instead of a list, as its docstring states it should.

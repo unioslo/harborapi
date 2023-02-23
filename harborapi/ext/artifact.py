@@ -55,17 +55,32 @@ class ArtifactInfo(BaseModel):
     @property
     def name_with_digest(self) -> str:
 
-        """The name of the artifact as denoted by its digest.
+        """The name of the artifact with the first 15 characters of the
+        SHA256 digest, mimicking the notation used in the web interface.
 
         Returns
         -------
         str
-            The artifact's name in the form of `repository@digest`.
+            The artifact's name in the form of `project/repository@digest`.
         """
         # The digest should always exist, but just in case:
         digest = self.artifact.digest
         if digest:
             digest = digest[:15]  # mimic harbor digest notation
+        return f"{self.repository.name}@{digest}"
+
+    @property
+    def name_with_digest_full(self) -> str:
+
+        """The name of the artifact with its full SHA256 digest.
+
+        Returns
+        -------
+        str
+            The artifact's name in the form of `project/repository@digest`.
+        """
+        # The digest should always exist, but just in case:
+        digest = self.artifact.digest or ""
         return f"{self.repository.name}@{digest}"
 
     @property
@@ -75,7 +90,7 @@ class ArtifactInfo(BaseModel):
         Returns
         -------
         str
-            The artifact's name in the form of `repository:tag`.
+            The artifact's name in the form of `project/repository:tag`.
         """
         tag = None
         if self.artifact.tags:
