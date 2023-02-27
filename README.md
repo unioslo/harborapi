@@ -6,7 +6,7 @@
 -----
 
 
-Python async client for the Harbor REST API v2.0.
+Python async client for the Harbor REST API v2.0 based on the official Harbor REST API specification.
 
 ## Features
 
@@ -60,6 +60,12 @@ asyncio.run(main())
 
 Documentation is available [here](https://pederhan.github.io/harborapi/)
 
+
+## Disclaimer
+
+Harborapi make use of code generation for its data models, but it doesn't entirely rely on it like, for example, [githubkit](https://github.com/yanyongyu/githubkit). Thus, while the library is based on the Harbor REST API specification, it is not beholden to it. The schema contains several inconsistencies and errors, and the library takes steps to rectify some of these until they are fixed in the official specification.
+
+Harborapi attempts to improve endpoint descriptions where possible and fix models with fields given the wrong type or wrongly marked as required. Without these changes, the validation provided by the library would not have been useable, as it would have been impossible to create valid models for many endpoints.
 
 
 ## Implemented endpoints
