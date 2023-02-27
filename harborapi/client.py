@@ -1409,7 +1409,161 @@ class HarborAsyncClient:
         resp = await self.patch(f"/robots/{robot_id}", json=RobotSec(secret=secret))
         return self.construct_model(RobotSec, resp)
 
-    # CATEGORY: webhookjob
+    # CATEGORY: purge
+
+    # PUT /system/purgeaudit/{purge_id}
+    async def stop_purge_audit_log(self, purge_id: int) -> None:
+        """Stop the specific purge audit log execution.
+
+        Parameters
+        ----------
+        purge_id : int
+            The ID of the purge audit log to stop.
+        """
+        await self.put(f"/system/purgeaudit/{purge_id}")
+
+    # GET /system/purgeaudit/{purge_id}
+    async def get_purge_audit_log_status(self, purge_id: int) -> ExecHistory:
+        """Get the specific purge audit log status.
+
+        Parameters
+        ----------
+        purge_id : int
+            The ID of the purge audit log to get status for.
+
+        Returns
+        -------
+        ExecHistory
+            The purge audit log status.
+        """
+        resp = await self.get(f"/system/purgeaudit/{purge_id}")
+        return self.construct_model(ExecHistory, resp)
+
+    # GET /system/purgeaudit/{purge_id}/log
+    # Get purge job log.
+    async def get_purge_audit_log(self, purge_id: int) -> str:
+        """Get the specific purge audit log.
+
+        Parameters
+        ----------
+        purge_id : int
+            The ID of the purge audit log to get.
+
+        Returns
+        -------
+        str
+            The purge audit log.
+        """
+        return await self.get_text(f"/system/purgeaudit/{purge_id}/log")
+
+    # PUT /system/purgeaudit/schedule
+    # Update purge job's schedule.
+    async def update_purge_audit_log_schedule(self, schedule: Schedule) -> None:
+        """Update the purge audit log schedule.
+
+        Parameters
+        ----------
+        schedule : Schedule
+            The new schedule to use.
+        """
+        await self.put(f"/system/purgeaudit/schedule", json=schedule)
+
+    # POST /system/purgeaudit/schedule
+    # Create a purge job schedule.
+    async def create_purge_audit_log_schedule(self, schedule: Schedule) -> str:
+        """Create a purge audit log schedule.
+
+        Examples
+        --------
+
+        Create a new schedule based on the official sample values for a schedule:
+
+        ```py
+        from harborapi.models import Schedule, ScheduleObj
+
+        Schedule(
+            parameters={
+                "audit_retention_hour": 168,
+                "dry_run": True,
+                "include_operations": "create,delete,pull",
+            },
+            schedule=ScheduleObj(
+                cron="0 0 * * *",
+                type="Hourly",
+            ),
+        )
+        ```
+
+        Parameters
+        ----------
+        schedule : Schedule
+            The new schedule to use.
+
+        Returns
+        -------
+        str
+            The location of the new schedule.
+        """
+        resp = await self.post(f"/system/purgeaudit/schedule", json=schedule)
+        return urldecode_header(resp, "Location")
+
+    # GET /system/purgeaudit/schedule
+    async def get_purge_audit_log_schedule(self) -> ExecHistory:
+        """Get the purge audit log schedule.
+
+        Returns
+        -------
+        ExecHistory
+            The purge audit log schedule.
+        """
+        resp = await self.get(f"/system/purgeaudit/schedule")
+        return self.construct_model(ExecHistory, resp)
+
+    # GET /system/purgeaudit
+    async def get_purge_audit_logs(
+        self,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 10,
+        limit: Optional[int] = None,
+    ) -> List[ExecHistory]:
+        """Get the purge audit log history.
+
+        Parameters
+        ----------
+        page : int, optional
+            The page number to start iterating from, by default 1
+        page_size : int, optional
+            Number of results to retrieve per page, by default 10
+        sort : Optional[str], optional
+            Comma-separated string of fields to sort by.
+            Prefix with `-` to sort descending.
+            E.g. `"update_time,-event_type"`
+        query : Optional[str], optional
+            Comma-separated string of query patterns to filter by.
+            The query pattern is in the format of `"k=v"`.
+
+            The value of query can be:
+
+                * string(enclosed by `"` or `'`)
+                * integer
+                * time(in format `"2020-04-09 02:36:00"`)
+
+            All of these query patterns should be put in the query string
+            and separated by `","`. e.g. `"k1=v1,k2=~v2,k3=[min~max]"`
+        limit : Optional[int], optional
+            The maximum number of purge audit logs to return.
+
+        Returns
+        -------
+        List[ExecHistory]
+            A list of purge audit logs matching the query.
+        """
+        params = get_params(q=query, sort=sort, page=page, page_size=page_size)
+        resp = await self.get(f"/system/purgeaudit", params=params, limit=limit)
+        return self.construct_model(ExecHistory, resp, is_list=True)
+
     # CATEGORY: icon
 
     # CATEGORY: project
