@@ -24,7 +24,15 @@ The **third number** is the patch version (bug fixes)
   - `HarborAsyncClient.update_purge_audit_log_schedule()`
   - `HarborAsyncClient.get_purge_audit_logs()`
 - Documentation for `HarborAsyncClient.get_project_deletable()`.
-
+- Webhook methods.
+  - `HarborAsyncClient.get_webhook_jobs()`
+  - `HarborAsyncClient.get_webhook_policies()`
+  - `HarborAsyncClient.get_webhook_policy()`
+  - `HarborAsyncClient.create_webhook_policy()`
+  - `HarborAsyncClient.update_webhook_policy()`
+  - `HarborAsyncClient.delete_webhook_policy()`
+  - `HarborAsyncClient.get_webhook_policy_last_trigger()`
+  - `HarborAsyncClient.get_webhook_supported_events()`
 ### Changed
 
 - `harborapi.models.Repository.split_name()` now returns a tuple instead of a list, as its docstring states it should.

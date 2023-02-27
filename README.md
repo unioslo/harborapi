@@ -118,9 +118,9 @@ Harborapi attempts to improve endpoint descriptions where possible and fix model
 - [x] replication
 - [ ] label
 - [x] robot
+- [x] webhooks
 - [x] purge
 - [x] project
-- [ ] webhook
 - [x] scan
 - [ ] member
 - [x] ldap

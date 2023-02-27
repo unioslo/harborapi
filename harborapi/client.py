@@ -83,6 +83,7 @@ from .models import (
     StartReplicationExecution,
     Statistic,
     Stats,
+    SupportedWebhookEventTypes,
     SystemInfo,
     Tag,
     UserCreationReq,
@@ -92,9 +93,11 @@ from .models import (
     UserResp,
     UserSearchRespItem,
     UserSysAdminFlag,
+    WebhookJob,
+    WebhookLastTrigger,
+    WebhookPolicy,
 )
 from .models.buildhistory import BuildHistoryEntry
-from .models.models import RegistryProviders
 from .models.scanner import HarborVulnerabilityReport
 from .utils import (
     get_artifact_path,
@@ -1789,7 +1792,263 @@ class HarborAsyncClient:
         )
         return self.construct_model(ProjectDeletable, deletable)
 
-    # CATEGORY: webhook
+    # CATEGORY: webhooks
+
+    # GET /projects/{project_name_or_id}/webhook/jobs
+    async def get_webhook_jobs(
+        self,
+        project_name_or_id: Union[str, int],
+        policy_id: int,
+        status: Optional[List[str]] = None,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 10,
+        limit: Optional[int] = None,
+    ) -> List[WebhookJob]:
+        """List project webhook jobs for a given policy.
+
+        Parameters
+        ----------
+        project_name_or_id : Union[str, int]
+            The name or ID of the project to list webhook jobs for.
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+        policy_id : int
+            The ID of the policy to list webhook jobs for.
+        status : Optional[List[str]], optional
+            A list of job statuses to filter by.
+        query : Optional[str]
+            Query string to filter the logs.
+
+            Supported query patterns are:
+
+                * exact match(`"k=v"`)
+                * fuzzy match(`"k=~v"`)
+                * range(`"k=[min~max]"`)
+                * list with union releationship(`"k={v1 v2 v3}"`)
+                * list with intersection relationship(`"k=(v1 v2 v3)"`).
+
+            The value of range and list can be:
+
+                * string(enclosed by `"` or `'`)
+                * integer
+                * time(in format `"2020-04-09 02:36:00"`)
+
+            All of these query patterns should be put in the query string
+            and separated by `","`. e.g. `"k1=v1,k2=~v2,k3=[min~max]"`
+        sort : Optional[str], optional
+            Comma-separated string of fields to sort by.
+            Prefix with `-` to sort descending.
+            E.g. `"update_time,-event_type"`
+        page : int, optional
+            The page number to start iterating from, by default 1
+        page_size : int, optional
+            Number of results to retrieve per page, by default 10
+        limit : Optional[int], optional
+            The maximum number of webhook jobs to return.
+
+        Returns
+        -------
+        List[WebhookJob]
+            A list of webhook jobs matching the query.
+        """
+        headers = get_project_headers(project_name_or_id)
+        params = get_params(
+            policy_id=policy_id, q=query, sort=sort, page=page, page_size=page_size
+        )
+        if status:
+            params["status"] = ",".join(
+                status
+            )  # probably needs some sort of urlencoding?
+        resp = await self.get(
+            f"/projects/{project_name_or_id}/webhook/jobs",
+            params=params,
+            headers=headers,
+            limit=limit,
+        )
+        return self.construct_model(WebhookJob, resp, is_list=True)
+
+    # POST /projects/{project_name_or_id}/webhook/policies
+    async def create_webhook_policy(
+        self, project_name_or_id: Union[str, int], policy: WebhookPolicy
+    ) -> str:
+        """Create webhook policy of a project.
+
+        Parameters
+        ----------
+        project_name_or_id: Union[str, int]
+            The name or ID of the project
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+        policy: WebhookPolicy
+            The webhook policy to create
+
+        Returns
+        -------
+        str
+            The location of the created webhook policy
+        """
+        headers = get_project_headers(project_name_or_id)
+        resp = await self.post(
+            f"/projects/{project_name_or_id}/webhook/policies",
+            headers=headers,
+            json=policy,
+        )
+        return urldecode_header(resp, "Location")
+
+    # GET /projects/{project_name_or_id}/webhook/policies
+    # List project webhook policies.
+    async def get_webhook_policies(
+        self,
+        project_name_or_id: Union[str, int],
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 10,
+        limit: Optional[int] = None,
+    ) -> List[WebhookPolicy]:
+        headers = get_project_headers(project_name_or_id)
+        params = get_params(q=query, sort=sort, page=page, page_size=page_size)
+        policies = await self.get(
+            f"/projects/{project_name_or_id}/webhook/policies",
+            headers=headers,
+            params=params,
+            limit=limit,
+        )
+        return self.construct_model(WebhookPolicy, policies, is_list=True)
+
+    # GET /projects/{project_name_or_id}/webhook/events
+    # Get supported event types and notify types.
+    async def get_webhook_supported_events(
+        self, project_name_or_id: Union[str, int]
+    ) -> SupportedWebhookEventTypes:
+        """Get supported event types and notify types of webhooks for a project.
+
+        Parameters
+        ----------
+        project_name_or_id : Union[str, int]
+            The name or ID of the project
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+
+        Returns
+        -------
+        SupportedWebhookEventTypes
+            The supported event types and notify types of webhooks for a project.
+        """
+        headers = get_project_headers(project_name_or_id)
+        events = await self.get(
+            f"/projects/{project_name_or_id}/webhook/events", headers=headers
+        )
+        return self.construct_model(SupportedWebhookEventTypes, events)
+
+    # GET /projects/{project_name_or_id}/webhook/lasttrigger
+    # Get project webhook policy last trigger info
+    async def get_webhook_policy_last_trigger(
+        self, project_name_or_id: Union[str, int]
+    ) -> List[WebhookLastTrigger]:
+        """Get a list of the last webhook policy triggers.
+
+        Parameters
+        ----------
+        project_name_or_id : Union[str, int]
+            The name or ID of the project
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+
+        Returns
+        -------
+        List[WebhookLastTrigger]
+            A list of the last webhook policy triggers.
+        """
+        headers = get_project_headers(project_name_or_id)
+        last_trigger = await self.get(
+            f"/projects/{project_name_or_id}/webhook/lasttrigger", headers=headers
+        )
+        return self.construct_model(WebhookLastTrigger, last_trigger, is_list=True)
+
+    # PUT /projects/{project_name_or_id}/webhook/policies/{webhook_policy_id}
+    # Update webhook policy of a project.
+    async def update_webhook_policy(
+        self,
+        project_name_or_id: Union[str, int],
+        webhook_policy_id: int,
+        policy: WebhookPolicy,
+    ) -> None:
+        """Update webhook policy of a project.
+
+        Parameters
+        ----------
+        project_name_or_id : Union[str, int]
+            The name or ID of the project
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+        webhook_policy_id : int
+            The ID of the webhook policy
+        policy : WebhookPolicy
+            The new webhook policy definition.
+        """
+        headers = get_project_headers(project_name_or_id)
+        await self.put(
+            f"/projects/{project_name_or_id}/webhook/policies/{webhook_policy_id}",
+            headers=headers,
+            json=policy,
+        )
+
+    # GET /projects/{project_name_or_id}/webhook/policies/{webhook_policy_id}
+    # Get project webhook policy
+    async def get_webhook_policy(
+        self,
+        project_name_or_id: Union[str, int],
+        webhook_policy_id: int,
+    ) -> WebhookPolicy:
+        """Get webhook policy of a project.
+
+        Parameters
+        ----------
+        project_name_or_id : Union[str, int]
+            The name or ID of the project
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+        webhook_policy_id : int
+            The ID of the webhook policy
+
+        Returns
+        -------
+        WebhookPolicy
+            The webhook policy of a project.
+        """
+        headers = get_project_headers(project_name_or_id)
+        policy = await self.get(
+            f"/projects/{project_name_or_id}/webhook/policies/{webhook_policy_id}",
+            headers=headers,
+        )
+        return self.construct_model(WebhookPolicy, policy)
+
+    # DELETE /projects/{project_name_or_id}/webhook/policies/{webhook_policy_id}
+    # Delete webhook policy of a project
+    async def delete_webhook_policy(
+        self,
+        project_name_or_id: Union[str, int],
+        webhook_policy_id: int,
+    ) -> None:
+        """Delete webhook policy of a project.
+
+        Parameters
+        ----------
+        project_name_or_id : Union[str, int]
+            The name or ID of the project
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+        webhook_policy_id : int
+            The ID of the webhook policy
+        """
+        headers = get_project_headers(project_name_or_id)
+        await self.delete(
+            f"/projects/{project_name_or_id}/webhook/policies/{webhook_policy_id}",
+            headers=headers,
+        )
 
     # CATEGORY: scan
 

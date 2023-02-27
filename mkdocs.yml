@@ -103,6 +103,7 @@ nav:
       - endpoints/systeminfo.md
       - endpoints/users.md
       - endpoints/usergroups.md
+      - endpoints/webhooks.md
   - "Reference":
       - reference/index.md
       - reference/auth.md
