@@ -10,9 +10,9 @@ from harborapi.models import Quota
 from harborapi.models.models import (
     AuditLog,
     Project,
+    ProjectDeletable,
     ProjectReq,
     ProjectSummary,
-    QuotaUpdateReq,
     ScannerRegistration,
 )
 from tests.utils import json_from_list
@@ -195,3 +195,20 @@ async def test_get_project_summary_mock(
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_project_summary("1234")
     assert resp == project_summary
+
+
+@pytest.mark.asyncio
+@given(st.builds(ProjectDeletable))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+async def test_get_project_deletable_mock(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+    deletable: ProjectDeletable,
+):
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/projects/1234/_deletable",
+        method="GET",
+    ).respond_with_data(deletable.json(), content_type="application/json")
+    async_client.url = httpserver.url_for("/api/v2.0")
+    resp = await async_client.get_project_deletable("1234")
+    assert resp == deletable

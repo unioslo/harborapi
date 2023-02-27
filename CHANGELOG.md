@@ -23,7 +23,7 @@ The **third number** is the patch version (bug fixes)
   - `HarborAsyncClient.create_purge_audit_log_schedule()`
   - `HarborAsyncClient.update_purge_audit_log_schedule()`
   - `HarborAsyncClient.get_purge_audit_logs()`
-
+- Documentation for `HarborAsyncClient.get_project_deletable()`.
 
 ### Changed
 

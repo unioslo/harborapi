@@ -14,3 +14,4 @@
         - set_project_scanner
         - get_project_scanner
         - get_project_scanner_candidates
+        - get_project_deletable
