@@ -89,6 +89,7 @@ nav:
       - endpoints/ping.md
       - endpoints/projects.md
       - endpoints/projectmetadata.md
+      - endpoints/purge.md
       - endpoints/quota.md
       - endpoints/registries.md
       - endpoints/replication.md

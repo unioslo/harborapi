@@ -39,6 +39,7 @@ from .models import (
     Configurations,
     ConfigurationsResponse,
     CVEAllowlist,
+    ExecHistory,
     GCHistory,
     GeneralInfo,
     InternalConfigurationsResponse,

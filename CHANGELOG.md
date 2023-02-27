@@ -15,6 +15,15 @@ The **third number** is the patch version (bug fixes)
 ### Added
 
 - `harborapi.ext.artifact.ArtifactInfo.name_with_digest_full` which returns the artifact name with the full SHA256 digest, not just the first 15 characters like `name_with_digest`.
+- Audit log purging methods.
+  - `HarborAsyncClient.get_purge_audit_log_status()`
+  - `HarborAsyncClient.get_purge_audit_log()`
+  - `HarborAsyncClient.stop_purge_audit_log()`
+  - `HarborAsyncClient.get_purge_audit_log_schedule()`
+  - `HarborAsyncClient.create_purge_audit_log_schedule()`
+  - `HarborAsyncClient.update_purge_audit_log_schedule()`
+  - `HarborAsyncClient.get_purge_audit_logs()`
+
 
 ### Changed
 
