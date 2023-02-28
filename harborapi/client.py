@@ -1315,6 +1315,125 @@ class HarborAsyncClient:
         return resp
 
     # CATEGORY: label
+
+    # POST /labels
+    # Create a label
+    async def create_label(self, label: Label) -> str:
+        """Create a label.
+
+        Parameters
+        ----------
+        label : Label
+            The label to create.
+            The fields `id`, `creation_time` and `update_time` are ignored.
+
+        Returns
+        -------
+        str
+            The location of the label.
+        """
+        resp = await self.post("/labels", json=label)
+        return urldecode_header(resp, "Location")
+
+    # GET /labels
+    # List labels according to the query strings.
+    async def get_labels(
+        self,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 10,
+        name: Optional[str] = None,
+        scope: Optional[str] = None,
+        project_id: Optional[int] = None,
+        limit: Optional[int] = None,
+    ) -> List[Label]:
+        """Get a list of labels.
+
+        Parameters
+        ----------
+        query : Optional[str]
+            The query string to filter by.
+        sort : Optional[str]
+            The sort order of the results.
+        page : int
+            The page of results to return.
+        page_size : int
+            The number of results to return per page.
+        name : Optional[str]
+            The name of the label to filter by.
+        scope : Optional[str]
+            The scope of the label to filter by.
+            Valid values are `"g"` and `"p"`.
+            `"g"` for global labels and `"p"` for project labels.
+        project_id : Optional[int]
+            The ID of the project to filter by.
+            Required when scope is `"p"`.
+        limit : Optional[int]
+            The maximum number of results to return.
+
+        Returns
+        -------
+        List[Label]
+            The list of labels.
+        """
+        params = get_params(
+            q=query,
+            sort=sort,
+            page=page,
+            page_size=page_size,
+            name=name,
+            scope=scope,
+            project_id=project_id,
+        )
+        resp = await self.get("/labels", params=params, limit=limit)
+        return self.construct_model(Label, resp, is_list=True)
+
+    # PUT /labels/{label_id}
+    # Update the label properties.
+    async def update_label(self, label_id: int, label: Label) -> None:
+        """Update a label.
+
+        Parameters
+        ----------
+        label_id : int
+            The ID of the label to update.
+        label : Label
+            The updated label.
+            The fields `id`, `creation_time` and `update_time` are ignored.
+        """
+        await self.put(f"/labels/{label_id}", json=label)
+
+    # GET /labels/{label_id}
+    # Get the label specified by ID.
+    async def get_label(self, label_id: int) -> Label:
+        """Get a specific label.
+
+        Parameters
+        ----------
+        label_id : int
+            The ID of the label to get.
+
+        Returns
+        -------
+        Label
+            The label.
+        """
+        resp = await self.get(f"/labels/{label_id}")
+        return self.construct_model(Label, resp)
+
+    # DELETE /labels/{label_id}
+    # Delete the label specified by ID.
+    async def delete_label(self, label_id: int) -> None:
+        """Delete a label.
+
+        Parameters
+        ----------
+        label_id : int
+            The ID of the label to delete.
+        """
+        await self.delete(f"/labels/{label_id}")
+
     # CATEGORY: robot
 
     # POST /robots

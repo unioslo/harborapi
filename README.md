@@ -116,7 +116,7 @@ Harborapi attempts to improve endpoint descriptions where possible and fix model
 - [x] Health
 - [x] Icon
 - [ ] Immutable
-- [ ] Label
+- [x] Label
 - [x] Ldap
 - [ ] Member
 - [x] OIDC

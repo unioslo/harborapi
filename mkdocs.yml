@@ -86,6 +86,7 @@ nav:
       - endpoints/gc.md
       - endpoints/health.md
       - endpoints/icon.md
+      - endpoints/labels.md
       - endpoints/ldap.md
       - endpoints/oidc.md
       - endpoints/ping.md

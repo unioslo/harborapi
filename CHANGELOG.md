@@ -40,6 +40,11 @@ The **third number** is the patch version (bug fixes)
   - `HarborAsyncClient.download_scan_export()`
 - Icon methods
   - `HarborAsyncClient.get_icon()`
+- Label methods
+  - `HarborAsyncClient.get_label()`
+  - `HarborAsyncClient.create_label()`
+  - `HarborAsyncClient.delete_label()`
+  - `HarborAsyncClient.get_labels()`
 - New methods for controlling the size of the response log.
   - `harborapi.client.ResponseLog.resize()`
   - `harborapi.client.ResponseLog.clear()`
