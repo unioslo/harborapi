@@ -58,6 +58,7 @@ nav:
           - usage/methods/examples.md
       - usage/exceptions.md
       - usage/validation.md
+      - usage/responselog.md
       - usage/async-sync.md
       - usage/creating-system-robot.md
       - usage/rich.md

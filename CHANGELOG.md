@@ -33,6 +33,10 @@ The **third number** is the patch version (bug fixes)
   - `HarborAsyncClient.delete_webhook_policy()`
   - `HarborAsyncClient.get_webhook_policy_last_trigger()`
   - `HarborAsyncClient.get_webhook_supported_events()`
+- New methods for controlling the size of the response log.
+  - `harborapi.client.ResponseLog.resize()`
+  - `harborapi.client.ResponseLog.clear()`
+  - Documented [here](https://pederhan.github.io/harborapi/usage/responselog)
 
 ### Changed
 
