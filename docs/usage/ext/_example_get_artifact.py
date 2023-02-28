@@ -6,7 +6,7 @@ from harborapi.ext import api
 
 client = HarborAsyncClient(
     url=os.getenv("HARBOR_URL"),
-    credentials=os.getenv("HARBOR_CREDENTIALS"),
+    basicauth=os.getenv("HARBOR_CREDENTIALS"),
 )
 
 

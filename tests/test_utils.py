@@ -7,7 +7,7 @@ from harborapi._types import JSONType
 from harborapi.exceptions import HarborAPIException
 from harborapi.utils import (
     get_artifact_path,
-    get_credentials,
+    get_basicauth,
     get_project_headers,
     handle_optional_json_response,
     is_json,
@@ -39,8 +39,10 @@ def test_get_project_headers(project_name_or_id: Union[str, int]):
         assert headers["X-Is-Resource-Name"] == "false"
 
 
-def test_get_credentials():
-    assert get_credentials("username", "secret") == "dXNlcm5hbWU6c2VjcmV0"
+def test_get_basicauth():
+    assert (
+        get_basicauth("username", "secret").get_secret_value() == "dXNlcm5hbWU6c2VjcmV0"
+    )
 
 
 @pytest.mark.parametrize(

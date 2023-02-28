@@ -1,4 +1,5 @@
 import json
+import warnings
 from collections import deque
 from dataclasses import dataclass
 from http.cookiejar import CookieJar
@@ -109,7 +110,7 @@ from .models.buildhistory import BuildHistoryEntry
 from .models.scanner import HarborVulnerabilityReport
 from .utils import (
     get_artifact_path,
-    get_credentials,
+    get_basicauth,
     get_params,
     get_project_headers,
     get_repo_path,
@@ -209,13 +210,18 @@ class ResponseLog:
         return len(self.entries)
 
 
+from pydantic import SecretStr
+
+
 class HarborAsyncClient:
+    basicauth: SecretStr
+
     def __init__(
         self,
         url: str,
         username: Optional[str] = None,
         secret: Optional[str] = None,
-        credentials: Optional[str] = None,
+        basicauth: Optional[str] = None,
         credentials_file: Optional[Union[str, Path]] = None,
         follow_redirects: bool = True,
         timeout: Union[float, Timeout] = 10.0,
@@ -224,6 +230,7 @@ class HarborAsyncClient:
         logging: bool = False,
         max_logs: Optional[int] = None,
         config: Optional[Any] = None,  # NYI
+        **kwargs: Any,
     ) -> None:
         """Initialize a new HarborAsyncClient with either a username and secret,
         an authentication token, or a credentials file.
@@ -271,9 +278,16 @@ class HarborAsyncClient:
             None of `username` and `secret`, `credentials` nor `credentials_file` are provided.
         """
         if username and secret:
-            self.credentials = get_credentials(username, secret)
-        elif credentials:
-            self.credentials = credentials
+            self.basicauth = get_basicauth(username, secret)
+        elif (credentials_kwarg := kwargs.get("credentials")) or basicauth:
+            if credentials_kwarg:
+                basicauth = credentials_kwarg
+                warnings.warn(
+                    "parameter 'credentials' is deprecated and will be removed, use 'basicauth'",
+                    DeprecationWarning,
+                )
+            assert basicauth is not None
+            self.basicauth = SecretStr(basicauth)
         elif credentials_file:
             crfile = load_harbor_auth_file(credentials_file)
             # TODO: perform this check somewhere else?
@@ -283,7 +297,7 @@ class HarborAsyncClient:
                 raise ValueError("Credentials file missing value for 'name' field")
             elif not crfile.secret:
                 raise ValueError("Credentials file missing value for 'secret' field")
-            self.credentials = get_credentials(crfile.name, crfile.secret)
+            self.basicauth = get_basicauth(crfile.name, crfile.secret)
         else:
             raise ValueError(
                 "Must provide username and secret, credentials, or credentials_file"
@@ -4128,7 +4142,7 @@ class HarborAsyncClient:
     def _get_headers(self, headers: Optional[Dict[str, Any]] = None) -> Dict[str, str]:
         headers = headers or {}
         base_headers = {
-            "Authorization": "Basic " + self.credentials,
+            "Authorization": "Basic " + self.basicauth.get_secret_value(),
             "Accept": "application/json",
         }
         base_headers.update(headers)  # Override defaults with provided headers

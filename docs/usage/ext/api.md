@@ -23,7 +23,7 @@ from httpx._exceptions import HTTPError
 
 client = HarborAsyncClient(
     url=os.getenv("HARBOR_URL"),
-    credentials=os.getenv("HARBOR_CREDENTIALS"),
+    basicauth=os.getenv("HARBOR_CREDENTIALS"),
 )
 
 
@@ -74,7 +74,7 @@ from harborapi.ext import api
 
 client = HarborAsyncClient(
     url=os.getenv("HARBOR_URL"),
-    credentials=os.getenv("HARBOR_CREDENTIALS"),
+    basicauth=os.getenv("HARBOR_CREDENTIALS"),
 )
 
 async def main() -> None:

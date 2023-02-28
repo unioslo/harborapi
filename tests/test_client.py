@@ -20,7 +20,7 @@ from harborapi.exceptions import (
     Unauthorized,
 )
 from harborapi.models import Error, Errors, UserResp
-from harborapi.utils import get_credentials
+from harborapi.utils import get_basicauth
 
 from .strategies import errors_strategy
 
@@ -46,15 +46,25 @@ def test_client_init_username():
         username="username", secret="secret", url="https://harbor.example.com/api/v2.0"
     )
     assert client.url == "https://harbor.example.com/api/v2.0"
-    assert client.credentials == get_credentials("username", "secret")
+    assert client.basicauth == get_basicauth("username", "secret")
 
 
-def test_client_init_token():
+def test_client_init_credentials():
+    with pytest.warns(DeprecationWarning):
+        client = HarborAsyncClient(
+            credentials="dXNlcm5hbWU6c2VjcmV0",
+            url="https://harbor.example.com/api/v2.0",
+        )
+    assert client.url == "https://harbor.example.com/api/v2.0"
+    assert client.basicauth == get_basicauth("username", "secret")
+
+
+def test_client_init_basicauth():
     client = HarborAsyncClient(
-        credentials="dXNlcm5hbWU6c2VjcmV0", url="https://harbor.example.com/api/v2.0"
+        basicauth="dXNlcm5hbWU6c2VjcmV0", url="https://harbor.example.com/api/v2.0"
     )
     assert client.url == "https://harbor.example.com/api/v2.0"
-    assert client.credentials == get_credentials("username", "secret")
+    assert client.basicauth == get_basicauth("username", "secret")
 
 
 def test_client_init_credentials_file(credentials_file: Path):
@@ -62,7 +72,7 @@ def test_client_init_credentials_file(credentials_file: Path):
         credentials_file=credentials_file, url="https://harbor.example.com/api/v2.0"
     )
     assert client.url == "https://harbor.example.com/api/v2.0"
-    assert client.credentials == get_credentials("robot$harborapi-test", "bad-password")
+    assert client.basicauth == get_basicauth("robot$harborapi-test", "bad-password")
 
 
 def test_client_init_no_credentials():
@@ -479,15 +489,15 @@ async def test_authentication(
         url=httpserver.url_for("/api/v2.0"),
         username=username,
         secret=secret,
-        credentials=credentials,
+        basicauth=credentials,
     )
 
     # username/password takes precedence over credentials
     if username and secret:
-        expect_credentials = get_credentials(username, secret)
+        expect_credentials = get_basicauth(username, secret).get_secret_value()
     else:
         expect_credentials = credentials
-    assert client.credentials == expect_credentials
+    assert client.basicauth.get_secret_value() == expect_credentials
 
     # Set up HTTP server to expect a certain set of headers and a method
     httpserver.expect_oneshot_request(

@@ -19,7 +19,7 @@ from harborapi.ext.report import ArtifactReport
 
 client = HarborAsyncClient(
     url="<your-harbor-url>",
-    credentials="",
+    basicauth="",
     logging=True,
     timeout=120.0,
 )

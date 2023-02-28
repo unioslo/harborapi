@@ -49,11 +49,14 @@ The **third number** is the patch version (bug fixes)
   - `harborapi.client.ResponseLog.resize()`
   - `harborapi.client.ResponseLog.clear()`
   - Documented [here](https://pederhan.github.io/harborapi/usage/responselog)
+- `basicauth` as a parameter for `HarborAsyncClient.__init__()` to pass in base64 basic auth credentials.
 
 ### Changed
 
 - `missing_ok` parameter for DELETE methods has been deprecated. Manually  handle `harborapi.exceptions.NotFound` instead. This parameter will stop working in version 1.0.0, and be removed altogether in a later release.
 - `harborapi.models.Repository.split_name()` now returns a tuple instead of a list, as its docstring states it should.
+- DEPRECATED: Using `credentials` as a parameter for `HarborAsyncClient.__init__` is deprecated. Use `basicauth` instead.
+- `HarborAsyncClient.credentials` is now a Pydantic SecretStr, which prevents it from being printed in clear text when locals are dumped, such as when printing the client object. To access the value, use `HarborAsyncClient.credentials.get_secret_value()`.
 
 
 ### Removed

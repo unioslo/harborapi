@@ -20,7 +20,7 @@ from harborapi import HarborAsyncClient
 
 client = HarborAsyncClient(
     url="https://your-harbor-instance.com/api/v2.0",
-    credentials="base64_string_here",
+    basicauth="base64_string_here",
 )
 ```
 

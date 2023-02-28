@@ -6,6 +6,7 @@ from urllib.parse import quote_plus, unquote_plus
 
 from httpx import Response
 from loguru import logger
+from pydantic import SecretStr
 
 from ._types import JSONType, ParamType
 
@@ -158,7 +159,7 @@ def get_artifact_path(project_name: str, repository_name: str, reference: str) -
     return f"{repo_path}/artifacts/{reference}"
 
 
-def get_credentials(username: str, secret: str) -> str:
+def get_basicauth(username: str, secret: str) -> SecretStr:
     """Get HTTP basic access authentication credentials given a username and a secret.
 
     Parameters
@@ -170,12 +171,15 @@ def get_credentials(username: str, secret: str) -> str:
 
     Returns
     -------
-    str
+    SecretStr
         The credentials string used for HTTP basic access authentication,
-        encoded in base64. This is not a one-way hash, so it should be
-        considered insecure!
+        encoded in base64 as a Pydantic SecretStr, which prevents the
+        credentials from leaking when printing locals.
+        The string is a base64 encoded string of the form `username:secret`,
+        and should not be considered secure, as it is not encrypted.
     """
-    return b64encode(f"{username}:{secret}".encode("utf-8")).decode("utf-8")
+    val = b64encode(f"{username}:{secret}".encode("utf-8")).decode("utf-8")
+    return SecretStr(val)
 
 
 # Finds the next url in a pagination header (e.g. Link: </api/v2.0/endpoint?page=X&page_size=Y>; rel="next")

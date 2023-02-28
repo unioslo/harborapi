@@ -42,7 +42,7 @@ client = HarborAsyncClient(
     username="username",
     secret="secret",
     # OR
-    credentials="base64-basic-auth-credentials",
+    basicauth="base64-basic-auth-credentials",
     # OR
     credentials_file="path/to/robot-credentials-file.json",
 )
