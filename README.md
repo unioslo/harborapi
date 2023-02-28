@@ -109,39 +109,40 @@ Harborapi attempts to improve endpoint descriptions where possible and fix model
 <!-- - [ ] Products
 - [ ] Chart Repository
 - [ ] Label -->
-- [x] user
-- [x] gc
-- [x] scanAll
-- [x] configure
-- [x] usergroup
-- [ ] preheat
-- [x] replication
-- [ ] label
-- [x] robot
-- [x] webhooks
-- [x] purge
-- [x] icon
-- [x] project
-- [x] scan
-- [x] scan data export
-- [ ] member
-- [x] ldap
-- [x] registry
-- [x] search
-- [x] artifact
-- [ ] immutable
-- [ ] retention
-- [x] scanner
-- [x] systeminfo**
-- [x] statistic
-- [x] quota
-- [x] repository
-- [x] ping
-- [x] oidc
-- [x] SystemCVEAllowlist
+- [x] Artifact
+- [x] Auditlog
+- [x] Configure
+- [x] Garbage Collection
 - [x] Health
-- [ ] robotv1
-- [x] projectMetadata
-- [x] auditlog
+- [x] Icon
+- [ ] Immutable
+- [ ] Label
+- [x] Ldap
+- [ ] Member
+- [x] OIDC
+- [x] Ping
+- [ ] Preheat
+- [x] Project
+- [x] Project Metadata
+- [x] Purge
+- [x] Quota
+- [x] Registry
+- [x] Replication
+- [x] Repository
+- [ ] Retention
+- [x] Robot
+- [ ] Robotv1
+- [x] Scan
+- [x] Scan Data Export
+- [x] Scanall
+- [x] Scanner
+- [x] Search
+- [x] Statistic
+- [x] System CVE Allowlist
+- [x] System Info**
+- [x] User
+- [x] Usergroup
+- [x] Webhooks
+
 
 \*\* `/systeminfo/getcert` NYI
