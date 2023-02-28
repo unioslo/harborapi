@@ -73,7 +73,7 @@ no-cov = "cov --no-cov {args}"
 bump = "python scripts/bump_version.py {args}"
 
 [tool.hatch.envs.docs]
-dependencies = ["mkdocs", "mkdocs-material", "mkdocstrings[python]"]
+dependencies = ["mkdocs", "mkdocs-material", "mkdocstrings[python]", "rich"]
 [tool.hatch.envs.docs.scripts]
 build = "mkdocs build --clean --strict"
 serve = "mkdocs serve --dev-addr localhost:8000"
