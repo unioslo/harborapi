@@ -402,12 +402,7 @@ class HarborAsyncClient:
             Or the secret does not meet the standard.
             (This is a Harbor API implementation detail.)
         """
-        try:
-            await self.put(f"/users/{user_id}/cli_secret", json={"secret": secret})
-        except BadRequest as e:
-            logger.error(e.__cause__.response.text if e.__cause__ else e.__str__())
-            # TODO: do anything else here? Raise a more specific exception?
-            raise
+        await self.put(f"/users/{user_id}/cli_secret", json={"secret": secret})
 
     # GET /users/search
     async def search_users_by_username(
@@ -518,14 +513,10 @@ class HarborAsyncClient:
                 * Password does not meet requirement
                 * Old password is incorrect
         """
-        try:
-            await self.put(
-                f"/users/{user_id}/password",
-                json=PasswordReq(old_password=old_password, new_password=new_password),
-            )
-        except BadRequest as e:
-            logger.error(e.__cause__.response.text if e.__cause__ else e.__str__())
-            raise
+        await self.put(
+            f"/users/{user_id}/password",
+            json=PasswordReq(old_password=old_password, new_password=new_password),
+        )
 
     # POST /users
     async def create_user(self, user: UserCreationReq) -> str:
