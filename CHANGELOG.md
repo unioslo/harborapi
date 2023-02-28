@@ -38,7 +38,8 @@ The **third number** is the patch version (bug fixes)
   - `HarborAsyncClient.get_scan_exports()`
   - `HarborAsyncClient.export_scan_data()`
   - `HarborAsyncClient.download_scan_export()`
-
+- Icon methods
+  - `HarborAsyncClient.get_icon()`
 - New methods for controlling the size of the response log.
   - `harborapi.client.ResponseLog.resize()`
   - `harborapi.client.ResponseLog.clear()`

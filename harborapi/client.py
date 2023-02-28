@@ -46,7 +46,7 @@ from .models import (
     ExecHistory,
     GCHistory,
     GeneralInfo,
-    InternalConfigurationsResponse,
+    Icon,
     IsDefault,
     Label,
     LdapConf,
@@ -1705,6 +1705,23 @@ class HarborAsyncClient:
         return resp
 
     # CATEGORY: icon
+
+    # GET /icons/{digest}
+    async def get_icon(self, digest: str) -> Icon:
+        """Get the icon with the specified digest.
+
+        Parameters
+        ----------
+        digest : str
+            The digest of the icon to get.
+
+        Returns
+        -------
+        bytes
+            The icon.
+        """
+        resp = await self.get(f"/icons/{digest}")
+        return self.construct_model(Icon, resp)
 
     # CATEGORY: project
 

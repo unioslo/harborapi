@@ -85,6 +85,7 @@ nav:
       - endpoints/cveallowlist.md
       - endpoints/gc.md
       - endpoints/health.md
+      - endpoints/icon.md
       - endpoints/ldap.md
       - endpoints/oidc.md
       - endpoints/ping.md
@@ -98,6 +99,7 @@ nav:
       - endpoints/robots.md
       - endpoints/scan.md
       - endpoints/scanall.md
+      - endpoints/scanexport.md
       - endpoints/scanners.md
       - endpoints/search.md
       - endpoints/statistics.md

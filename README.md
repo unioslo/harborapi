@@ -120,6 +120,7 @@ Harborapi attempts to improve endpoint descriptions where possible and fix model
 - [x] robot
 - [x] webhooks
 - [x] purge
+- [x] icon
 - [x] project
 - [x] scan
 - [x] scan data export
