@@ -11,7 +11,7 @@ def test_bool_converter() -> None:
 
     assert TestModel(foo=True).foo == "true"
     assert TestModel(foo=False).foo == "false"
-    assert TestModel().foo is ""
+    assert TestModel().foo == ""
 
 
 def test_bool_converter_optional() -> None:
