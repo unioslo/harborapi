@@ -30,6 +30,7 @@ from .exceptions import (
     BadRequest,
     HarborAPIException,
     NotFound,
+    UnprocessableEntity,
     check_response_status,
 )
 from .models import (
@@ -178,7 +179,6 @@ class HarborAsyncClient:
         ----------
         url : str
             The URL of the Harbor server in the format `http://host:[port]/api/v<version>`
-
             Example: `http://localhost:8080/api/v2.0`
         username : Optional[str]
             Username to use for authentication.
@@ -213,7 +213,7 @@ class HarborAsyncClient:
         Raises
         ------
         ValueError
-            Neither `username` and `secret`, `credentials` nor `credentials_file` are provided.
+            None of `username` and `secret`, `credentials` nor `credentials_file` are provided.
         """
         if username and secret:
             self.credentials = get_credentials(username, secret)
@@ -603,15 +603,17 @@ class HarborAsyncClient:
         return await self.get_user(user.user_id)
 
     # DELETE /users/{user_id}
-    async def delete_user(self, user_id: int, missing_ok: bool = False) -> None:
+    async def delete_user(
+        self, user_id: int, missing_ok: Optional[bool] = None
+    ) -> None:
         """Delete a user.
 
         Parameters
         ----------
         user_id : int
             The ID of the user to delete
-        missing_ok : bool
-            Do not raise an error if the user does not exist.
+        missing_ok : Optional[bool]
+            DEPRECATED: Do not raise an error if the user does not exist.
         """
         await self.delete(f"/users/{user_id}", missing_ok=missing_ok)
 
@@ -701,6 +703,7 @@ class HarborAsyncClient:
             The number of results to return per page
         limit : Optional[int]
             The maximum number of results to return.
+
         Returns
         -------
         List[GCHistory]
@@ -955,15 +958,17 @@ class HarborAsyncClient:
 
     # DELETE /usergroups/{group_id}
     # Delete user group
-    async def delete_usergroup(self, group_id: int, missing_ok: bool = False) -> None:
+    async def delete_usergroup(
+        self, group_id: int, missing_ok: Optional[bool] = None
+    ) -> None:
         """Delete a user group.
 
         Parameters
         ----------
         group_id : int
             The group ID to delete.
-        missing_ok : bool
-            If `True`, do not raise an error if the group does not exist.
+        missing_ok : Optional[bool]
+            DEPRECATED: If `True`, Do not raise an error if the group does not exist.
         """
         await self.delete(f"/usergroups/{group_id}", missing_ok=missing_ok)
 
@@ -1378,15 +1383,17 @@ class HarborAsyncClient:
         await self.put(f"/robots/{robot_id}", json=robot)
 
     # DELETE /robots/{robot_id}
-    async def delete_robot(self, robot_id: int, missing_ok: bool = False) -> None:
+    async def delete_robot(
+        self, robot_id: int, missing_ok: Optional[bool] = None
+    ) -> None:
         """Delete a robot account.
 
         Parameters
         ----------
         robot_id : int
             The ID of the robot account to delete.
-        missing_ok : bool
-            Do not raise an error if the robot account does not exist.
+        missing_ok : Optional[bool]
+            DEPRECATED: Do not raise an error if the robot account does not exist.
         """
         await self.delete(f"/robots/{robot_id}", missing_ok=missing_ok)
 
@@ -1817,17 +1824,17 @@ class HarborAsyncClient:
 
     # DELETE /projects/{project_name_or_id}
     async def delete_project(
-        self, project_name_or_id: Union[str, int], missing_ok: bool = False
+        self, project_name_or_id: Union[str, int], missing_ok: Optional[bool] = None
     ) -> None:
         """Delete a project given its name or ID.
 
         Parameters
         ----------
-        project_name_or_id: Union[str, int]
+        project_name_or_id : Union[str, int]
             The name or ID of the project
             String arguments are treated as project names.
             Integer arguments are treated as project IDs.
-        missing_ok: bool
+        missing_ok : Optional[bool]
             If true, ignore 404 error when the project is not found.
         """
         headers = get_project_headers(project_name_or_id)
@@ -2472,15 +2479,15 @@ class HarborAsyncClient:
         return self.construct_model(Registry, resp)
 
     # DELETE /registries/{id}
-    async def delete_registry(self, id: int, missing_ok: bool = False) -> None:
+    async def delete_registry(self, id: int, missing_ok: Optional[bool] = None) -> None:
         """Delete a registry.
 
         Parameters
         ----------
         id : int
             The ID of the registry
-        missing_ok : bool
-            If True, don't raise an exception if the registry doesn't exist.
+        missing_ok : Optional[bool]
+            DEPRECATED: If True, don't raise an exception if the registry doesn't exist.
         """
         await self.delete(f"/registries/{id}", missing_ok=missing_ok)
 
@@ -2762,7 +2769,7 @@ class HarborAsyncClient:
         repository_name: str,
         reference: str,
         tag_name: str,
-        missing_ok: bool = False,
+        missing_ok: Optional[bool] = None,
     ) -> None:
         """Delete a tag for an artifact.
 
@@ -3020,7 +3027,7 @@ class HarborAsyncClient:
         project_name: str,
         repository_name: str,
         reference: str,
-        missing_ok: bool = False,
+        missing_ok: Optional[bool] = None,
     ) -> None:
         """Delete an artifact.
 
@@ -3032,8 +3039,8 @@ class HarborAsyncClient:
             The name of the repository
         reference : str
             The reference of the artifact, can be digest or tag
-        missing_ok : bool
-            Whether to ignore 404 error when deleting the artifact
+        missing_ok : Optional[bool]
+            DEPRECATED: Whether to ignore 404 error when deleting the artifact
         """
         path = get_artifact_path(project_name, repository_name, reference)
         await self.delete(path, missing_ok=missing_ok)
@@ -3044,7 +3051,7 @@ class HarborAsyncClient:
         repository_name: str,
         reference: str,
         label_id: int,
-        missing_ok: bool = False,
+        missing_ok: Optional[bool] = None,
     ) -> None:
         """Delete an artifact.
 
@@ -3058,8 +3065,8 @@ class HarborAsyncClient:
             The reference of the artifact, can be digest or tag
         label_id : int
             The id of the label to delete
-        missing_ok : bool
-            Whether to ignore 404 error when deleting the label
+        missing_ok : Optional[bool]
+            DEPRECATED: Whether to ignore 404 error when deleting the label
         """
         path = get_artifact_path(project_name, repository_name, reference)
         url = f"{path}/labels/{label_id}"
@@ -3248,7 +3255,7 @@ class HarborAsyncClient:
     async def delete_scanner(
         self,
         registration_id: Union[int, str],
-        missing_ok: bool = False,
+        missing_ok: Optional[bool] = None,
     ) -> Optional[ScannerRegistration]:
         """Delete a scanner by ID.
 
@@ -3256,8 +3263,8 @@ class HarborAsyncClient:
         ----------
         registration_id : Union[int, str]
             The ID of the scanner to delete.
-        missing_ok : bool
-            Whether to ignore 404 error when deleting the scanner.
+        missing_ok : Optional[bool]
+            DEPRECATED: Whether to ignore 404 error when deleting the scanner.
 
         Returns
         -------
@@ -3272,11 +3279,8 @@ class HarborAsyncClient:
         scanner = await self.delete(
             f"/scanners/{registration_id}", missing_ok=missing_ok
         )
-        # TODO: differentiate between 404 and no return value (how?)
         if not scanner:
-            if missing_ok:
-                return None
-            raise HarborAPIException(
+            raise UnprocessableEntity(
                 "Deletion request returned no data. Is the scanner registered?"
             )
         return self.construct_model(ScannerRegistration, scanner)
@@ -3515,7 +3519,7 @@ class HarborAsyncClient:
         self,
         project_name: str,
         repository_name: str,
-        missing_ok: bool = False,
+        missing_ok: Optional[bool] = None,
     ) -> None:
         """Delete a repository.
 
@@ -3525,8 +3529,8 @@ class HarborAsyncClient:
             The name of the project the repository belongs to.
         repository_name : str
             The name of the repository.
-        missing_ok : bool
-            If true, do not raise an error if the repository does not exist.
+        missing_ok : Optional[bool]
+            DEPRECATED: If true, Do not raise an error if the repository does not exist.
         """
         path = get_repo_path(project_name, repository_name)
         await self.delete(
@@ -4113,7 +4117,7 @@ class HarborAsyncClient:
         path: str,
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, Any]] = None,
-        missing_ok: bool = False,
+        missing_ok: Optional[bool] = None,
         **kwargs: Any,
     ) -> Optional[JSONType]:
         resp = await self._delete(
@@ -4130,7 +4134,7 @@ class HarborAsyncClient:
         path: str,
         headers: Optional[Dict[str, Any]] = None,
         params: Optional[Dict[str, Any]] = None,
-        missing_ok: bool = False,
+        missing_ok: Optional[bool] = None,
         **kwargs: Any,
     ) -> Response:
         resp = await self.client.delete(
@@ -4149,7 +4153,7 @@ class HarborAsyncClient:
         path: str,
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, Any]] = None,
-        missing_ok: bool = False,
+        missing_ok: Optional[bool] = None,
         **kwargs: Any,
     ) -> Response:
         resp = await self._head(
@@ -4166,7 +4170,7 @@ class HarborAsyncClient:
         path: str,
         headers: Optional[Dict[str, Any]] = None,
         params: Optional[Dict[str, Any]] = None,
-        missing_ok: bool = False,
+        missing_ok: Optional[bool] = None,
         **kwargs: Any,
     ) -> Response:
         resp = await self.client.head(

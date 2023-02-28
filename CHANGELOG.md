@@ -33,8 +33,10 @@ The **third number** is the patch version (bug fixes)
   - `HarborAsyncClient.delete_webhook_policy()`
   - `HarborAsyncClient.get_webhook_policy_last_trigger()`
   - `HarborAsyncClient.get_webhook_supported_events()`
+
 ### Changed
 
+- `missing_ok` parameter for DELETE methods has been deprecated. Manually  handle `harborapi.exceptions.NotFound` instead. This parameter will stop working in version 1.0.0, and be removed altogether in a later release.
 - `harborapi.models.Repository.split_name()` now returns a tuple instead of a list, as its docstring states it should.
 
 

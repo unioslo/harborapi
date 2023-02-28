@@ -1,3 +1,4 @@
+import warnings
 from typing import Any, List, Optional
 
 from httpx import HTTPStatusError, NetworkError, Response, TimeoutException
@@ -21,7 +22,7 @@ class HarborAPIException(Exception):
 
 
 class StatusError(HarborAPIException):
-    def __init__(self, errors: Optional[Errors] = None, *args: Any, **kwargs: Any):
+    def __init__(self, *args: Any, errors: Optional[Errors] = None, **kwargs: Any):
         """Initialize a StatusError.
 
         Parameters
@@ -90,12 +91,32 @@ class UnsupportedMediaType(StatusError):
     pass
 
 
+class UnprocessableEntity(StatusError):
+    pass
+
+
 class InternalServerError(StatusError):
     pass
 
 
+EXCEPTIONS_MAP = {
+    400: BadRequest,
+    401: Unauthorized,
+    403: Forbidden,
+    404: NotFound,
+    405: MethodNotAllowed,
+    409: Conflict,
+    412: PreconditionFailed,
+    415: UnsupportedMediaType,
+    422: UnprocessableEntity,
+    500: InternalServerError,
+}
+
+
 # NOTE: should this function be async?
-def check_response_status(response: Response, missing_ok: bool = False) -> None:
+def check_response_status(
+    response: Response, missing_ok: Optional[bool] = None
+) -> None:
     """Raises an exception if the response status is not 2xx.
 
     Exceptions are wrapped in a `StatusError` if the response contains errors.
@@ -104,13 +125,20 @@ def check_response_status(response: Response, missing_ok: bool = False) -> None:
     ----------
     response : Response
         The response to check.
-    missing_ok : bool
-        If `True`, do not raise an exception if the status is 404.
+    missing_ok : Optional[bool]
+        DEPRECATED: If `True`, do not raise an exception if the status is 404.
     """
+    if missing_ok is not None:
+        warnings.warn(
+            "The 'missing_ok' parameter is deprecated and will be removed in version 1.0.0",
+            DeprecationWarning,
+        )
+
     try:
         response.raise_for_status()
     except HTTPStatusError as e:
         status_code = response.status_code
+        # TODO: remove in v1.0.0
         if missing_ok and status_code == 404:
             logger.debug("{} not found", response.request.url)
             return
@@ -120,19 +148,8 @@ def check_response_status(response: Response, missing_ok: bool = False) -> None:
             response.status_code,
             response.url,
         )
-        exceptions = {
-            400: BadRequest,
-            401: Unauthorized,
-            403: Forbidden,
-            404: NotFound,
-            405: MethodNotAllowed,
-            409: Conflict,
-            412: PreconditionFailed,
-            415: UnsupportedMediaType,
-            500: InternalServerError,
-        }
-        exc = exceptions.get(status_code, StatusError)
-        raise exc(errors, *e.args) from e
+        exc = EXCEPTIONS_MAP.get(status_code, StatusError)
+        raise exc(*e.args, errors=errors) from e
 
 
 def try_parse_errors(response: Response) -> Optional[Errors]:
