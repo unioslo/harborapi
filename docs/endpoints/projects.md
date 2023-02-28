@@ -15,3 +15,10 @@
         - get_project_scanner
         - get_project_scanner_candidates
         - get_project_deletable
+        - get_project_member
+        - add_project_member
+        - add_project_member_user
+        - add_project_member_group
+        - update_project_member_role
+        - remove_project_member
+        - get_project_members

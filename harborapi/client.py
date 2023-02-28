@@ -60,6 +60,8 @@ from .models import (
     Permission,
     Project,
     ProjectDeletable,
+    ProjectMember,
+    ProjectMemberEntity,
     ProjectMetadata,
     ProjectReq,
     ProjectScanner,
@@ -79,6 +81,7 @@ from .models import (
     RobotCreate,
     RobotCreated,
     RobotSec,
+    RoleRequest,
     ScanDataExportExecution,
     ScanDataExportExecutionList,
     ScanDataExportJob,
@@ -96,6 +99,7 @@ from .models import (
     SystemInfo,
     Tag,
     UserCreationReq,
+    UserEntity,
     UserGroup,
     UserGroupSearchItem,
     UserProfile,
@@ -2227,6 +2231,244 @@ class HarborAsyncClient:
         )
         return self.construct_model(ProjectDeletable, deletable)
 
+    # GET /projects/{project_name_or_id}/members/{mid}
+    # Get project member information
+    async def get_project_member(
+        self, project_name_or_id: Union[str, int], member_id: int
+    ) -> ProjectMemberEntity:
+        """Get a project member given its ID.
+
+        Parameters
+        ----------
+        project_name_or_id : Union[str, int]
+            The name or ID of the project
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+        member_id : int
+            ID of the project member to fetch.
+
+        Returns
+        -------
+        ProjectMemberEntity
+            The member of the project with the given ID.
+        """
+        headers = get_project_headers(project_name_or_id)
+        resp = await self.get(
+            f"/projects/{project_name_or_id}/members/{member_id}", headers=headers
+        )
+        return self.construct_model(ProjectMemberEntity, resp)
+
+    # POST /projects/{project_name_or_id}/members
+    # Create project member
+    async def add_project_member(
+        self,
+        project_name_or_id: Union[str, int],
+        member: ProjectMember,
+    ) -> str:
+        """
+        Add a user or group as a member of a project.
+        Use `add_project_member_user` or `add_project_member_group` instead
+        to avoid so much boilerplate and potentially confusing models.
+
+        One of `member_group` or `member_user` fields of the `ProjectMember` instance must be set.
+        A `member_user` needs to define `user_id` _or_ `username`, and adds a user as a member of the project.
+        A `member_group` needs to define `id` _or_ `ldap_group_dn`, and adds a group as a member of the project.
+
+        !!! warning
+
+            The description above is the author's interpretation of the API documentation.
+            See below for the original description.
+
+        Original Description from API
+        ------------------------------
+        Create project member relationship, the member can be one of the user_member and group_member,
+        The user_member need to specify user_id or username.
+        If the user already exist in harbor DB, specify the user_id,
+        If does not exist in harbor DB, it will SearchAndOnBoard the user.
+        The group_member need to specify id or ldap_group_dn.
+        If the group already exist in harbor DB. specify the user group's id,
+        If does not exist, it will SearchAndOnBoard the group.
+
+        Parameters
+        ----------
+        project_name_or_id : Union[str, int]
+            The name or ID of the project
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+        member : ProjectMember
+            The user or group to add as a member of the project.
+
+        Returns
+        -------
+        str
+            The location of the new member.
+        """
+        headers = get_project_headers(project_name_or_id)
+        resp = await self.post(
+            f"/projects/{project_name_or_id}/members",
+            headers=headers,
+            json=member,
+        )
+        return urldecode_header(resp, "Location")
+
+    async def add_project_member_user(
+        self,
+        project_name_or_id: Union[str, int],
+        username_or_id: Union[str, int],
+        role_id: int,
+    ) -> str:
+        """Convience function for adding a user as a member of a project.
+        Prefer user IDs for existing users.
+
+        Parameters
+        ----------
+        project_name_or_id: Union[str, int]
+            The name or ID of the project
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+        username_or_id: Union[str, int]
+            The name or ID of the user
+            String arguments are treated as user names.
+            Integer arguments are treated as user IDs.
+        role_id: int
+            The role of the user.
+            Set `role_id` to 1 for projectAdmin, 2 for developer, 3 for guest, 4 for maintainer.
+
+        Returns
+        -------
+        str
+            The URL of the new project member
+        """
+        if isinstance(username_or_id, str):
+            user_kwargs = {
+                "username": username_or_id
+            }  # type: Dict[str, Union[str, int]]
+        else:
+            user_kwargs = {"user_id": username_or_id}
+
+        member = ProjectMember(
+            member_user=UserEntity(**user_kwargs),
+            role_id=role_id,
+        )
+        return await self.add_project_member(project_name_or_id, member)
+
+    async def add_project_member_group(
+        self,
+        project_name_or_id: Union[str, int],
+        ldap_group_dn_or_id: Union[str, int],
+        role_id: int,
+    ) -> str:
+        """Convience function for adding a group as a member of a project.
+        Prefer group IDs for existing groups.
+
+        Parameters
+        ----------
+        project_name_or_id: Union[str, int]
+            The name or ID of the project
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+        ldapdn_or_id: Union[str, int]
+            The LDAP group DN or ID of the user
+            String arguments are treated as user names.
+            Integer arguments are treated as user IDs.
+        role_id: int
+            The role the users in the group will have.
+            Set `role_id` to 1 for projectAdmin, 2 for developer, 3 for guest, 4 for maintainer.
+
+        Returns
+        -------
+        str
+            The URL of the new project member
+        """
+        if isinstance(ldap_group_dn_or_id, str):
+            group_kwargs = {
+                "ldap_group_dn": ldap_group_dn_or_id
+            }  # type: Dict[str, Union[str, int]]
+        else:
+            group_kwargs = {"id": ldap_group_dn_or_id}
+
+        member = ProjectMember(
+            member_group=UserGroup(**group_kwargs),
+            role_id=role_id,
+        )
+        return await self.add_project_member(project_name_or_id, member)
+
+    # PUT /projects/{project_name_or_id}/members/{mid}
+    # Update project member role
+    async def update_project_member_role(
+        self,
+        project_name_or_id: Union[str, int],
+        member_id: int,
+        role: RoleRequest,
+    ) -> None:
+        """Update the role of a project member.
+
+        Parameters
+        ----------
+        project_name_or_id: Union[str, int]
+            The name or ID of the project
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+        member_id: int
+            The ID of the member to update
+        request: RoleRequest
+            The new role of the member.
+            Set `role_id` to 1 for projectAdmin, 2 for developer, 3 for guest, 4 for maintainer.
+
+        Examples
+        --------
+        >>> await client.update_project_member_role("myproject", 1, RoleRequest(role_id=1))
+        """
+
+        headers = get_project_headers(project_name_or_id)
+        await self.put(
+            f"/projects/{project_name_or_id}/members/{member_id}",
+            headers=headers,
+            json=role,
+        )
+
+    # DELETE /projects/{project_name_or_id}/members/{mid}
+    # Delete project member
+    async def remove_project_member(
+        self, project_name_or_id: Union[str, int], member_id: int
+    ) -> None:
+        """Remove a member from a project.
+
+        Parameters
+        ----------
+        project_name_or_id : Union[str, int]
+            The name or ID of the project
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+        member_id : int
+            The ID of the member to remove.
+            This is a member ID, not a user or group ID.
+        """
+        headers = get_project_headers(project_name_or_id)
+        await self.delete(
+            f"/projects/{project_name_or_id}/members/{member_id}", headers=headers
+        )
+
+    # GET /projects/{project_name_or_id}/members
+    # Get all project member information
+    async def get_project_members(
+        self,
+        project_name_or_id: Union[str, int],
+        entity_name: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 10,
+        limit: Optional[int] = None,
+    ) -> List[ProjectMemberEntity]:
+        headers = get_project_headers(project_name_or_id)
+        params = get_params(entityname=entity_name, page=page, page_size=page_size)
+        members = await self.get(
+            f"/projects/{project_name_or_id}/members",
+            params=params,
+            headers=headers,
+            limit=limit,
+        )
+        return self.construct_model(ProjectMemberEntity, members, is_list=True)
+
     # CATEGORY: webhooks
 
     # GET /projects/{project_name_or_id}/webhook/jobs
@@ -2561,7 +2803,6 @@ class HarborAsyncClient:
                 resp.status_code,
             )
 
-    # CATEGORY: member
     # CATEGORY: ldap
 
     # POST /ldap/ping

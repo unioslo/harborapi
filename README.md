@@ -118,7 +118,6 @@ Harborapi attempts to improve endpoint descriptions where possible and fix model
 - [ ] Immutable
 - [x] Label
 - [x] Ldap
-- [ ] Member
 - [x] OIDC
 - [x] Ping
 - [ ] Preheat

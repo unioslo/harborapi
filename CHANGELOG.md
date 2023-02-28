@@ -45,6 +45,14 @@ The **third number** is the patch version (bug fixes)
   - `HarborAsyncClient.create_label()`
   - `HarborAsyncClient.delete_label()`
   - `HarborAsyncClient.get_labels()`
+- Project member methods
+  - `HarborAsyncClient.get_project_member()`
+  - `HarborAsyncClient.add_project_member()`
+  - `HarborAsyncClient.add_project_member_user()`
+  - `HarborAsyncClient.add_project_member_group()`
+  - `HarborAsyncClient.update_project_member_role()`
+  - `HarborAsyncClient.remove_project_member()`
+  - `HarborAsyncClient.get_project_members()`
 - New methods for controlling the size of the response log.
   - `harborapi.client.ResponseLog.resize()`
   - `harborapi.client.ResponseLog.clear()`

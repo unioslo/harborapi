@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Optional, Union
 
 import pytest
 from hypothesis import HealthCheck, given, settings
@@ -11,9 +11,14 @@ from harborapi.models.models import (
     AuditLog,
     Project,
     ProjectDeletable,
+    ProjectMember,
+    ProjectMemberEntity,
     ProjectReq,
     ProjectSummary,
+    RoleRequest,
     ScannerRegistration,
+    UserEntity,
+    UserGroup,
 )
 from tests.utils import json_from_list
 
@@ -212,3 +217,189 @@ async def test_get_project_deletable_mock(
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_project_deletable("1234")
     assert resp == deletable
+
+
+@pytest.mark.asyncio
+@given(st.builds(ProjectMemberEntity))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+async def test_get_project_member_mock(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+    member: ProjectMemberEntity,
+):
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/projects/1234/members/567",
+        method="GET",
+    ).respond_with_data(member.json(), content_type="application/json")
+    async_client.url = httpserver.url_for("/api/v2.0")
+    resp = await async_client.get_project_member("1234", 567)
+    assert resp == member
+
+
+@pytest.mark.asyncio
+@given(st.builds(ProjectMember))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+async def test_add_project_member_mock_fuzz(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+    member: ProjectMember,
+):
+    """Let Hypothesis generate random ProjectMemberEntity instances"""
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/projects/1234/members",
+        method="POST",
+    ).respond_with_data(
+        status=201
+    )  # TODO: header location
+    async_client.url = httpserver.url_for("/api/v2.0")
+    await async_client.add_project_member("1234", member)
+
+
+@pytest.mark.asyncio
+async def test_add_project_member_with_user_mock(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+):
+    """Tests add_project_member with a ProjectMemberEntity with a member_user"""
+    member = ProjectMember(
+        member_user=UserEntity(
+            user_id=567,
+        ),
+        role_id=1,
+    )
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/projects/1234/members",
+        method="POST",
+        data=member.json(exclude_unset=True),
+    ).respond_with_data(
+        status=201, headers={"Location": "/api/v2.0/projects/1234/members/567"}
+    )
+    async_client.url = httpserver.url_for("/api/v2.0")
+    await async_client.add_project_member("1234", member)
+
+
+@pytest.mark.asyncio
+async def test_add_project_member_with_group_mock(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+):
+    """Tests add_project_member with a ProjectMemberEntity with a member_group"""
+    member = ProjectMember(
+        member_group=UserGroup(
+            id=567,
+        ),
+        role_id=1,
+    )
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/projects/1234/members",
+        method="POST",
+        data=member.json(exclude_unset=True),
+    ).respond_with_data(
+        status=201, headers={"Location": "/api/v2.0/projects/1234/members/567"}
+    )
+    async_client.url = httpserver.url_for("/api/v2.0")
+    await async_client.add_project_member("1234", member)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("username,user_id", [("user1", None), (None, 123)])
+async def test_add_project_member_user_mock(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+    username: Optional[str],
+    user_id: Optional[int],
+):
+    kwarg = {"username": username} if username else {"user_id": user_id}
+    expect_member = ProjectMember(
+        member_user=UserEntity(
+            **kwarg,
+        ),
+        role_id=1,
+    )
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/projects/1234/members",
+        method="POST",
+        data=expect_member.json(exclude_unset=True),
+    ).respond_with_data(
+        status=201, headers={"Location": "/api/v2.0/projects/1234/members/567"}
+    )
+    async_client.url = httpserver.url_for("/api/v2.0")
+    await async_client.add_project_member_user(
+        "1234",
+        username_or_id=username or user_id,  # type: ignore
+        role_id=1,
+    )
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("ldap_group_dn,group_id", [("ou=Groups", None), (None, 123)])
+async def test_add_project_member_group_mock(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+    ldap_group_dn: Optional[str],
+    group_id: Optional[int],
+):
+    kwarg = {"ldap_group_dn": ldap_group_dn} if ldap_group_dn else {"id": group_id}
+    expect_member = ProjectMember(
+        member_group=UserGroup(
+            **kwarg,
+        ),
+        role_id=1,
+    )
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/projects/1234/members",
+        method="POST",
+        data=expect_member.json(exclude_unset=True),
+    ).respond_with_data(
+        status=201, headers={"Location": "/api/v2.0/projects/1234/members/567"}
+    )
+    async_client.url = httpserver.url_for("/api/v2.0")
+    await async_client.add_project_member_group(
+        "1234",
+        ldap_group_dn_or_id=ldap_group_dn or group_id,  # type: ignore
+        role_id=1,
+    )
+
+
+@pytest.mark.asyncio
+@given(st.builds(RoleRequest))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+async def test_update_project_member_role_mock(
+    async_client: HarborAsyncClient, httpserver: HTTPServer, role_req: RoleRequest
+):
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/projects/1234/members/567",
+        method="PUT",
+        data=role_req.json(exclude_unset=True),
+    ).respond_with_data(status=200)
+    async_client.url = httpserver.url_for("/api/v2.0")
+    await async_client.update_project_member_role("1234", 567, role_req)
+
+
+@pytest.mark.asyncio
+async def test_remove_project_member_mock(
+    async_client: HarborAsyncClient, httpserver: HTTPServer
+):
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/projects/1234/members/567",
+        method="DELETE",
+    ).respond_with_data(status=200)
+    async_client.url = httpserver.url_for("/api/v2.0")
+    await async_client.remove_project_member("1234", 567)
+
+
+@pytest.mark.asyncio
+@given(st.lists(st.builds(ProjectMemberEntity)))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+async def test_get_project_members_mock(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+    members: List[ProjectMemberEntity],
+):
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/projects/1234/members",
+        method="GET",
+    ).respond_with_data(json_from_list(members), content_type="application/json")
+    async_client.url = httpserver.url_for("/api/v2.0")
+    resp = await async_client.get_project_members("1234")
+    assert resp == members
