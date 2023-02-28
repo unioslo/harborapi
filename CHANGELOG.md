@@ -33,6 +33,12 @@ The **third number** is the patch version (bug fixes)
   - `HarborAsyncClient.delete_webhook_policy()`
   - `HarborAsyncClient.get_webhook_policy_last_trigger()`
   - `HarborAsyncClient.get_webhook_supported_events()`
+- Scan Data Export Methods
+  - `HarborAsyncClient.get_scan_export()`
+  - `HarborAsyncClient.get_scan_exports()`
+  - `HarborAsyncClient.export_scan_data()`
+  - `HarborAsyncClient.download_scan_export()`
+
 - New methods for controlling the size of the response log.
   - `harborapi.client.ResponseLog.resize()`
   - `harborapi.client.ResponseLog.clear()`

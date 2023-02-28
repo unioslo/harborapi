@@ -68,7 +68,7 @@ from .models import (
     Registry,
     RegistryInfo,
     RegistryPing,
-    RegistryProviderInfo,
+    RegistryProviders,
     RegistryUpdate,
     ReplicationExecution,
     ReplicationPolicy,
@@ -78,6 +78,10 @@ from .models import (
     RobotCreate,
     RobotCreated,
     RobotSec,
+    ScanDataExportExecution,
+    ScanDataExportExecutionList,
+    ScanDataExportJob,
+    ScanDataExportRequest,
     ScannerAdapterMetadata,
     ScannerRegistration,
     ScannerRegistrationReq,
@@ -1621,6 +1625,84 @@ class HarborAsyncClient:
         params = get_params(q=query, sort=sort, page=page, page_size=page_size)
         resp = await self.get(f"/system/purgeaudit", params=params, limit=limit)
         return self.construct_model(ExecHistory, resp, is_list=True)
+
+    # CATEGORY: scan data export
+
+    # GET /export/cve/executions
+    # Get a list of specific scan data export execution jobs for a specified user
+    async def get_scan_exports(self) -> ScanDataExportExecutionList:
+        """Get a list of scan data export execution jobs for the current user.
+
+        Returns
+        -------
+        ScanDataExportExecutionList
+            A list of scan data export execution jobs for the current user.
+        """
+        resp = await self.get(f"/export/cve/executions")
+        return self.construct_model(ScanDataExportExecutionList, resp)
+
+    # GET /export/cve/execution/{execution_id}
+    # Get the specific scan data export execution
+    async def get_scan_export(self, execution_id: int) -> ScanDataExportExecution:
+        """Get the specific scan data export execution.
+
+        Parameters
+        ----------
+        execution_id : int
+            The ID of the scan data export execution to get.
+
+        Returns
+        -------
+        ScanDataExportExecution
+            The scan data export execution.
+        """
+        resp = await self.get(f"/export/cve/execution/{execution_id}")
+        return self.construct_model(ScanDataExportExecution, resp)
+
+    # POST /export/cve
+    # Export scan data for selected projects
+    async def export_scan_data(
+        self, scan_type: str, criteria: ScanDataExportRequest
+    ) -> ScanDataExportJob:
+        """Start an export scan data job for selected projects.
+
+        Parameters
+        ----------
+        scan_type : str
+            The type of scan data to export. UNDOCUMENTED IN SPEC.
+        criteria : ScanDataExportRequest
+            The criteria to use for the scan data export.
+            Unset fields are not considered for the criteria.
+
+        Returns
+        -------
+        ScanDataExportJob
+            The ID of the scan data export job.
+        """
+        headers = {"X-Scan-Data-Type": scan_type}
+        resp = await self.post(f"/export/cve", headers=headers, json=criteria)
+        j = handle_optional_json_response(resp)
+        if j is None:
+            raise HarborAPIException("API returned no response body.")
+        return self.construct_model(ScanDataExportJob, j)
+
+    # GET /export/cve/download/{execution_id}
+    # Download the scan data export file
+    async def download_scan_export(self, execution_id: int) -> bytes:
+        """Download the scan data export file.
+
+        Parameters
+        ----------
+        execution_id : int
+            The ID of the scan data export execution to download.
+
+        Returns
+        -------
+        bytes
+            The scan data export file.
+        """
+        resp = await self.get_file(f"/export/cve/download/{execution_id}")
+        return resp
 
     # CATEGORY: icon
 
@@ -3999,6 +4081,61 @@ class HarborAsyncClient:
         resp, _ = await self._get(path, params=params, headers=headers, **kwargs)
         # assume text is never paginated
         return resp  # type: ignore
+
+    @backoff.on_exception(backoff.expo, RETRY_ERRORS, max_time=30)
+    async def get_file(
+        self,
+        path: str,
+        params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
+    ) -> bytes:
+        """Get a file from the API.
+
+        Parameters
+        ----------
+        path : str
+            URL path to resource
+        params: Optional[Dict[str, Any]]
+            Query parameters to pass to the request.
+        headers: Optional[Dict[str, Any]]
+            Headers to pass to the request.
+
+        Returns
+        -------
+        bytes
+            The file contents.
+        """
+        return await self._get_file(path, params=params, headers=headers, **kwargs)
+
+    async def _get_file(
+        self,
+        path: str,
+        params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
+    ) -> bytes:
+        """Get a file from the API.
+
+        Parameters
+        ----------
+        path : str
+            URL path to resource
+        params: Optional[Dict[str, Any]]
+            Query parameters to pass to the request.
+        headers: Optional[Dict[str, Any]]
+            Headers to pass to the request.
+
+        Returns
+        -------
+        bytes
+            The file contents.
+        """
+        resp = await self.client.get(
+            self.url + path, params=params, headers=headers, **kwargs
+        )
+        resp.raise_for_status()
+        return resp.read()
 
     # TODO: refactor this method so it looks like the other methods, while still supporting pagination.
     async def _get(

@@ -122,6 +122,7 @@ Harborapi attempts to improve endpoint descriptions where possible and fix model
 - [x] purge
 - [x] project
 - [x] scan
+- [x] scan data export
 - [ ] member
 - [x] ldap
 - [x] registry
