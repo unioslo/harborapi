@@ -87,4 +87,5 @@ async def test_download_scan_export_mock(
     ).respond_with_data(data)
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.download_scan_export(execution_id)
-    assert resp == data
+    assert resp.content == data
+    assert bytes(resp) == data
