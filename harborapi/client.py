@@ -1817,7 +1817,7 @@ class HarborAsyncClient:
 
     # GET /export/cve/download/{execution_id}
     # Download the scan data export file
-    async def download_scan_export(self, execution_id: int) -> bytes:
+    async def download_scan_export(self, execution_id: int) -> FileResponse:
         """Download the scan data export file.
 
         Parameters
@@ -1827,7 +1827,7 @@ class HarborAsyncClient:
 
         Returns
         -------
-        bytes
+        FileResponse
             The scan data export file.
         """
         resp = await self.get_file(f"/export/cve/download/{execution_id}")
@@ -1846,7 +1846,7 @@ class HarborAsyncClient:
 
         Returns
         -------
-        bytes
+        Icon
             The icon.
         """
         resp = await self.get(f"/icons/{digest}")
