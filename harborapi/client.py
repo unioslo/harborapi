@@ -111,6 +111,7 @@ from .models import (
     WebhookPolicy,
 )
 from .models.buildhistory import BuildHistoryEntry
+from .models.file import FileResponse
 from .models.scanner import HarborVulnerabilityReport
 from .utils import (
     get_artifact_path,
@@ -3863,9 +3864,17 @@ class HarborAsyncClient:
         return self.construct_model(SystemInfo, resp)
 
     # GET /systeminfo/getcert
-    # async def get_system_certificate(self) -> str:
-    #     """Get the certificate for the system."""
-    #     raise NotImplementedError("File download not yet implemented")
+    async def get_system_certificate(self) -> FileResponse:
+        """Get the certificate for the system as a bytes object.
+        Raises 404 error if the certificate file can't be found.
+        Check the error message for more details.
+
+        Returns
+        -------
+        FileResponse
+            The file response containing the certificate.
+        """
+        return await self.get_file("/systeminfo/getcert")
 
     # GET /systeminfo
     async def get_system_info(self) -> GeneralInfo:
@@ -4471,7 +4480,7 @@ class HarborAsyncClient:
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
-    ) -> bytes:
+    ) -> FileResponse:
         """Get a file from the API.
 
         Parameters
@@ -4485,8 +4494,11 @@ class HarborAsyncClient:
 
         Returns
         -------
-        bytes
-            The file contents.
+        FileResponse
+            The file response.
+            Contents can be accessed via the `content` attribute or by
+            passing passing the response to `bytes()`.
+            e.g. `resp = await client.get_file(...); bytes(resp)`
         """
         return await self._get_file(path, params=params, headers=headers, **kwargs)
 
@@ -4496,7 +4508,7 @@ class HarborAsyncClient:
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
-    ) -> bytes:
+    ) -> FileResponse:
         """Get a file from the API.
 
         Parameters
@@ -4510,14 +4522,13 @@ class HarborAsyncClient:
 
         Returns
         -------
-        bytes
+        FileResponse
             The file contents.
         """
         resp = await self.client.get(
             self.url + path, params=params, headers=headers, **kwargs
         )
-        resp.raise_for_status()
-        return resp.read()
+        return FileResponse(resp)
 
     # TODO: refactor this method so it looks like the other methods, while still supporting pagination.
     async def _get(
