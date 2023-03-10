@@ -1602,54 +1602,54 @@ class HarborAsyncClient:
     # CATEGORY: purge
 
     # PUT /system/purgeaudit/{purge_id}
-    async def stop_purge_audit_log(self, purge_id: int) -> None:
-        """Stop the specific purge audit log execution.
+    async def stop_audit_log_rotation(self, purge_id: int) -> None:
+        """Stop an audit log rotation job.
 
         Parameters
         ----------
         purge_id : int
-            The ID of the purge audit log to stop.
+            The ID of the audit log rotation job to stop.
         """
         await self.put(f"/system/purgeaudit/{purge_id}")
 
     # GET /system/purgeaudit/{purge_id}
-    async def get_purge_audit_log_status(self, purge_id: int) -> ExecHistory:
-        """Get the specific purge audit log status.
+    async def get_audit_log_rotation(self, purge_id: int) -> ExecHistory:
+        """Get an audit log rotation job.
 
         Parameters
         ----------
         purge_id : int
-            The ID of the purge audit log to get status for.
+            The ID of the audit log rotation job to get status for.
 
         Returns
         -------
         ExecHistory
-            The purge audit log status.
+            The audit log rotation job status.
         """
         resp = await self.get(f"/system/purgeaudit/{purge_id}")
         return self.construct_model(ExecHistory, resp)
 
     # GET /system/purgeaudit/{purge_id}/log
     # Get purge job log.
-    async def get_purge_audit_log(self, purge_id: int) -> str:
-        """Get the specific purge audit log.
+    async def get_audit_log_rotation_log(self, purge_id: int) -> str:
+        """Get the the log of an audit log rotation job.
 
         Parameters
         ----------
         purge_id : int
-            The ID of the purge audit log to get.
+            The ID of the log rotation to get.
 
         Returns
         -------
         str
-            The purge audit log.
+            The log rotation log
         """
         return await self.get_text(f"/system/purgeaudit/{purge_id}/log")
 
     # PUT /system/purgeaudit/schedule
     # Update purge job's schedule.
-    async def update_purge_audit_log_schedule(self, schedule: Schedule) -> None:
-        """Update the purge audit log schedule.
+    async def update_audit_log_rotation_schedule(self, schedule: Schedule) -> None:
+        """Update the log rotation schedule.
 
         Parameters
         ----------
@@ -1660,8 +1660,8 @@ class HarborAsyncClient:
 
     # POST /system/purgeaudit/schedule
     # Create a purge job schedule.
-    async def create_purge_audit_log_schedule(self, schedule: Schedule) -> str:
-        """Create a purge audit log schedule.
+    async def create_audit_log_rotation_schedule(self, schedule: Schedule) -> str:
+        """Create a log rotation schedule.
 
         Examples
         --------
@@ -1698,8 +1698,8 @@ class HarborAsyncClient:
         return urldecode_header(resp, "Location")
 
     # GET /system/purgeaudit/schedule
-    async def get_purge_audit_log_schedule(self) -> ExecHistory:
-        """Get the purge audit log schedule.
+    async def get_audit_log_rotation_schedule(self) -> ExecHistory:
+        """Get the log rotation schedule.
 
         Returns
         -------
@@ -1710,7 +1710,7 @@ class HarborAsyncClient:
         return self.construct_model(ExecHistory, resp)
 
     # GET /system/purgeaudit
-    async def get_purge_audit_logs(
+    async def get_audit_log_rotation_history(
         self,
         query: Optional[str] = None,
         sort: Optional[str] = None,
@@ -1718,7 +1718,7 @@ class HarborAsyncClient:
         page_size: int = 10,
         limit: Optional[int] = None,
     ) -> List[ExecHistory]:
-        """Get the purge audit log history.
+        """Get the log rotation job history.
 
         Parameters
         ----------
@@ -1743,12 +1743,12 @@ class HarborAsyncClient:
             All of these query patterns should be put in the query string
             and separated by `","`. e.g. `"k1=v1,k2=~v2,k3=[min~max]"`
         limit : Optional[int], optional
-            The maximum number of purge audit logs to return.
+            The maximum number of log rotation jobs to return.
 
         Returns
         -------
         List[ExecHistory]
-            A list of purge audit logs matching the query.
+            A list of log rotation jobs matching the query.
         """
         params = get_params(q=query, sort=sort, page=page, page_size=page_size)
         resp = await self.get(f"/system/purgeaudit", params=params, limit=limit)

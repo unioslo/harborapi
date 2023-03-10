@@ -10,7 +10,25 @@ The **third number** is the patch version (bug fixes)
 
 <!-- changelog follows -->
 
-<!-- ## [Unreleased] -->
+## [Unreleased]
+
+### Added
+
+- `HarborAsyncClient.get_system_certificate()`
+  - Returns the system certificate. (`GET /api/v2.0/systeminfo/getcert`)
+
+
+### Changed
+
+- **BREAKING**: Methods that download files, now return `FileResponse` instead of a bytes object. `FileResponse` contains the file contents along with its metadata. The object can be passed to `bytes()` to get the response contents, otherwise it can be accessed via the `FileResponse.content` attribute.
+- **BREAKING**: Renamed "purge" methods to better reflect their purpose of audit log rotation:
+  - `HarborAsyncClient.get_purge_audit_log_status()` -> `HarborAsyncClient.get_audit_log_rotation()`
+  - `HarborAsyncClient.get_purge_audit_log()` -> `HarborAsyncClient.get_audit_log_rotation_log()`
+  - `HarborAsyncClient.stop_purge_audit_log()` -> `HarborAsyncClient.stop_audit_log_rotation()`
+  - `HarborAsyncClient.get_purge_audit_log_schedule()` -> `HarborAsyncClient.get_audit_log_rotation_schedule()`
+  - `HarborAsyncClient.create_purge_audit_log_schedule()` -> `HarborAsyncClient.create_audit_log_rotation_schedule()`
+  - `HarborAsyncClient.update_purge_audit_log_schedule()` -> `HarborAsyncClient.update_audit_log_rotation_schedule()`
+  - `HarborAsyncClient.get_purge_audit_logs()` -> `HarborAsyncClient.get_audit_log_rotation_history()`
 
 ## [0.10.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.10.0) - 2023-02-28
 
