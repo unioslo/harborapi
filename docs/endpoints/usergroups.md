@@ -4,7 +4,7 @@
     options:
         members:
         - get_usergroup
-        - create_usergroups
+        - create_usergroup
         - update_usergroup
         - delete_usergroup
         - get_usergroups
