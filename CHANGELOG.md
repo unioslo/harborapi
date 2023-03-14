@@ -10,7 +10,13 @@ The **third number** is the patch version (bug fixes)
 
 <!-- changelog follows -->
 
-## [0.11.2](https://github.com/pederhan/harborapi/tree/harborapi-v0.11.1) - 2023-03-14
+## [0.12.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.12.0) - 2023-03-14
+
+### Changed
+
+- **BREAKING:** `HarborAsyncClient.export_scan_data()` now takes the arguments in the order (`criteria`, `scan_type`). Furthermore, `scan_type` now has a default argument of `"application/vnd.security.vulnerability.report; version=1.1"`, per the [blog post](https://goharbor.io/blog/harbor-2.6/#:~:text=Accessing%20CSV%20Export%20Programmatically) describing this new feature. It should not be necessary specify this argument, but it is still possible to do so if you need to.
+
+## [0.11.2](https://github.com/pederhan/harborapi/tree/harborapi-v0.11.2) - 2023-03-14
 
 ### Fixed
 
