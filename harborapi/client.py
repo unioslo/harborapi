@@ -968,6 +968,7 @@ class HarborAsyncClient:
     # Get all user groups information
     async def get_usergroups(
         self,
+        group_name: Optional[str] = None,
         ldap_group_dn: Optional[str] = None,
         page: int = 1,
         page_size: int = 10,
@@ -977,8 +978,10 @@ class HarborAsyncClient:
 
         Parameters
         ----------
+        group_name : Optional[str]
+            The group name to search for (fuzzy matching).
         ldap_group_dn : Optional[str]
-            The LDAP group DN to filter by.
+            The LDAP group DN to search with.
         page : int
             The page of results to return
         page_size : int
@@ -991,7 +994,12 @@ class HarborAsyncClient:
         List[UserGroup]
             List of user groups.
         """
-        params = get_params(ldap_group_dn=ldap_group_dn, page=page, page_size=page_size)
+        params = get_params(
+            group_name=group_name,
+            ldap_group_dn=ldap_group_dn,
+            page=page,
+            page_size=page_size,
+        )
         resp = await self.get("/usergroups", params=params, limit=limit)
         return self.construct_model(UserGroup, resp, is_list=True)
 
