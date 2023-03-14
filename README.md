@@ -101,7 +101,7 @@ All endpoints are documented in the [endpoints documentation](https://pederhan.g
 
 Harborapi make use of code generation for its data models, but it doesn't entirely rely on it like, for example, [githubkit](https://github.com/yanyongyu/githubkit). Thus, while the library is based on the Harbor REST API specification, it is not beholden to it. The schema contains several inconsistencies and errors, and the library takes steps to rectify some of these until they are fixed in Harbor's own specification.
 
-Harborapi attempts to improve endpoint descriptions where possible and fix models with fields given the wrong type or wrongly marked as required. Without these changes, the validation provided by the library would be unusable for certain endpoints, as these endpoints return data that is inconsistent with the specification, thus making it impossible to construct valid mdoels from the data.
+Harborapi attempts to improve endpoint descriptions where possible and fix models with fields given the wrong type or wrongly marked as required. Without these changes, the validation provided by the library would be unusable for certain endpoints, as these endpoints return data that is inconsistent with the specification, thus making it impossible to construct valid models from the data.
 
 
 ## Implemented endpoints
