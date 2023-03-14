@@ -10,7 +10,11 @@ The **third number** is the patch version (bug fixes)
 
 <!-- changelog follows -->
 
-<!-- ## [Unreleased] -->
+## [0.11.1](https://github.com/pederhan/harborapi/tree/harborapi-v0.11.1) - 2023-03-14
+
+### Added
+
+- Missing `group_name` and `limit` parameters for `HarborAsyncClient.get_usergroups()`.
 
 ## [0.11.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.11.0) - 2023-03-10
 
