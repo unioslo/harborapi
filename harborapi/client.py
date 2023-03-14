@@ -967,7 +967,11 @@ class HarborAsyncClient:
     # GET /usergroups
     # Get all user groups information
     async def get_usergroups(
-        self, ldap_group_dn: Optional[str] = None, page: int = 1, page_size: int = 10
+        self,
+        ldap_group_dn: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 10,
+        limit: Optional[int] = None,
     ) -> List[UserGroup]:
         """Get all user groups.
 
@@ -979,6 +983,8 @@ class HarborAsyncClient:
             The page of results to return
         page_size : int
             The number of results to return per page
+        limit: Optional[int]
+            The maximum number of results to return
 
         Returns
         -------
@@ -986,7 +992,7 @@ class HarborAsyncClient:
             List of user groups.
         """
         params = get_params(ldap_group_dn=ldap_group_dn, page=page, page_size=page_size)
-        resp = await self.get("/usergroups", params=params)
+        resp = await self.get("/usergroups", params=params, limit=limit)
         return self.construct_model(UserGroup, resp, is_list=True)
 
     # PUT /usergroups/{group_id}
