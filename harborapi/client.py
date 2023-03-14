@@ -1805,17 +1805,23 @@ class HarborAsyncClient:
     # POST /export/cve
     # Export scan data for selected projects
     async def export_scan_data(
-        self, scan_type: str, criteria: ScanDataExportRequest
+        self,
+        criteria: ScanDataExportRequest,
+        scan_type: str = "application/vnd.security.vulnerability.report; version=1.1",
     ) -> ScanDataExportJob:
         """Start an export scan data job for selected projects.
 
         Parameters
         ----------
-        scan_type : str
-            The type of scan data to export. UNDOCUMENTED IN SPEC.
         criteria : ScanDataExportRequest
             The criteria to use for the scan data export.
             Unset fields are not considered for the criteria.
+            Read the field descriptions carefully, because it is a HOT MESS!
+        scan_type : str
+            The type of scan data to export. UNDOCUMENTED IN SPEC.
+            Some info can be found here: <https://goharbor.io/blog/harbor-2.6/#:~:text=Accessing%20CSV%20Export%20Programmatically>.
+            The default value should be sufficient for the main use case
+            (exporting the vulnerability report).
 
         Returns
         -------

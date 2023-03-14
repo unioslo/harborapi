@@ -62,7 +62,7 @@ async def test_export_scan_data_mock(
     request: ScanDataExportRequest,
     job: ScanDataExportJob,
 ):
-    scan_type = "foo"
+    scan_type = "application/vnd.security.vulnerability.report; version=1.1"
     httpserver.expect_oneshot_request(
         "/api/v2.0/export/cve",
         method="POST",
@@ -70,7 +70,7 @@ async def test_export_scan_data_mock(
         data=request.json(exclude_unset=True),
     ).respond_with_data(job.json(), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
-    resp = await async_client.export_scan_data(scan_type, request)
+    resp = await async_client.export_scan_data(request, scan_type)
     assert resp == job
 
 
