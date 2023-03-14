@@ -362,18 +362,24 @@ async def test_add_project_member_group_mock(
 
 
 @pytest.mark.asyncio
-@given(st.builds(RoleRequest))
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@pytest.mark.parametrize("as_int", [True, False])
 async def test_update_project_member_role_mock(
-    async_client: HarborAsyncClient, httpserver: HTTPServer, role_req: RoleRequest
+    async_client: HarborAsyncClient, httpserver: HTTPServer, as_int: bool
 ):
+    role_id = 1234
+    expect = RoleRequest(role_id=role_id)
+    if as_int:
+        role_arg = role_id
+    else:
+        role_arg = RoleRequest(role_id=role_id) if as_int else role_id
+
     httpserver.expect_oneshot_request(
         "/api/v2.0/projects/1234/members/567",
         method="PUT",
-        data=role_req.json(exclude_unset=True),
+        data=expect.json(exclude_unset=True),
     ).respond_with_data(status=200)
     async_client.url = httpserver.url_for("/api/v2.0")
-    await async_client.update_project_member_role("1234", 567, role_req)
+    await async_client.update_project_member_role("1234", 567, role_arg)
 
 
 @pytest.mark.asyncio

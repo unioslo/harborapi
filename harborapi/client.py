@@ -2388,10 +2388,10 @@ class HarborAsyncClient:
             The name or ID of the project
             String arguments are treated as project names.
             Integer arguments are treated as project IDs.
-        ldapdn_or_id: Union[str, int]
-            The LDAP group DN or ID of the user
-            String arguments are treated as user names.
-            Integer arguments are treated as user IDs.
+        ldap_group_dn_or_id: Union[str, int]
+            The LDAP group DN or ID of the group.
+            String arguments are treated as LDAP group DNs.
+            Integer arguments are treated as group IDs.
         role_id: int
             The role the users in the group will have.
             Set `role_id` to 1 for projectAdmin, 2 for developer, 3 for guest, 4 for maintainer.
@@ -2420,7 +2420,7 @@ class HarborAsyncClient:
         self,
         project_name_or_id: Union[str, int],
         member_id: int,
-        role: RoleRequest,
+        role: Union[RoleRequest, int],
     ) -> None:
         """Update the role of a project member.
 
@@ -2432,14 +2432,18 @@ class HarborAsyncClient:
             Integer arguments are treated as project IDs.
         member_id: int
             The ID of the member to update
-        request: RoleRequest
+        role: Union[RoleRequest, int]
             The new role of the member.
             Set `role_id` to 1 for projectAdmin, 2 for developer, 3 for guest, 4 for maintainer.
+            Can be specified as an integer value or a `RoleRequest` object.
 
         Examples
         --------
-        >>> await client.update_project_member_role("myproject", 1, RoleRequest(role_id=1))
+        >>> await client.update_project_member_role("myproject", 1, role=1)
+        >>> await client.update_project_member_role("myproject", 1, role=RoleRequest(role_id=1))
         """
+        if isinstance(role, int):
+            role = RoleRequest(role_id=role)
 
         headers = get_project_headers(project_name_or_id)
         await self.put(

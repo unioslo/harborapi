@@ -10,6 +10,12 @@ The **third number** is the patch version (bug fixes)
 
 <!-- changelog follows -->
 
+## Unreleased
+
+### Changed
+
+- `HarborAsyncClient.update_project_member_role()` now accepts integer arguments for its `role_id` parameter, since `RoleRequest` only has a single field (`role_id`) .
+
 ## [0.12.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.12.0) - 2023-03-14
 
 ### Changed
