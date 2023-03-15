@@ -123,6 +123,22 @@ def test_vulnerabilitysummary_override(uppercase: bool) -> None:
     assert v.fixable == 5
 
 
+def test_vulnerabilitysummary_summary_none() -> None:
+    # Test that the summary field can be None
+    values = {
+        "summary": None,
+        "total": 0,
+        "fixable": 0,
+    }
+    v = VulnerabilitySummary(**values)
+    assert v.low == 0
+    assert v.medium == 0
+    assert v.high == 0
+    assert v.critical == 0
+    assert v.total == 0
+    assert v.fixable == 0
+
+
 def test_search() -> None:
     # Real search result
     data = {

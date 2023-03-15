@@ -348,6 +348,7 @@ __all__ = [
 
 # Shadow broken models with new definitions, and update references
 
+
 # START ChartMetadata
 class ChartMetadata(_ChartMetadata):
     # NOTE: only 'engine' has proven to be broken so far, but that makes
@@ -374,6 +375,7 @@ class Search(_Search):
 
 
 # END ChartMetadata
+
 
 # START Repository
 class Repository(_Repository):
@@ -452,7 +454,7 @@ class VulnerabilitySummary(_VulnerabilitySummary):
 
     @root_validator(pre=True)
     def assign_severity_breakdown(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        summary = values.get("summary", {})
+        summary = values.get("summary") or {}  # account for None
         if not isinstance(summary, dict):
             raise ValueError("'summary' must be a dict")
         return {**values, **summary}
@@ -562,6 +564,7 @@ class LdapConf(_LdapConf):
 # END LdapConf
 
 # Custom models
+
 
 # /replication/adapterinfos returns a dict of RegistryProviderInfo objects,
 # where each key is the name of registry provider.
