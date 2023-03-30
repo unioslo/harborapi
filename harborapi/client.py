@@ -2492,6 +2492,28 @@ class HarborAsyncClient:
         page_size: int = 10,
         limit: Optional[int] = None,
     ) -> List[ProjectMemberEntity]:
+        """
+
+        Parameters
+        ----------
+        project_name_or_id : Union[str, int]
+            Name or ID of project to list members for.
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+        entity_name : Optional[str], optional
+            Entity name to search for.
+        page : int, optional
+            The page number to start iterating from, by default 1
+        page_size : int, optional
+            Number of results to retrieve per page, by default 10
+        limit : Optional[int], optional
+            The maximum number of webhook jobs to return.
+
+        Returns
+        -------
+        List[ProjectMemberEntity]
+            A list of project members.
+        """
         headers = get_project_headers(project_name_or_id)
         params = get_params(entityname=entity_name, page=page, page_size=page_size)
         members = await self.get(

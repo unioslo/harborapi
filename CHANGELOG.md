@@ -21,6 +21,7 @@ The **third number** is the patch version (bug fixes)
 
 - Potential bug with `models.VulnerabilitySummary` if `summary` is `None`.
 - JSON parsing exception in `HarborAsyncClient.get_audit_log_rotation_schedule()` that could occur if no schedule exists. The API returns an emtpy `200 OK` response, which is now handled correctly (empty `ExecHistory` object).
+- Missing docstring for `HarborAsycClient.get_project_members`.
 
 ## [0.12.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.12.0) - 2023-03-14
 
