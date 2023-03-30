@@ -102,6 +102,20 @@ async def test_get_audit_log_rotation_schedule_mock(
 
 
 @pytest.mark.asyncio
+async def test_get_audit_log_rotation_schedule_none(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+):
+    """Tests cases where the API returns a 200 OK response, with an empty body."""
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/system/purgeaudit/schedule", method="GET"
+    ).respond_with_data("", content_type="application/json")
+    async_client.url = httpserver.url_for("/api/v2.0")
+    resp = await async_client.get_audit_log_rotation_schedule()
+    assert resp == ExecHistory()  # expect empty ExecHistory object
+
+
+@pytest.mark.asyncio
 @given(st.lists(st.builds(ExecHistory)))
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 async def test_get_audit_log_rotation_history_mock(

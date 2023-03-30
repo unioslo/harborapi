@@ -1721,7 +1721,15 @@ class HarborAsyncClient:
         ExecHistory
             The purge audit log schedule.
         """
-        resp = await self.get(f"/system/purgeaudit/schedule")
+        try:
+            resp = await self.get(f"/system/purgeaudit/schedule")
+        except HarborAPIException:  # TODO: catch a more specific exception somehow
+            # If the schedule has not been created, the API returns a 200 OK with
+            # an empty body. Calling Response.json() on this response, raises
+            # a JSONDecodeError (which we normally catch and re-raise as a
+            # HarborAPIException).
+            # We catch this exception and return an empty ExecHistory object.
+            return ExecHistory()
         return self.construct_model(ExecHistory, resp)
 
     # GET /system/purgeaudit
