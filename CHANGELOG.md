@@ -10,7 +10,11 @@ The **third number** is the patch version (bug fixes)
 
 <!-- changelog follows -->
 
-<!-- ## Unreleased -->
+## Unreleased
+
+### Changed
+
+- `limit` kwarg now treats `0` as no limit. Previously, `0` meant no results would be returned.
 
 ## [0.13.1](https://github.com/pederhan/harborapi/tree/harborapi-v0.13.1) - 2023-04-03
 

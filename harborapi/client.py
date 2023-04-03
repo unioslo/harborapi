@@ -4462,6 +4462,30 @@ class HarborAsyncClient:
         limit: Optional[int] = None,
         **kwargs: Any,
     ) -> JSONType:
+        """Send a GET request to the Harbor API.
+
+        Parameters
+        ----------
+        path : str
+            The path to send the request to.
+        params : Optional[Dict[str, Any]]
+            The query parameters to send with the request.
+        headers : Optional[Dict[str, Any]]
+            The headers to send with the request.
+        follow_links : bool
+            Whether to follow pagination links.
+        limit : Optional[int]
+            The maximum number of results to return.
+            None and n<=0 are treated as no limit.
+        kwargs : Any
+            Additional keyword arguments that might be added in the future.
+
+        Returns
+        -------
+        JSONType
+            The JSON response from the API.
+        """
+
         j, next_url = await self._get(
             path,
             params=params,
@@ -4471,6 +4495,10 @@ class HarborAsyncClient:
         )
         if not next_url:  # no pagination
             return j
+
+        # Handle paginated results
+        # Coerce limit to n>=0
+        limit = limit if limit and limit > 0 else 0
 
         # Make sure j is a list
         if not isinstance(j, list):
@@ -4505,7 +4533,7 @@ class HarborAsyncClient:
             j.extend(paginated)
 
             # Check if we have reached our limit
-            if limit is not None:
+            if limit:
                 if len(j) > limit:
                     j = j[:limit]
                     break
