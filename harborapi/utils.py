@@ -184,7 +184,7 @@ def get_basicauth(username: str, secret: str) -> SecretStr:
 
 # Finds the next url in a pagination header (e.g. Link: </api/v2.0/endpoint?page=X&page_size=Y>; rel="next")
 # Ripped from: https://docs.github.com/en/rest/guides/using-pagination-in-the-rest-api?apiVersion=2022-11-28#example-creating-a-pagination-method
-PAGINATION_NEXT_PATTERN = re.compile(r"(?<=<)([\S]*)(?=>; rel=\"next\")")
+PAGINATION_NEXT_PATTERN = re.compile('<([^>]+)>; rel="next"')
 
 # Finds the API path in a URL (e.g. /api/v2.0/)
 API_PATH_PATTERN = re.compile(r"\/api\/v[0-9]\.[0-9]{1,2}")
@@ -210,7 +210,7 @@ def parse_pagination_url(url: str, strip: bool = True) -> Optional[str]:
     if not match:
         return None
 
-    m = match.group(0)
+    m = match.group(1)  # exclude rel="next" from the match
     if not strip:
         return m
 
