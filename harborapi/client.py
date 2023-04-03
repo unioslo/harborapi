@@ -250,7 +250,7 @@ class HarborAsyncClient:
             If not provided, the client attempts to use `credentials` to authenticate.
         secret : Optional[str]
             Secret to use for authentication along with `username`.
-        credentials : Optional[str]
+        basicauth : Optional[str]
             base64-encoded Basic Access Authentication credentials to use for
             authentication in place of `username` and `secret`.
         credentials_file : Optional[Union[str, Path]]
