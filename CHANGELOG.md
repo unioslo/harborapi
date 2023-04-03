@@ -12,6 +12,12 @@ The **third number** is the patch version (bug fixes)
 
 <!-- ## Unreleased -->
 
+## [0.13.1](https://github.com/pederhan/harborapi/tree/harborapi-v0.13.1) - 2023-04-03
+
+### Fixed
+
+- Pagination URLs containing spaces are now properly handled. This could occur if passing a a query parameter with a list of items, such as `?q=operation={push pull}` or `?q=operation=(push pull)`.
+
 ## [0.13.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.13.0) - 2023-03-31
 
 ### Changed
