@@ -202,6 +202,16 @@ def test_urldecode_header(header: Dict[str, str], key: str, expected: str):
             '</projects?page=3&page_size=10&sort=resource_type,op_time&with_detail=true>; rel="next"',
             "/projects?page=3&page_size=10&sort=resource_type,op_time&with_detail=true",
         ),
+        # Next link with advanced query string (union relationship)
+        (
+            '</api/v2.0/audit-logs?page=2&page_size=10&q=operation={push pull},resource_type=artifact>; rel="next"',
+            "/audit-logs?page=2&page_size=10&q=operation={push pull},resource_type=artifact",
+        ),
+        # Next link with advanced query string (intersection relationship)
+        (
+            '</api/v2.0/audit-logs?page=2&page_size=10&q=operation=(push pull),resource_type=artifact>; rel="next"',
+            "/audit-logs?page=2&page_size=10&q=operation=(push pull),resource_type=artifact",
+        ),
     ],
 )
 def test_parse_pagination_url(url: str, expected: Optional[str]) -> None:
@@ -235,6 +245,16 @@ def test_parse_pagination_url(url: str, expected: Optional[str]) -> None:
         (
             '</projects?page=3&page_size=10&sort=resource_type,op_time&with_detail=true>; rel="next"',
             "/projects?page=3&page_size=10&sort=resource_type,op_time&with_detail=true",
+        ),
+        # Next link with advanced query string (union relationship)
+        (
+            '</api/v2.0/audit-logs?page=2&page_size=10&q=operation={push pull},resource_type=artifact>; rel="next"',
+            "/api/v2.0/audit-logs?page=2&page_size=10&q=operation={push pull},resource_type=artifact",
+        ),
+        # Next link with advanced query string (intersection relationship)
+        (
+            '</api/v2.0/audit-logs?page=2&page_size=10&q=operation=(push pull),resource_type=artifact>; rel="next"',
+            "/api/v2.0/audit-logs?page=2&page_size=10&q=operation=(push pull),resource_type=artifact",
         ),
     ],
 )
