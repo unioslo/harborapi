@@ -54,7 +54,6 @@ class ArtifactInfo(BaseModel):
 
     @property
     def name_with_digest(self) -> str:
-
         """The name of the artifact with the first 15 characters of the
         SHA256 digest, mimicking the notation used in the web interface.
 
@@ -71,7 +70,6 @@ class ArtifactInfo(BaseModel):
 
     @property
     def name_with_digest_full(self) -> str:
-
         """The name of the artifact with its full SHA256 digest.
 
         Returns
@@ -92,10 +90,9 @@ class ArtifactInfo(BaseModel):
         str
             The artifact's name in the form of `project/repository:tag`.
         """
-        tag = None
-        if self.artifact.tags:
-            tag = self.artifact.tags[0].name
-        if not tag:
+        if self.tags:
+            tag = self.tags[0]
+        else:
             tag = "untagged"
         return f"{self.repository.name}:{tag}"
 
@@ -112,27 +109,27 @@ class ArtifactInfo(BaseModel):
 
     @property
     def repository_name(self) -> str:
-        """The name of the repository that the artifact belongs to.
+        """Name of the repository that the artifact belongs to.
 
         Returns
         -------
         str
-            The name of the repository that the artifact belongs to.
+            Name of the repository that the artifact belongs to.
         """
         return self.repository.base_name
 
     @property
-    def tags(self) -> str:
-        """The tags of the artifact.
+    def tags(self) -> List[str]:
+        """Name of tags for the artifact.
 
         Returns
         -------
-        str
+        List[str]
             The tags of the artifact.
         """
         if not self.artifact.tags:
-            return ""
-        return ", ".join(filter(None, (t.name for t in self.artifact.tags)))
+            return []
+        return list(filter(None, (t.name for t in self.artifact.tags)))
 
     def has_cve(self, cve_id: str) -> bool:
         """Returns whether the artifact is affected by the given CVE ID.

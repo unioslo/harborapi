@@ -15,6 +15,7 @@ The **third number** is the patch version (bug fixes)
 ### Changed
 
 - `limit` kwarg now treats `0` as no limit. Previously, `0` meant no results would be returned.
+- **BREAKING:** `harborapi.ext.artifact.ArtifactInfo.tags` now returns a list of tags instead of a comma-separated string of tags. This gives more flexibility to work with the various tags, and is more consistent with the rest of the library. If you need the comma-separated string, you can use `", ".join(artifact_info.tags)`.
 
 ## [0.13.1](https://github.com/pederhan/harborapi/tree/harborapi-v0.13.1) - 2023-04-03
 
