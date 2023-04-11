@@ -53,6 +53,12 @@ client = HarborAsyncClient(
 ```python
 import asyncio
 
+from harborapi import HarborAsyncClient
+
+client = HarborAsyncClient(
+    # ...
+)
+
 async def main() -> None:
     # Get all projects
     projects = await client.get_projects()
@@ -74,7 +80,13 @@ asyncio.run(main())
 
 ```python
 import asyncio
+
+from harborapi import HarborAsyncClient
 from harborapi.models import ProjectReq, ProjectMetadata
+
+client = HarborAsyncClient(
+    # ...
+)
 
 async def main() -> None:
     project_path = await client.create_project(
