@@ -14,7 +14,7 @@ client.validate = False
 This will cause the client to skip validation of data from the API, and instead return the data as a Pydantic model where none of the fields have been validated. This can be useful if you are using a version of Harbor that is not yet supported by the latest version of `harborapi`, but still want to use dot notation to access the data, and use the various helper methods on the Pydantic models.
 
 !!! warning
-    Nested models will not be constructed when `validate=False` is set. This means that if you have a model that has a field that is a Pydantic model, the value of the field will be a `dict` instead of a Pydantic model.
+    Nested models will not be constructed when `validate=False` is set. The type of any submodel fields will be `dict` or `list`, depending on the type of the field in the API response, as the submodels will not be constructed by Pydantic. This will effectively break any code that relies on the submodels being constructed.
 
     Pydantic does not support constructing nested models without validation. This is a limitation of Pydantic, and not `harborapi`.
 
