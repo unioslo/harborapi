@@ -1,18 +1,33 @@
+from __future__ import annotations
+
 import asyncio
-from typing import Any, Awaitable, Callable, List, Optional, Sequence, TypeVar, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Awaitable,
+    Callable,
+    List,
+    Optional,
+    Sequence,
+    TypeVar,
+    Union,
+)
 
 import backoff
 from httpx import TimeoutException
 from loguru import logger
 
-from .. import HarborAsyncClient
 from ..exceptions import NotFound
 from ..models import Artifact, Repository, UserResp
 from .artifact import ArtifactInfo
 
+if TYPE_CHECKING:
+    from .. import HarborAsyncClient
+
 T = TypeVar("T")
 
 ExceptionCallback = Callable[[List[Exception]], None]
+
 
 # TODO: support passing in existing project/repo objects
 async def get_artifact(
@@ -52,7 +67,7 @@ async def get_artifact(
     )
 
     # Wait for both tasks to complete
-    await asyncio.wait([artifact_task, repo_task])  # type: ignore # not sure why mypy doesn't like this
+    await asyncio.wait([artifact_task, repo_task])
 
     # Get the results of the coroutines
     artifact = artifact_task.result()
@@ -230,6 +245,8 @@ async def get_repositories(
     if projects:
         # TODO: verify that the project_name property is correct in this regard
         repos = [r for r in repos if r.project_name in projects]
+        # TODO: add warning if a project is not found
+        #       OR raise an error?!
     return repos
 
 

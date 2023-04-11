@@ -10,7 +10,11 @@ The **third number** is the patch version (bug fixes)
 
 <!-- changelog follows -->
 
-<!-- ## Unreleased -->
+## Unreleased
+
+### Fixed
+
+- Potential circular import error in `harborapi.ext`, where `HarborAsyncClient` is imported as a type annotation.
 
 ## [0.14.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.14.0) - 2023-04-05
 
