@@ -12,6 +12,11 @@ The **third number** is the patch version (bug fixes)
 
 ## Unreleased
 
+
+### Added
+
+- `verify` kwarg for `HarborAsyncClient` and `HarborClient` which is passed to the underlying `httpx.AsyncClient`. This is useful for self-signed certificates, or if you want to control the SSL verification yourself. See [httpx documentation](https://www.python-httpx.org/advanced/#ssl-certificates) for more information.
+
 ### Fixed
 
 - Potential circular import error in `harborapi.ext`, where `HarborAsyncClient` is imported as a type annotation.

@@ -12,7 +12,7 @@ class HarborClient(HarborAsyncClient):
         self,
         loop: Optional[asyncio.AbstractEventLoop] = None,
         *args: Any,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         super().__init__(*args, **kwargs)
         self.loop = loop or asyncio.new_event_loop()

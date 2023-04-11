@@ -23,9 +23,10 @@ from typing import (
 import backoff
 import httpx
 from httpx import RequestError, Response, Timeout
+from httpx._types import VerifyTypes
 from httpx._urls import URL
 from loguru import logger
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, SecretStr, ValidationError
 
 from ._types import JSONType
 from .auth import load_harbor_auth_file, new_authfile_from_robotcreate
@@ -215,9 +216,6 @@ class ResponseLog:
         return len(self.entries)
 
 
-from pydantic import SecretStr
-
-
 class HarborAsyncClient:
     basicauth: SecretStr
 
@@ -228,12 +226,15 @@ class HarborAsyncClient:
         secret: Optional[str] = None,
         basicauth: Optional[str] = None,
         credentials_file: Optional[Union[str, Path]] = None,
-        follow_redirects: bool = True,
-        timeout: Union[float, Timeout] = 10.0,
         validate: bool = True,
         raw: bool = False,
         logging: bool = False,
         max_logs: Optional[int] = None,
+        # HTTPX client options
+        follow_redirects: bool = True,
+        timeout: Union[float, Timeout] = 10.0,
+        verify: VerifyTypes = True,
+        # Config options
         config: Optional[Any] = None,  # NYI
         **kwargs: Any,
     ) -> None:
@@ -255,12 +256,6 @@ class HarborAsyncClient:
             authentication in place of `username` and `secret`.
         credentials_file : Optional[Union[str, Path]]
             Path to a JSON-encoded credentials file from which to load credentials.
-        follow_redirects : bool
-            If True, follow redirects when making requests.
-            Allows for coercion from HTTP to HTTPS.
-        timeout : Union[float, Timeout]
-            The timeout to use for requests.
-            Can be either a float or a `httpx.Timeout` object.
         validate : bool
             If True, validate the results with Pydantic models.
             If False, data is returned as Pydantic models, but without
@@ -274,6 +269,16 @@ class HarborAsyncClient:
             Enable client logging with `Loguru`.
         max_logs : Optional[int]
             The maximum number of entries to keep in the response log.
+        follow_redirects : bool
+            If True, follow redirects when making requests.
+            Allows for coercion from HTTP to HTTPS.
+        timeout : Union[float, Timeout]
+            The timeout to use for requests.
+            Can be either a float or a `httpx.Timeout` object.
+        verify : VerifyTypes
+            Control verification of the server's TLS certificate.
+            See `httpx._types.VerifyTypes` for more information or
+            <https://www.python-httpx.org/advanced/#ssl-certificates>.
         config : Optional[Any]
             (NYI) config
 
@@ -317,6 +322,7 @@ class HarborAsyncClient:
             follow_redirects=follow_redirects,
             timeout=timeout,
             cookies=CookieDiscarder(),
+            verify=verify,
         )
 
         self.validate = validate
