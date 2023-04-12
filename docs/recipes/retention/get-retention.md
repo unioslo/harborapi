@@ -12,8 +12,8 @@ from harborapi import HarborAsyncClient
 
 client = HarborAsyncClient(
     url="https://demo.goharbor.io/api/v2.0",
-    username="pederhan",
-    secret="HarborPassword123",
+    username="username",
+    secret="secret",
 )
 
 
