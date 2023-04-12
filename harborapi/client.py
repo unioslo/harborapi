@@ -78,6 +78,10 @@ from .models import (
     ReplicationPolicy,
     ReplicationTask,
     Repository,
+    RetentionExecution,
+    RetentionExecutionTask,
+    RetentionMetadata,
+    RetentionPolicy,
     Robot,
     RobotCreate,
     RobotCreated,
@@ -3722,7 +3726,269 @@ class HarborAsyncClient:
     # GET /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/dependencies
 
     # CATEGORY: immutable
+
     # CATEGORY: retention
+
+    async def get_project_retention_id(
+        self, project_name_or_id: Union[str, int]
+    ) -> Optional[int]:
+        """Get the retention policy ID for a project.
+
+
+        The actual retention policy ID field is marked as a string in the
+        API spec, but the retention endpoints expect an integer. This method
+        returns an integer if possible, and None otherwise. A warning
+        is emitted if the ID cannot be converted to an integer, so that we
+        know if this breaks/changes in the future.
+
+        Yet another ticking time-bomb stemming from handwritten API specs...
+
+
+        Parameters
+        ----------
+        project_name_or_id : Union[str, int]
+            The name or ID of the project.
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+
+        Returns
+        -------
+        Optional[int]
+            The retention policy ID for the project, or None if the project
+            does not have a retention policy or the ID cannot be converted to int.
+        """
+        project = await self.get_project(project_name_or_id)
+        if project.metadata and project.metadata.retention_id is not None:
+            try:
+                return int(project.metadata.retention_id)
+            except ValueError as e:
+                logger.error("Could not convert retention ID to integer: {e}", e)
+        return None
+
+    # GET /retentions/{id}
+    # Get Retention Policy
+    async def get_retention_policy(self, retention_id: int) -> RetentionPolicy:
+        """Get a retention policy.
+
+        Parameters
+        ----------
+        retention_id : int
+            The ID of the retention policy.
+
+        Returns
+        -------
+        RetentionPolicy
+            The retention policy.
+        """
+        resp = await self.get(f"/retentions/{retention_id}")
+        return self.construct_model(RetentionPolicy, resp)
+
+    # POST /retentions
+    # Create Retention Policy
+    async def create_retention_policy(self, policy: RetentionPolicy) -> str:
+        """Creates a new retention policy. Returns location of the created policy.
+
+        Parameters
+        ----------
+        policy : RetentionPolicy
+            The retention policy to create.
+
+        Returns
+        -------
+        str
+            The location of the created retention policy.
+        """
+        resp = await self.post("/retentions", json=policy)
+        return urldecode_header(resp, "Location")
+
+    # PUT /retentions/{id}
+    # Update Retention Policy
+    async def update_retention_policy(
+        self,
+        retention_id: int,
+        retention: RetentionPolicy,
+    ) -> None:
+        """Update a retention policy.
+
+        Parameters
+        ----------
+        retention_id : int
+            The ID of the retention policy.
+        retention : RetentionPolicy
+            The retention policy to update.
+        """
+        await self.put(f"/retentions/{retention_id}", retention)
+
+    # DELETE /retentions/{id}
+    # Delete Retention Policy
+    async def delete_retention_policy(self, retention_id: int) -> None:
+        """Delete a retention policy.
+
+        Parameters
+        ----------
+        retention_id : int
+            The ID of the retention policy.
+        """
+        await self.delete(f"/retentions/{retention_id}")
+
+    # GET /retentions/{id}/executions/{eid}/tasks
+    # Get Retention tasks
+    async def get_retention_tasks(
+        self,
+        retention_id: int,
+        execution_id: int,
+        page: Optional[int] = None,
+        page_size: Optional[int] = None,
+        limit: Optional[int] = None,
+    ) -> List[RetentionExecutionTask]:
+        """Get the retention tasks.
+
+        Parameters
+        ----------
+        retention_id : int
+            The ID of the retention policy.
+        execution_id : int
+            The ID of the retention execution.
+        page : Optional[int]
+            The page number.
+        page_size : Optional[int]
+            The page size.
+
+        Returns
+        -------
+        List[RetentionExecutionTask]
+            The retention tasks.
+        """
+        resp = await self.get(
+            f"/retentions/{retention_id}/executions/{execution_id}/tasks",
+            params={"page": page, "page_size": page_size},
+            limit=limit,
+        )
+        return self.construct_model(RetentionExecutionTask, resp, is_list=True)
+
+    # GET /retentions/metadatas
+    # Get Retention Metadatas
+    async def get_retention_metadata(self) -> RetentionMetadata:
+        """Get the retention metadata.
+
+        Returns
+        -------
+        RetentionMetadata
+            The retention metadata.
+        """
+        resp = await self.get("/retentions/metadatas")
+        return self.construct_model(RetentionMetadata, resp)
+
+    # GET /retentions/{id}/executions/{eid}/tasks/{tid}
+    # Get Retention job task log
+    async def get_retention_execution_task_log(
+        self, retention_id: int, execution_id: int, task_id: int
+    ) -> str:
+        """Get the log for a retention execution task.
+
+        Parameters
+        ----------
+        retention_id : int
+            The id of the retention policy.
+        execution_id : int
+            The id of the retention execution.
+        task_id : int
+            The id of the retention task.
+
+        Returns
+        -------
+        str
+            The log for the task.
+        """
+        return await self.get_text(
+            f"/retentions/{retention_id}/executions/{execution_id}/tasks/{task_id}"
+        )
+
+    # GET /retentions/{id}/executions
+    # Get Retention executions
+    async def get_retention_executions(
+        self,
+        retention_id: int,
+        page: int = 1,
+        page_size: int = 10,
+        limit: Optional[int] = None,
+    ) -> List[RetentionExecution]:
+        """Get the retention executions for a policy.
+
+        Parameters
+        ----------
+        retention_id : int
+            The id of the retention policy.
+        page : int
+            The page number to return.
+        page_size : int
+            The number of items to return per page.
+        limit : Optional[int]
+            The maximum number of items to return.
+
+        Returns
+        -------
+        List[RetentionExecution]
+            The retention executions for the policy.
+        """
+        params = get_params(page=page, page_size=page_size)
+        resp = await self.get(
+            f"/retentions/{retention_id}/executions", params=params, limit=limit
+        )
+        return self.construct_model(RetentionExecution, resp, is_list=True)
+
+    # POST /retentions/{id}/executions
+    # Trigger a Retention Execution
+    async def start_retention_execution(
+        self, retention_id: int, dry_run: bool = False
+    ) -> str:
+        """Start a retention job for a policy.
+
+        Parameters
+        ----------
+        retention_id : int
+            The id of the retention policy.
+        dry_run : bool
+            Whether to run the retention job in in dry-run mode.
+
+        Returns
+        -------
+        str
+            The id of the execution.
+        """
+        resp = await self.post(
+            f"/retentions/{retention_id}/executions", json={"dry_run": dry_run}
+        )
+        return urldecode_header(resp, "Location")
+
+    # PATCH /retentions/{id}/executions/{eid}
+    # Stop a Retention execution
+    async def stop_retention_execution(
+        self, retention_id: int, execution_id: int
+    ) -> None:
+        """Stop a retention execution.
+
+        Parameters
+        ----------
+        retention_id : int
+            The id of the retention policy.
+        execution_id : int
+            The id of the retention execution.
+        """
+        await self._modify_retention_execution(retention_id, execution_id, "stop")
+
+    async def _modify_retention_execution(
+        self, retention_id: int, execution_id: int, action: str
+    ) -> None:
+        """Helper method for changing the state of an retention execution.
+
+        As of Harbor v2.6.3-1297af6c, only the "stop" action is supported.
+        This method exists for forward compatibility in case this endpoint is expanded in the future.
+        """
+        await self.patch(
+            f"/retentions/{retention_id}/executions/{execution_id}",
+            json={"action": action},
+        )
 
     # CATEGORY: scanner
 

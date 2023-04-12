@@ -10,7 +10,23 @@ The **third number** is the patch version (bug fixes)
 
 <!-- changelog follows -->
 
-<!-- ## Unreleased -->
+## Unreleased
+
+### Added
+
+- Retention endpoints methods
+  - `HarborAsyncClient.get_project_retention_id()`
+  - `HarborAsyncClient.get_retention_policy()`
+  - `HarborAsyncClient.create_retention_policy()`
+  - `HarborAsyncClient.update_retention_policy()`
+  - `HarborAsyncClient.delete_retention_policy()`
+  - `HarborAsyncClient.get_retention_tasks()`
+  - `HarborAsyncClient.get_retention_metadata()`
+  - `HarborAsyncClient.get_retention_execution_task_log()`
+  - `HarborAsyncClient.get_retention_executions()`
+  - `HarborAsyncClient.start_retention_execution()`
+  - `HarborAsyncClient.stop_retention_execution()`
+
 
 
 ## [0.14.1](https://github.com/pederhan/harborapi/tree/harborapi-v0.14.1) - 2023-04-11

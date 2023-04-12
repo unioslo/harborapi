@@ -75,6 +75,8 @@ nav:
           - recipes/artifacts/artifact-vulns.md
       - "Repositories":
           - recipes/repos/conc-repo.md
+      - "Retention":
+          - recipes/retention/get-retention.md
       # - "Projects":
       #     - recipes/conc-project.md
   - "Endpoints":
@@ -96,6 +98,7 @@ nav:
       - endpoints/registries.md
       - endpoints/replication.md
       - endpoints/repositories.md
+      - endpoints/retention.md
       - endpoints/robots.md
       - endpoints/scan.md
       - endpoints/scanall.md

@@ -122,9 +122,11 @@ from ._models import (
     RetentionExecution,
     RetentionExecutionTask,
     RetentionMetadata,
-    RetentionPolicy,
-    RetentionPolicyScope,
-    RetentionRule,
+)
+from ._models import RetentionPolicy as _RetentionPolicy
+from ._models import RetentionPolicyScope
+from ._models import RetentionRule as _RetentionRule
+from ._models import (
     RetentionRuleMetadata,
     RetentionRuleParamMetadata,
     RetentionRuleTrigger,
@@ -616,3 +618,11 @@ class GeneralInfo(_GeneralInfo):
         description="If the Harbor instance is deployed with nested chartmuseum.",
         deprecated=True,
     )
+
+
+class RetentionRule(_RetentionRule):
+    params: Optional[Dict[str, Any]] = optional_field(_RetentionRule, "params")  # type: ignore
+
+
+class RetentionPolicy(_RetentionPolicy):
+    rules: Optional[List[RetentionRule]] = optional_field(_RetentionPolicy, "rules")  # type: ignore
