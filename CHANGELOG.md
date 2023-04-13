@@ -10,11 +10,13 @@ The **third number** is the patch version (bug fixes)
 
 <!-- changelog follows -->
 
-## Unreleased
+<!-- ## Unreleased -->
+
+## [0.15.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.15.0) - 2023-04-13
 
 ### Added
 
-- Retention endpoints methods
+- Retention methods:
   - `HarborAsyncClient.get_project_retention_id()`
   - `HarborAsyncClient.get_retention_policy()`
   - `HarborAsyncClient.create_retention_policy()`
@@ -27,10 +29,7 @@ The **third number** is the patch version (bug fixes)
   - `HarborAsyncClient.start_retention_execution()`
   - `HarborAsyncClient.stop_retention_execution()`
 
-
-
 ## [0.14.1](https://github.com/pederhan/harborapi/tree/harborapi-v0.14.1) - 2023-04-11
-
 
 ### Added
 
