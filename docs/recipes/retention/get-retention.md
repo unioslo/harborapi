@@ -1,6 +1,6 @@
 # Get project retention policy
 
-Fetching the retention policy for a given project isn't very straight-forward in the API, as there is no endpoint for listing IDs of retention policies belonging to projects you have access to.
+Fetching the retention policy for a given project is somewhat convoluted in the API, as there is no endpoint for fetching the retention policy ID of a specific project.
 
 To that end, `harborapi` adds the helper method [`get_project_retention_id`][harborapi.client.HarborAsyncClient.get_project_retention_id] for fetching the retention policy ID for a given project. With this method, we can first fetch the retention policy ID, and then use that ID to fetch the retention policy itself.
 
