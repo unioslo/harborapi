@@ -21,7 +21,7 @@ This will cause the client to skip validation of data from the API, and instead 
 
 ## Getting Raw Data
 
-If you want to get the raw JSON data from the API, you can set the `raw` attribute on the client object. When we say "raw" we mean the response's JSON body after it has been serialized into a Python dict, but before any other processing has been done.
+If you want to get the raw JSON data from the API, you can set the `raw` attribute on the client object. When we say "raw" we mean the response's JSON body after it has been serialized into a Python object, but before any other processing has been done.
 
 In cases where an endpoint stops returning JSON responses altogether when expected to do so, `raw` will not help. In that case, you should use a tool like curl or something similar to fetch the data, as this library will be of little use at that point.
 
