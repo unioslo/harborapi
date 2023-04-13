@@ -3734,15 +3734,14 @@ class HarborAsyncClient:
     ) -> Optional[int]:
         """Get the retention policy ID for a project.
 
+        !!! note "API Spec Inconsistency"
+            The retention policy ID field for a project is marked as a string in the
+            API spec, but the retention endpoints expect an integer ID.
+            This method returns an integer if possible, and None otherwise.
+            A warning is logged if the ID cannot be converted to an integer,
+            so that we know if this breaks/changes in the future.
 
-        The actual retention policy ID field is marked as a string in the
-        API spec, but the retention endpoints expect an integer. This method
-        returns an integer if possible, and None otherwise. A warning
-        is emitted if the ID cannot be converted to an integer, so that we
-        know if this breaks/changes in the future.
-
-        Yet another ticking time-bomb stemming from handwritten API specs...
-
+            Yet another ticking time-bomb stemming from handwritten API specs...
 
         Parameters
         ----------
