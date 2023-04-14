@@ -3660,7 +3660,7 @@ class HarborAsyncClient:
         reference: str,  # Make this default to "latest"?
         # TODO: support multiple mime types?
         mime_type: str = "application/vnd.security.vulnerability.report; version=1.1",
-    ) -> Optional[HarborVulnerabilityReport]:
+    ) -> HarborVulnerabilityReport:
         """Get the vulnerabilities for an artifact.
 
         Parameters
@@ -3676,22 +3676,24 @@ class HarborAsyncClient:
 
         Returns
         -------
-        Optional[HarborVulnerabilityReport]
+        HarborVulnerabilityReport
             The vulnerabilities for the artifact, or None if the artifact is not found
         """
         path = get_artifact_path(project_name, repository_name, reference)
         url = f"{path}/additions/vulnerabilities"
         resp = await self.get(url, headers={"X-Accept-Vulnerabilities": mime_type})
 
+        # NOTE: this is an anti-pattern with regards to raw mode, but
+        # we need to do this to be able to actually construct the model.
+        # The data for the model we construct is expected to be found in
+        # the key of the mime type.
         if not isinstance(resp, dict):
-            logger.bind(response=resp).warning("{} returned non-dict response", url)
-            return None
+            raise UnprocessableEntity(f"Unable to process response from {url}: {resp}")
 
         # Get the report, which is stored under the key of the mime type
         report = resp.get(mime_type)
         if not report:
-            logger.warning("{} returned no report", url)  # Is this an error?
-            return None
+            raise NotFound(f"Unable to find report for {mime_type} from {url}")
 
         return self.construct_model(HarborVulnerabilityReport, report)
 

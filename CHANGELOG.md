@@ -10,7 +10,12 @@ The **third number** is the patch version (bug fixes)
 
 <!-- changelog follows -->
 
-<!-- ## Unreleased -->
+## Unreleased
+
+
+### Changed
+
+- `HarborAsyncClient.get_artifact_vulnerabilities()` now always returns a `harborapi.models.HarborVulnerabilityReport` object. If the artifact has no vulnerabilities or the report cannot be processed, an exception is raised.
 
 ## [0.15.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.15.0) - 2023-04-13
 

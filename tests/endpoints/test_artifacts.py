@@ -7,7 +7,7 @@ from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
 from harborapi.client import HarborAsyncClient
-from harborapi.exceptions import StatusError
+from harborapi.exceptions import NotFound, StatusError, UnprocessableEntity
 from harborapi.models import HarborVulnerabilityReport
 from harborapi.models.buildhistory import BuildHistoryEntry
 from harborapi.models.models import Accessory, Artifact, Label, Tag
@@ -110,12 +110,36 @@ async def test_get_artifact_vulnerabilities_empty_mock(
         "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/additions/vulnerabilities",
         method="GET",
     ).respond_with_json({})
-
     async_client.url = httpserver.url_for("/api/v2.0")
-    r = await async_client.get_artifact_vulnerabilities(
-        "testproj", "testrepo", "latest"
-    )
-    assert r == None
+
+    with pytest.raises(NotFound):
+        await async_client.get_artifact_vulnerabilities(
+            "testproj", "testrepo", "latest"
+        )
+
+
+@pytest.mark.asyncio
+async def test_get_artifact_vulnerabilities_nondict_mock(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+):
+    """Tests that requesting a report and receiving a non-dict response
+    is handled correctly. In the method, we manually get the report for
+    the given MIME type, so the response should always be a dict.
+
+    This is different from most other endpoints, since we don't wholly
+    rely on construct_model to do all the work for us.
+    """
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/additions/vulnerabilities",
+        method="GET",
+    ).respond_with_json([{"MIME_TYPE_HERE": {"foo": "bar"}}])
+    async_client.url = httpserver.url_for("/api/v2.0")
+
+    with pytest.raises(UnprocessableEntity):
+        await async_client.get_artifact_vulnerabilities(
+            "testproj", "testrepo", "latest"
+        )
 
 
 @pytest.mark.asyncio
