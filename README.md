@@ -44,7 +44,7 @@ client = HarborAsyncClient(
     # OR
     basicauth="base64-basic-auth-credentials",
     # OR
-    credentials_file="path/to/robot-credentials-file.json",
+    credentials_file="/path/to/robot-credentials-file.json",
 )
 ```
 
@@ -111,7 +111,7 @@ All endpoints are documented in the [endpoints documentation](https://pederhan.g
 
 ## Disclaimer
 
-`harborapi` make use of code generation for its data models, but it doesn't entirely rely on it like, for example, [githubkit](https://github.com/yanyongyu/githubkit). Thus, while the library is based on the Harbor REST API specification, it is not beholden to it. The official schema contains several inconsistencies and errors, and this package takes steps to rectify some of these locally until they are fixed in the official Harbor API spec.
+`harborapi` makes use of code generation for its data models, but it doesn't entirely rely on it like, for example, [githubkit](https://github.com/yanyongyu/githubkit). Thus, while the library is based on the Harbor REST API specification, it is not beholden to it. The official schema contains several inconsistencies and errors, and this package takes steps to rectify some of these locally until they are fixed in the official Harbor API spec.
 
 `harborapi` attempts to improve endpoint descriptions where possible and fix models with fields given the wrong type or wrongly marked as required. Without these changes, the validation provided by the library would be unusable for certain endpoints, as these endpoints can, in certain cases, return data that is inconsistent with the official API specification, thus breaking the model validation.
 
