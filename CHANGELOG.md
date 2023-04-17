@@ -10,7 +10,10 @@ The **third number** is the patch version (bug fixes)
 
 <!-- changelog follows -->
 
-## Unreleased
+<!-- ## Unreleased -->
+
+
+## [0.15.1](https://github.com/pederhan/harborapi/tree/harborapi-v0.15.1) - 2023-04-17
 
 ### Added
 
