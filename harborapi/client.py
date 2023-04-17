@@ -238,8 +238,6 @@ class HarborAsyncClient:
         follow_redirects: bool = True,
         timeout: Union[float, Timeout] = 10.0,
         verify: VerifyTypes = True,
-        # Config options
-        config: Optional[Any] = None,  # NYI
         **kwargs: Any,
     ) -> None:
         """Initialize a new HarborAsyncClient with either a username and secret,
@@ -283,19 +281,13 @@ class HarborAsyncClient:
             Control verification of the server's TLS certificate.
             See `httpx._types.VerifyTypes` for more information or
             <https://www.python-httpx.org/advanced/#ssl-certificates>.
-        config : Optional[Any]
-            (NYI) config
-
-        Raises
-        ------
-        ValueError
-            None of `username` and `secret`, `credentials` nor `credentials_file` are provided.
+        **kwargs : Any
+            Backwards-compatibility with deprecated parameters.
+            Unknown kwargs are ignored.
         """
         if not url:
             raise ValueError("A Harbor API URL is required.")
         self.authenticate(username, secret, basicauth, credentials_file, url, **kwargs)
-
-        self.config = config
 
         # Instantiate persistent HTTP client using the redirect policy
         # NOTE: any reason we don't specify headers here too?
