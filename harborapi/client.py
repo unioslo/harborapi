@@ -221,7 +221,7 @@ class ResponseLog:
 
 
 class HarborAsyncClient:
-    basicauth: SecretStr
+    basicauth: SecretStr = SecretStr("")
 
     def __init__(
         self,
@@ -252,7 +252,7 @@ class HarborAsyncClient:
             Example: `http://localhost:8080/api/v2.0`
         username : Optional[str]
             Username to use for authentication.
-            If not provided, the client attempts to use `credentials` to authenticate.
+            If not provided, the client attempts to use `basicauth` to authenticate.
         secret : Optional[str]
             Secret to use for authentication along with `username`.
         basicauth : Optional[str]
@@ -291,33 +291,10 @@ class HarborAsyncClient:
         ValueError
             None of `username` and `secret`, `credentials` nor `credentials_file` are provided.
         """
-        if username and secret:
-            self.basicauth = get_basicauth(username, secret)
-        elif (credentials_kwarg := kwargs.get("credentials")) or basicauth:
-            if credentials_kwarg:
-                basicauth = credentials_kwarg
-                warnings.warn(
-                    "parameter 'credentials' is deprecated and will be removed, use 'basicauth'",
-                    DeprecationWarning,
-                )
-            assert basicauth is not None
-            self.basicauth = SecretStr(basicauth)
-        elif credentials_file:
-            crfile = load_harbor_auth_file(credentials_file)
-            # TODO: perform this check somewhere else?
-            #       it's likely the credentials file will ALWAYS require a username and secret
-            #       so anytime load_harbor_auth_file() is called, this check should be performed
-            if not crfile.name:
-                raise ValueError("Credentials file missing value for 'name' field")
-            elif not crfile.secret:
-                raise ValueError("Credentials file missing value for 'secret' field")
-            self.basicauth = get_basicauth(crfile.name, crfile.secret)
-        else:
-            raise ValueError(
-                "Must provide username and secret, credentials, or credentials_file"
-            )
+        if not url:
+            raise ValueError("A Harbor API URL is required.")
+        self.authenticate(username, secret, basicauth, credentials_file, url, **kwargs)
 
-        self.url = url.strip("/")  # make sure URL doesn't have a trailing slash
         self.config = config
 
         # Instantiate persistent HTTP client using the redirect policy
@@ -341,6 +318,64 @@ class HarborAsyncClient:
             logger.disable("harborapi")
 
         self.response_log = ResponseLog(max_logs=max_logs)
+
+    def authenticate(
+        self,
+        username: Optional[str] = None,
+        secret: Optional[str] = None,
+        basicauth: Optional[str] = None,
+        credentials_file: Optional[Union[str, Path]] = None,
+        url: Optional[str] = None,
+        **kwargs: Any,
+    ) -> None:
+        """(Re-)Authenticate the client with the provided credentials.
+
+        Parameters
+        ----------
+        username : Optional[str]
+            Username to use for authentication.
+            If not provided, the client attempts to use `basicauth` to authenticate.
+        secret : Optional[str]
+            Secret to use for authentication along with `username`.
+        basicauth : Optional[str]
+            base64-encoded Basic Access Authentication credentials to use for
+            authentication in place of `username` and `secret`.
+        credentials_file : Optional[Union[str, Path]]
+            Path to a JSON-encoded credentials file from which to load credentials.
+            `username`, `secret` and `basicauth` must not be provided if this is used.
+        url : Optional[str]
+            The URL of the Harbor server in the format `http://host:[port]/api/v<version>`
+        **kwargs : Any
+            Additional keyword arguments to pass in.
+        """
+        if username and secret:
+            self.basicauth = get_basicauth(username, secret)
+        elif (credentials_kwarg := kwargs.get("credentials")) or basicauth:
+            if credentials_kwarg and not basicauth:
+                basicauth = credentials_kwarg
+                warnings.warn(
+                    "parameter 'credentials' is deprecated and will be removed in the future, use 'basicauth'",
+                    DeprecationWarning,
+                )
+            assert basicauth is not None
+            self.basicauth = SecretStr(basicauth)
+        elif credentials_file:
+            crfile = load_harbor_auth_file(credentials_file)
+            self.basicauth = get_basicauth(crfile.name, crfile.secret)
+        else:
+            # No credentials provided (first-time authentication)
+            if not self.basicauth:
+                raise ValueError(
+                    "Must provide username and secret, credentials, or credentials_file"
+                )
+
+        # Only set URL if it's provided
+        # This is guaranteed to be a non-empty string when this method is called
+        # by __init__(), but not necessarily when called directly.
+        # This means that the URL is set on instantation, but not necessarily
+        # when the user calls authenticate() directly without providing a URL.
+        if url:
+            self.url = url.strip("/")  # make sure URL doesn't have a trailing slash
 
     def log_response(self, response: Response) -> None:
         """Log the response to a request.

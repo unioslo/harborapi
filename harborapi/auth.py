@@ -2,12 +2,24 @@ import json
 from pathlib import Path
 from typing import Union
 
+from pydantic import Field
+
 from harborapi.models.models import Robot, RobotCreate, RobotCreated
 
 
+def _load_harbor_auth_file(path: Union[str, Path]) -> "HarborAuthFile":
+    """Load a HarborAuthFile from a file path. Performs no validation beyond
+    the built-in Pydantic validation."""
+    with open(path, "r") as f:
+        # parse without any guards against exceptions
+        # pass the exception to the caller
+        j = json.load(f)
+    return HarborAuthFile.parse_obj(j)
+
+
 def load_harbor_auth_file(path: Union[str, Path]) -> "HarborAuthFile":
-    """Load a HarborAuthFile from a file path. Fails if the auth file
-    does not contain a username and secret.
+    """Load a HarborAuthFile from a file path. Ensure that the file contains
+    a name and secret.
 
     Parameters
     ----------
@@ -24,11 +36,7 @@ def load_harbor_auth_file(path: Union[str, Path]) -> "HarborAuthFile":
     ValueError
         The auth file does not contain a username and/or secret.
     """
-    with open(path, "r") as f:
-        # parse without any guards against exceptions
-        # pass the exception to the caller
-        j = json.load(f)
-    authfile = HarborAuthFile.parse_obj(j)
+    authfile = _load_harbor_auth_file(path)
     if not authfile.name:
         raise ValueError("Field 'name' is required")
     if not authfile.secret:
@@ -124,6 +132,9 @@ class HarborAuthFile(Robot):
 
     Supports arbitrary extra fields to allow for future compatibility.
     """
+
+    name: str = Field(None, description="The name of the robot account")
+    secret: str = Field(None, description="The secret for the robot account")
 
     class Config:
         allow_population_by_field_name = True  # why? do we have any aliases?

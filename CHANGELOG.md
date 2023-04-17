@@ -12,6 +12,9 @@ The **third number** is the patch version (bug fixes)
 
 ## Unreleased
 
+### Added
+
+- `HarborAsyncClient.authenticate()`. This method can be used to re-authenticate the client with new credentials without having to create a new client instance.
 
 ### Changed
 

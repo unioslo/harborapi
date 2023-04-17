@@ -1,5 +1,6 @@
 import asyncio
 from pathlib import Path
+from typing import Optional
 
 import pytest
 from httpx import HTTPStatusError
@@ -9,6 +10,7 @@ from pydantic import ValidationError
 from pytest_httpserver import HTTPServer
 from pytest_mock import MockerFixture
 
+from harborapi.auth import HarborAuthFile
 from harborapi.client import HarborAsyncClient
 from harborapi.exceptions import (
     BadRequest,
@@ -59,12 +61,24 @@ def test_client_init_credentials():
     assert client.basicauth == get_basicauth("username", "secret")
 
 
-def test_client_init_basicauth():
+def test_client_init_credentials_superseded_by_basicauth():
     client = HarborAsyncClient(
-        basicauth="dXNlcm5hbWU6c2VjcmV0", url="https://harbor.example.com/api/v2.0"
+        credentials="my_credentials",
+        basicauth="my_basicauth",
+        url="https://harbor.example.com/api/v2.0",
     )
     assert client.url == "https://harbor.example.com/api/v2.0"
-    assert client.basicauth == get_basicauth("username", "secret")
+    # `basicauth` should take precedence over `credentials`
+    assert client.basicauth.get_secret_value() == "my_basicauth"
+
+
+def test_client_init_basicauth():
+    basicauth = "dXNlcm5hbWU6c2VjcmV0"
+    client = HarborAsyncClient(
+        basicauth=basicauth, url="https://harbor.example.com/api/v2.0"
+    )
+    assert client.url == "https://harbor.example.com/api/v2.0"
+    assert client.basicauth.get_secret_value() == basicauth
 
 
 def test_client_init_credentials_file(credentials_file: Path):
@@ -75,9 +89,23 @@ def test_client_init_credentials_file(credentials_file: Path):
     assert client.basicauth == get_basicauth("robot$harborapi-test", "bad-password")
 
 
+@pytest.mark.parametrize("url", [None, ""])
+def test_client_init_url_empty_url(url: Optional[str]):
+    with pytest.raises(ValueError) as e:
+        HarborAsyncClient(url=url, username="user", secret="secret")  # type: ignore
+    assert "url" in str(e.value).lower()
+
+
 def test_client_init_no_credentials():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as e:
         HarborAsyncClient(url="https://harbor.example.com/api/v2.0")
+    # just make sure it's different from the URL error
+    assert "credentials" in str(e.value).lower()
+
+
+@pytest.mark.skip(reason="TODO")
+def test_client_init_credentials_file_not_found():
+    pass
 
 
 @pytest.mark.asyncio
@@ -157,7 +185,7 @@ async def test_get_pagination_large_mock(
         ).respond_with_json([{"username": f"user{page}"}], headers=headers)
 
     async_client.url = httpserver.url_for("/api/v2.0")
-    users = await async_client.get("/users")  # type: ignore
+    users = await async_client.get("/users")
     assert isinstance(users, list)
     assert len(users) == N_PAGES
 
@@ -519,6 +547,71 @@ async def test_authentication(
         await client.patch("/foo", json={"foo": "bar"})
     elif method == "DELETE":
         await client.delete("/foo")
+
+
+@pytest.mark.parametrize("url", ["https://localhost/api/v2.0", None])
+@pytest.mark.parametrize(
+    "username, secret, basicauth, credentials_file",
+    [
+        ("new_username", "new_secret", None, None),
+        (None, None, "new_basicauth", None),
+        (None, None, None, "new_credentials.json"),
+    ],
+)
+def test_authenticate(
+    tmp_path: Path,
+    url: Optional[str],
+    username: Optional[str],
+    secret: Optional[str],
+    basicauth: Optional[str],
+    credentials_file: Optional[str],
+) -> None:
+    """Tests the authenticate method."""
+    client = HarborAsyncClient(
+        url="https://example.com/api/v2.0",
+        username="username",
+        secret="secret",
+    )
+    assert client.url == "https://example.com/api/v2.0"
+    assert client.basicauth == get_basicauth("username", "secret")
+
+    if credentials_file:
+        credentials_file = tmp_path / credentials_file  # type: ignore
+        with open(credentials_file, "w") as f:
+            h = HarborAuthFile(
+                name="credentials_username",
+                secret="credentials_secret",
+            )
+            f.write(h.json())
+
+    client.authenticate(
+        url=url,
+        username=username,
+        secret=secret,
+        basicauth=basicauth,
+        credentials_file=credentials_file,
+    )
+
+    # URL should only be overwritten if new URL is not None
+    if url:
+        assert client.url == url
+    else:
+        # URL is still the same
+        assert client.url == "https://example.com/api/v2.0"
+
+    # Check that the basicauth is set correctly based on the arguments
+    client_basicauth = client.basicauth.get_secret_value()
+    if username and secret:
+        assert client_basicauth == get_basicauth(username, secret).get_secret_value()
+    elif basicauth:
+        assert client_basicauth == basicauth
+    elif credentials_file:
+        assert (
+            client_basicauth
+            == get_basicauth(
+                "credentials_username", "credentials_secret"
+            ).get_secret_value()
+        )
 
 
 @pytest.mark.asyncio
