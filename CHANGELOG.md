@@ -12,6 +12,12 @@ The **third number** is the patch version (bug fixes)
 
 <!-- ## Unreleased -->
 
+## [0.15.2](https://github.com/pederhan/harborapi/tree/harborapi-v0.15.2) - 2023-04-18
+
+### Removed
+
+- `harbor` being added as an executable script installed by the project. This was a mistake, as the `harbor` executable script is intended to be exposed by [harbor-cli](https://github.com/pederhan/harbor-cli).
+
 
 ## [0.15.1](https://github.com/pederhan/harborapi/tree/harborapi-v0.15.1) - 2023-04-17
 
@@ -25,6 +31,8 @@ The **third number** is the patch version (bug fixes)
 
 ### Removed
 - `config` argument from `HarborAsyncClient.__init__()`. The `config` argument was never implemented.
+
+
 
 ## [0.15.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.15.0) - 2023-04-13
 
