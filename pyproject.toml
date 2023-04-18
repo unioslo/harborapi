@@ -35,9 +35,6 @@ Documentation = "https://pederhan.github.io/harborapi/"
 Changelog = "https://github.com/pederhan/harborapi/blob/main/CHANGELOG.md"
 Issues = "https://github.com/pederhan/harborapi/issues"
 
-[project.scripts]
-harbor = "harborapi.main:main"
-
 [tool.hatch.metadata.hooks.fancy-pypi-readme]
 content-type = "text/markdown"
 
