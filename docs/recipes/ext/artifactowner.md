@@ -1,10 +1,10 @@
 # Get artifact owner
 
-Retrieve user information about the owners of artifacts in a project.
+We can fetch information about owners of artifacts using [`harborapi.ext.api.get_artifact_owner`][harborapi.ext.api.get_artifact_owner]. The function takes in a [`harborapi.models.Artifact`][harborapi.models.Artifact] or [`harborapi.ext.artifact.ArtifactInfo`][harborapi.ext.artifact.ArtifactInfo] object, and returns a [`harborapi.models.UserResp`][harborapi.models.UserResp] object.
 
 
-!!! note
-    The function [`api.get_artifact_owner`][harborapi.ext.api.get_artifact_owner] requires elevated privileges in order to to work. This is because the API endpoint used to fetch the owner information requires permissions to view user info.
+!!! warning
+    The method requires elevated privileges, as it has to look up information about users. A lack of privileges will likely result in [`harborapi.exceptions.Unauthorized`][harborapi.exceptions.Unauthorized] being raised.
 
 ```py
 import asyncio
