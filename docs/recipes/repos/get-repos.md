@@ -1,6 +1,6 @@
 # Get all repositories
 
-Fetching all repositories is done by calling [`get_repositories`][harborapi.client.HarborAsyncClient.get_repositories].
+Fetching all repositories is done by calling [`get_repositories`][harborapi.client.HarborAsyncClient.get_repositories]. The method returns a list of [`Repository`][harborapi.models.Repository] objects.
 
 ```py
 import asyncio
@@ -15,5 +15,3 @@ async def main() -> None:
 
 asyncio.run(main())
 ```
-
-This will return a list of [`Repository`][harborapi.models.Repository] objects.

@@ -37,7 +37,7 @@ See below for examples of how to use these arguments and what they return.
 
 ## Fetching tags
 
-We can fetch the tags for an artifact using the `with_tag` argument. This will return a list of [`Tag`][harborapi.models.Tag] objects. This parameter is `True` by default, so we only need to specify this if we _don't_ want to fetch the tags.
+We can fetch the tags for an artifact using the `with_tag` argument. This will populate the `tags` field of the artifact with a list of [`Tag`][harborapi.models.Tag] objects. This parameter is `True` by default, so we only need to specify this if we _don't_ want to fetch the tags.
 
 
 ```py
@@ -65,7 +65,7 @@ asyncio.run(main())
 
 ## Fetching labels
 
-We can fetch the labels for an artifact using the `with_tag` argument. This will return a list of [`Label`][harborapi.models.Label] objects. This parameter is `False` by default.
+We can fetch the labels for an artifact using the `with_tag` argument. This will populate the [`labels`] field of the artifact with a list of [`Label`][harborapi.models.Label] objects. This parameter is `False` by default.
 
 
 ```py
@@ -93,4 +93,4 @@ asyncio.run(main())
 
 ## Fetching scan overview
 
-We can fetch the scan overview for an artifact using the `with_scan_overview` argument. This will return a [`ScanOverview`][harborapi.models.ScanOverview] object. This object contains a brief overview of the scan results for the artifact. To fetch the full scan report, see the [Get artifact scan report](get-scan-report.md) recipe.
+We can fetch the scan overview for an artifact using the `with_scan_overview` argument. This will populate the [`scan_overview`] field of the artifact with a [`ScanOverview`][harborapi.models.ScanOverview] object. This object contains a brief overview of the scan results for the artifact. To fetch the full vulnerability report, see the [Get artifact vulnerability report](get-artifact-vulnerabilities.md) recipe.
