@@ -8,6 +8,8 @@
 
 Python async client for the Harbor REST API v2.0 based on the official Harbor REST API specification.
 
+**NOTE:** The official Harbor API spec is hand-written, and numerous errors and inconsistencies have been found in it. This library attempts to work around these issues as much as possible, but errors may still occur. If you find any errors, please open an issue.
+
 ## Features
 
 - Async API
@@ -26,7 +28,9 @@ pip install harborapi
 
 ## Documentation
 
-Documentation is available [here](https://pederhan.github.io/harborapi/)
+Documentation is available [here](https://pederhan.github.io/harborapi/). The documentation is still a work in progress, and you may have to dig around a bit to find what you're looking for.
+
+Creating proper documentation for the Pydantic models is priority number one right now, but is largely blocked by the lack of inheritance support in the [mkdocstrings python plugin](https://github.com/mkdocstrings/python/issues/58#issuecomment-1435962980).
 
 ## Quick Start
 
