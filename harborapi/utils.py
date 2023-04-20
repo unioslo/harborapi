@@ -1,7 +1,7 @@
 import re
 from base64 import b64encode
 from json import JSONDecodeError
-from typing import Dict, Optional, Union
+from typing import Dict, Mapping, Optional, Union
 from urllib.parse import quote_plus, unquote_plus
 
 from httpx import Response
@@ -244,7 +244,7 @@ def get_project_headers(project_name_or_id: Union[str, int]) -> Dict[str, str]:
     return {"X-Is-Resource-Name": str(isinstance(project_name_or_id, str)).lower()}
 
 
-def get_params(**kwargs: ParamType) -> Dict[str, ParamType]:
+def get_params(**kwargs: ParamType) -> Mapping[str, ParamType]:
     """Get parameters for an API call as a dict, where `None` values are ignored.
 
     Parameters
@@ -254,7 +254,7 @@ def get_params(**kwargs: ParamType) -> Dict[str, ParamType]:
 
     Returns
     -------
-    Dict[str, Any]
+    Mapping[str, Any]
         The dict representation of the parameters with `None` values removed.
     """
     params = {k: v for k, v in kwargs.items() if v is not None}
