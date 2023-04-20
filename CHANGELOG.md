@@ -10,7 +10,14 @@ The **third number** is the patch version (bug fixes)
 
 <!-- changelog follows -->
 
-<!-- ## Unreleased -->
+## Unreleased
+
+### Fixed
+
+- Models with fields that wrongly required dicts of dicts now accept dicts of any for the affected fields:
+  - `harborapi.models.RetentionRule.params`
+  - `harborapi.models.ImutableRule.params`
+Until the official API spec is fixed, this is the best we can do.
 
 ## [0.15.2](https://github.com/pederhan/harborapi/tree/harborapi-v0.15.2) - 2023-04-18
 

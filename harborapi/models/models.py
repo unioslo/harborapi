@@ -55,9 +55,9 @@ from ._models import ExecHistory as _ExecHistory
 from ._models import Execution, ExtraAttrs, FilterStyle
 from ._models import GCHistory as _GCHistory
 from ._models import GeneralInfo as _GeneralInfo
+from ._models import Icon
+from ._models import ImmutableRule as _ImmutableRule
 from ._models import (
-    Icon,
-    ImmutableRule,
     ImmutableSelector,
     Instance,
     IntegerConfigItem,
@@ -600,6 +600,7 @@ class ScheduleObj(_ScheduleObj):
     type: Optional[Type] = optional_field(_ScheduleObj, "type")  # type: ignore
 
 
+# Update references to ScheduleObj in the following models:
 class GCHistory(_GCHistory):
     schedule: Optional[ScheduleObj] = optional_field(_GCHistory, "schedule")  # type: ignore
 
@@ -610,6 +611,10 @@ class ExecHistory(_ExecHistory):
 
 class Schedule(_Schedule):
     schedule: Optional[ScheduleObj] = optional_field(_Schedule, "schedule")  # type: ignore
+    # REASON: The spec says that the `parameters` field is a dict of dicts, but
+    # the API uses a dict of Any instead.
+    # From API spec: The sample format is {"parameters":{"audit_retention_hour":168,"dry_run":true, "include_operations":"create,delete,pull"},"schedule":{"type":"Hourly","cron":"0 0 * * * *"}}
+    parameters: Optional[Dict[str, Any]] = optional_field(_Schedule, "parameters")  # type: ignore
 
 
 class GeneralInfo(_GeneralInfo):
@@ -621,8 +626,14 @@ class GeneralInfo(_GeneralInfo):
 
 
 class RetentionRule(_RetentionRule):
+    # REASON: this is a dict of Any, not a dict of dicts
     params: Optional[Dict[str, Any]] = optional_field(_RetentionRule, "params")  # type: ignore
 
 
 class RetentionPolicy(_RetentionPolicy):
     rules: Optional[List[RetentionRule]] = optional_field(_RetentionPolicy, "rules")  # type: ignore
+
+
+class ImmutableRule(_ImmutableRule):
+    # REASON: this is a dict of Any, not a dict of dicts
+    params: Optional[Dict[str, Any]] = optional_field(_ImmutableRule, "params")  # type: ignore
