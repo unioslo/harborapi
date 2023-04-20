@@ -8,3 +8,5 @@ The following sections demonstrate basic usage of the three main categories of m
 
 
 For a complete list of methods, see the [Endpoints Overview](/endpoints/).
+
+See [Recipes](../recipes) for concrete examples of how to use the methods to perform common tasks.

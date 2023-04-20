@@ -217,7 +217,7 @@ async def get_repositories(
     client: HarborAsyncClient,
     projects: Optional[List[str]] = None,
 ) -> List[Repository]:
-    """Fetch all repositories in a list of projects or all projects.
+    """Fetch all repositories in all projects or a subset of projects.
 
     Parameters
     ----------
@@ -225,7 +225,7 @@ async def get_repositories(
         The client to use for the API call.
     projects : Optional[List[str]]
         The list of projects to fetch repositories from.
-        If not specified, will fetch repos from all projects.
+        If not specified, fetches all repos in all projects.
 
     Returns
     -------

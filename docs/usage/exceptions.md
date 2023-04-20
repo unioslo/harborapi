@@ -1,6 +1,6 @@
 # Exceptions
 
-All methods that interact with the Harbor API raise exceptions derived from [`StatusError`][harborapi.exceptions.StatusError] for responses with non-2xx status codes unless otherwise specified.
+All methods that interact with the Harbor API raise exceptions derived from [`harborapi.exceptions.StatusError`][harborapi.exceptions.StatusError] for responses with non-2xx status codes unless otherwise specified.
 
 ## Status code
 
@@ -13,7 +13,7 @@ except StatusError as e:
 
 ## Granular exception handling
 
-If more granular exception handling is required, all documented HTTP exceptions in the API spec are implemented as discrete classes derived from [`StatusError`][harborapi.exceptions.StatusError]
+If more granular exception handling is required, all documented HTTP exceptions in the API spec are implemented as discrete classes derived from [`harborapi.exceptions.StatusError`][harborapi.exceptions.StatusError]
 
 ```py
 from harborapi.exceptions import (

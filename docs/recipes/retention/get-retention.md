@@ -10,11 +10,7 @@ import asyncio
 
 from harborapi import HarborAsyncClient
 
-client = HarborAsyncClient(
-    url="https://demo.goharbor.io/api/v2.0",
-    username="username",
-    secret="secret",
-)
+client = HarborAsyncClient(...)
 
 
 async def main() -> None:
