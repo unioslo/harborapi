@@ -160,6 +160,3 @@ To return the raw API responses without validation and type conversion, set `raw
 - [x] User
 - [x] Usergroup
 - [x] Webhooks
-
-
-\*\* `/systeminfo/getcert` NYI
