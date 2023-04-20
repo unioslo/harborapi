@@ -72,13 +72,14 @@ nav:
       - "Artifacts":
           - recipes/artifacts/get-artifact.md
           - recipes/artifacts/delete-artifact.md
-          - recipes/artifacts/artifact-vulns.md
+          - recipes/artifacts/get-artifact-vulnerabilities.md
       - "Client":
           - recipes/client/reauth.md
       - "Repositories":
           - recipes/repos/get-repo.md
           - recipes/repos/get-repos.md
       - "Projects":
+          - recipes/projects/get-project.md
           - recipes/projects/get-projects.md
       - "Retention":
           - recipes/retention/get-retention.md
@@ -86,6 +87,7 @@ nav:
           - "recipes/ext/index.md"
           - "recipes/ext/conc-artifact.md"
           - recipes/ext/artifactowner.md
+          - recipes/ext/artifact-vulns.md
           - "recipes/ext/conc-repo.md"
 
   - "Endpoints":

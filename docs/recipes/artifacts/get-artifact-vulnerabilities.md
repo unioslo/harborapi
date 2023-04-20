@@ -1,4 +1,4 @@
-# Get artifact scan report
+# Get artifact vulnerability report
 
 We can fetch the scan report for an artifact using [`get_artifact_scan_report`][harborapi.client.HarborAsyncClient.get_artifact_scan_report]. The scan report contains all the vulnerabilities found in the artifact.
 

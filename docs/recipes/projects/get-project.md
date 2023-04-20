@@ -1,4 +1,4 @@
-# Get a single project
+# Get project
 
 We can fetch a single project using [`get_project`][harborapi.client.HarborAsyncClient.get_project]. The method takes a project name (string) or a project ID (integer) as its only argument.
 
