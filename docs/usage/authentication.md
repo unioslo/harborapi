@@ -7,7 +7,11 @@ Username and password (titled `secret` to conform with Harbor naming schemes) ca
 ```py
 from harborapi import HarborAsyncClient
 
-client = HarborAsyncClient(...)
+client = HarborAsyncClient(
+    url="https://your-harbor-instance.com/api/v2.0",
+    username="username",
+    secret="secret"
+)
 ```
 
 ### Basic access authentication aredentials
@@ -20,7 +24,7 @@ from harborapi import HarborAsyncClient
 
 client = HarborAsyncClient(
     url="https://your-harbor-instance.com/api/v2.0",
-    basicauth="base64_string_here",
+    basicauth="base64_basicauth_here",
 )
 ```
 
@@ -34,7 +38,7 @@ from harborapi import HarborAsyncClient
 
 client = HarborAsyncClient(
     url="https://your-harbor-instance.com/api/v2.0",
-    credentials_file="/path/to/file.json",
+    credentials_file="/path/to/file.json", # can also be Path object
 )
 ```
 
