@@ -84,6 +84,7 @@ nav:
           - recipes/projects/get-projects.md
           - recipes/projects/create-project.md
           - recipes/projects/update-project.md
+          - recipes/projects/delete-project.md
       - "Retention":
           - recipes/retention/get-retention.md
       - "harborapi.ext":

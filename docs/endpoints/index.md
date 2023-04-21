@@ -2,7 +2,7 @@
 
 This section contains API documentation for the methods implementing the different Harbor API endpoints.
 
-The methods listed on the various pages in this section can be accessed by calling them on an instance of the [`HarborAsyncClient`][harborapi.client.HarborAsyncClient] class:
+The methods listed can be called on an instance of the [`HarborAsyncClient`][harborapi.client.HarborAsyncClient] class:
 
 
 ```py

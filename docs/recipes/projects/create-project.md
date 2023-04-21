@@ -1,4 +1,4 @@
-# Get project
+# Create project
 
 We can create a new project using [`create_project`][harborapi.client.HarborAsyncClient.create_project]. The method takes a [`ProjectReq`][harborapi.models.ProjectReq] object, and returns the location of the created project.
 

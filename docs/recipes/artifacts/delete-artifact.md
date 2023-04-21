@@ -1,6 +1,6 @@
 # Delete artifact
 
-We can delete an artifact using [`delete_artifact`][harborapi.client.HarborAsyncClient.delete_artifact]. The method takes a project name, repositry name and a tag or digest.
+We can delete an artifact using [`delete_artifact`][harborapi.client.HarborAsyncClient.delete_artifact]. The method takes a project name, repository name, and a tag or digest.
 
 ```py
 import asyncio

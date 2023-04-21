@@ -1,7 +1,5 @@
 # Recipes
 
-This section contains recipes for common Harbor API use cases that go beyond the basics by combining multiple API endpoints, or adding additional functionality such as concurrency.
+This section contains recipes for common tasks across several Harbor API endpoints. They demonstrate how to create, read, update and delete resources.
 
-Most recipes make use of the `harborapi.ext` module which provides additional functionality for common tasks such as concurrency and aggregation of multiple API calls. For more information on the `harborapi.ext` module, see the [Extended functionality](../usage/ext) page.
-
-For the individual spec-compliant Harbor API endpoints, see [Endpoints](/endpoints)
+If a specific method is not documented in a recipe here, you can likely deduce how to use it by checking a recipe that performs a similar task and looking at the documentation for the method in the [Endpoints Overview](/endpoints/).
