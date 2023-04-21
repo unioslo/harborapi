@@ -77,10 +77,13 @@ nav:
           - recipes/client/reauth.md
       - "Repositories":
           - recipes/repos/get-repo.md
+          - recipes/repos/get-repos-project.md
           - recipes/repos/get-repos.md
       - "Projects":
           - recipes/projects/get-project.md
           - recipes/projects/get-projects.md
+          - recipes/projects/create-project.md
+          - recipes/projects/update-project.md
       - "Retention":
           - recipes/retention/get-retention.md
       - "harborapi.ext":
