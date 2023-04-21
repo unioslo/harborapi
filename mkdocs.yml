@@ -70,15 +70,32 @@ nav:
   - "Recipes":
       - recipes/index.md
       - "Artifacts":
-          - recipes/artifacts/conc-artifact.md
-          - recipes/artifacts/artifactowner.md
-          - recipes/artifacts/artifact-vulns.md
+          - recipes/artifacts/get-artifact.md
+          - recipes/artifacts/delete-artifact.md
+          - recipes/artifacts/get-artifact-vulnerabilities.md
+      - "Client":
+          - recipes/client/reauth.md
       - "Repositories":
-          - recipes/repos/conc-repo.md
+          - recipes/repos/get-repo.md
+          - recipes/repos/get-repos-project.md
+          - recipes/repos/get-repos.md
+      - "Projects":
+          - recipes/projects/get-project.md
+          - recipes/projects/get-projects.md
+          - recipes/projects/create-project.md
+          - recipes/projects/update-project.md
+          - recipes/projects/delete-project.md
       - "Retention":
           - recipes/retention/get-retention.md
-      # - "Projects":
-      #     - recipes/conc-project.md
+      - "Scan":
+          - recipes/scan/scan-artifact.md
+      - "harborapi.ext":
+          - "recipes/ext/index.md"
+          - "recipes/ext/conc-artifact.md"
+          - recipes/ext/artifactowner.md
+          - recipes/ext/artifact-vulns.md
+          - "recipes/ext/conc-repo.md"
+
   - "Endpoints":
       - endpoints/index.md
       - endpoints/artifacts.md

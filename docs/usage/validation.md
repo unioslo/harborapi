@@ -11,7 +11,9 @@ client = HarborAsyncClient(...)
 client.validate = False
 ```
 
-This will cause the client to skip validation of data from the API, and instead return the data as a Pydantic model where none of the fields have been validated. This can be useful if you are using a version of Harbor that is not yet supported by the latest version of `harborapi`, but still want to use dot notation to access the data, and use the various helper methods on the Pydantic models.
+This will cause the client to skip validation of data from the API, and instead return the data as a Pydantic model where none of the fields have been validated.
+
+This can be useful if using a version of Harbor that is not yet supported by the latest version of `harborapi` and/or a model fails to validate due to a bug in the library or the API spec.
 
 !!! warning
     Nested models will not be constructed when `validate=False` is set. The type of any submodel fields will be `dict` or `list`, depending on the type of the field in the API response, as the submodels will not be constructed by Pydantic. This will effectively break any code that relies on the submodels being constructed.
@@ -21,9 +23,9 @@ This will cause the client to skip validation of data from the API, and instead 
 
 ## Getting Raw Data
 
-If you want to get the raw JSON data from the API, you can set the `raw` attribute on the client object. When we say "raw" we mean the response's JSON body after it has been serialized into a Python object, but before any other processing has been done.
+Set the `raw` attribute on the client object to return the raw JSON responses from the API. When we say "raw" we mean the response's JSON body after it has been serialized into a Python object, but before any other processing has been done by the library. This means that the response will be a `dict` or `list` (or a primitive type like `str`, `int`, `float`, `bool`, `None`), and not a Pydantic model.
 
-In cases where an endpoint stops returning JSON responses altogether when expected to do so, `raw` will not help. In that case, you should use a tool like curl or something similar to fetch the data, as this library will be of little use at that point.
+In cases where an endpoint stops returning JSON responses altogether, `raw` will not help. In such cases, you will have to use a different tool to interact with the API.
 
 ```python
 from harborapi import HarborAsyncClient
@@ -36,7 +38,7 @@ client.raw = True
 
 ## The difference between `raw` and `validate`
 
-The `raw=True` attribute on the client object will cause the client to return the raw JSON data from the API, while the `validate=False` attribute will cause the client to skip validation of the data from the API, but still return the corresponding Pydantic model. `validate=False` is equivalent to constructing Pydantic models with [`BaseModel.construct()`](https://docs.pydantic.dev/usage/models/#creating-models-without-validation) instead of [`BaseModel.parse_obj()`](https://docs.pydantic.dev/usage/models/#parsing-data-into-a-specified-type).
+The `raw=True` attribute on the client object will cause the client to return the raw JSON data from the API, while the `validate=False` attribute will cause the client to skip validation of the data from the API, but still return the expected Pydantic model. `validate=False` is equivalent to constructing Pydantic models with [`BaseModel.construct()`](https://docs.pydantic.dev/usage/models/#creating-models-without-validation) instead of the usual [`BaseModel.parse_obj()`](https://docs.pydantic.dev/usage/models/#parsing-data-into-a-specified-type).
 
 
 `raw` always takes precedence over `validate` if it is set. By default, `raw` is set to `False` and `validate` is set to `True`. I.e.:
@@ -87,7 +89,7 @@ GeneralInfo.construct(
 ```
 In the example, the model is constructed, but the values of the fields aren't validated and/or converted into the types specified in the model. `current_time` is still a string, even though the model says this is a datetime field. When validation is enabled, this field is converted into a datetime object.
 
-Furthermore, in this fictional example, the API returned an integer value for the `notification_enable` field, even though the spec says this is a boolean field. With validation disabled, the model is still constructed, and the value of `notification_enable` is still an integer. If we had enabled validation, and the value of `notification_enable` was an integer, we would get an error:
+Furthermore, in this fictional example, the API returned the value `2` for the `notification_enable` field, even though the spec says this is a boolean field. With validation disabled, the model is still constructed, and the value of `notification_enable` remains `2`. If we had enabled validation, and the value of `notification_enable` was `2`, we would get an error:
 
 ```
 pydantic.error_wrappers.ValidationError: 1 validation error for GeneralInfo
@@ -96,6 +98,8 @@ notification_enable
 ```
 
 #### `raw=True`
+
+With `raw=True`, the client returns the parsed JSON data as a dict:
 
 ```python
 import asyncio

@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 
 class CVSSData(BaseModel):
-    """Key CVSS metrics for a scanned container."""
+    """Key CVSS statistics for a scanned artifact."""
 
     mean: float
     median: float
