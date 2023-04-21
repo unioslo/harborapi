@@ -87,6 +87,8 @@ nav:
           - recipes/projects/delete-project.md
       - "Retention":
           - recipes/retention/get-retention.md
+      - "Scan":
+          - recipes/retention/scan-artifact.md
       - "harborapi.ext":
           - "recipes/ext/index.md"
           - "recipes/ext/conc-artifact.md"
