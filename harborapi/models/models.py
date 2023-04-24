@@ -1,25 +1,30 @@
 """## Models for the Harbor API.
 
-This module imports all auto generated models from the _models module,
-and then overrides the models that have broken or incomplete definitions.
-
-Furthermore, some models are extended with new validators and/or methods.
+These models are used by the various endpoints of the Harbor API.
 """
 
-# Right now, the redefining of models is done in the most naive way possible.
-# We just redefine the models that have broken or incomplete definitions...
+# NOTE: numerous models auto-generated from the Harbor API spec are broken.
+# Some fields are marked as required when they are not, and some fields are
+# given the wrong type. The development velocity for fixing these issues upstream
+# is very slow, so we redefine the models here until they are fixed.
 #
-# !!IMPORTANT!!
-# However, we also have to redefine/subclass the models that are extended
-# from or reference the models that are redefined here. This is because
-# the field type of Pydantic models are defined on the class level, and
-# redefining a model here will not change the field type of the model in
-# the _models module. Thus, if we change the model `Repository` here,
-# models that reference `Repository` will still use the old definition.
-# To that end, we currently have to redefine all models that reference
-# `Repository` here as well. In the future, this should be done more dynamically
-# to ensure that we don't miss any models that need to be redefined.
+# We currently have no mechanism for detecting if a model is fixed upstream.
+#
+# In order to create more readable documentation, _every_ field on affected models
+# are redefined here, even if they are not broken. This is because mkdocstrings
+# struggles to render Pydantic models with inherited fields. We want users to
+# be able to click on a model defintion in the Docs and see all the fields, not
+# have to click through to the parent class to see the inherited fields.
+#
+# To maximize compatibility, redefined models still inherit from the original
+# models, so that if the original models are assigned new fields upstream,
+# they are at least still available to the user, even if they have to click
+# through to the parent to see it.
+#
+# Since a lot of models reference each other, we have to redefine every model
+# that references a broken model.
 
+from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -352,35 +357,104 @@ __all__ = [
 
 
 # START ChartMetadata
+
+
+# Problem: ChartMetadata.engine can be omitted from the response
+# Changed: Make all fields optional
 class ChartMetadata(_ChartMetadata):
-    # NOTE: only 'engine' has proven to be broken so far, but that makes
-    # me less likely to trust that other "required" fields are actually
-    # required. So we make all fields optional for now.
-    name: Optional[str] = optional_field(_ChartMetadata, "name")  # type: ignore
-    version: Optional[str] = optional_field(_ChartMetadata, "version")  # type: ignore
-    engine: Optional[str] = optional_field(_ChartMetadata, "engine")  # type: ignore
-    icon: Optional[str] = optional_field(_ChartMetadata, "icon")  # type: ignore
-    api_version: Optional[str] = optional_field(_ChartMetadata, "api_version")  # type: ignore
-    app_version: Optional[str] = optional_field(_ChartMetadata, "app_version")  # type: ignore
+    name: Optional[str] = Field(None, description="The name of the chart")  # type: ignore # changed to Optional[str]
+    home: Optional[str] = Field(
+        None, description="The URL to the relevant project page"
+    )
+    sources: Optional[List[str]] = Field(
+        None, description="The URL to the source code of chart"
+    )
+    version: Optional[str] = Field(None, description="A SemVer 2 version of chart")  # type: ignore # changed to Optional[str]
+    description: Optional[str] = Field(
+        None, description="A one-sentence description of chart"
+    )
+    keywords: Optional[List[str]] = Field(None, description="A list of string keywords")
+    engine: Optional[str] = Field(None, description="The name of template engine")  # type: ignore # changed to Optional[str]
+    icon: Optional[str] = Field(None, description="The URL to an icon file")  # type: ignore # changed to Optional[str]
+    api_version: Optional[str] = Field(
+        None, alias="apiVersion", description="The API version of this chart"
+    )  # type: ignore # changed to Optional[str]
+    app_version: str = Field(
+        None,
+        alias="appVersion",
+        description="The version of the application enclosed in the chart",
+    )
+    deprecated: Optional[bool] = Field(
+        None, description="Whether or not this chart is deprecated"
+    )
 
 
 class ChartVersion(ChartMetadata, _ChartVersion):
-    pass
+    created: Optional[str] = Field(
+        None, description="The created time of the chart entry"
+    )
+    removed: Optional[bool] = Field(
+        None, description="A flag to indicate if the chart entry is removed"
+    )
+    digest: Optional[str] = Field(
+        None, description="The digest value of the chart entry"
+    )
+    urls: Optional[List[str]] = Field(None, description="The urls of the chart entry")
+    labels: Optional[List[Label]] = Field(None, description="A list of label")
 
 
 class SearchResult(_SearchResult):
-    chart: Optional[ChartVersion] = optional_field(_SearchResult, "chart")  # type: ignore
+    name: Optional[str] = Field(
+        None, alias="Name", description="The chart name with repo name"
+    )
+    score: Optional[int] = Field(None, alias="Score", description="The matched level")
+    chart: Optional[ChartVersion] = Field(None, alias="Chart")
 
 
 class Search(_Search):
-    chart: Optional[List[SearchResult]] = optional_field(_Search, "chart")  # type: ignore
+    project: Optional[List[Project]] = Field(
+        None,
+        description="Search results of the projects that matched the filter keywords.",
+    )
+    repository: Optional[List[SearchRepository]] = Field(
+        None,
+        description="Search results of the repositories that matched the filter keywords.",
+    )
+    chart: Optional[List[SearchResult]] = Field(
+        None,
+        description="Search results of the charts that macthed the filter keywords.",
+    )  # type: ignore # uses fixed definition
 
 
 # END ChartMetadata
 
 
 # START Repository
+
+
+# Changed: Adds new methods and computed fields
 class Repository(_Repository):
+    id: Optional[int] = Field(None, description="The ID of the repository")
+    project_id: Optional[int] = Field(
+        None, description="The ID of the project that the repository belongs to"
+    )
+    name: Optional[str] = Field(None, description="The name of the repository")
+    description: Optional[str] = Field(
+        None, description="The description of the repository"
+    )
+    artifact_count: Optional[int] = Field(
+        None, description="The count of the artifacts inside the repository"
+    )
+    pull_count: Optional[int] = Field(
+        None, description="The count that the artifact inside the repository pulled"
+    )
+    creation_time: Optional[datetime] = Field(
+        None, description="The creation time of the repository"
+    )
+    update_time: Optional[datetime] = Field(
+        None, description="The update time of the repository"
+    )
+
     @property
     def base_name(self) -> str:
         """The repository name without the project name
@@ -430,13 +504,20 @@ class Repository(_Repository):
 
 
 # START VulnerabilitySummary
-
-
 class VulnerabilitySummary(_VulnerabilitySummary):
-    # We expand the model with these fields, which are usually
-    # present in the summary dict. To provide a better interface
-    # for accessing these values, they are exposed as top-level
-    # fields.
+    # Changed: Add new fields populated by root validator
+    total: Optional[int] = Field(
+        None, description="The total number of the found vulnerabilities", example=500
+    )
+    fixable: Optional[int] = Field(
+        None, description="The number of the fixable vulnerabilities", example=100
+    )
+    summary: Optional[Dict[str, int]] = Field(
+        None,
+        description="Numbers of the vulnerabilities with different severity",
+        example={"Critical": 5, "High": 5},
+    )
+    # Summary dict keys added as fields
     critical: int = Field(
         0,
         alias="Critical",
@@ -453,9 +534,14 @@ class VulnerabilitySummary(_VulnerabilitySummary):
     low: int = Field(
         0, alias="Low", description="The number of critical vulnerabilities detected."
     )
+    unknown: int = Field(
+        0,
+        alias="Unknown",
+        description="The number of critical vulnerabilities detected.",
+    )
 
     @root_validator(pre=True)
-    def assign_severity_breakdown(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    def _assign_severity_breakdown(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         summary = values.get("summary") or {}  # account for None
         if not isinstance(summary, dict):
             raise ValueError("'summary' must be a dict")
@@ -463,9 +549,40 @@ class VulnerabilitySummary(_VulnerabilitySummary):
 
 
 class NativeReportSummary(_NativeReportSummary):
-    summary: Optional[VulnerabilitySummary] = optional_field(
-        _NativeReportSummary, "summary"
-    )  # type: ignore
+    # Changed: Use new VulnerabilitySummary, add severity_enum computed field
+    report_id: Optional[str] = Field(
+        None,
+        description="id of the native scan report",
+        example="5f62c830-f996-11e9-957f-0242c0a89008",
+    )
+    scan_status: Optional[str] = Field(
+        None,
+        description="The status of the report generating process",
+        example="Success",
+    )
+    severity: Optional[str] = Field(
+        None, description="The overall severity", example="High"
+    )
+    duration: Optional[int] = Field(
+        None, description="The seconds spent for generating the report", example=300
+    )
+    summary: Optional[VulnerabilitySummary] = None
+    start_time: Optional[datetime] = Field(
+        None,
+        description="The start time of the scan process that generating report",
+        example="2006-01-02T14:04:05Z",
+    )
+    end_time: Optional[datetime] = Field(
+        None,
+        description="The end time of the scan process that generating report",
+        example="2006-01-02T15:04:05Z",
+    )
+    complete_percent: Optional[int] = Field(
+        None,
+        description="The complete percent of the scanning which value is between 0 and 100",
+        example=100,
+    )
+    scanner: Optional[Scanner] = None
 
     @property
     def severity_enum(self) -> Optional[Severity]:
@@ -486,47 +603,86 @@ class NativeReportSummary(_NativeReportSummary):
 
 # START ScanOverview
 class ScanOverview(_ScanOverview):
-    """Constructs a scan overview from a dict of `mime_type:scan_overview`
-
-    The API spec does not specify the contents of the scan overview, but from
-    investigating the behavior of the API, it seems to return a dict that looks like this:
-
-    ```py
-    {
-        "application/vnd.security.vulnerability.report; version=1.1": {
-            # dict that conforms to NativeReportSummary spec
-            ...
-        }
-    }
-    ```
-
-    The `__new__` method constructs a `NativeReportSummary` object and returns it
-    if the MIME type is one of the two MIME types specified in the spec.
-
-    If the MIME type is not recognized, `__new__` returns a `ScanOverview` object
-    with the dict assigned as an extra attribute. This behavior is not specified.
-    """
-
-    # TODO: make this way less hacky
-    def __new__(  # type: ignore # mypy doesn't like __new__ that returns different classes
-        cls, *args: Any, **kwargs: Any
-    ) -> Union["ScanOverview", NativeReportSummary]:
-        mime_types = (
-            "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0",
-            "application/vnd.security.vulnerability.report; version=1.1",
-        )
-        for k, v in kwargs.items():
-            if k in mime_types:
-                return NativeReportSummary(**v)
-        # add logging call here
-        return super().__new__(cls)
-
     class Config:
         extra = Extra.allow
 
 
-class Artifact(_Artifact):
-    scan_overview: Optional[ScanOverview] = optional_field(_Artifact, "scan_overview")  # type: ignore
+class Artifact(BaseModel):
+    id: Optional[int] = Field(None, description="The ID of the artifact")
+    type: Optional[str] = Field(
+        None, description="The type of the artifact, e.g. image, chart, etc"
+    )
+    media_type: Optional[str] = Field(
+        None, description="The media type of the artifact"
+    )
+    manifest_media_type: Optional[str] = Field(
+        None, description="The manifest media type of the artifact"
+    )
+    project_id: Optional[int] = Field(
+        None, description="The ID of the project that the artifact belongs to"
+    )
+    repository_id: Optional[int] = Field(
+        None, description="The ID of the repository that the artifact belongs to"
+    )
+    digest: Optional[str] = Field(None, description="The digest of the artifact")
+    size: Optional[int] = Field(None, description="The size of the artifact")
+    icon: Optional[str] = Field(None, description="The digest of the icon")
+    push_time: Optional[datetime] = Field(
+        None, description="The push time of the artifact"
+    )
+    pull_time: Optional[datetime] = Field(
+        None, description="The latest pull time of the artifact"
+    )
+    extra_attrs: Optional[ExtraAttrs] = None
+    annotations: Optional[Annotations] = None
+    references: Optional[List[Reference]] = None
+    tags: Optional[List[Tag]] = None
+    addition_links: Optional[AdditionLinks] = None
+    labels: Optional[List[Label]] = None
+    scan_overview: Optional[NativeReportSummary] = Field(
+        None, description="The overview of the scan result."
+    )
+    accessories: Optional[List[Accessory]] = None
+
+    @root_validator(pre=True)
+    def _get_native_report_summary(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """Constructs a scan overview from a dict of `mime_type:scan_overview`
+        and populates the `native_report_summary` field with it.
+
+        The API spec does not specify the contents of the scan overview, but from
+        investigating the behavior of the API, it seems to return a dict that looks like this:
+
+        ```py
+        {
+            "application/vnd.security.vulnerability.report; version=1.1": {
+                # dict that conforms to NativeReportSummary spec
+                ...
+            }
+        }
+        ```
+        """
+        mime_types = (
+            "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0",
+            "application/vnd.security.vulnerability.report; version=1.1",
+        )
+        overview = values.get("scan_overview")
+        if not overview:
+            return values
+
+        if isinstance(overview, ScanOverview):
+            overview = overview.dict()
+
+        # At this point we require that scan_overview is a dict
+        if not isinstance(overview, dict):
+            raise TypeError(
+                f"scan_overview must be a dict, not {type(overview).__name__}"
+            )
+
+        for k, v in overview.items():
+            if k in mime_types:
+                values["scan_overview"] = v
+                break
+        return values
 
 
 # END ScanOverview
@@ -536,19 +692,64 @@ class Artifact(_Artifact):
 
 
 class ReplicationFilter(_ReplicationFilter):
-    # Type of 'value' changed from Dict[str, Any], as the type of
+    # Changed: Type of 'value' changed from Dict[str, Any], as the type of
     # values this field was observed to receive was exclusively strings.
     # In order to not completely break if we do receive a dict, this field
     # also accepts a dict.
-    value: Optional[Union[str, Dict[str, Any]]] = optional_field(
-        _ReplicationFilter, "value"
-    )  # type: ignore
+    type: Optional[str] = Field(None, description="The replication policy filter type.")
+    value: Optional[Dict[str, Any]] = Field(
+        None, description="The value of replication policy filter."
+    )
+    decoration: Optional[str] = Field(
+        None, description="matches or excludes the result"
+    )
 
 
 class ReplicationPolicy(_ReplicationPolicy):
-    filters: Optional[List[ReplicationFilter]] = optional_field(
-        _ReplicationPolicy, "filters"
-    )  # type: ignore
+    id: Optional[int] = Field(None, description="The policy ID.")
+    name: Optional[str] = Field(None, description="The policy name.")
+    description: Optional[str] = Field(
+        None, description="The description of the policy."
+    )
+    src_registry: Optional[Registry] = Field(None, description="The source registry.")
+    dest_registry: Optional[Registry] = Field(
+        None, description="The destination registry."
+    )
+    dest_namespace: Optional[str] = Field(
+        None, description="The destination namespace."
+    )
+    dest_namespace_replace_count: Optional[int] = Field(
+        None,
+        description="Specify how many path components will be replaced by the provided destination namespace.\nThe default value is -1 in which case the legacy mode will be applied.",
+    )
+    trigger: Optional[ReplicationTrigger] = None
+    filters: Optional[List[ReplicationFilter]] = Field(
+        None, description="The replication policy filter array."
+    )
+    replicate_deletion: Optional[bool] = Field(
+        None, description="Whether to replicate the deletion operation."
+    )
+    deletion: Optional[bool] = Field(
+        None,
+        description='Deprecated, use "replicate_deletion" instead. Whether to replicate the deletion operation.',
+    )
+    override: Optional[bool] = Field(
+        None,
+        description="Whether to override the resources on the destination registry.",
+    )
+    enabled: Optional[bool] = Field(
+        None, description="Whether the policy is enabled or not."
+    )
+    creation_time: Optional[datetime] = Field(
+        None, description="The create time of the policy."
+    )
+    update_time: Optional[datetime] = Field(
+        None, description="The update time of the policy."
+    )
+    speed: Optional[int] = Field(None, description="speed limit for each task")
+    copy_by_chunk: Optional[bool] = Field(
+        None, description="Whether to enable copy by chunk."
+    )
 
 
 # END ReplicationFilter
@@ -557,10 +758,32 @@ class ReplicationPolicy(_ReplicationPolicy):
 
 
 class LdapConf(_LdapConf):
-    # Changes from spec: fix typos in field descriptions
-    ldap_filter: Optional[str] = optional_field(_LdapConf, "ldap_filter", description="The search filter of ldap service.")  # type: ignore
-    ldap_uid: Optional[str] = optional_field(_LdapConf, "ldap_uid", description="The search uid from ldap service attributes.")  # type: ignore
-    ldap_scope: Optional[int] = optional_field(_LdapConf, "ldap_scope", description="The search scope of ldap service.")  # type: ignore
+    # Changed: fix typos in field descriptions of ldap_filter, ldap_uid, ldap_scope
+    ldap_url: Optional[str] = Field(None, description="The url of ldap service.")
+    ldap_search_dn: Optional[str] = Field(
+        None, description="The search dn of ldap service."
+    )
+    ldap_search_password: Optional[str] = Field(
+        None, description="The search password of ldap service."
+    )
+    ldap_base_dn: Optional[str] = Field(
+        None, description="The base dn of ldap service."
+    )
+    ldap_filter: Optional[str] = Field(
+        None, description="The search filter of ldap service."
+    )
+    ldap_uid: Optional[str] = Field(
+        None, description="The search uid from ldap service attributes."
+    )
+    ldap_scope: Optional[int] = Field(
+        None, description="The search scope of ldap service."
+    )
+    ldap_connection_timeout: Optional[int] = Field(
+        None, description="The connect timeout of ldap service(second)."
+    )
+    ldap_verify_cert: Optional[bool] = Field(
+        None, description="Verify Ldap server certificate."
+    )
 
 
 # END LdapConf
@@ -587,6 +810,7 @@ class RegistryProviders(BaseModel):
 
 # Enums can't be subclassed, so they are redefined here.
 class Type(Enum):
+    # Changed: add `schedule` type
     hourly = "Hourly"
     daily = "Daily"
     weekly = "Weekly"
@@ -597,43 +821,164 @@ class Type(Enum):
 
 
 class ScheduleObj(_ScheduleObj):
-    type: Optional[Type] = optional_field(_ScheduleObj, "type")  # type: ignore
+    # Changed: update schedule field type
+    type: Optional[Type] = Field(
+        None,
+        description="The schedule type. The valid values are 'Hourly', 'Daily', 'Weekly', 'Custom', 'Manual' and 'None'.\n'Manual' means to trigger it right away and 'None' means to cancel the schedule.\n",
+    )  # type: ignore # uses fixed definition
+    cron: Optional[str] = Field(
+        None, description="A cron expression, a time-based job scheduler."
+    )
+    next_scheduled_time: Optional[datetime] = Field(
+        None, description="The next time to schedule to run the job."
+    )
 
 
-# Update references to ScheduleObj in the following models:
 class GCHistory(_GCHistory):
-    schedule: Optional[ScheduleObj] = optional_field(_GCHistory, "schedule")  # type: ignore
+    # Changed: update schedule field type
+    id: Optional[int] = Field(None, description="the id of gc job.")
+    job_name: Optional[str] = Field(None, description="the job name of gc job.")
+    job_kind: Optional[str] = Field(None, description="the job kind of gc job.")
+    job_parameters: Optional[str] = Field(
+        None, description="the job parameters of gc job."
+    )
+    schedule: Optional[ScheduleObj] = None
+    job_status: Optional[str] = Field(None, description="the status of gc job.")
+    deleted: Optional[bool] = Field(None, description="if gc job was deleted.")
+    creation_time: Optional[datetime] = Field(
+        None, description="the creation time of gc job."
+    )
+    update_time: Optional[datetime] = Field(
+        None, description="the update time of gc job."
+    )
 
 
 class ExecHistory(_ExecHistory):
-    schedule: Optional[ScheduleObj] = optional_field(_ExecHistory, "schedule")  # type: ignore
+    # Changed: update schedule field type
+    id: Optional[int] = Field(None, description="the id of purge job.")
+    job_name: Optional[str] = Field(None, description="the job name of purge job.")
+    job_kind: Optional[str] = Field(None, description="the job kind of purge job.")
+    job_parameters: Optional[str] = Field(
+        None, description="the job parameters of purge job."
+    )
+    schedule: Optional[ScheduleObj] = None
+    job_status: Optional[str] = Field(None, description="the status of purge job.")
+    deleted: Optional[bool] = Field(None, description="if purge job was deleted.")
+    creation_time: Optional[datetime] = Field(
+        None, description="the creation time of purge job."
+    )
+    update_time: Optional[datetime] = Field(
+        None, description="the update time of purge job."
+    )
 
 
 class Schedule(_Schedule):
-    schedule: Optional[ScheduleObj] = optional_field(_Schedule, "schedule")  # type: ignore
+    # Changed: update schedule field type & change parameters field type
+    id: Optional[int] = Field(None, description="The id of the schedule.")
+    status: Optional[str] = Field(None, description="The status of the schedule.")
+    creation_time: Optional[datetime] = Field(
+        None, description="the creation time of the schedule."
+    )
+    update_time: Optional[datetime] = Field(
+        None, description="the update time of the schedule."
+    )
+    schedule: Optional[ScheduleObj] = None
     # REASON: The spec says that the `parameters` field is a dict of dicts, but
     # the API uses a dict of Any instead.
     # From API spec: The sample format is {"parameters":{"audit_retention_hour":168,"dry_run":true, "include_operations":"create,delete,pull"},"schedule":{"type":"Hourly","cron":"0 0 * * * *"}}
-    parameters: Optional[Dict[str, Any]] = optional_field(_Schedule, "parameters")  # type: ignore
+    parameters: Optional[Dict[str, Any]] = Field(
+        None, description="The parameters of schedule job"
+    )
 
 
 class GeneralInfo(_GeneralInfo):
+    # Changed: add with_chartmuseum field, but mark it as deprecated
     with_chartmuseum: Optional[bool] = Field(
         None,
         description="If the Harbor instance is deployed with nested chartmuseum.",
         deprecated=True,
     )
+    current_time: Optional[datetime] = Field(
+        None, description="The current time of the server."
+    )
+    with_notary: Optional[bool] = Field(
+        None, description="If the Harbor instance is deployed with nested notary."
+    )
+    registry_url: Optional[str] = Field(
+        None,
+        description="The url of registry against which the docker command should be issued.",
+    )
+    external_url: Optional[str] = Field(
+        None, description="The external URL of Harbor, with protocol."
+    )
+    auth_mode: Optional[str] = Field(
+        None, description="The auth mode of current Harbor instance."
+    )
+    primary_auth_mode: Optional[bool] = Field(
+        None,
+        description="The flag to indicate whether the current auth mode should consider as a primary one.",
+    )
+    project_creation_restriction: Optional[str] = Field(
+        None,
+        description="Indicate who can create projects, it could be 'adminonly' or 'everyone'.",
+    )
+    self_registration: Optional[bool] = Field(
+        None,
+        description="Indicate whether the Harbor instance enable user to register himself.",
+    )
+    has_ca_root: Optional[bool] = Field(
+        None,
+        description="Indicate whether there is a ca root cert file ready for download in the file system.",
+    )
+    harbor_version: Optional[str] = Field(
+        None, description="The build version of Harbor."
+    )
+    registry_storage_provider_name: Optional[str] = Field(
+        None, description="The storage provider's name of Harbor registry"
+    )
+    read_only: Optional[bool] = Field(
+        None, description="The flag to indicate whether Harbor is in readonly mode."
+    )
+    notification_enable: Optional[bool] = Field(
+        None,
+        description="The flag to indicate whether notification mechanism is enabled on Harbor instance.",
+    )
+    authproxy_settings: Optional[AuthproxySetting] = Field(
+        None,
+        description="The setting of auth proxy this is only available when Harbor relies on authproxy for authentication.",
+    )
 
 
 class RetentionRule(_RetentionRule):
-    # REASON: this is a dict of Any, not a dict of dicts
-    params: Optional[Dict[str, Any]] = optional_field(_RetentionRule, "params")  # type: ignore
+    # Changed: change params field type
+    # Reason: params is a dict of Any, not a dict of dicts
+    # TODO: add descriptions
+    id: Optional[int] = None
+    priority: Optional[int] = None
+    disabled: Optional[bool] = None
+    action: Optional[str] = None
+    template: Optional[str] = None
+    params: Optional[Dict[str, Any]] = None
+    tag_selectors: Optional[List[RetentionSelector]] = None
+    scope_selectors: Optional[Dict[str, List[RetentionSelector]]] = None
 
 
 class RetentionPolicy(_RetentionPolicy):
-    rules: Optional[List[RetentionRule]] = optional_field(_RetentionPolicy, "rules")  # type: ignore
+    id: Optional[int] = None
+    algorithm: Optional[str] = None
+    rules: Optional[List[RetentionRule]] = None
+    trigger: Optional[RetentionRuleTrigger] = None
+    scope: Optional[RetentionPolicyScope] = None
 
 
 class ImmutableRule(_ImmutableRule):
-    # REASON: this is a dict of Any, not a dict of dicts
-    params: Optional[Dict[str, Any]] = optional_field(_ImmutableRule, "params")  # type: ignore
+    # Changed: change params field type
+    # Reason: params is a dict of Any, not a dict of dicts
+    id: Optional[int] = None
+    priority: Optional[int] = None
+    disabled: Optional[bool] = None
+    action: Optional[str] = None
+    template: Optional[str] = None
+    params: Optional[Dict[str, Dict[str, Any]]] = None
+    tag_selectors: Optional[List[ImmutableSelector]] = None
+    scope_selectors: Optional[Dict[str, List[ImmutableSelector]]] = None
