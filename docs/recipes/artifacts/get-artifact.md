@@ -93,7 +93,7 @@ asyncio.run(main())
 
 ## Fetching scan overview
 
-We can fetch the scan overview for an artifact using the `with_scan_overview` argument. This will populate the [`scan_overview`][harborapi.models.Artifact.scan_overview] field of the artifact with a [`ScanOverview`][harborapi.models.ScanOverview] object. This object contains a brief overview of the scan results for the artifact. To fetch the full vulnerability report (a separate API call), see the [Get artifact vulnerability report](get-artifact-vulnerabilities.md) recipe.
+We can fetch the scan overview for an artifact using the `with_scan_overview` argument. This will populate the [`scan_overview`][harborapi.models.Artifact.scan_overview] field of the artifact with a [`NativeReportSummary`][harborapi.models.NativeReportSummary] object. This object contains a brief overview of the scan results for the artifact. To fetch the full vulnerability report (a separate API call), see the [Get artifact vulnerability report](get-artifact-vulnerabilities.md) recipe.
 
 ```py
 import asyncio
