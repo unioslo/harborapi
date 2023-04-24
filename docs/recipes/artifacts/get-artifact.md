@@ -23,9 +23,9 @@ asyncio.run(main())
 
 We can optionally fetch a number of extra attributes for the artifact using any of the following arguments:
 
-- `with_tag` - Fetches the tags for the artifact. This is a list of [`Tag`][harborapi.models.Tag] objects.
-- `with_label` - Fetches the labels for the artifact (`False` by default). This is a list of [`Label`][harborapi.models.Label] objects.
-- `with_scan_overview` - Fetches the scan overview for the artifact. This is a [`ScanOverview`][harborapi.models.ScanOverview] object.
+- [`with_tag`](#fetching-tags) - Fetches the tags for the artifact. This is a list of [`Tag`][harborapi.models.Tag] objects.
+- [`with_label`](#fetching-labels) - Fetches the labels for the artifact (`False` by default). This is a list of [`Label`][harborapi.models.Label] objects.
+- [`with_scan_overview`](#fetching-scan-overview) - Fetches the scan overview for the artifact. This is a [`ScanOverview`][harborapi.models.ScanOverview] object.
 - `with_signature` - Fetches the signature for the artifact.
 - `with_immutable_status` - Fetches the immutable status for the artifact.
 - `with_accessory` - Fetches the accessories for the artifact. This is a list of [`Accessory`][harborapi.models.Accessory] objects.
@@ -114,38 +114,4 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-This will populate the [`scan_overview`][harborapi.models.Artifact.scan_overview] field of the artifact with a [`NativeReportSummary`][harborapi.models.NativeReportSummary] object, which contains a summary of the scan results for the artifact. Check the [`NativeReportSummary`][harborapi.models.NativeReportSummary] API reference for all the possible fields.
-
-```py
-print("Status:", artifact.scan_overview.status)
-print("Severity:", artifact.scan_overview.severity)
-print("Report ID:", artifact.scan_overview.id)
-# etc.
-```
-
-
-The [`scan_overview.summary`][harborapi.models.NativeReportSummary.summary] field is a [`VulnerabilitySummary`][harborapi.models.VulnerabilitySummary] object, which we can use to get a summary of the number of vulnerabilities found:
-
-```py
-print("Critical:", artifact.scan_overview.summary.critical)
-print("High:", artifact.scan_overview.summary.high)
-print("Medium:", artifact.scan_overview.summary.medium)
-print("Low:", artifact.scan_overview.summary.low)
-print("Unknown:", artifact.scan_overview.summary.unknown)
-print("Total:", artifact.scan_overview.summary.total)
-print("Fixable:", artifact.scan_overview.summary.critical)
-```
-
-### Specific MIME type scan overview
-
-If we want to fetch the scan overview given a specific MIME-type, we can use the `mime_type` argument. This will fetch the scan overview for the artifact, but only for the specified MIME-type.
-
-```py hl_lines="6"
-artifact = await client.get_artifact(
-        "library",
-        "hello-world",
-        "latest",
-        with_scan_overview=True,
-        mime_type="application/vnd.security.vulnerability.report; version=1.1",
-)
-```
+See [Get artifact scan overview](get-artifact-scan-overview.md) for more in-depth usage of this feature.

@@ -1,1 +1,0 @@
-## Fetch an artifact (ArtifactInfo)

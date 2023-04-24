@@ -72,6 +72,7 @@ nav:
       - "Artifacts":
           - recipes/artifacts/get-artifact.md
           - recipes/artifacts/delete-artifact.md
+          - recipes/artifacts/get-artifact-scan-overview.md
           - recipes/artifacts/get-artifact-vulnerabilities.md
       - "Client":
           - recipes/client/reauth.md
