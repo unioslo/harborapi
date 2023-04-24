@@ -2,7 +2,7 @@
 
 We can fetch all repositories in a specific project by using [`get_repositories`][harborapi.client.HarborAsyncClient.get_repositories] and passing the project name to the `project_name` parameter. The method returns a list of [`Repository`][harborapi.models.Repository] objects.
 
-```py hl_lines="8"
+```py
 import asyncio
 from harborapi import HarborAsyncClient
 
