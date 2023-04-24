@@ -2332,17 +2332,23 @@ class HarborAsyncClient:
         member: ProjectMember,
     ) -> str:
         """
+        !!! warning
+            Advanced users only. This method is not recommended for general use.
+            Only use this method if you need full control over the `ProjectMember`
+            model that is sent to the API.
+
+            It is recommended to use `add_project_member_{user, group}` instead.
+
+        Description
+        -----------
         Add a user or group as a member of a project.
-        Use `add_project_member_user` or `add_project_member_group` instead
-        to avoid so much boilerplate and potentially confusing models.
 
         One of `member_group` or `member_user` fields of the `ProjectMember` instance must be set.
         A `member_user` needs to define `user_id` _or_ `username`, and adds a user as a member of the project.
         A `member_group` needs to define `id` _or_ `ldap_group_dn`, and adds a group as a member of the project.
 
-        !!! warning
-
-            The description above is the author's interpretation of the API documentation.
+        !!! note
+            The description above is the author of this library's interpretation of the API documentation.
             See below for the original description.
 
         Original Description from API
@@ -2383,7 +2389,9 @@ class HarborAsyncClient:
         username_or_id: Union[str, int],
         role_id: int,
     ) -> str:
-        """Convience function for adding a user as a member of a project.
+        # NOTE: why prefer user IDs?
+        """Add a user as a member of a project.
+
         Prefer user IDs for existing users.
 
         Parameters
@@ -2424,7 +2432,9 @@ class HarborAsyncClient:
         ldap_group_dn_or_id: Union[str, int],
         role_id: int,
     ) -> str:
-        """Convience function for adding a group as a member of a project.
+        # NOTE: why prefer group IDs?
+        """Add a group as a member of a project.
+
         Prefer group IDs for existing groups.
 
         Parameters
