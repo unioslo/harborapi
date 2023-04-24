@@ -146,7 +146,7 @@ To return the raw API responses without validation and type conversion, set `raw
 - [x] Registry
 - [x] Replication
 - [x] Repository
-- [ ] Retention
+- [x] Retention
 - [x] Robot
 - [ ] Robotv1
 - [x] Scan
