@@ -18,7 +18,6 @@ from harborapi.models.models import (
     NativeReportSummary,
     ReplicationFilter,
     Repository,
-    ScanOverview,
     Schedule,
     ScheduleObj,
     Search,

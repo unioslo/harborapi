@@ -26,7 +26,7 @@ These models are used by the various endpoints of the Harbor API.
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 from loguru import logger
 from pydantic import Extra, Field, root_validator
@@ -193,7 +193,6 @@ from ._models import (
     Worker,
     WorkerPool,
 )
-from ._utils import optional_field
 from .base import BaseModel
 from .scanner import Severity
 
@@ -607,7 +606,7 @@ class ScanOverview(_ScanOverview):
         extra = Extra.allow
 
 
-class Artifact(BaseModel):
+class Artifact(_Artifact):
     id: Optional[int] = Field(None, description="The ID of the artifact")
     type: Optional[str] = Field(
         None, description="The type of the artifact, e.g. image, chart, etc"
