@@ -282,3 +282,47 @@ def test_repository_new_methods(repository: Repository) -> None:
     assert repository.project_name == "myproject"
     assert repository.base_name == "myrepo"
     assert repository.split_name() == ("myproject", "myrepo")
+
+
+scan_overview_nonnative_strategy = st.fixed_dictionaries(
+    {
+        # Bogus keys, we don't know what a non-native report looks like
+        # TODO: add a strategy for non-native reports
+        "artifact_count": st.integers(min_value=0),
+        "severity": st.sampled_from([s.value for s in Severity]),
+    }
+)
+
+native_report_summary_strategy = st.builds(
+    NativeReportSummary,
+    severity=st.none(),  # just to ensure this strategy is different from the one above
+    report_id=st.text(min_size=1),
+)
+
+scan_overview_native_strategy = st.fixed_dictionaries(
+    {
+        "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0": native_report_summary_strategy,
+        "application/vnd.security.vulnerability.report; version=1.1": native_report_summary_strategy,
+    }
+)
+
+
+@given(st.builds(Artifact, scan_overview=scan_overview_nonnative_strategy))
+def test_artifact_nonnative_scanoverview(artifact: Artifact) -> None:
+    """Test that a scan overview with unknown mime types is parsed correctly
+    (i.e. values passed to NativeReportSummary)"""
+    assume(artifact.scan_overview is not None)
+    assert artifact.scan_overview is not None
+    assert isinstance(artifact.scan_overview, NativeReportSummary)
+    artifact.scan_overview.severity is not None  # assigned from the strategy
+
+
+@given(st.builds(Artifact, scan_overview=scan_overview_native_strategy))
+def test_artifact_nativereportsummary(artifact: Artifact) -> None:
+    """Tests that a NativeReportSummary is constructed correctly
+    from the dict passed to the scan_overview field."""
+    assume(artifact.scan_overview is not None)
+    assert isinstance(artifact.scan_overview, NativeReportSummary)
+    assert artifact.scan_overview.severity is None  # assigned from the strategy
+    assert artifact.scan_overview.report_id is not None
+    assert len(artifact.scan_overview.report_id) >= 1

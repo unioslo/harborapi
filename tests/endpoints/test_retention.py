@@ -29,9 +29,9 @@ async def test_get_project_retention_id_mock(
     project: Project,
 ) -> None:
     expect_id = 456
-    project.metadata.retention_id = expect_id
+    project.metadata.retention_id = expect_id  # type: ignore
 
-    project_name_or_id = 123 if is_id else "library"
+    project_name_or_id = 123 if is_id else "library"  # type: str | int
     httpserver.expect_oneshot_request(
         f"/api/v2.0/projects/{project_name_or_id}",
         method="GET",

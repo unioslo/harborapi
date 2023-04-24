@@ -31,7 +31,7 @@ def test_artifactinfo(
     )
     artifact.report.vulnerabilities = [vuln]
 
-    assert len(artifact.artifact.tags) > 0
+    assert artifact.artifact.tags
     artifact.artifact.tags[0].name = "latest-test"
     assert artifact.has_tag("latest-test")
 
