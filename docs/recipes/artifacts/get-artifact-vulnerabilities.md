@@ -1,6 +1,6 @@
 # Get artifact vulnerability report
 
-We can fetch the vulnerability report for an artifact using [`get_artifact_vulnerabilities`][harborapi.client.HarborAsyncClient.get_artifact_vulnerabilities]. The vulnerability report contains all the vulnerabilities found in the artifact.
+We can fetch the vulnerability report for an artifact using [`get_artifact_vulnerabilities`][harborapi.client.HarborAsyncClient.get_artifact_vulnerabilities]. It returns a [`HarborVulnerabilityReport`][harborapi.models.HarborVulnerabilityReport] object. The vulnerability report contains all the vulnerabilities found in the artifact.
 
 ```py
 import asyncio

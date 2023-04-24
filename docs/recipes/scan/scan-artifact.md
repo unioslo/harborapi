@@ -21,7 +21,7 @@ asyncio.run(main())
 
 ## Stop a scan
 
-We can stop a running scan by using [`stop_artifact_scan`][harborapi.client.HarborAsyncClient.stop_scan]. The method takes a project name, repository name, and a tag or digest. The method returns nothing on success.
+We can stop a running scan by using [`stop_artifact_scan`][harborapi.client.HarborAsyncClient.stop_artifact_scan]. The method takes a project name, repository name, and a tag or digest. The method returns nothing on success.
 
 ```py
 import asyncio
