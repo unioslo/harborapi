@@ -29,6 +29,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from loguru import logger
+from pydantic import BaseModel as PydanticBaseModel
 from pydantic import Extra, Field, root_validator
 
 # isort kind of mangles these imports by sorting them alphabetically
@@ -668,7 +669,7 @@ class Artifact(_Artifact):
         if not overview:
             return values
 
-        if isinstance(overview, ScanOverview):
+        if isinstance(overview, PydanticBaseModel):
             overview = overview.dict()
 
         # At this point we require that scan_overview is a dict
@@ -677,6 +678,7 @@ class Artifact(_Artifact):
                 f"scan_overview must be a dict, not {type(overview).__name__}"
             )
 
+        # Extract overview for the first mime type that we recognize
         for k, v in overview.items():
             if k in mime_types:
                 values["scan_overview"] = v
