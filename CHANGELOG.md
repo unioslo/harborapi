@@ -12,6 +12,12 @@ The **third number** is the patch version (bug fixes)
 
 <!-- ## Unreleased -->
 
+## [0.16.1](https://github.com/pederhan/harborapi/tree/harborapi-v0.16.1) - 2023-04-24
+
+### Fixed
+
+- Passing a `NativeReportSummary` to `Artifact.scan_overview` no longer raises a `ValidationError` exception.
+
 ## [0.16.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.16.0) - 2023-04-24
 
 ### Changed
