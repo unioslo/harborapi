@@ -32,16 +32,20 @@ datamodel_codegen_opts := (
 mkcodegendir:
     mkdir -p {{codegendir}}
 
-# Generate new Harbor API models
-genapi: mkcodegendir
+_fetch_swagger:
     curl \
         https://raw.githubusercontent.com/goharbor/harbor/main/api/v2.0/swagger.yaml \
         --output codegen/swagger.yaml
+
+_genapi:
     datamodel-codegen \
         --input codegen/swagger.yaml  \
         --output ./harborapi/models/_models.py \
         {{datamodel_codegen_opts}}
     black ./harborapi/models/_models.py
+
+# Generate new Harbor API models
+genapi: mkcodegendir _fetch_swagger _genapi
     # Finished fetching new definitions and generating models for the Harbor API
 
 # Generate new Scanner API models
