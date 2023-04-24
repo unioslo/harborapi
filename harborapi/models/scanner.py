@@ -5,7 +5,7 @@ from collections import Counter
 from datetime import datetime
 from enum import Enum
 from functools import cached_property
-from typing import Dict, Final, Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, Final, Iterable, List, Optional, Tuple, Union
 
 from loguru import logger
 from pydantic import Field
@@ -25,7 +25,6 @@ from ._scanner import (
     ScanResponse,
 )
 from ._scanner import VulnerabilityItem as _VulnerabilityItem
-from ._utils import optional_field, override_field
 
 __all__ = [
     "Scanner",
@@ -52,13 +51,27 @@ DEFAULT_VENDORS = ("nvd", "redhat")
 
 
 class Scanner(_Scanner):
+    # Changed: add semver property
+    name: Optional[str] = Field(
+        None, description="The name of the scanner.", example="Trivy"
+    )
+    vendor: Optional[str] = Field(
+        None, description="The name of the scanner's provider.", example="Aqua Security"
+    )
+    version: Optional[str] = Field(
+        None, description="The version of the scanner.", example="0.4.0"
+    )
+
     @property
     def semver(self) -> SemVer:
         return get_semver(self.version)
 
 
 class ScannerAdapterMetadata(_ScannerAdapterMetadata):
+    # Changed: update scanner type
     scanner: Scanner
+    capabilities: List[ScannerCapability]
+    properties: Optional[ScannerProperties] = None
 
 
 # NOTE: HarborVulnerabilityReport is defined below
@@ -72,6 +85,7 @@ class ScannerAdapterMetadata(_ScannerAdapterMetadata):
 
 
 class Severity(Enum):
+    # Changed: add `None` and comparison operators
     unknown = "Unknown"
     none = "None"
     negligible = "Negligible"
@@ -104,17 +118,51 @@ SEVERITY_PRIORITY = {
 
 
 class VulnerabilityItem(_VulnerabilityItem):
-    # Changed from spec: Severity.unknown as default instead of None
-    #                    Add description and example
-    severity: Severity = override_field(
-        _VulnerabilityItem,
-        "severity",
+    # Changed: Add `severity` field info
+    # Changed: Change type of `links` to `List[str]` (was `List[AnyUrl]`)
+    id: Optional[str] = Field(
+        None,
+        description="The unique identifier of the vulnerability.",
+        example="CVE-2017-8283",
+    )
+    package: Optional[str] = Field(
+        None,
+        description="An operating system package containing the vulnerability.\n",
+        example="dpkg",
+    )
+    version: Optional[str] = Field(
+        None,
+        description="The version of the package containing the vulnerability.\n",
+        example="1.17.27",
+    )
+    fix_version: Optional[str] = Field(
+        None,
+        description="The version of the package containing the fix if available.\n",
+        example="1.18.0",
+    )
+    severity: Optional[Severity] = Field(
         default=Severity.unknown,
         description="The severity of the vulnerability.",
         example=Severity.high.value,
-    )  # type: ignore
-    # AnyUrl has been known to fail on some URLs, so we use str instead
-    links: Optional[List[str]] = optional_field(_VulnerabilityItem, "links")  # type: ignore
+    )  # type: ignore # can't subclass enums
+    description: Optional[str] = Field(
+        None,
+        description="The detailed description of the vulnerability.\n",
+        example="dpkg-source in dpkg 1.3.0 through 1.18.23 is able to use a non-GNU patch program\nand does not offer a protection mechanism for blank-indented diff hunks, which\nallows remote attackers to conduct directory traversal attacks via a crafted\nDebian source package, as demonstrated by using of dpkg-source on NetBSD.\n",
+    )
+    # AnyUrl has failed on some URLs in API responses, so we use str instead
+    links: Optional[List[str]] = Field(
+        None,
+        description="The list of links to the upstream databases with the full description of the vulnerability.\n",
+        example=["https://security-tracker.debian.org/tracker/CVE-2017-8283"],
+    )  # type: ignore # use str instead of AnyUrl
+    preferred_cvss: Optional[CVSSDetails] = None
+    cwe_ids: Optional[List[str]] = Field(
+        None,
+        description="The Common Weakness Enumeration Identifiers associated with this vulnerability.\n",
+        example=["CWE-476"],
+    )
+    vendor_attributes: Optional[Dict[str, Any]] = None
 
     @property
     def semver(self) -> SemVer:
@@ -344,6 +392,7 @@ class HarborVulnerabilityReport(_HarborVulnerabilityReport):
             when items have identical severity, by default False
             This is somewhat experimental and may be removed in the future.
         """
+
         # TODO: implement this comparison in the VulnerabilityItem class
         def cmp(v1: VulnerabilityItem, v2: VulnerabilityItem) -> int:
             # First try to compare severities
