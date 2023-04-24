@@ -12,6 +12,13 @@ The **third number** is the patch version (bug fixes)
 
 <!-- ## Unreleased -->
 
+## [0.16.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.16.0) - 2023-04-24
+
+### Changed
+
+- Broken or incomplete models are now completely redefined in `harborapi.models.models` to provide better documentation both in the code and in the generated documentation. This change should be backwards-compatible.
+- `harborapi.HarborAsyncClient.add_group_member` now has a clearner warning describing its purpose and the alternative methods to use instead.
+
 ## [0.15.3](https://github.com/pederhan/harborapi/tree/harborapi-v0.15.3) - 2023-04-20
 
 ### Fixed
