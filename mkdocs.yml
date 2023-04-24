@@ -20,6 +20,9 @@ theme:
 
 plugins:
   - search
+  - exclude-search:
+      exclude:
+        - reference/client.md
   - autorefs
   - mkdocstrings:
       watch:
