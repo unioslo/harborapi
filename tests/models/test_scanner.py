@@ -193,3 +193,15 @@ def test_no_scanner_references() -> None:
         HarborVulnerabilityReport,
     ]
     _no_references_check(scanner, models)
+
+
+def test_vulnerability_item_severity_none() -> None:
+    """Passing None to VulnerabilityItem.severity should assign it Severity.unknown"""
+    v = VulnerabilityItem(
+        id="CVE-2022-1337-test",
+        description="test-cve",
+        package="test-package",
+        severity=None,
+    )
+    assert v.severity is not None
+    assert v.severity == Severity.unknown

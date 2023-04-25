@@ -8,7 +8,8 @@ from functools import cached_property
 from typing import Any, Dict, Final, Iterable, List, Optional, Tuple, Union
 
 from loguru import logger
-from pydantic import Field
+from pydantic import Field, validator
+from pydantic.fields import ModelField
 
 from ..version import SemVer, get_semver
 from ._scanner import Artifact as ScanArtifact
@@ -85,7 +86,7 @@ class ScannerAdapterMetadata(_ScannerAdapterMetadata):
 
 
 class Severity(Enum):
-    # Changed: add `None` and comparison operators
+    # Changed: add `none` and comparison methods
     unknown = "Unknown"
     none = "None"
     negligible = "Negligible"
@@ -118,7 +119,7 @@ SEVERITY_PRIORITY = {
 
 
 class VulnerabilityItem(_VulnerabilityItem):
-    # Changed: Add `severity` field info
+    # Changed: Add `severity` field info, make non-optional with default value
     # Changed: Change type of `links` to `List[str]` (was `List[AnyUrl]`)
     id: Optional[str] = Field(
         None,
@@ -140,7 +141,7 @@ class VulnerabilityItem(_VulnerabilityItem):
         description="The version of the package containing the fix if available.\n",
         example="1.18.0",
     )
-    severity: Optional[Severity] = Field(
+    severity: Severity = Field(
         default=Severity.unknown,
         description="The severity of the vulnerability.",
         example=Severity.high.value,
@@ -163,6 +164,12 @@ class VulnerabilityItem(_VulnerabilityItem):
         example=["CWE-476"],
     )
     vendor_attributes: Optional[Dict[str, Any]] = None
+
+    @validator("severity", pre=True)
+    def _severity_none_is_default(
+        cls, v: Optional[Severity], field: ModelField
+    ) -> Severity:
+        return v or field.default
 
     @property
     def semver(self) -> SemVer:
