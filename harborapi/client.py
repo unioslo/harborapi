@@ -3862,6 +3862,22 @@ class HarborAsyncClient:
     async def delete_retention_policy(self, retention_id: int) -> None:
         """Delete a retention policy.
 
+        !!! danger
+            As of Harbor v2.8.0-89ef156d, this API endpoint will break a project.
+            The retention policy will be deleted, but the project's metadata is not updated,
+            so an internal server error is thrown when trying to access the
+            project in the Web UI. Furthermore, a new retention policy
+            cannot be created for the project in the Web UI as long as this
+            metadata field exists.
+
+            Delete the `"retention_id"` metadata field with to fix the project:
+
+            ```py
+            await client.delete_project_metadata_entry("<project>", "retention_id")
+            ```
+            In general, it is recommended to just clear the retention rules
+            for a project instead of deleting the policy itself.
+
         Parameters
         ----------
         retention_id : int
@@ -4621,7 +4637,7 @@ class HarborAsyncClient:
             ```
 
         !!! note "Validation"
-            To validate the metadata before updating it, pass in
+            To validate the metadata client-side before sending it, pass in
             `ProjectMetadata(field_to_set=value).dict(exclude_unset=True)`
             as the `metadata` argument.
             This will ensure that the metadata is valid according to the
@@ -4680,7 +4696,7 @@ class HarborAsyncClient:
     async def delete_project_metadata_entry(
         self, project_name_or_id: Union[str, int], metadata_name: str
     ) -> None:
-        """Delete a specific metadata for a project.
+        """Delete a specific field in a project's metadata.
 
         Parameters
         ----------
@@ -4689,7 +4705,7 @@ class HarborAsyncClient:
             String arguments are treated as project names.
             Integer arguments are treated as project IDs.
         metadata_name : str
-            The name of the metadata to delete.
+            The name of the metadata field to delete.
         """
         headers = get_project_headers(project_name_or_id)
         await self.delete(

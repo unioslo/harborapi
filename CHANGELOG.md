@@ -12,6 +12,11 @@ The **third number** is the patch version (bug fixes)
 
 ## Unreleased
 
+
+### Added
+
+- Disclaimer for `harborapi.HarborAsyncClient.delete_retention_policy`, warning that it can break a project due to a bug in Harbor.
+
 ### Fixed
 
 - `harborapi.models.VulnerabilityItem.severity` field has had its type reverted to `Severity` from `Optional[Severity]`, which was a regression introduced in v0.16.0.
