@@ -10,7 +10,12 @@ The **third number** is the patch version (bug fixes)
 
 <!-- changelog follows -->
 
-<!-- ## Unreleased -->
+## Unreleased
+
+### Fixed
+
+- `harborapi.models.VulnerabilityItem.severity` field has had its type reverted to `Severity` from `Optional[Severity]`, which was a regression introduced in v0.16.0.
+
 
 ## [0.16.1](https://github.com/pederhan/harborapi/tree/harborapi-v0.16.1) - 2023-04-24
 
