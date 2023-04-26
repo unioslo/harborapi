@@ -555,9 +555,15 @@ async def test_authentication(
         from pytest_httpserver import RequestHandler  # noqa: F401
 
         handler = httpserver.handlers[0]  # type: RequestHandler
-        diff = handler.matcher.difference(e.response.request)
+        request = e.response.request  # type: ignore
+        matcher = handler.matcher
 
-        raise AssertionError(f"Difference: {diff}")
+        assert matcher.method == method == request.method
+        assert matcher.headers["Authorization"] == request.headers["Authorization"]
+        assert matcher.headers["Accept"] == request.headers["Accept"]
+        assert matcher.data is None
+        assert matcher.uri == "/api/v2.0/foo"
+        assert matcher.uri == request.url.path
 
 
 @pytest.mark.parametrize("url", ["https://localhost/api/v2.0", None])
