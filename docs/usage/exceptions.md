@@ -14,7 +14,7 @@ except StatusError as e:
     print(e.status_code) # or e.response.status_code
 ```
 
-Through the response object, we can also get the request object that was sent to the server. The request object is a [`httpx.Request`](https://www.python-httpx.org/api/#request) object.
+Through the response object, we can also get the corresponding [`httpx.Request`](https://www.python-httpx.org/api/#request) through the `request` attribute.
 
 ```py
 e.response.request
