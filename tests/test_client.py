@@ -530,8 +530,8 @@ async def test_authentication(
     httpserver.expect_oneshot_request(
         "/api/v2.0/foo",
         headers={
-            "Authorization": f"Basic {expect_credentials}",
-            "Accept": "application/json",
+            "authorization": f"Basic {expect_credentials}",
+            "accept": "application/json",
         },
         method=method,
     ).respond_with_data()
