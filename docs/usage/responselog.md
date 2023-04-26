@@ -20,6 +20,7 @@ print(client.response_log)
 [
     <ResponseLogEntry [GET https://demo.goharbor.io/api/v2.0/systeminfo 200]>,
     <ResponseLogEntry [GET https://demo.goharbor.io/api/v2.0/systeminfo 200]>,
+    <ResponseLogEntry [GET https://demo.goharbor.io/api/v2.0/systeminfo 200]>,
 ]
 ```
 
@@ -67,7 +68,6 @@ print(client.response_log)
 
 ```py
 [
-    <ResponseLogEntry [GET https://demo.goharbor.io/api/v2.0/systeminfo 200]>,
     <ResponseLogEntry [GET https://demo.goharbor.io/api/v2.0/systeminfo 200]>,
     <ResponseLogEntry [GET https://demo.goharbor.io/api/v2.0/systeminfo 200]>,
 ]
