@@ -5,7 +5,6 @@ from typing import Optional
 import pytest
 from httpx import HTTPStatusError
 from hypothesis import HealthCheck, given, settings
-from hypothesis import strategies as st
 from pydantic import ValidationError
 from pytest_httpserver import HTTPServer
 from pytest_mock import MockerFixture

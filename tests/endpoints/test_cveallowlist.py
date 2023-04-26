@@ -1,12 +1,9 @@
-import json
-
 import pytest
 from hypothesis import HealthCheck, given, settings
-from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
 from harborapi.client import HarborAsyncClient
-from harborapi.models import CVEAllowlist, CVEAllowlistItem, UserResp
+from harborapi.models import CVEAllowlist, CVEAllowlistItem
 
 from ..strategies import cveallowlist_strategy
 

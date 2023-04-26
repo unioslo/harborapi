@@ -1,5 +1,4 @@
 from contextlib import nullcontext
-from typing import List
 
 import pytest
 from hypothesis import HealthCheck, given, settings

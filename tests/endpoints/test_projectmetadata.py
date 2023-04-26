@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Union
+from typing import Dict, Union
 
 import pytest
 from hypothesis import HealthCheck, given, settings
@@ -7,8 +7,6 @@ from pytest_httpserver import HTTPServer
 
 from harborapi.client import HarborAsyncClient
 from harborapi.models.models import ProjectMetadata
-
-from ..utils import json_from_list
 
 
 @pytest.mark.asyncio

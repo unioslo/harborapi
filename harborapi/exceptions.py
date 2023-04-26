@@ -55,7 +55,7 @@ class StatusError(HarborAPIException):
         # should always return int, but we can't guarantee it
         try:
             return self.__cause__.response.status_code  # type: ignore
-        except:
+        except AttributeError:
             return None
 
 

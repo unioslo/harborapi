@@ -1,8 +1,5 @@
-from typing import List
-
 import pytest
 from hypothesis import HealthCheck, given, settings
-from hypothesis import strategies as st
 
 from harborapi.ext.artifact import ArtifactInfo
 from harborapi.models import Tag

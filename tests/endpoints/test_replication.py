@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List
 
 import pytest
 from hypothesis import HealthCheck, given, settings

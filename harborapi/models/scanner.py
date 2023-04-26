@@ -5,7 +5,10 @@ from collections import Counter
 from datetime import datetime
 from enum import Enum
 from functools import cached_property
-from typing import Any, Dict, Final, Iterable, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Tuple, Union
+
+if TYPE_CHECKING:
+    from typing import Final  # noqa: F401
 
 from loguru import logger
 from pydantic import Field, validator

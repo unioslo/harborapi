@@ -1,7 +1,6 @@
 import copy
 
 from hypothesis import HealthCheck, assume, given, settings
-from hypothesis import strategies as st
 
 from harborapi.ext.report import ArtifactReport
 from harborapi.models.scanner import Severity, VulnerabilityItem

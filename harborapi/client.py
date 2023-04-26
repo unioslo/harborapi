@@ -22,7 +22,7 @@ from typing import (
 
 import backoff
 import httpx
-from httpx import RequestError, Response, Timeout
+from httpx import Response, Timeout
 from httpx._types import VerifyTypes
 from httpx._urls import URL
 from loguru import logger
@@ -32,7 +32,6 @@ from ._types import JSONType
 from .auth import load_harbor_auth_file, new_authfile_from_robotcreate
 from .exceptions import (
     RETRY_ERRORS,
-    BadRequest,
     HarborAPIException,
     NotFound,
     UnprocessableEntity,

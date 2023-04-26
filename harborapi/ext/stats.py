@@ -1,6 +1,6 @@
 import statistics
 from numbers import Number
-from typing import Any, Callable, Iterable, Union
+from typing import Any, Callable, Iterable
 
 from loguru import logger
 
@@ -52,7 +52,7 @@ def _do_stats_math(
     # or no data points. In these cases, we want to return the default value.
     try:
         res = func(a)
-    except statistics.StatisticsError as e:
+    except statistics.StatisticsError:
         logger.error(f"{func.__name__}({repr(a)}) failed. Defaulting to {default}")
         return float(default)
     return float(res)

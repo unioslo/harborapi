@@ -1,4 +1,3 @@
-from contextlib import nullcontext
 from typing import List
 
 import pytest
@@ -7,10 +6,8 @@ from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
 from harborapi.client import HarborAsyncClient
-from harborapi.exceptions import StatusError
-from harborapi.models.models import GCHistory, Schedule, UserGroup, UserGroupSearchItem
+from harborapi.models.models import UserGroup, UserGroupSearchItem
 
-from ..strategies.artifact import get_hbv_strategy
 from ..utils import json_from_list
 
 

@@ -119,7 +119,7 @@ def _no_references_check(
             # some of the models are enums,
             if not issubclass(m, BaseModel):
                 continue
-        except:
+        except TypeError:
             continue
         for field in m.__fields__.values():
             assert field.type_ not in no_references

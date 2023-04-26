@@ -1,7 +1,7 @@
 from typing import List
 
 import pytest
-from hypothesis import HealthCheck, assume, given, settings
+from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 

@@ -1,11 +1,10 @@
-import re
 from functools import cached_property
 from typing import TYPE_CHECKING, Callable, Iterable, List, Optional
 
 from ..version import VersionType, get_semver
 
 if TYPE_CHECKING:
-    from typing import Dict
+    from typing import Dict  # noqa: F401
 
 from ..models import Artifact, Repository
 from ..models.base import BaseModel

@@ -13,7 +13,7 @@ from pydantic import root_validator
 
 # fmt: off
 try:
-    from rich.console import Console, ConsoleOptions, Group, RenderResult, group
+    from rich.console import Console, ConsoleOptions, Group, RenderResult
     from rich.panel import Panel
     from rich.table import Column, Table
     rich_installed = True
@@ -54,7 +54,7 @@ def convert_bool_to_lower_str(
 
         # We can only convert the singletons True and False
         value = values.get(field_name)
-        if not value in [True, False]:
+        if value not in [True, False]:
             continue
 
         if all(

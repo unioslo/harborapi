@@ -125,35 +125,6 @@ def cleanup(state: StateMachine) -> None:
             print(f"Failed to revert state {state.state}: {e}", file=sys.stderr)
 
 
-def main(
-    version: str = typer.Argument(
-        ...,
-        help="Version bump to perform or new version to set.",
-        metavar="[" + "|".join(versions) + "|x.y.z],[" + "|".join(statuses) + "]",
-    ),
-    push: bool = typer.Option(
-        False,
-        help="Push the created tag and commmit to the remote repository automatically.",
-    ),
-) -> None:
-    """Bump the version of the project and create a new git tag.
-
-    Examples:
-
-    $ python bump_version.py minor
-
-    $ python bump_version.py major,rc
-
-    $ python bump_version.py 1.2.3 # generally don't use this
-    """
-    state = StateMachine()
-    try:
-        _main(state, version=version, push=push)
-    except Exception as e:
-        cleanup(state)
-        raise e
-
-
 class CommandCheck(NamedTuple):
     program: str
     command: Sequence[str]
@@ -233,6 +204,36 @@ def _do_push() -> CompletedProcess[bytes]:
         err_console.print(f"Failed to push new version: {p_git_push.stderr.decode()}")
         raise typer.Exit(1)
     return p_git_push
+
+
+def main(
+    version: str = typer.Argument(
+        ...,
+        help="Version bump to perform or new version to set.",
+        metavar="[" + "|".join(versions) + "|x.y.z],[" + "|".join(statuses) + "]",
+    ),
+    push: bool = typer.Option(
+        True,
+        "--push/--no-push",
+        help="Push the created tag and commmit to the remote repository automatically.",
+    ),
+) -> None:
+    """Bump the version of the project and create a new git tag.
+
+    Examples:
+
+    $ python bump_version.py minor
+
+    $ python bump_version.py major,rc
+
+    $ python bump_version.py 1.2.3 # generally don't use this
+    """
+    state = StateMachine()
+    try:
+        _main(state, version=version, push=push)
+    except Exception as e:
+        cleanup(state)
+        raise e
 
 
 def _main(state: StateMachine, version: str, push: bool) -> None:

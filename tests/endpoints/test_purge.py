@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List
 
 import pytest
 from hypothesis import HealthCheck, given, settings
@@ -6,7 +6,6 @@ from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
 from harborapi.client import HarborAsyncClient
-from harborapi.models import Repository
 from harborapi.models.models import ExecHistory, Schedule
 
 from ..utils import json_from_list

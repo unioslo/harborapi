@@ -1,6 +1,4 @@
 import pytest
-from hypothesis import HealthCheck, given, settings
-from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
 from harborapi.client import HarborAsyncClient
