@@ -90,7 +90,7 @@ Prepend fields with `-` to sort in descending order.
 
 !!! note
 
-    Not all fields support sorting. This is not documented anywhere by Harbor, and the only way to know is to try it out. Unsortable fields are ignored by the API.
+    Not all fields support sorting. This is not documented anywhere by Harbor, and the only way to know which fields work is to try them out. Unsortable fields are ignored by the API.
 
 ----
 
