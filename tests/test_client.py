@@ -527,7 +527,7 @@ async def test_authentication(
     assert client.basicauth.get_secret_value() == expect_credentials
 
     # Set up HTTP server to expect a certain set of headers and a method
-    httpserver.expect_request(
+    httpserver.expect_oneshot_request(
         "/api/v2.0/foo",
         headers={
             "authorization": f"Basic {expect_credentials}",
@@ -536,35 +536,16 @@ async def test_authentication(
         method=method,
     ).respond_with_data()
 
-    try:
-        if method == "GET":
-            await client.get("/foo")
-        elif method == "POST":
-            await client.post("/foo", json={"foo": "bar"})
-        elif method == "PUT":
-            await client.put("/foo", json={"foo": "bar"})
-        elif method == "PATCH":
-            await client.patch("/foo", json={"foo": "bar"})
-        elif method == "DELETE":
-            await client.delete("/foo")
-    except StatusError as e:
-        raise
-        headers = e.response.request.headers  # type: ignore
-        assert headers["Authorization"] == f"Basic {expect_credentials}"
-        assert headers["Accept"] == "application/json"
-
-        from pytest_httpserver import RequestHandler  # noqa: F401
-
-        handler = httpserver.handlers[0]  # type: RequestHandler
-        request = e.response.request  # type: ignore
-        matcher = handler.matcher
-
-        assert matcher.method == method == request.method
-        assert matcher.headers["Authorization"] == request.headers["Authorization"]
-        assert matcher.headers["Accept"] == request.headers["Accept"]
-        assert matcher.data is None
-        assert matcher.uri == "/api/v2.0/foo"
-        assert matcher.uri == request.url.path
+    if method == "GET":
+        await client.get("/foo")
+    elif method == "POST":
+        await client.post("/foo", json={"foo": "bar"})
+    elif method == "PUT":
+        await client.put("/foo", json={"foo": "bar"})
+    elif method == "PATCH":
+        await client.patch("/foo", json={"foo": "bar"})
+    elif method == "DELETE":
+        await client.delete("/foo")
 
 
 @pytest.mark.parametrize("url", ["https://localhost/api/v2.0", None])
