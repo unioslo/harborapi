@@ -34,8 +34,6 @@ class StatusError(HarborAPIException):
         ----------
         *args : Any
             Positional arguments to pass to the base Exception class.
-        response : Optional[Response]
-            The response that caused this exception.
         errors : Optional[Errors]
             A list of errors returned by the Harbor API.
         **kwargs : Any
