@@ -536,16 +536,24 @@ async def test_authentication(
         method=method,
     ).respond_with_data()
 
-    if method == "GET":
-        await client.get("/foo")
-    elif method == "POST":
-        await client.post("/foo", json={"foo": "bar"})
-    elif method == "PUT":
-        await client.put("/foo", json={"foo": "bar"})
-    elif method == "PATCH":
-        await client.patch("/foo", json={"foo": "bar"})
-    elif method == "DELETE":
-        await client.delete("/foo")
+    try:
+        if method == "GET":
+            await client.get("/foo")
+        elif method == "POST":
+            await client.post("/foo", json={"foo": "bar"})
+        elif method == "PUT":
+            await client.put("/foo", json={"foo": "bar"})
+        elif method == "PATCH":
+            await client.patch("/foo", json={"foo": "bar"})
+        elif method == "DELETE":
+            await client.delete("/foo")
+    except StatusError as e:
+        headers = e.response.headers  # type: ignore
+        url = e.response.url  # type: ignore
+        body = e.response.text  # type: ignore
+        raise AssertionError(
+            f"Unexpected StatusError: URL: {url}, Headers: {headers}, Body: {body}"
+        )
 
 
 @pytest.mark.parametrize("url", ["https://localhost/api/v2.0", None])
