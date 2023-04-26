@@ -527,7 +527,7 @@ async def test_authentication(
     assert client.basicauth.get_secret_value() == expect_credentials
 
     # Set up HTTP server to expect a certain set of headers and a method
-    httpserver.expect_request(
+    httpserver.expect_oneshot_request(
         "/api/v2.0/foo",
         headers={
             "Authorization": f"Basic {expect_credentials}",
@@ -549,13 +549,15 @@ async def test_authentication(
             await client.delete("/foo")
     except StatusError as e:
         headers = e.response.request.headers  # type: ignore
-        url = e.response.request.url  # type: ignore
-        body = e.response.text  # type: ignore
         assert headers["Authorization"] == f"Basic {expect_credentials}"
         assert headers["Accept"] == "application/json"
-        raise AssertionError(
-            f"Unexpected StatusError: URL: {url}, Req Headers: {headers}, Resp: {body}, Handlers: {httpserver.handlers}"
-        )
+
+        from pytest_httpserver import RequestHandler  # noqa: F401
+
+        handler = httpserver.handlers[0]  # type: RequestHandler
+        diff = handler.matcher.difference(e.response.request)
+
+        raise AssertionError(f"Difference: {diff}")
 
 
 @pytest.mark.parametrize("url", ["https://localhost/api/v2.0", None])
