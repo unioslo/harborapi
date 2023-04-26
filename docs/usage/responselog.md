@@ -1,6 +1,6 @@
 # Response log
 
-The `HarborAsyncClient` keeps track of all responses it receives in a response log. This is a [`ResponseLog`][harborapi.client.ResponseLog] object, which contains a list of [`ResponseLogEntry`][harborapi.client.ResponseLogEntry] objects, and can be accessed via the [`response_log`][harborapi.client.HarborAsyncClient.response_log] attribute of the client. Each entry contains the request URL, the request method, the response status code, the response duration, and the size of the response body.
+The `HarborAsyncClient` keeps track of all responses it receives in a response log. This is a [`ResponseLog`][harborapi.responselog.ResponseLog] object, which contains a list of [`ResponseLogEntry`][harborapi.responselog.ResponseLogEntry] objects, and can be accessed via the [`response_log`][harborapi.client.HarborAsyncClient.response_log] attribute of the client. Each entry contains the request URL, the request method, the response status code, the response duration, and the size of the response body.
 
 
 
@@ -20,11 +20,10 @@ print(client.response_log)
 [
     <ResponseLogEntry [GET https://demo.goharbor.io/api/v2.0/systeminfo 200]>,
     <ResponseLogEntry [GET https://demo.goharbor.io/api/v2.0/systeminfo 200]>,
-    <ResponseLogEntry [GET https://demo.goharbor.io/api/v2.0/systeminfo 200]>,
 ]
 ```
 
-[`ResponseLog`][harborapi.client.ResponseLog] behaves like an iterable and supports indexing, iteration and sizing:
+[`ResponseLog`][harborapi.responselog.ResponseLog] behaves like a sized iterable and supports indexing, iteration and sizing:
 
 ```py
 client.response_log[0]
@@ -78,7 +77,7 @@ The response log operates with a FIFO (first in, first out) policy, meaning that
 
 ### Adjusting the limit
 
-The maximum size of the response log can be adjusted on the fly with the [`ResponseLog.resize()`][harborapi.client.ResponseLog.resize] method:
+The maximum size of the response log can be adjusted on the fly with the [`ResponseLog.resize()`][harborapi.responselog.ResponseLog.resize] method:
 
 ```py
 client.response_log.resize(3)
@@ -87,7 +86,7 @@ assert client.response_log.entries.maxlen == 3 # implementation detail
 
 ## Clear the log
 
-The response log can be cleared with the [`ResponseLog.clear()`][harborapi.client.ResponseLog.clear] method:
+The response log can be cleared with the [`ResponseLog.clear()`][harborapi.responselog.ResponseLog.clear] method:
 
 ```py
 client.response_log.clear()

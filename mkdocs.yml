@@ -137,6 +137,7 @@ nav:
       - reference/client.md
       - reference/client_sync.md
       - reference/exceptions.md
+      - reference/responselog.md
       - reference/types.md
       - reference/utils.md
       - "harborapi.models":

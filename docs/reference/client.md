@@ -10,5 +10,3 @@ See [Endpoints](/endpoints) for all methods implemented on the class used to int
         show_bases: true
         members:
             - HarborAsyncClient
-            - ResponseLog
-            - ResponseLogEntry
