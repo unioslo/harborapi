@@ -554,7 +554,7 @@ async def test_authentication(
         assert headers["Authorization"] == f"Basic {expect_credentials}"
         assert headers["Accept"] == "application/json"
         raise AssertionError(
-            f"Unexpected StatusError: URL: {url}, Req Headers: {headers}, Resp: {body}"
+            f"Unexpected StatusError: URL: {url}, Req Headers: {headers}, Resp: {body}, Handlers: {httpserver.handlers}"
         )
 
 
