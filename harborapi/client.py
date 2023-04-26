@@ -3907,6 +3907,8 @@ class HarborAsyncClient:
             The page number.
         page_size : Optional[int]
             The page size.
+        limit : Optional[int]
+            The maximum number of tasks to return.
 
         Returns
         -------
