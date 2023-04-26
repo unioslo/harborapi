@@ -90,6 +90,7 @@ Until the official API spec is fixed, this is the best we can do.
 ### Added
 
 - `verify` kwarg for `HarborAsyncClient` and `HarborClient` which is passed to the underlying `httpx.AsyncClient`. This is useful for self-signed certificates, or if you want to control the SSL verification yourself. See [httpx documentation](https://www.python-httpx.org/advanced/#ssl-certificates) for more information.
+- `harborapi.exceptions.StatusError.response` which holds the HTTPX response object that caused the exception.
 
 ### Fixed
 

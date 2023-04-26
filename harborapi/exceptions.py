@@ -22,13 +22,24 @@ class HarborAPIException(Exception):
 
 
 class StatusError(HarborAPIException):
-    def __init__(self, *args: Any, errors: Optional[Errors] = None, **kwargs: Any):
+    def __init__(
+        self,
+        *args: Any,
+        errors: Optional[Errors] = None,
+        **kwargs: Any,
+    ):
         """Initialize a StatusError.
 
         Parameters
         ----------
+        *args : Any
+            Positional arguments to pass to the base Exception class.
+        response : Optional[Response]
+            The response that caused this exception.
         errors : Optional[Errors]
             A list of errors returned by the Harbor API.
+        **kwargs : Any
+            Keyword arguments to pass to the base Exception class.
         """
         super().__init__(*args, **kwargs)
 
@@ -38,9 +49,28 @@ class StatusError(HarborAPIException):
 
         self.errors: List[Error] = []
         """A list of errors returned by the Harbor API."""
-
         if isinstance(errors, Errors) and errors.errors:
             self.errors = errors.errors
+
+    def __str__(self) -> str:
+        """Return a string representation of this exception."""
+        # HTTPX exceptions are not very informative, and it is hard to debug
+        # failing tests without knowing the response text. So, we append the
+        # response text to the exception message.
+
+        # An HTTPX exception will have a single arg that looks like this:
+        # "Server error '500 INTERNAL SERVER ERROR' for url 'http://localhost:61656/api/v2.0/foo'\nFor more information check: https://httpstatuses.com/500"
+        # We only want the first part, so we partition on the newline
+        original_message = super().__str__().partition("\n")[0]
+        response_text = self.response.text if self.response else ""
+        return f"{original_message}: {response_text}"
+
+    @property
+    def response(self) -> Optional[Response]:
+        try:
+            return self.__cause__.response  # type: ignore
+        except AttributeError:
+            return None
 
     @property
     def status_code(self) -> Optional[int]:
@@ -53,10 +83,9 @@ class StatusError(HarborAPIException):
             this exception was not raised from an HTTPX exception.
         """
         # should always return int, but we can't guarantee it
-        try:
-            return self.__cause__.response.status_code  # type: ignore
-        except AttributeError:
-            return None
+        if self.response:
+            return self.response.status_code
+        return None
 
 
 class BadRequest(StatusError):

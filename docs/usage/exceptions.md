@@ -2,13 +2,15 @@
 
 All methods that interact with the Harbor API raise exceptions derived from [`harborapi.exceptions.StatusError`][harborapi.exceptions.StatusError] for responses with non-2xx status codes unless otherwise specified.
 
-## Status code
+## Response + status code
+
 
 ```py
 try:
     await client.delete_artifact("project", "repository", "latest")
 except StatusError as e:
-    print(e.status_code)
+    print(e.response)
+    print(e.status_code) # or e.response.status_code
 ```
 
 ## Granular exception handling
