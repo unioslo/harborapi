@@ -527,7 +527,7 @@ async def test_authentication(
     assert client.basicauth.get_secret_value() == expect_credentials
 
     # Set up HTTP server to expect a certain set of headers and a method
-    httpserver.expect_oneshot_request(
+    httpserver.expect_request(
         "/api/v2.0/foo",
         headers={
             "Authorization": f"Basic {expect_credentials}",
