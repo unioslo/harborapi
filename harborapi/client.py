@@ -4837,7 +4837,7 @@ class HarborAsyncClient:
             )
             # TODO: add toggle for this coercion (coerce or throw exception)
             #       or should we even accomodate this use-case? Always throw exception?
-            logger.info("Coercing value from %s to list", path)
+            logger.info("Coercing value from {} to list", path)
             j = [j]
 
         # Send requests as long as we get next links
