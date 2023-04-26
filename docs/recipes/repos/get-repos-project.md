@@ -17,6 +17,6 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-Fetching repos in multiple projects must either be done by calling the method multiple times, or omitting the `project_name` parameter and fetching all repositories in all projects, and then filtering the results afterwards.
+Fetching repos in multiple specific projects must either be done by calling the method multiple times, or omitting the `project_name` parameter and fetching all repositories in all projects, and then filtering the results afterwards.
 
 `harborapi.ext` provides a helper function for fetching from multiple specific projects, and the recipe for that is available [here](../ext/conc-repo.md)

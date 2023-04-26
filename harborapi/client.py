@@ -3863,20 +3863,21 @@ class HarborAsyncClient:
         """Delete a retention policy.
 
         !!! danger
-            As of Harbor v2.8.0-89ef156d, this API endpoint will break a project.
-            The retention policy will be deleted, but the project's metadata is not updated,
-            so an internal server error is thrown when trying to access the
-            project in the Web UI. Furthermore, a new retention policy
-            cannot be created for the project in the Web UI as long as this
-            metadata field exists.
+            As of Harbor v2.8.0-89ef156d, using this API endpoint will cause
+            a project to break. The endpoint deletes the retention policy for the
+            project but doesn't update the project metadata to reflect this change.
+            This results in an internal server error when attempting to access the
+            project in the Web UI. Additionally, the metadata field will prevent
+            creating a new retention policy for the project in the Web UI.
+            This bug likely affects all versions of Harbor.
 
             Delete the `"retention_id"` metadata field with to fix the project:
 
             ```py
             await client.delete_project_metadata_entry("<project>", "retention_id")
             ```
-            In general, it is recommended to just clear the retention rules
-            for a project instead of deleting the policy itself.
+            In general, it is recommended to clear the retention rules for
+            a project instead of deleting the policy itself.
 
         Parameters
         ----------

@@ -1,7 +1,7 @@
 """Base module for models that defines a base Pydantic model class
 that adds shared functionality and capabilities to all models.
 
-Special support for printing the models as Rich tables is added through the
+Support for printing the models as Rich tables is added through the
 use of the special `__rich_console__` method. See the Rich documentation
 for more information: <https://rich.readthedocs.io/en/latest/protocol.html#console-render/>.
 """
