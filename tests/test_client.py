@@ -548,9 +548,11 @@ async def test_authentication(
         elif method == "DELETE":
             await client.delete("/foo")
     except StatusError as e:
-        headers = e.response.headers  # type: ignore
-        url = e.response.url  # type: ignore
-        body = e.response.text  # type: ignore
+        headers = e.response.request.headers  # type: ignore
+        url = e.response.request.url  # type: ignore
+        body = e.response.request.text  # type: ignore
+        assert headers["Authorization"] == f"Basic {expect_credentials}"
+        assert headers["Accept"] == "application/json"
         raise AssertionError(
             f"Unexpected StatusError: URL: {url}, Headers: {headers}, Body: {body}"
         )
