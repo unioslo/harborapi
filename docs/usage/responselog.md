@@ -80,9 +80,12 @@ The response log operates with a FIFO (first in, first out) policy, meaning that
 The maximum size of the response log can be adjusted on the fly with the [`ResponseLog.resize()`][harborapi.responselog.ResponseLog.resize] method:
 
 ```py
+assert len(client.response_log) > 3
 client.response_log.resize(3)
-assert client.response_log.entries.maxlen == 3 # implementation detail
+assert len(client.response_log) == 3
 ```
+
+`ResponseLog.resize()` accepts a single integer argument, `max_logs`, which specifies the new maximum size of the log. If the new size is smaller than the current size, the oldest responses will be removed until the log is the specified size.
 
 ## Clear the log
 
