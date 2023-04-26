@@ -2,8 +2,9 @@
 
 All methods that interact with the Harbor API raise exceptions derived from [`harborapi.exceptions.StatusError`][harborapi.exceptions.StatusError] for responses with non-2xx status codes unless otherwise specified.
 
-## Response + status code
+## Response
 
+Each exception contains the response that caused the exception to be raised, and the status code of the response. The response object is a [`httpx.Response`](https://www.python-httpx.org/api/#response) object.
 
 ```py
 try:
@@ -13,9 +14,15 @@ except StatusError as e:
     print(e.status_code) # or e.response.status_code
 ```
 
+Through the response object, we can also get the request object that was sent to the server. The request object is a [`httpx.Request`](https://www.python-httpx.org/api/#request) object.
+
+```py
+e.response.request
+```
+
 ## Granular exception handling
 
-If more granular exception handling is required, all documented HTTP exceptions in the API spec are implemented as discrete classes derived from [`harborapi.exceptions.StatusError`][harborapi.exceptions.StatusError]
+If more granular exception handling is required, all documented HTTP exceptions in the API spec are implemented as discrete subclasses of [`harborapi.exceptions.StatusError`][harborapi.exceptions.StatusError].
 
 ```py
 from harborapi.exceptions import (
