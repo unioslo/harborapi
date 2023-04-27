@@ -4,6 +4,9 @@
 
 When fetching a single resource, the method usually expects a resource identifier or name as the first parameter, and returns a single instance of the Pydantic model corresponding to the resource type.
 
+Each method's return type is documented in the [Endpoints Overview](../../endpoints/index.md)
+
+
 ```py
 import asyncio
 from harborapi import HarborAsyncClient

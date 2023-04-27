@@ -58,7 +58,6 @@ nav:
           - usage/methods/read.md
           - usage/methods/create-update.md
           - usage/methods/delete.md
-          - usage/methods/examples.md
       - usage/exceptions.md
       - usage/validation.md
       - usage/responselog.md
@@ -74,6 +73,7 @@ nav:
       - recipes/index.md
       - "Artifacts":
           - recipes/artifacts/get-artifact.md
+          - recipes/artifacts/get-artifacts.md
           - recipes/artifacts/delete-artifact.md
           - recipes/artifacts/get-artifact-scan-overview.md
           - recipes/artifacts/get-artifact-vulnerabilities.md
@@ -93,13 +93,14 @@ nav:
           - recipes/retention/get-retention.md
       - "Scan":
           - recipes/scan/scan-artifact.md
+      - "User":
+          - recipes/user/get-current-user.md
       - "harborapi.ext":
           - "recipes/ext/index.md"
           - "recipes/ext/conc-artifact.md"
           - recipes/ext/artifactowner.md
           - recipes/ext/artifact-vulns.md
           - "recipes/ext/conc-repo.md"
-
   - "Endpoints":
       - endpoints/index.md
       - endpoints/artifacts.md

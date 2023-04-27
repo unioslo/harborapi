@@ -1,6 +1,6 @@
 # harborapi.client
 
-See [Endpoints](/endpoints) for all methods implemented on the class used to interact with the Harbor API.
+See [Endpoints](../endpoints/index.md) for all methods implemented on the class used to interact with the Harbor API.
 
 ::: harborapi.client
     options:

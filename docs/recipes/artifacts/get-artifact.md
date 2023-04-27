@@ -114,4 +114,6 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
+
+
 See [Get artifact scan overview](get-artifact-scan-overview.md) for more in-depth usage of this feature.
