@@ -21,6 +21,8 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
+In this case we pass in a project name to [`get_project`][harborapi.HarborAsyncClient.get_project] and receive a [`Project`][harborapi.models.Project] object.
+
 
 ## Fetch multiple resources
 
@@ -42,7 +44,9 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-Methods that return multiple resources have a number of optional arguments that can be provided to filter, sort and limit the results. These arguments are documented below.
+In this case we call [`get_projects`][harborapi.HarborAsyncClient.get_projects] with no arguments, and receive a list of [`Project`][harborapi.models.Project] objects.
+
+Methods that fetch multiple resources have a number of optional arguments that can be provided to filter, sort and limit the results. These arguments are documented below.
 
 
 ### `query`
@@ -71,9 +75,11 @@ A query string to filter the results by.
 
 #### Example
 
-`name=test-project,created_at=[2020-01-01~2023-12-31]`
-
-
+```py
+await client.get_projects(
+    query="name=test-project,created_at=[2020-01-01~2023-12-31]",
+)
+```
 
 ----
 
@@ -89,7 +95,11 @@ Prepend fields with `-` to sort in descending order.
 
 #### Example
 
-`name,-created_at`
+```py
+await client.get_projects(
+    sort="name,-created_at",
+)
+```
 
 !!! note
 
@@ -103,11 +113,27 @@ The maximum number of results to return. By default unlimited (`None`).
 
 For certain methods, such as [`HarborAsyncClient.get_audit_logs()`][harborapi.HarborAsyncClient.get_audit_logs], it is highly advised to set a limit to avoid fetching every single entry in the database.
 
+### Example
+
+```py
+await client.get_projects(
+    limit=10,
+)
+```
+
 ----
 
 ### `page`
 
 The page number to start fetching from. This is a parameter that is used in conjunction with `page_size` to control how results are fetched from the API. In the vast majority of cases, this specific parameter does not need to be changed.
+
+### Example
+
+```py
+await client.get_projects(
+    page=2,
+)
+```
 
 ----
 
@@ -117,7 +143,15 @@ The number of results to return per page. This is a parameter that is used in co
 
 As with `page`, this specific parameter does not need to be changed in the vast majority of cases.
 
-### Example (with parameters)
+### Example
+
+```py
+await client.get_projects(
+    page_size=20,
+)
+```
+
+### Example (with all parameters)
 
 ```py
 import asyncio
