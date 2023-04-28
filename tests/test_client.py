@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Optional
 
 import pytest
-from httpx import HTTPStatusError
+from httpx import ConnectError, HTTPStatusError
 from hypothesis import HealthCheck, given, settings
 from pydantic import ValidationError
 from pytest_httpserver import HTTPServer
@@ -289,24 +289,48 @@ async def test_get_pagination_invalid_mock(
 @pytest.mark.asyncio
 async def test_get_retry_mock(async_client: HarborAsyncClient, httpserver: HTTPServer):
     """Test retry by mocking a server that is initially down, then comes up."""
+    try:
+        httpserver.stop()
+
+        # this is a little hacky for now:
+        # we schedule the server to start after a few seconds
+        async def start_server():
+            await asyncio.sleep(2)  # can be increased, but wastes CI run time
+            httpserver.start()
+
+        asyncio.create_task(start_server())
+
+        httpserver.expect_oneshot_request("/api/v2.0/users").respond_with_json(
+            [{"username": "user1"}, {"username": "user2"}],
+        )
+
+        async_client.url = httpserver.url_for("/api/v2.0")
+        users = await async_client.get("/users")
+        assert isinstance(users, list)
+        assert len(users) == 2
+    finally:
+        if not httpserver.is_running():
+            httpserver.start()
+
+
+@pytest.mark.asyncio
+async def test_get_retry_disabled_mock(
+    async_client: HarborAsyncClient, httpserver: HTTPServer
+):
+    """Test that a ConnectError is raised when the server is down and
+    retry is disabled."""
     httpserver.stop()
-
-    # this is a little hacky for now:
-    # we schedule the server to start after a few seconds
-    async def start_server():
-        await asyncio.sleep(2)  # can be increased, but wastes CI run time
-        httpserver.start()
-
-    asyncio.create_task(start_server())
 
     httpserver.expect_oneshot_request("/api/v2.0/users").respond_with_json(
         [{"username": "user1"}, {"username": "user2"}],
     )
 
     async_client.url = httpserver.url_for("/api/v2.0")
-    users = await async_client.get("/users")
-    assert isinstance(users, list)
-    assert len(users) == 2
+    async_client.retry = None  # disable retry
+    with pytest.raises(ConnectError):
+        users = await async_client.get("/users")
+        assert isinstance(users, list)
+        assert len(users) == 2
 
 
 @pytest.mark.asyncio

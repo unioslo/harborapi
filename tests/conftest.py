@@ -1,12 +1,13 @@
 import json
 import os
 from pathlib import Path
-from typing import Union
+from typing import Iterable, Union
 
 import pytest
 from _pytest.logging import LogCaptureFixture
 from hypothesis import Verbosity, settings
 from loguru import logger
+from pytest_httpserver import HTTPServer
 
 from harborapi.client import HarborAsyncClient
 
@@ -26,6 +27,17 @@ settings.register_profile(
 )
 settings.register_profile("dev", max_examples=10)
 settings.load_profile(os.getenv("HYPOTHESIS_PROFILE", "default"))
+
+
+@pytest.fixture(scope="function")
+def httpserver(httpserver: HTTPServer) -> Iterable[HTTPServer]:
+    yield httpserver
+    # Ensure server is running after each test
+    if not httpserver.is_running():
+        httpserver.start()  # type: ignore
+    # Ensure server has no handlers after each test
+    httpserver.clear_all_handlers()  # type: ignore
+    # Maybe run .clear() too?
 
 
 # must be set to "function" to make sure logging is enabled for each test

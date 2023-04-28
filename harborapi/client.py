@@ -15,7 +15,6 @@ from typing import (
     overload,
 )
 
-import backoff
 import httpx
 from httpx import Response, Timeout
 from httpx._types import VerifyTypes
@@ -25,7 +24,6 @@ from pydantic import BaseModel, SecretStr, ValidationError
 from ._types import JSONType
 from .auth import load_harbor_auth_file, new_authfile_from_robotcreate
 from .exceptions import (
-    RETRY_ERRORS,
     HarborAPIException,
     NotFound,
     UnprocessableEntity,
@@ -112,6 +110,7 @@ from .models.buildhistory import BuildHistoryEntry
 from .models.file import FileResponse
 from .models.scanner import HarborVulnerabilityReport
 from .responselog import ResponseLog, ResponseLogEntry
+from .retry import RetrySettings, retry
 from .utils import (
     get_artifact_path,
     get_basicauth,
@@ -177,6 +176,8 @@ class HarborAsyncClient:
         follow_redirects: bool = True,
         timeout: Union[float, Timeout] = 10.0,
         verify: VerifyTypes = True,
+        # Retry options
+        retry: Optional[RetrySettings] = RetrySettings(),
         **kwargs: Any,
     ) -> None:
         """Initialize a new HarborAsyncClient with either a username and secret,
@@ -239,6 +240,7 @@ class HarborAsyncClient:
 
         self.validate = validate
         self.raw = raw
+        self.retry = retry
 
         # NOTE: make env var?
         if logging:
@@ -4720,7 +4722,7 @@ class HarborAsyncClient:
         base_headers.update(headers)  # Override defaults with provided headers
         return base_headers
 
-    @backoff.on_exception(backoff.expo, RETRY_ERRORS, max_time=30)
+    @retry()
     async def get(
         self,
         path: str,
@@ -4753,7 +4755,6 @@ class HarborAsyncClient:
         JSONType
             The JSON response from the API.
         """
-
         j, next_url = await self._get(
             path,
             params=params,
@@ -4808,7 +4809,7 @@ class HarborAsyncClient:
 
         return j
 
-    @backoff.on_exception(backoff.expo, RETRY_ERRORS, max_time=30)
+    @retry()
     async def get_text(
         self,
         path: str,
@@ -4823,7 +4824,7 @@ class HarborAsyncClient:
         # assume text is never paginated
         return resp  # type: ignore
 
-    @backoff.on_exception(backoff.expo, RETRY_ERRORS, max_time=30)
+    @retry()
     async def get_file(
         self,
         path: str,
@@ -4928,7 +4929,7 @@ class HarborAsyncClient:
         return j, None
 
     # NOTE: POST is not idempotent, should we still retry?
-    @backoff.on_exception(backoff.expo, RETRY_ERRORS, max_tries=1)
+    @retry()
     async def post(
         self,
         path: str,
@@ -4963,7 +4964,7 @@ class HarborAsyncClient:
         check_response_status(resp)
         return resp
 
-    @backoff.on_exception(backoff.expo, RETRY_ERRORS, max_time=30)
+    @retry()
     async def put(
         self,
         path: str,
@@ -5002,7 +5003,7 @@ class HarborAsyncClient:
         check_response_status(resp)
         return resp
 
-    @backoff.on_exception(backoff.expo, RETRY_ERRORS, max_time=30)
+    @retry()
     async def patch(
         self,
         path: str,
@@ -5042,7 +5043,7 @@ class HarborAsyncClient:
         check_response_status(resp)
         return resp
 
-    @backoff.on_exception(backoff.expo, RETRY_ERRORS, max_time=30)
+    @retry()
     async def delete(
         self,
         path: str,
@@ -5078,7 +5079,7 @@ class HarborAsyncClient:
         self.log_response(resp)
         return resp
 
-    @backoff.on_exception(backoff.expo, RETRY_ERRORS, max_time=30)
+    @retry()
     async def head(
         self,
         path: str,
