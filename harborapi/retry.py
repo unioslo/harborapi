@@ -9,12 +9,13 @@ from typing import (
     Tuple,
     Type,
     TypeVar,
+    Union,
 )
 
 import backoff
-from backoff._typing import _WaitGenerator
+from backoff._typing import _Handler, _Jitterer, _Predicate, _WaitGenerator
 from httpx import NetworkError, TimeoutException
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, Extra, validator
 
 if TYPE_CHECKING:
     from .client import HarborAsyncClient
@@ -30,22 +31,27 @@ RETRY_ERRORS = (
 ExceptionType = Type[Exception]
 
 
-class RetrySettings(BaseModel):
+def DEFAULT_PREDICATE(e: Exception) -> bool:
+    return False
+
+
+class RetrySettings(BaseModel, extra=Extra.allow):
     enabled: bool = True
     # Required arguments for backoff.on_exception
-    wait_gen: _WaitGenerator = backoff.expo
     exception: Tuple[Type[Exception], ...] = RETRY_ERRORS
 
     # Optional arguments for backoff.on_exception
     max_retries: Optional[int] = None
     max_time: Optional[float] = 60
-    # Arguments passed to wait_gen through **kwargs
-    wait_gen_base: float = 2
-    wait_gen_factor: float = 1
-    wait_gen_max_value: Optional[float] = 120
-    # Override wait_gen_kwargs with a different set of kwargs
-    # if specified, the above three arguments are ignored
-    wait_gen_kwargs_override: Optional[Dict[str, Any]] = None
+    # Arguments passed to wait_gen
+    wait_gen: _WaitGenerator = backoff.expo
+    # wait_gen_kwargs: Optional[Dict[str, Any]] = None
+    jitter: Union[_Jitterer, None] = backoff.full_jitter
+    giveup: _Predicate[Exception] = DEFAULT_PREDICATE
+    on_success: Union[_Handler, Iterable[_Handler], None] = None
+    on_backoff: Union[_Handler, Iterable[_Handler], None] = None
+    on_giveup: Union[_Handler, Iterable[_Handler], None] = None
+    raise_on_giveup: bool = True
 
     @validator("exception", pre=True)
     def _validate_exception(cls, v: Any) -> Tuple[Type[Exception], ...]:
@@ -58,14 +64,9 @@ class RetrySettings(BaseModel):
         )
 
     @property
-    def wait_gen_kwargs(self) -> Dict[str, Optional[float]]:
-        if self.wait_gen_kwargs_override:
-            return self.wait_gen_kwargs_override
-        return {
-            "base": self.wait_gen_base,
-            "factor": self.wait_gen_factor,
-            "max_value": self.wait_gen_max_value,
-        }
+    def wait_gen_kwargs(self) -> Dict[str, Any]:
+        fields = self.__fields__.keys()
+        return {key: value for key, value in self.__dict__.items() if key not in fields}
 
 
 def get_backoff_kwargs(client: "HarborAsyncClient") -> Dict[str, Any]:

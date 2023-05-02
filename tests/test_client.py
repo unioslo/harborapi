@@ -289,28 +289,24 @@ async def test_get_pagination_invalid_mock(
 @pytest.mark.asyncio
 async def test_get_retry_mock(async_client: HarborAsyncClient, httpserver: HTTPServer):
     """Test retry by mocking a server that is initially down, then comes up."""
-    try:
-        httpserver.stop()
+    httpserver.stop()
 
-        # this is a little hacky for now:
-        # we schedule the server to start after a few seconds
-        async def start_server():
-            await asyncio.sleep(2)  # can be increased, but wastes CI run time
-            httpserver.start()
+    # this is a little hacky for now:
+    # we schedule the server to start after a few seconds
+    async def start_server():
+        await asyncio.sleep(2)  # can be increased, but wastes CI run time
+        httpserver.start()
 
-        asyncio.create_task(start_server())
+    asyncio.create_task(start_server())
 
-        httpserver.expect_oneshot_request("/api/v2.0/users").respond_with_json(
-            [{"username": "user1"}, {"username": "user2"}],
-        )
+    httpserver.expect_oneshot_request("/api/v2.0/users").respond_with_json(
+        [{"username": "user1"}, {"username": "user2"}],
+    )
 
-        async_client.url = httpserver.url_for("/api/v2.0")
-        users = await async_client.get("/users")
-        assert isinstance(users, list)
-        assert len(users) == 2
-    finally:
-        if not httpserver.is_running():
-            httpserver.start()
+    async_client.url = httpserver.url_for("/api/v2.0")
+    users = await async_client.get("/users")
+    assert isinstance(users, list)
+    assert len(users) == 2
 
 
 @pytest.mark.asyncio
@@ -331,6 +327,46 @@ async def test_get_retry_disabled_mock(
         users = await async_client.get("/users")
         assert isinstance(users, list)
         assert len(users) == 2
+
+
+@pytest.mark.asyncio
+async def test_get_retry_custom_wait_gen(
+    async_client: HarborAsyncClient, httpserver: HTTPServer
+):
+    """Test that a ConnectError is raised when the server is down and
+    retry is disabled."""
+    httpserver.stop()
+
+    async def start_server():
+        await asyncio.sleep(0.5)  # can be increased, but wastes CI run time
+        httpserver.start()
+
+    httpserver.expect_oneshot_request("/api/v2.0/users").respond_with_json(
+        [{"username": "user1"}, {"username": "user2"}],
+    )
+
+    # Simpler than using a mocker object
+    call_count = 0
+
+    def wait_gen():
+        nonlocal call_count
+        yield  # does not count towards call count
+        while True:
+            call_count += 1
+            yield 0.01
+
+    async_client.url = httpserver.url_for("/api/v2.0")
+    async_client.retry.wait_gen = wait_gen
+
+    # First call(s) should fail
+    asyncio.create_task(start_server())
+    users = await async_client.get("/users")
+
+    assert isinstance(users, list)
+    assert len(users) == 2
+    # Generator should have been called more than once
+    # since the first call just initializes it
+    assert call_count >= 1
 
 
 @pytest.mark.asyncio
