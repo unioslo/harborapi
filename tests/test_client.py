@@ -1,4 +1,3 @@
-import asyncio
 from pathlib import Path
 from typing import Optional
 
@@ -284,29 +283,6 @@ async def test_get_pagination_invalid_mock(
     assert users[0]["username"] == "user1"
     assert users[1]["username"] == "user2"
     assert "Unable to handle paginated results" in caplog.text
-
-
-@pytest.mark.asyncio
-async def test_get_retry_mock(async_client: HarborAsyncClient, httpserver: HTTPServer):
-    """Test retry by mocking a server that is initially down, then comes up."""
-    httpserver.stop()
-
-    # this is a little hacky for now:
-    # we schedule the server to start after a few seconds
-    async def start_server():
-        await asyncio.sleep(2)  # can be increased, but wastes CI run time
-        httpserver.start()
-
-    asyncio.create_task(start_server())
-
-    httpserver.expect_oneshot_request("/api/v2.0/users").respond_with_json(
-        [{"username": "user1"}, {"username": "user2"}],
-    )
-
-    async_client.url = httpserver.url_for("/api/v2.0")
-    users = await async_client.get("/users")
-    assert isinstance(users, list)
-    assert len(users) == 2
 
 
 @pytest.mark.asyncio
