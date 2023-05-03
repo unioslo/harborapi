@@ -4876,8 +4876,13 @@ class HarborAsyncClient:
         FileResponse
             The file contents.
         """
+        headers = {
+            # Replicate browser behavior
+            "Accept": "*/*",
+            "Accept-encoding": "gzip, deflate, br",
+        }
         resp = await self.client.get(
-            self.url + path, params=params, headers=headers, **kwargs
+            self.url + path, params=params, headers=self._get_headers(headers), **kwargs
         )
         return FileResponse(resp)
 
