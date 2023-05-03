@@ -33,8 +33,7 @@ asyncio.run(main())
 
 ## Update
 
-The various `update_*` methods on the client object, expect a `*Req` model similar to the `create_*` methods. However, one important difference is that these methods expect the resource identifier as the first parameter, and the model instance as the second parameter.
-
+The various `update_*` methods on the client object expect a `*Req` model similar to the `create_*` methods. However, one important difference is that these methods expect one or more identifiers for the resource to update the as the first argument(s), and a model as the following argument.
 
 ```py
 import asyncio
@@ -60,6 +59,8 @@ async def main() -> None:
 
 asyncio.run(main())
 ```
+
+Generally, only a single identifier is required, but some endpoints require multiple identifiers to uniquely identify the resource to update, such as the [`update_project_member_role`][harborapi.HarborAsyncClient.update_project_member_role] method which expects both a project name/ID and a member ID.
 
 The API implicitly updates only the fields that are set on the model instance, and leaves the rest of the values unchanged. This is not idiomatic REST when you consider that these are HTTP PUT requests, but in practice this is quite convenient for now. See the [Idiomatic REST updating](#idiomatic-rest-updating) section for more information on why this _might_ change in the future.
 
