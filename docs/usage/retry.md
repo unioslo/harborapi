@@ -127,6 +127,8 @@ The `exception` field takes a single exception type or a tuple of exception type
 By default, all network and timeout errors are retried, but no HTTP errors (301, 404, 500, etc.) are retried. We can change this behavior by passing a tuple of HTTP error types to the `exception` field with the HTTP status errors we want to retry:
 
 ```py
+from harborapi.exceptions import InternalServerError, MethodNotAllowed
+
 RetrySettings(
     exception=(InternalServerError, MethodNotAllowed),
 )
