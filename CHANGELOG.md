@@ -10,7 +10,11 @@ The **third number** is the patch version (bug fixes)
 
 <!-- changelog follows -->
 
-<!-- ## Unreleased -->
+## Unreleased
+
+### Added
+
+- Configurable retrying of failed requests using the new `RetrySettings` class, which can be passed to the `HarborAsyncClient` constructor with the `retry` keyword argument. See the [retry docs](https://pederhan.github.io/harborapi/usage/retry/) for more information.
 
 ## [0.16.2](https://github.com/pederhan/harborapi/tree/harborapi-v0.16.2) - 2023-04-26
 
