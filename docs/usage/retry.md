@@ -19,6 +19,22 @@ client = HarborAsyncClient(
 )
 ```
 
+The configuration can be changed at any time by modifying the `retry` attribute on the client object.
+
+```py
+client.retry.max_tries = 10
+client.max_time = 300
+```
+
+Or by replacing it altogether:
+
+```py
+client.retry = RetrySettings(
+    max_tries=10,
+    max_time=300,
+)
+```
+
 
 ## Disabling retry
 
