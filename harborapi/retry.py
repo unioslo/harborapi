@@ -35,7 +35,7 @@ def DEFAULT_PREDICATE(e: Exception) -> bool:
     return False
 
 
-class RetrySettings(BaseModel, extra=Extra.allow):
+class RetrySettings(BaseModel):
     enabled: bool = True
     # Required argument for backoff.on_exception
     exception: Union[Type[Exception], Tuple[Type[Exception], ...]] = RETRY_ERRORS
@@ -50,6 +50,10 @@ class RetrySettings(BaseModel, extra=Extra.allow):
     on_backoff: Union[_Handler, Iterable[_Handler], None] = None
     on_giveup: Union[_Handler, Iterable[_Handler], None] = None
     raise_on_giveup: bool = True
+
+    class Config:
+        extra = Extra.allow
+        validate_assignment = True
 
     @property
     def wait_gen_kwargs(self) -> Dict[str, Any]:
