@@ -71,19 +71,19 @@ class StatusError(HarborAPIException):
             return None
 
     @property
-    def status_code(self) -> Optional[int]:
+    def status_code(self) -> int:
         """The status code of the underlying HTTPX exception.
 
         Returns
         -------
         Optional[int]
-            The status code of the underlying HTTPX exception, or None if
-            this exception was not raised from an HTTPX exception.
+            The status code of the underlying HTTPX exception.
+            Returns 0 if no response is available.
         """
         # should always return int, but we can't guarantee it
         if self.response:
             return self.response.status_code
-        return None
+        return 0
 
 
 class BadRequest(StatusError):

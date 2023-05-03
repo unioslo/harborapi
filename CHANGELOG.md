@@ -23,6 +23,10 @@ The **third number** is the patch version (bug fixes)
   - `HarborAsyncClient.download_scan_export`
   - `HarborAsyncClient.get_system_certificate`
 
+### Changed
+
+`harborapi.errors.StatusError.status_code` is now always an integer. Returns 0 if no request is associated with the error.
+
 ## [0.16.2](https://github.com/pederhan/harborapi/tree/harborapi-v0.16.2) - 2023-04-26
 
 ### Added
