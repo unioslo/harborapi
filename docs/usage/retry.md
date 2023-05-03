@@ -161,7 +161,9 @@ RetrySettings(
 
 ### Wait generators
 
-In the example we define the custom wait generator function `adder`, which takes the arguments `base` and `value`. These parameters both have the default value `1`. However, we can override the default arguments by passing them to the `RetrySettings` constructor as keyword arguments. Any extra keyword arguments passed to the `RetrySettings` constructor will be passed to the wait generator function:
+In the example we define the custom wait generator function `adder`, which takes the arguments `base` and `value`. These parameters both have the default value `1`. If we want to, we can override the default arguments by passing them to the `RetrySettings` constructor as keyword arguments.
+
+Any extra keyword arguments passed to the `RetrySettings` constructor will in turn be passed to the wait generator function:
 
 ```py
 RetrySettings(
@@ -171,7 +173,7 @@ RetrySettings(
 )
 ```
 
-In the example we passed in `base=1` and `value=2`, which means that internally `adder` is called like this:
+Internally, `adder` uses the extra kwargs and is called like this:
 
 ```py
 adder(base=1, value=2)
