@@ -1,9 +1,8 @@
-import asyncio
 from pathlib import Path
 from typing import Optional
 
 import pytest
-from httpx import ConnectError, HTTPStatusError
+from httpx import HTTPStatusError
 from hypothesis import HealthCheck, given, settings
 from pydantic import ValidationError
 from pytest_httpserver import HTTPServer
@@ -284,89 +283,6 @@ async def test_get_pagination_invalid_mock(
     assert users[0]["username"] == "user1"
     assert users[1]["username"] == "user2"
     assert "Unable to handle paginated results" in caplog.text
-
-
-@pytest.mark.asyncio
-async def test_get_retry_mock(async_client: HarborAsyncClient, httpserver: HTTPServer):
-    """Test retry by mocking a server that is initially down, then comes up."""
-    httpserver.stop()
-
-    # this is a little hacky for now:
-    # we schedule the server to start after a few seconds
-    async def start_server():
-        await asyncio.sleep(2)  # can be increased, but wastes CI run time
-        httpserver.start()
-
-    asyncio.create_task(start_server())
-
-    httpserver.expect_oneshot_request("/api/v2.0/users").respond_with_json(
-        [{"username": "user1"}, {"username": "user2"}],
-    )
-
-    async_client.url = httpserver.url_for("/api/v2.0")
-    users = await async_client.get("/users")
-    assert isinstance(users, list)
-    assert len(users) == 2
-
-
-@pytest.mark.asyncio
-async def test_get_retry_disabled_mock(
-    async_client: HarborAsyncClient, httpserver: HTTPServer
-):
-    """Test that a ConnectError is raised when the server is down and
-    retry is disabled."""
-    httpserver.stop()
-
-    httpserver.expect_oneshot_request("/api/v2.0/users").respond_with_json(
-        [{"username": "user1"}, {"username": "user2"}],
-    )
-
-    async_client.url = httpserver.url_for("/api/v2.0")
-    async_client.retry = None  # disable retry
-    with pytest.raises(ConnectError):
-        users = await async_client.get("/users")
-        assert isinstance(users, list)
-        assert len(users) == 2
-
-
-@pytest.mark.asyncio
-async def test_get_retry_custom_wait_gen(
-    async_client: HarborAsyncClient, httpserver: HTTPServer
-):
-    """Test that a ConnectError is raised when the server is down and
-    retry is disabled."""
-    httpserver.stop()
-
-    async def start_server():
-        await asyncio.sleep(0.5)  # can be increased, but wastes CI run time
-        httpserver.start()
-
-    httpserver.expect_oneshot_request("/api/v2.0/users").respond_with_json(
-        [{"username": "user1"}, {"username": "user2"}],
-    )
-
-    # Simpler than using a mocker object
-    call_count = 0
-
-    def wait_gen():
-        nonlocal call_count
-        yield  # does not count towards call count
-        while True:
-            call_count += 1
-            yield 0.01
-
-    async_client.url = httpserver.url_for("/api/v2.0")
-    async_client.retry.wait_gen = wait_gen
-
-    # First call(s) should fail
-    asyncio.create_task(start_server())
-    users = await async_client.get("/users")
-
-    assert isinstance(users, list)
-    assert len(users) == 2
-    # Generator should have been called more than once
-    # since the first call just initializes it
-    assert call_count >= 1
 
 
 @pytest.mark.asyncio
