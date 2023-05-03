@@ -15,7 +15,7 @@ from typing import (
 import backoff
 from backoff._typing import _Handler, _Jitterer, _Predicate, _WaitGenerator
 from httpx import NetworkError, TimeoutException
-from pydantic import BaseModel, Extra, validator
+from pydantic import BaseModel, Extra
 
 if TYPE_CHECKING:
     from .client import HarborAsyncClient
@@ -37,15 +37,13 @@ def DEFAULT_PREDICATE(e: Exception) -> bool:
 
 class RetrySettings(BaseModel, extra=Extra.allow):
     enabled: bool = True
-    # Required arguments for backoff.on_exception
-    exception: Tuple[Type[Exception], ...] = RETRY_ERRORS
+    # Required argument for backoff.on_exception
+    exception: Union[Type[Exception], Tuple[Type[Exception], ...]] = RETRY_ERRORS
 
     # Optional arguments for backoff.on_exception
-    max_retries: Optional[int] = None
+    max_tries: Optional[int] = None
     max_time: Optional[float] = 60
-    # Arguments passed to wait_gen
     wait_gen: _WaitGenerator = backoff.expo
-    # wait_gen_kwargs: Optional[Dict[str, Any]] = None
     jitter: Union[_Jitterer, None] = backoff.full_jitter
     giveup: _Predicate[Exception] = DEFAULT_PREDICATE
     on_success: Union[_Handler, Iterable[_Handler], None] = None
@@ -53,18 +51,9 @@ class RetrySettings(BaseModel, extra=Extra.allow):
     on_giveup: Union[_Handler, Iterable[_Handler], None] = None
     raise_on_giveup: bool = True
 
-    @validator("exception", pre=True)
-    def _validate_exception(cls, v: Any) -> Tuple[Type[Exception], ...]:
-        if isinstance(v, type):
-            return (v,)
-        if isinstance(v, Iterable):
-            return tuple(v)
-        raise ValueError(
-            "Expected an exception type or an iterable for exception types"
-        )
-
     @property
     def wait_gen_kwargs(self) -> Dict[str, Any]:
+        """Dict of extra model fields."""
         fields = self.__fields__.keys()
         return {key: value for key, value in self.__dict__.items() if key not in fields}
 
@@ -76,10 +65,17 @@ def get_backoff_kwargs(client: "HarborAsyncClient") -> Dict[str, Any]:
         return {}
 
     return dict(
-        wait_gen=retry_settings.wait_gen,
         exception=retry_settings.exception,
-        max_tries=retry_settings.max_retries,
+        max_tries=retry_settings.max_tries,
         max_time=retry_settings.max_time,
+        wait_gen=retry_settings.wait_gen,
+        jitter=retry_settings.jitter,
+        giveup=retry_settings.giveup,
+        on_success=retry_settings.on_success,
+        on_backoff=retry_settings.on_backoff,
+        on_giveup=retry_settings.on_giveup,
+        raise_on_giveup=retry_settings.raise_on_giveup,
+        # extra model fields become **wait_gen_kwargs
         **retry_settings.wait_gen_kwargs,
     )
 
@@ -89,8 +85,10 @@ T = TypeVar("T")
 
 
 def retry() -> Callable[[Callable[P, T]], Callable[P, T]]:
-    """Adds retry logic to a method, where the retry settings are taken
-    from the client's retry settings."""
+    """Adds retry functionality to a HarborAsyncClient method.
+
+    NOTE: will fail if applied to any other class.
+    """
 
     def decorator(func: Callable[P, T]) -> Callable[P, T]:
         @functools.wraps(func)
