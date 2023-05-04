@@ -242,13 +242,8 @@ class HarborAsyncClient:
         self.raw = raw
         self.retry = retry
 
-        # NOTE: make env var?
         if logging:
-            # we explicitly enable the logger here, because previous instantiations
-            # of the client may have disabled it.
             logger.enable("harborapi")
-        else:
-            logger.disable("harborapi")
 
         self.response_log = ResponseLog(max_logs=max_logs)
 
