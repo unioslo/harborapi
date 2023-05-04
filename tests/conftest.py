@@ -37,16 +37,16 @@ def httpserver(httpserver: HTTPServer) -> Iterable[HTTPServer]:
         httpserver.start()  # type: ignore
     # Ensure server has no handlers after each test
     httpserver.clear_all_handlers()  # type: ignore
-    # Maybe run .clear() too?
+    # Maybe run httpserver.clear() too?
 
 
 # must be set to "function" to make sure logging is enabled for each test
 @pytest.fixture(scope="function")
-def async_client() -> HarborAsyncClient:
+def async_client(httpserver: HTTPServer) -> HarborAsyncClient:
     return HarborAsyncClient(
         username="username",
         secret="secret",
-        url="http://localhost",
+        url=httpserver.url_for("/api/v2.0"),
         logging=True,
     )
 
