@@ -177,3 +177,41 @@ async def test_get_retry_custom_wait_gen(
     # Generator should have been called more than once
     # since the first call just initializes it
     assert call_count >= 1
+
+
+@pytest.mark.asyncio
+async def test_no_retry_ctx_manager(
+    async_client: HarborAsyncClient, httpserver: HTTPServer
+):
+    """Tests that the `no_retry` context manager disables retrying for a request, then
+    re-enables it after the request is complete."""
+    httpserver.stop()
+
+    httpserver.expect_oneshot_request("/api/v2.0/users").respond_with_json(
+        [{"username": "user1"}, {"username": "user2"}],
+    )
+
+    async_client.url = httpserver.url_for("/api/v2.0")
+
+    # assert we have active retry settings
+    assert async_client.retry is not None
+    assert async_client.retry.max_time or async_client.retry.max_tries
+    assert async_client.retry.enabled
+
+    with pytest.raises(ConnectError):
+        with async_client.no_retry():
+            assert async_client.retry is None
+            users = await async_client.get("/users")
+            assert isinstance(users, list)
+            assert len(users) == 2
+
+    # Start server again and assert that retry is enabled
+    async def start_server():
+        await asyncio.sleep(0.5)  # can be increased, but wastes CI run time
+        httpserver.start()
+
+    asyncio.create_task(start_server())
+    users = await async_client.get("/users")
+    assert isinstance(users, list)
+    assert len(users) == 2
+    assert async_client.retry.enabled

@@ -1,3 +1,4 @@
+import contextlib
 import json
 import warnings
 from http.cookiejar import CookieJar
@@ -5,6 +6,7 @@ from pathlib import Path
 from typing import (
     Any,
     Dict,
+    Generator,
     List,
     Literal,
     Optional,
@@ -323,6 +325,36 @@ class HarborAsyncClient:
         # when the user calls authenticate() directly without providing a URL.
         if url:
             self.url = url.strip("/")  # make sure URL doesn't have a trailing slash
+
+    @contextlib.contextmanager
+    def no_retry(self) -> Generator[None, None, None]:
+        """Context manager that temporarily disables retrying."""
+        old_retry = self.retry
+        self.retry = None
+        try:
+            yield
+        finally:
+            self.retry = old_retry
+
+    @contextlib.contextmanager
+    def no_validation(self) -> Generator[None, None, None]:
+        """Context manager that temporarily disables validation."""
+        old_validate = self.validate
+        self.validate = False
+        try:
+            yield
+        finally:
+            self.validate = old_validate
+
+    @contextlib.contextmanager
+    def raw_mode(self) -> Generator[None, None, None]:
+        """Context manager that temporarily enables raw mode."""
+        old_raw = self.raw
+        self.raw = True
+        try:
+            yield
+        finally:
+            self.raw = old_raw
 
     def log_response(self, response: Response) -> None:
         """Log the response to a request.

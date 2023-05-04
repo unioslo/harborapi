@@ -348,6 +348,60 @@ async def test_construct_model_no_validation(
 
 
 @pytest.mark.asyncio
+async def test_client_no_validation_ctx_manager_get(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+):
+    """Test that the `no_validation` context manager temporarily disables validation."""
+
+    resp = [
+        {"username": "user1", "admin_role_in_auth": 123},
+        {"username": "user2", "admin_role_in_auth": 456},
+    ]
+    httpserver.expect_oneshot_request("/api/v2.0/users").respond_with_json(
+        resp,
+    )
+
+    async_client.validate = True
+    assert async_client.validate
+    with async_client.no_validation():
+        assert not async_client.validate
+        users = await async_client.get_users()
+    assert async_client.validate
+
+    # No validation means we still get Pydantic models
+    assert all(isinstance(u, UserResp) for u in users)
+    assert users[0].username == "user1"
+    assert users[0].admin_role_in_auth == 123
+    assert users[1].username == "user2"
+    assert users[1].admin_role_in_auth == 456
+
+
+def test_client_no_validation_ctx_manager(
+    async_client: HarborAsyncClient,
+):
+    async_client.validate = True
+    assert async_client.validate
+    with async_client.no_validation():
+        assert not async_client.validate
+    assert async_client.validate
+
+
+def test_client_no_validation_ctx_manager_recover(
+    async_client: HarborAsyncClient,
+):
+    """Test that the previous validation setting is recovered if an exception is raised
+    in the `no_validation` context manager."""
+    async_client.validate = True
+    assert async_client.validate
+    with pytest.raises(Exception):
+        with async_client.no_validation():
+            assert not async_client.validate
+            raise Exception("test")
+    assert async_client.validate
+
+
+@pytest.mark.asyncio
 async def test_construct_model_raw(
     async_client: HarborAsyncClient,
     mocker: MockerFixture,
@@ -430,6 +484,52 @@ async def test_construct_model_raw_is_list_without_list(
     assert m["foo"] == "bar"
     assert construct_spy.call_count == 0
     assert parse_spy.call_count == 0
+
+
+def test_client_raw_mode_ctx_manager(
+    async_client: HarborAsyncClient,
+):
+    async_client.raw = False
+    assert not async_client.raw
+    with async_client.raw_mode():
+        assert async_client.raw
+    assert not async_client.raw
+
+
+def test_client_raw_mode_ctx_manager_recover(
+    async_client: HarborAsyncClient,
+):
+    """Test that the previous raw setting is recovered if an exception is raised
+    in the `raw_mode` context manager."""
+    async_client.raw = False
+    assert not async_client.raw
+    with pytest.raises(Exception):
+        with async_client.raw_mode():
+            assert async_client.raw
+            raise Exception("test")
+    assert not async_client.raw
+
+
+@pytest.mark.asyncio
+async def test_client_raw_mode_ctx_manager_get(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+):
+    """Tests the `raw_mode` context manager with a GET request to a mock user endpoint."""
+    async_client.raw = False
+    assert not async_client.raw
+
+    resp = [{"username": "user1", "foo": "bar"}, {"username": "user2"}]
+    httpserver.expect_oneshot_request("/api/v2.0/users").respond_with_json(
+        resp,
+    )
+
+    with async_client.raw_mode():
+        assert async_client.raw
+        users = await async_client.get_users()
+        assert users == resp  # raw mode returns the raw response
+
+    assert not async_client.raw
 
 
 @pytest.mark.asyncio

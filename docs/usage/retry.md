@@ -68,18 +68,21 @@ client = HarborAsyncClient(
 )
 ```
 
-### Temporary disabling
+### Temporary disabling with `no_retry()`
 
-We can also disable retry temporarily without having to get rid of the retry settings. This is useful if we want to disable retry for a single request.
+We can also disable retry temporarily without having to get rid of the retry settings using the [`no_retry()`][harborapi.HarborAsyncClient.no_retry] context manager. This is useful if we want to disable retry for a single request, but want to keep the retry settings for future requests.
 
 ```py
-client.retry.enabled = False
-# do something
-client.retry.enabled = True
-```
+from harborapi import HarborAsyncClient
 
-!!! warning
-    This will raise an AttributeError if `HarborAsyncClient.retry` is `None`. Ensure the client's retry settings isn't already `None` before attempting to disable retry this way.
+client = HarborAsyncClient(...)
+
+with client.no_retry():
+    # do something that should not be retried
+    ...
+
+# retry is enabled again
+```
 
 ## Advanced Configuration
 

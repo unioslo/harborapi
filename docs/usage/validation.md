@@ -1,6 +1,20 @@
-# Validation
+# Data validation
 
-By default, validation is enabled for all requests, meaning responses are validated through Pydantic models defined for each specific endpoint. You can disable validation of data from the API by setting the `validate` attribute on `HarborAsyncClient` to `False` either when instantiating the client or directly on the client object itself:
+By default, data validation is enabled for all requests, which means the data in HTTP responses are validated by passing them to Pydantic models defined for each specific endpoint. This process ensures that the data returned from the API is both valid and in the correct format. In turn, we get a Pydantic model instance (or a list of them), that we can use to access the data through attributes (dot notation). See [`harborapi.models`][harborapi.models.models] for a list of all available models and their fields.
+
+By having access to the data through instance attributes intead of dictionary keys, users are provided with auto-completion and type hints in their IDEs, which makes it easier to work with and reason about the data. Furthermore, the data is already validated, so we can be sure that it is in the correct format when working with it.
+
+Despite all this, users might want to disable validation for various reasons, such as:
+
+- The version of Harbor they are using is not yet supported by the latest version of `harborapi`
+- A model fails to validate due to a bug in the library or the API spec
+- They want to use the data in a way that is not supported by the models
+
+
+
+## Disable validation
+
+We can disable validation of data from the API by setting the `validate` attribute on `HarborAsyncClient` to `False` either when instantiating the client or directly on the client object itself:
 
 ```python
 from harborapi import HarborAsyncClient
@@ -15,17 +29,35 @@ This will cause the client to skip validation of data from the API, and instead 
 
 This can be useful if using a version of Harbor that is not yet supported by the latest version of `harborapi` and/or a model fails to validate due to a bug in the library or the API spec.
 
+
 !!! warning
-    Nested models will not be constructed when `validate=False` is set. The type of any submodel fields will be `dict` or `list`, depending on the type of the field in the API response, as the submodels will not be constructed by Pydantic. This will effectively break any code that relies on the submodels being constructed.
+    Nested models will not be constructed when `validate=False` is set. The type of any submodel fields will be `dict` or `list`, depending on the type of the field in the API response. This will effectively break any code that relies on the submodels being constructed.
 
     Pydantic does not support constructing nested models without validation. This is a limitation of Pydantic, and not `harborapi`.
 
 
+### `no_validation()` context manager
+
+`HarborAsyncClient` also provides the [`no_validation()`][harborapi.HarborAsyncClient.no_validation] context manager, which temporarily disables validation inside the `with` block:
+
+```py
+
+from harborapi import HarborAsyncClient
+
+client = HarborAsyncClient(...)
+
+with client.no_validation():
+    projects = await client.get_projects()
+```
+
 ## Getting Raw Data
 
-Set the `raw` attribute on the client object to return the raw JSON responses from the API. When we say "raw" we mean the response's JSON body after it has been serialized into a Python object, but before any other processing has been done by the library. This means that the response will be a `dict` or `list` (or a primitive type like `str`, `int`, `float`, `bool`, `None`), and not a Pydantic model.
+In certain cases, we might want to access the raw JSON response from the API, and completely skip the conversion to Pydantic models altogether. In such cases, we can set the `raw` attribute on the client object.
 
-In cases where an endpoint stops returning JSON responses altogether, `raw` will not help. In such cases, you will have to use a different tool to interact with the API.
+This means that the return type of the various API endpoint methods will be `dict` or `list` (or a primitive type like `str`, `int`, `float`, `bool`, `None`) instead of a Pydantic model.
+
+!!! note
+    In cases where an endpoint stops returning JSON responses altogether, `raw` will not help. In such cases, you will have to use a different tool to interact with the API.
 
 ```python
 from harborapi import HarborAsyncClient
@@ -35,6 +67,22 @@ client = HarborAsyncClient(..., raw=True)
 client = HarborAsyncClient(...)
 client.raw = True
 ```
+
+### `raw_mode()` context manager
+
+We can also use the [`raw_mode()`][harborapi.HarborAsyncClient.raw_mode] context manager to temporarily enable raw mode for a single request:
+
+```py
+
+from harborapi import HarborAsyncClient
+
+client = HarborAsyncClient(...)
+
+with client.raw_mode():
+    projects = await client.get_projects()
+    # projects is a list of dicts
+```
+
 
 ## The difference between `raw` and `validate`
 
@@ -53,19 +101,31 @@ client = HarborAsyncClient(
 
 ### Examples
 
-#### `validate=False`
+#### Get system info (no validation)
+
+Without validation, the data is still returned as a [`GeneralInfo`][harborapi.models.GeneralInfo] model, but none of the fields are validated:
 
 ```python
 import asyncio
 from harborapi import HarborAsyncClient
+from harborapi.models import GeneralInfo
 
 client = HarborAsyncClient(
     ...,
     validate=False
 )
-# This will print the Pydantic model with validation disabled
+
 async def main():
-  print(await client.get_system_info())
+    info = await client.get_system_info()
+    assert isinstance(info, GeneralInfo)
+
+    # or (temporarily disable validation)
+    with client.no_validation():
+        info = await client.get_system_info()
+        assert isinstance(info, dict)
+
+    print(info)
+
 
 asyncio.run(main())
 ```
@@ -87,9 +147,11 @@ GeneralInfo.construct(
     authproxy_settings=None,
 )
 ```
-In the example, the model is constructed, but the values of the fields aren't validated and/or converted into the types specified in the model. `current_time` is still a string, even though the model says this is a datetime field. When validation is enabled, this field is converted into a datetime object.
+In the example, the [`GeneralInfo`][harborapi.models.GeneralInfo] model is constructed, but the values of the fields aren't validated and/or coereced into the types specified on model's fields. `current_time` is still a string, even though the model says this is a datetime field. When validation is enabled, this field is converted into a datetime object.
 
-Furthermore, in this fictional example, the API returned the value `2` for the `notification_enable` field, even though the spec says this is a boolean field. With validation disabled, the model is still constructed, and the value of `notification_enable` remains `2`. If we had enabled validation, and the value of `notification_enable` was `2`, we would get an error:
+Furthermore, in this fictional example, the API returned the value `2` for the `notification_enable` field, even though the spec says this is a boolean field. With validation disabled, the model is still constructed successfully, and the value of `notification_enable` remains `2`.
+
+If we had enabled validation, and the API returned the value `2` for the field `notification_enable`, we would get an error, because `2` cannot be parsed as a boolean value:
 
 ```
 pydantic.error_wrappers.ValidationError: 1 validation error for GeneralInfo
@@ -97,9 +159,9 @@ notification_enable
   value could not be parsed to a boolean (type=type_error.bool)
 ```
 
-#### `raw=True`
+#### Get system info (raw)
 
-With `raw=True`, the client returns the parsed JSON data as a dict:
+With raw mode enabled, the client returns the parsed JSON data as a dict:
 
 ```python
 import asyncio
@@ -107,9 +169,16 @@ from harborapi import HarborAsyncClient
 
 client = HarborAsyncClient(..., raw=True)
 
-# This will return the raw data from the API
 async def main():
-  print(await client.get_system_info())
+    info = await client.get_system_info()
+    assert isinstance(info, dict)
+
+    # or (temporarily enable raw mode)
+    with client.raw_mode():
+        info = await client.get_system_info()
+        assert isinstance(info, dict)
+
+    print(info)
 
 asyncio.run(main())
 ```
@@ -132,9 +201,11 @@ asyncio.run(main())
 }
 ```
 
-## Disabling validation on requests
+## Skipping validation for request models
 
-An undocumented feature of the various HarborAPI endpoints is that the argument they accept can be a dict representing the model the endpoint expects. Even though the type hints say that it expects a specific model, any dict can be passed in. This is useful if the endpoint changes in a backwards-incompatible way, and HarborAPI has not yet been updated.
+An undocumented feature of the various endpoint methods that take Pydantic models as one of their arguments, is that they also accept dict representations of that model. Even though the type hints specify that a method expects a model of a specific type, any dict can technically be passed in.
+
+This functionality is useful if an endpoint changes in a backwards-incompatible way that `harborapi` hasn't been updated to reflect yet, or `harborapi` has an error in a model that causes it to fail to validate against the API.
 
 ```python
 import asyncio
@@ -144,7 +215,6 @@ client = HarborAsyncClient(...)
 
 
 async def main() -> None:
-    # Create a project
     project_path = await client.create_project(
         {
             "project_name": "test-project",
@@ -163,3 +233,6 @@ asyncio.run(main())
 ```
 
 In the future, the type hints will be updated to reflect this behavior, but for now it remains undocumented in the code itself.
+
+!!! note
+    If you are using a static type checker in your CI or pre-commit config, you will need to add a `# type: ignore` comment to the line where you pass in the dict, to prevent the type checker from complaining about the type mismatch.

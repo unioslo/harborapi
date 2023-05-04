@@ -14,6 +14,10 @@ The **third number** is the patch version (bug fixes)
 
 ### Added
 
+
+- New context manager for temporarily disabling retrying: `HarborAsyncClient.no_retry`
+- New context manager for temporarily disabling validation: `HarborAsyncClient.no_validation`
+- New context manager for temporarily enabling raw mode: `HarborAsyncClient.raw_mode`
 - Accept `password` kwarg for `HarborAsyncClient` constructor, while emitting warning for it. It isn't encouraged (or documented) to use `password`, but it might be more natural for many users than `secret`, so we allow it, since we already accept arbitrary kwargs.
 
 ### Changed
