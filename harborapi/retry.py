@@ -15,7 +15,7 @@ from typing import (
 import backoff
 from backoff._typing import _Handler, _Jitterer, _Predicate, _WaitGenerator
 from httpx import NetworkError, TimeoutException
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel, Extra, Field
 
 if TYPE_CHECKING:
     from .client import HarborAsyncClient
@@ -32,24 +32,57 @@ ExceptionType = Type[Exception]
 
 
 def DEFAULT_PREDICATE(e: Exception) -> bool:
+    """Predicate function that always returns False."""
     return False
 
 
 class RetrySettings(BaseModel):
-    enabled: bool = True
+    enabled: bool = Field(True, description="Whether to retry requests.")
     # Required argument for backoff.on_exception
-    exception: Union[Type[Exception], Tuple[Type[Exception], ...]] = RETRY_ERRORS
+    exception: Union[Type[Exception], Tuple[Type[Exception], ...]] = Field(
+        RETRY_ERRORS,
+        description="Exception(s) to catch and retry on.",
+    )
 
     # Optional arguments for backoff.on_exception
-    max_tries: Optional[int] = None
-    max_time: Optional[float] = 60
-    wait_gen: _WaitGenerator = backoff.expo
-    jitter: Union[_Jitterer, None] = backoff.full_jitter
-    giveup: _Predicate[Exception] = DEFAULT_PREDICATE
-    on_success: Union[_Handler, Iterable[_Handler], None] = None
-    on_backoff: Union[_Handler, Iterable[_Handler], None] = None
-    on_giveup: Union[_Handler, Iterable[_Handler], None] = None
-    raise_on_giveup: bool = True
+    max_tries: Optional[int] = Field(
+        default=None,
+        gt=0,
+        description="Maximum number of tries before giving up.",
+    )
+    max_time: Optional[float] = Field(
+        default=60,
+        ge=0,
+        description="Maximum number of seconds to retry for.",
+    )
+    wait_gen: _WaitGenerator = Field(
+        default=backoff.expo,
+        description="Function that generates wait times.",
+    )
+    jitter: Union[_Jitterer, None] = Field(
+        default=backoff.full_jitter,
+        description="Function that jitters wait times.",
+    )
+    giveup: _Predicate[Exception] = Field(
+        default=DEFAULT_PREDICATE,
+        description="Predicate function that determines if we should give up.",
+    )
+    on_success: Union[_Handler, Iterable[_Handler], None] = Field(
+        default=None,
+        description="Function(s) to call on success.",
+    )
+    on_backoff: Union[_Handler, Iterable[_Handler], None] = Field(
+        default=None,
+        description="Function(s) to call when backing off.",
+    )
+    on_giveup: Union[_Handler, Iterable[_Handler], None] = Field(
+        default=None,
+        description="Function(s) to call when giving up.",
+    )
+    raise_on_giveup: bool = Field(
+        default=True,
+        description="Whether to raise the exception when giving up.",
+    )
 
     class Config:
         extra = Extra.allow
@@ -65,8 +98,11 @@ class RetrySettings(BaseModel):
 def get_backoff_kwargs(client: "HarborAsyncClient") -> Dict[str, Any]:
     retry_settings = client.retry
 
-    if not retry_settings or not retry_settings.enabled:
-        return {}
+    # We should never get here, but just in case...
+    assert retry_settings is not None, "Client has no retry settings."
+
+    # Ignore RetrySettings.enabled, since we're already here.
+    # Callers should have checked that already.
 
     return dict(
         exception=retry_settings.exception,
@@ -91,7 +127,7 @@ T = TypeVar("T")
 def retry() -> Callable[[Callable[P, T]], Callable[P, T]]:
     """Adds retry functionality to a HarborAsyncClient method.
 
-    NOTE: will fail if applied to any other class.
+    NOTE: will fail if applied to any other class than HarborAsyncClient.
     """
 
     def decorator(func: Callable[P, T]) -> Callable[P, T]:

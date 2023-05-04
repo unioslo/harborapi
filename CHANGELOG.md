@@ -16,6 +16,11 @@ The **third number** is the patch version (bug fixes)
 
 - Accept `password` kwarg for `HarborAsyncClient` constructor, while emitting warning for it. It isn't encouraged (or documented) to use `password`, but it might be more natural for many users than `secret`, so we allow it, since we already accept arbitrary kwargs.
 
+### Changed
+
+- `RetrySettings.max_tries` now only accepts values greater than 0.
+- `RetrySettings.max_time` now only accepts values greater or equal to 0.
+
 ## [0.17.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.17.0) - 2023-05-03
 
 ### Added
