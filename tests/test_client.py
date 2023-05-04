@@ -49,12 +49,27 @@ def test_client_init_username():
     assert client.basicauth == get_basicauth("username", "secret")
 
 
+def test_client_init_password_warning():
+    with pytest.warns(DeprecationWarning) as warnings:
+        client = HarborAsyncClient(
+            username="username",
+            password="password",
+            url="https://harbor.example.com/api/v2.0",
+        )
+    assert len(warnings) == 1
+    assert "password" in str(warnings[0].message)
+    assert client.url == "https://harbor.example.com/api/v2.0"
+    assert client.basicauth == get_basicauth("username", "password")
+
+
 def test_client_init_credentials():
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(DeprecationWarning) as warnings:
         client = HarborAsyncClient(
             credentials="dXNlcm5hbWU6c2VjcmV0",
             url="https://harbor.example.com/api/v2.0",
         )
+    assert len(warnings) == 1
+    assert "credentials" in str(warnings[0].message)
     assert client.url == "https://harbor.example.com/api/v2.0"
     assert client.basicauth == get_basicauth("username", "secret")
 

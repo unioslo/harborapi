@@ -181,7 +181,7 @@ class HarborAsyncClient:
         **kwargs: Any,
     ) -> None:
         """Initialize a new HarborAsyncClient with either a username and secret,
-        an authentication token, or a credentials file.
+        base64 basicauth credentials, or a credentials file.
 
         Parameters
         ----------
@@ -276,26 +276,45 @@ class HarborAsyncClient:
         **kwargs : Any
             Additional keyword arguments to pass in.
         """
+
+        # Get deprecated parameters first:
+
+        # Get secret from deprecated kwarg
+        # 'password' -> 'secret'
+        if (password := kwargs.get("password", "")) and not secret:
+            warnings.warn(
+                "Parameter 'password' is deprecated. Use 'secret' instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            assert isinstance(password, str), "password must be a string"
+            secret = password
+
+        # Get basicauth from deprecated kwarg
+        # 'credentials' -> 'basicauth'
+        if (credentials_kwarg := kwargs.get("credentials")) and not basicauth:
+            basicauth = credentials_kwarg
+            warnings.warn(
+                "parameter 'credentials' is deprecated and will be removed in the future, use 'basicauth'",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
+        # All authentication methods ultimately resolve to basicauth
         if username and secret:
             self.basicauth = get_basicauth(username, secret)
-        elif (credentials_kwarg := kwargs.get("credentials")) or basicauth:
-            if credentials_kwarg and not basicauth:
-                basicauth = credentials_kwarg
-                warnings.warn(
-                    "parameter 'credentials' is deprecated and will be removed in the future, use 'basicauth'",
-                    DeprecationWarning,
-                )
-            assert basicauth is not None
+        elif basicauth:
             self.basicauth = SecretStr(basicauth)
         elif credentials_file:
             crfile = load_harbor_auth_file(credentials_file)
             self.basicauth = get_basicauth(crfile.name, crfile.secret)
-        else:
-            # No credentials provided (first-time authentication)
-            if not self.basicauth:
-                raise ValueError(
-                    "Must provide username and secret, credentials, or credentials_file"
-                )
+
+        # No credentials provided (first-time authentication)
+        # If we just change the URL later, we already have a basicauth
+        if not self.basicauth:
+            raise ValueError(
+                "Must provide username and secret, basicauth, or credentials_file"
+            )
 
         # Only set URL if it's provided
         # This is guaranteed to be a non-empty string when this method is called
