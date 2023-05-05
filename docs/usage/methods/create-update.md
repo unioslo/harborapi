@@ -35,6 +35,8 @@ asyncio.run(main())
 
 The various `update_*` methods on the client object expect a `*Req` model similar to the `create_*` methods. However, one important difference is that these methods expect one or more identifiers for the resource to update the as the first argument(s), and a model as the following argument.
 
+Generally, only a single identifier is required, but some endpoints require multiple identifiers to uniquely identify the resource to update, such as the [`update_project_member_role`][harborapi.HarborAsyncClient.update_project_member_role] method which expects both a project name/ID and a member ID.
+
 ```py
 import asyncio
 from harborapi import HarborAsyncClient
@@ -49,10 +51,10 @@ async def main() -> None:
         "test-project",
         ProjectReq(
             metadata=ProjectMetadata(
-                enable_content_trust="true",  # yeah, it's a string...
+                enable_content_trust=True,
             ),
             # OR
-            # metadata={"enable_content_trust": "true"}
+            # metadata={"enable_content_trust": True}
         ),
     )
 
@@ -60,15 +62,18 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-Generally, only a single identifier is required, but some endpoints require multiple identifiers to uniquely identify the resource to update, such as the [`update_project_member_role`][harborapi.HarborAsyncClient.update_project_member_role] method which expects both a project name/ID and a member ID.
+The API implicitly updates only the fields that are set on the model instance, and leaves the rest of the values unchanged. This is not idiomatic REST when you consider that these are HTTP PUT requests, but in practice this is quite convenient for now.
 
-The API implicitly updates only the fields that are set on the model instance, and leaves the rest of the values unchanged. This is not idiomatic REST when you consider that these are HTTP PUT requests, but in practice this is quite convenient for now. See the [Idiomatic REST updating](#idiomatic-rest-updating) section for more information on why this _might_ change in the future.
+In the example, we only set the ProjectReq.metadata.enable_content_trust on the update model, which means that only that field will be updated. The rest of the project settings will be left unchanged.
+
+
+See the [Idiomatic REST updating](#idiomatic-rest-updating) section for more information on why this _might_ change in the future.
 
 ### Idiomatic REST updating
 
-The update endpoints are exposed as HTTP PUT endpoints, which according to [RFC 7231](https://datatracker.ietf.org/doc/html/rfc7231#section-4.3.4) should expect the full resource definition, not just the fields to update[^1]. However, manual testing has revealed this to not be the case; the API supports updating with partial models, and it only updates the fields that are present in the request body. When `harborapi` serializes models to JSON, it only includes fields that have been set, so this behavior is supported by default.
+The update endpoints are HTTP PUT endpoints that should expect a full resource definition according to [RFC 7231](https://datatracker.ietf.org/doc/html/rfc7231#section-4.3.4). However, manual testing has shown that the API supports updating with partial models. The API updates only the fields present in the request model and does not update the existing resource fields that are not present in the request model. `harborapi` serializes only the fields that the user sets, so only those fields are updated by the API.
 
-Despite this behavior, it might a good idea to pass the full resource definition to the `update_*` methods, as the support for partial updates through the API may change in the future independently of this library.
+Despite this behavior, it _might_ a good idea to pass the full resource definition to the `update_*` methods, as the support for partial updates through the API may change in the future independently of this library.
 
 Below is an example demonstrating how to fetch the existing resource, use it to construct the update model, and then update the resource with the new model.
 
@@ -90,7 +95,7 @@ async def main() -> None:
         # optionally only include fields from the request model:
         # project.dict(include=ProjectReq.__fields__.keys()),
     )
-    req.metadata.enable_content_trust = "true"
+    req.metadata.enable_content_trust = True
 
     # Update the project
     await client.update_project("test-project", req)
