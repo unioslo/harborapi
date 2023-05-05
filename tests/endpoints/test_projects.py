@@ -12,6 +12,7 @@ from harborapi.models.models import (
     ProjectDeletable,
     ProjectMember,
     ProjectMemberEntity,
+    ProjectMetadata,
     ProjectReq,
     ProjectSummary,
     RoleRequest,
@@ -408,3 +409,24 @@ async def test_get_project_members_mock(
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_project_members("1234")
     assert resp == members
+
+
+@pytest.mark.parametrize("arg", [True, False])
+def test_project_metadata_bool_conversion(arg: bool) -> None:
+    """Test that bools are converted to 'true' and 'false' for fields
+    that take strings of 'true'/'false'"""
+    v = "true" if arg else "false"
+    project = ProjectMetadata(
+        public=arg,
+        enable_content_trust=arg,
+        enable_content_trust_cosign=arg,
+        prevent_vul=arg,
+        auto_scan=arg,
+        reuse_sys_cve_allowlist=arg,
+    )
+    assert project.public == v
+    assert project.enable_content_trust == v
+    assert project.enable_content_trust_cosign == v
+    assert project.prevent_vul == v
+    assert project.auto_scan == v
+    assert project.reuse_sys_cve_allowlist == v
