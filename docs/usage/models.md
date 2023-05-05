@@ -2,7 +2,7 @@
 
 Most endpoints either return a Pydantic model or takes one as an argument. You don't need to know anything about Pydantic to use the models, but it's a good idea to familiarize yourself with the basics through the [Pydantic v1.x docs](https://docs.pydantic.dev/1.10/) to get the most out of the library.
 
-All models are located in the [`harborapi.models`][harborapi.models] module.
+All models are located in the [`harborapi.models`][harborapi.models.models] module.
 
 ```py
 from harborapi.models import *
@@ -79,7 +79,7 @@ Again, we are assisted by the IDE when creating the model instance:
 ## String fields with 'true' and 'false' values in API spec
 
 !!! info
-    This section only refers to a very particular subset of models. The vast majority of models use `bool` fields as they should. You don't strictly need to
+    This section only refers to a very particular subset of models. The vast majority of models use `bool` fields as they should.
 
 For some reason, some model fields in the API spec that by all accounts should have been bools are actually string fields that accept `'true'` and `'false'`.
 
