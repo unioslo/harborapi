@@ -71,6 +71,7 @@ class BaseModel(PydanticBaseModel):
         # Account for additions to the spec
         # These fields will not be validated however
         extra = "allow"
+        validate_assignment = True
 
     # Validators
     bool_converter = root_validator(pre=True, allow_reuse=True)(

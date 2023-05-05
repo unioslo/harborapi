@@ -67,7 +67,7 @@ def test_artifactreport(
     # Test CVSS (with trivy vendor attributes)
     # TODO: add other scanners
     for artifact in report.artifacts:
-        artifact.report.scanner = "Trivy"
+        artifact.report.scanner = {"name": "Trivy"}
         for vulnerability in artifact.report.vulnerabilities:
             vulnerability.vendor_attributes = {
                 "CVSS": {

@@ -24,6 +24,7 @@ The **third number** is the patch version (bug fixes)
 
 - `RetrySettings.max_tries` now only accepts values greater than 0.
 - `RetrySettings.max_time` now only accepts values greater or equal to 0.
+- Models fields assignments are now validated by default.
 
 ## [0.17.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.17.0) - 2023-05-03
 

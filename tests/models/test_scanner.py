@@ -154,16 +154,16 @@ def test_harborvulnerabilityreport(report: HarborVulnerabilityReport) -> None:
     assert report.has_package("test-package")
 
     # Test `vuln(s)_with_` methods
-    assert report.vuln_with_cve("CVE-2022-1337-test") is test_vuln
-    assert list(report.vulns_with_description("test-cve"))[0] is test_vuln
-    assert list(report.vulns_with_package("test-package"))[0] is test_vuln
+    assert report.vuln_with_cve("CVE-2022-1337-test") == test_vuln
+    assert list(report.vulns_with_description("test-cve"))[0] == test_vuln
+    assert list(report.vulns_with_package("test-package"))[0] == test_vuln
 
     # Test sorting
-    assert report.vulnerabilities[0] is test_vuln
-    assert report.vulnerabilities[1] is test_vuln2
+    assert report.vulnerabilities[0] == test_vuln
+    assert report.vulnerabilities[1] == test_vuln2
     report.sort()
-    assert report.vulnerabilities[0] is test_vuln2
-    assert report.vulnerabilities[1] is test_vuln
+    assert report.vulnerabilities[0] == test_vuln2
+    assert report.vulnerabilities[1] == test_vuln
     # We can only compare using cvss scores if we have a scanner
     # (which we should probably always have)
     if report.scanner is not None:
@@ -183,7 +183,7 @@ def test_harborvulnerabilityreport(report: HarborVulnerabilityReport) -> None:
         )
         report.vulnerabilities.append(test_vuln3)
         report.sort(use_cvss=True)
-        assert report.vulnerabilities[0] is test_vuln3
+        assert report.vulnerabilities[0] == test_vuln3
 
 
 def test_no_scanner_references() -> None:
