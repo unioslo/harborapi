@@ -53,6 +53,7 @@ nav:
   - "Usage":
       - usage/index.md
       - usage/authentication.md
+      - usage/models.md
       - "Methods":
           - usage/methods/index.md
           - usage/methods/read.md
