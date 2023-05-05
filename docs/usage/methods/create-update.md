@@ -71,7 +71,32 @@ See the [Idiomatic REST updating](#idiomatic-rest-updating) section for more inf
 
 ### Idiomatic REST updating
 
-The update endpoints are HTTP PUT endpoints that should expect a full resource definition according to [RFC 7231](https://datatracker.ietf.org/doc/html/rfc7231#section-4.3.4). However, manual testing has shown that the API supports updating with partial models. The API updates only the fields present in the request model and does not update the existing resource fields that are not present in the request model. `harborapi` serializes only the fields that the user sets, so only those fields are updated by the API.
+The update endpoints are HTTP PUT endpoints that should expect a full resource definition according to [RFC 7231](https://datatracker.ietf.org/doc/html/rfc7231#section-4.3.4). However, testing has shown that the API supports updating with partial models. The API updates only the fields present in the request model and does not update the existing resource fields that are not present in the request model. By default, `harborapi` will only send the fields that are present in the request model, and leave out the rest:
+
+```py
+from harborapi.models import ProjectReq, ProjectMetadata
+
+project = ProjectReq(
+    public=True,
+    metadata=ProjectMetadata(
+        auto_scan=True,
+    ),
+)
+```
+
+Will send the following over the wire, where unset fields are excluded:
+
+```json
+{
+  "public": true,
+  "metadata": {
+    "auto_scan": "true"
+  }
+}
+```
+
+!!! note
+    The reason for `"auto_scan": "true"` instead of `"auto_scan": true` can be found [here](../../models/#string-fields-with-true-and-false-values-in-api-spec).
 
 Despite this behavior, it _might_ a good idea to pass the full resource definition to the `update_*` methods, as the support for partial updates through the API may change in the future independently of this library.
 
