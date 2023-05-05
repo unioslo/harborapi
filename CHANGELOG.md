@@ -25,6 +25,7 @@ The **third number** is the patch version (bug fixes)
 - `RetrySettings.max_tries` now only accepts values greater than 0.
 - `RetrySettings.max_time` now only accepts values greater or equal to 0.
 - Models fields assignments are now validated by default.
+- `models.base.BaseModel.bool_converter` renamed to `models.base.BaseModel._bool_converter` to hide it in IDE autocompletion. This shouldn't be a breaking change for anyone, since it was never documented or intended to be used by anyone outside of the library.
 
 ## [0.17.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.17.0) - 2023-05-03
 

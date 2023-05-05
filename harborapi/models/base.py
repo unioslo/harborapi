@@ -74,7 +74,7 @@ class BaseModel(PydanticBaseModel):
         validate_assignment = True
 
     # Validators
-    bool_converter = root_validator(pre=True, allow_reuse=True)(
+    _bool_converter = root_validator(pre=True, allow_reuse=True)(
         convert_bool_to_lower_str
     )
 
