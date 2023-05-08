@@ -1,6 +1,6 @@
 # Models
 
-Most endpoints either return a Pydantic model or takes one as an argument. You don't need to know anything about Pydantic to use the models, but it's a good idea to familiarize yourself with the basics through the [Pydantic v1.x docs](https://docs.pydantic.dev/1.10/) to get the most out of the library.
+Most client methods either return a Pydantic model or take one as an argument. You don't need to know anything about Pydantic to use the models, but it's a good idea to familiarize yourself with the basics through the [Pydantic v1.x docs](https://docs.pydantic.dev/1.10/) to get the most out of the library.
 
 All models are located in the [`harborapi.models`][harborapi.models.models] module.
 
