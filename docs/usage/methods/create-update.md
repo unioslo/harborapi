@@ -129,7 +129,6 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-
 [`update_project()`][harborapi.client.HarborAsyncClient.update_project] expects a [`ProjectReq`][harborapi.models.Project] model, while the [`get_project()`][harborapi.client.HarborAsyncClient.get_project] method returns a [`Project`][harborapi.models.Project] model. How do we use the `Project` model to create a `ProjectReq`?
 
 We can create a `ProjectReq` by passing the `Project` instance to the `parse_obj()` method on the `ProjectReq` class. This will create a new `ProjectReq` instance with the same values as the `Project` instance.
@@ -140,4 +139,4 @@ To only include values that are present in the `ProjectReq` model, we can first 
 [^1]: You can defend this behavior with certain interpretations of this quote from the RFC: *When a PUT
    representation is inconsistent with the target resource, the origin
    server SHOULD either make them consistent, by transforming the
-   representation or changing the resource configuration [...]*. However, this is implicit behavior that is not documented anywhere.
+   representation or changing the resource configuration [...]*. However, this is implicit behavior that is not documented anywhere by Harbor, so we have no way of knowing if it is intentional or not.
