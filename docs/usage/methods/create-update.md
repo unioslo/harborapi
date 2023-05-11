@@ -6,7 +6,7 @@ The endpoint methods themselves have no parameters beyond the single model insta
 
 ## Create
 
-Creating resources is done by calling the `create_*` methods on the client object. The model type expected for these methods is usually subtly different from the ones returned by `get_*` methods, and is usually named `*Req`.
+Creating resources is done by calling one of the `create_*` methods on the client object. The model type expected for these methods is usually subtly different from the ones returned by `get_*` methods, and generally have the suffix `*Req` (e.g. [`ProjectReq`][harborapi.models.ProjectReq] instead of [`Project`][harborapi.models.Project]).
 
 ```python
 import asyncio
@@ -33,9 +33,13 @@ asyncio.run(main())
 
 ## Update
 
-The various `update_*` methods on the client object expect a `*Req` model similar to the `create_*` methods. However, one important difference is that these methods expect one or more identifiers for the resource to update the as the first argument(s), and a model as the following argument.
+The various `update_*` methods on the client object expect a `*Req` model similar to the `create_*` methods. However, one important distinction is that these methods also expect one or more identifiers for the resource to update the as the first argument(s) and then the model as the following argument:
 
-Generally, only a single identifier is required, but some endpoints require multiple identifiers to uniquely identify the resource to update, such as the [`update_project_member_role`][harborapi.HarborAsyncClient.update_project_member_role] method which expects both a project name/ID and a member ID.
+```py
+client.update_project("name-of-project", ProjectReq(...))
+```
+
+Generally, only a single identifier is required to uniquely identify the resource to update, but some endpoints require multiple identifiers, such as the [`update_project_member_role`][harborapi.HarborAsyncClient.update_project_member_role] method which expects both a project name/ID and a member ID:
 
 ```py
 import asyncio
@@ -53,8 +57,6 @@ async def main() -> None:
             metadata=ProjectMetadata(
                 enable_content_trust=True,
             ),
-            # OR
-            # metadata={"enable_content_trust": True}
         ),
     )
 
@@ -62,12 +64,11 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-The API implicitly updates only the fields that are set on the model instance, and leaves the rest of the values unchanged. This is not idiomatic REST when you consider that these are HTTP PUT requests, but in practice this is quite convenient for now.
+The API implicitly updates only the fields that are set on the model instance, and leaves the rest of the values unchanged. This is not idiomatic REST when you consider that these are HTTP PUT requests, but in practice this is quite convenient from a user-perspective for now.
 
-In the example, we only set the ProjectReq.metadata.enable_content_trust on the update model, which means that only that field will be updated. The rest of the project settings will be left unchanged.
+In the example, we only set the `metadata.enable_content_trust` field on the `ProjectReq` model, which means that only that one setting will be updated on the project. The rest of the project settings will be left unchanged.
 
-
-See the [Idiomatic REST updating](#idiomatic-rest-updating) section for more information on why this _might_ change in the future.
+See the [Idiomatic REST updating](#idiomatic-rest-updating) section for more information on why this _might_ not be the correct way to do things, and why it _could_ change in the future if Harbor changes the API.
 
 ### Idiomatic REST updating
 
