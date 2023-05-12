@@ -6,7 +6,7 @@ use of the special `__rich_console__` method. See the Rich documentation
 for more information: <https://rich.readthedocs.io/en/latest/protocol.html#console-render/>.
 """
 
-from typing import Any, Iterable, Optional, Type, TypeVar
+from typing import Any, Iterable, List, Optional, Type, TypeVar
 
 from pydantic import BaseModel as PydanticBaseModel
 from pydantic import validator
@@ -129,6 +129,10 @@ class BaseModel(PydanticBaseModel):
         else:
             include = model.__fields__.keys()
         return model.parse_obj(self.dict(include=include))
+
+    def get_model_fields(self) -> List[str]:
+        """Returns a list containing the name of the model's fields."""
+        return list(self.__fields__.keys())
 
     if rich_installed:
 

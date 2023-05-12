@@ -126,3 +126,28 @@ def test_convert_to_req(extra: bool) -> None:
 
     # Deprecated field, handled by metadata.public
     assert req.public is None
+
+
+# TODO: test all models without increasing test run time too much
+def test_get_model_fields_project() -> None:
+    model = Project()  # instantiate with defaults
+    fields = model.get_model_fields()
+    assert isinstance(fields, list)
+    for field in fields:
+        assert isinstance(field, str)
+        getattr(model, field)  # will raise if field does not exist
+    assert "project_id" in fields
+    assert "owner_id" in fields
+    assert "name" in fields
+    assert "registry_id" in fields
+    assert "creation_time" in fields
+    assert "update_time" in fields
+    assert "deleted" in fields
+    assert "owner_name" in fields
+    assert "togglable" in fields
+    assert "current_user_role_id" in fields
+    assert "current_user_role_ids" in fields
+    assert "repo_count" in fields
+    assert "chart_count" in fields
+    assert "metadata" in fields
+    assert "cve_allowlist" in fields

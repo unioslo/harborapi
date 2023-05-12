@@ -10,7 +10,12 @@ The **third number** is the patch version (bug fixes)
 
 <!-- changelog follows -->
 
-<!-- ## Unreleased -->
+## Unreleased
+
+### Added
+
+- `BaseModel.get_model_fields`, which returns a list of names of all fields defined in the model's schema.
+
 
 ## [0.18.1](https://github.com/pederhan/harborapi/tree/harborapi-v0.18.1) - 2023-05-12
 
