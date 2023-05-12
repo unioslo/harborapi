@@ -46,7 +46,7 @@ asyncio.run(main())
 
 In this case we call [`get_projects`][harborapi.HarborAsyncClient.get_projects] with no arguments, and receive a list of [`Project`][harborapi.models.Project] objects.
 
-Methods that fetch multiple resources have a number of optional arguments that can be provided to filter, sort and limit the results. These arguments are documented below.
+Methods that fetch multiple resources have a number of optional arguments that can be passed in to filter, sort and limit the results. These arguments are documented below.
 
 
 ### `query`
@@ -73,13 +73,23 @@ A query string to filter the results by.
 * time(in format `"2020-04-09 02:36:00"`)
 
 
-#### Example
+**Example**
+
+
+Fetch all projects with a name containing `test`, owned by the user `admin`, and created between 2020-01-01 and 2023-12-31
 
 ```py
 await client.get_projects(
-    query="name=test-project,created_at=[2020-01-01~2023-12-31]",
+    query="name=~test,owner=admin,created_at=[2020-01-01~2023-12-31]",
 )
 ```
+
+!!! note
+    The field we query for owner name is called `owner` despite the field on the [`Project`][harborapi.models.Project] model being called `owner_name`. This is one of many examples of divergences in the API spec that we have no control over.
+
+    As you work with the API, it is likely you will encounter more of these inconsistencies.
+
+<!-- TODO: add BaseModel.get_model_fields() example -->
 
 ----
 
@@ -93,7 +103,7 @@ The field(s) to sort the results by. Must match the field names of the API respo
 
 Prepend fields with `-` to sort in descending order.
 
-#### Example
+**Example**
 
 ```py
 await client.get_projects(
@@ -103,7 +113,7 @@ await client.get_projects(
 
 !!! note
 
-    Not all fields support sorting. This is not documented anywhere by Harbor, and the only way to know which fields work is to try them out. Unsortable fields are ignored by the API.
+    Not all fields support sorting. This is not documented anywhere by Harbor, and the only way to know which fields work is to try them out. Unsortable field names are ignored by the API.
 
 ----
 
@@ -113,7 +123,7 @@ The maximum number of results to return. By default unlimited (`None`).
 
 For certain methods, such as [`HarborAsyncClient.get_audit_logs()`][harborapi.HarborAsyncClient.get_audit_logs], it is highly advised to set a limit to avoid fetching every single entry in the database.
 
-### Example
+**Example**
 
 ```py
 await client.get_projects(
@@ -127,7 +137,7 @@ await client.get_projects(
 
 The page number to start fetching from. This is a parameter that is used in conjunction with `page_size` to control how results are fetched from the API. In the vast majority of cases, this specific parameter does not need to be changed.
 
-### Example
+**Example**
 
 ```py
 await client.get_projects(
@@ -143,7 +153,7 @@ The number of results to return per page. This is a parameter that is used in co
 
 As with `page`, this specific parameter does not need to be changed in the vast majority of cases.
 
-### Example
+**Example**
 
 ```py
 await client.get_projects(
@@ -152,6 +162,9 @@ await client.get_projects(
 ```
 
 ### Example (with all parameters)
+
+
+We can use all of the above parameters together to fetch a specific set of resources. In this case, we want to fetch all projects that have a name containing `test`, and were created between 2020-01-01 and 2023-12-31. We want to sort the results by name, and limit the results to 100 projects.
 
 ```py
 import asyncio
@@ -162,7 +175,7 @@ client = HarborAsyncClient(...)
 
 async def main() -> None:
     projects = await client.get_projects(
-        query="name=test-project,created_at=[2020-01-01~2023-12-31]",
+        query="name=~test,created_at=[2020-01-01~2023-12-31]",
         sort="name",
         page=1,
         page_size=10,
