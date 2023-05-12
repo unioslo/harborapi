@@ -10,7 +10,16 @@ The **third number** is the patch version (bug fixes)
 
 <!-- changelog follows -->
 
-<!-- ## Unreleased -->
+## Unreleased
+
+### Added
+
+- `BaseModel.convert_to`, which allows converting a model to another model type. This is useful for converting a model to a different model that has a similar schema, such as converting a `Project` to a `ProjectReq` model.
+
+
+### Fixed
+
+- Bool to string converter on `BaseModel` now correctly handles assignments.
 
 ## [0.18.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.18.0) - 2023-05-05
 

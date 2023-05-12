@@ -6,10 +6,11 @@ use of the special `__rich_console__` method. See the Rich documentation
 for more information: <https://rich.readthedocs.io/en/latest/protocol.html#console-render/>.
 """
 
-from typing import Any, Dict, Iterable, Optional, Type
+from typing import Any, Iterable, Optional, Type, TypeVar
 
 from pydantic import BaseModel as PydanticBaseModel
-from pydantic import root_validator
+from pydantic import validator
+from pydantic.fields import ModelField
 
 # fmt: off
 try:
@@ -22,6 +23,9 @@ except ImportError:
 # fmt: on
 
 
+BaseModelType = TypeVar("BaseModelType", bound="BaseModel")
+
+
 DEPTH_TITLE_COLORS = {
     0: "magenta",
     1: "cyan",
@@ -31,10 +35,14 @@ DEPTH_TITLE_COLORS = {
     5: "red",
 }
 
+_strbool_field_phrases = ['"true"', '"false"']
 
-def convert_bool_to_lower_str(
-    cls: Type["BaseModel"], values: Dict[str, Any]
-) -> Dict[str, Any]:
+
+def convert_bool_to_lower_str_field(
+    cls: Type["BaseModel"],
+    value: Any,
+    field: ModelField,
+) -> Any:
     """Harbor API has some models where the accepted values are 'true' and 'false',
     for fields that have a string type. This validator converts bool arguments
     to the correct string values.
@@ -45,25 +53,20 @@ def convert_bool_to_lower_str(
     Furthermore, this validator only converts the values if the field
     description contains the phrases '"true"' and '"false"' (with quotes).
     """
-    for field_name, field in cls.__fields__.items():
-        # TODO: optimize order of evaluation
-        # so we can short-circuit/return early
-        # if the field is not a string
-        if field.field_info.description is None:
-            continue
+    # NOTE: we can restrict this validator to a subset of models if needed.
+    # For now, we apply it to all models in case the API changes in the future.
 
-        # We can only convert the singletons True and False
-        value = values.get(field_name)
-        if value not in [True, False]:
-            continue
+    if field.field_info.description is None:
+        return value
 
-        if all(
-            phrase in field.field_info.description for phrase in ['"true"', '"false"']
-        ):
-            if field_name in values:
-                if isinstance(values[field_name], bool):
-                    values[field_name] = str(values[field_name]).lower()
-    return values
+    # We can only convert bools
+    if not isinstance(value, bool):
+        return value
+
+    # NOTE: change to any()?
+    if all(phrase in field.field_info.description for phrase in _strbool_field_phrases):
+        return str(value).lower()
+    return value
 
 
 class BaseModel(PydanticBaseModel):
@@ -74,8 +77,8 @@ class BaseModel(PydanticBaseModel):
         validate_assignment = True
 
     # Validators
-    _bool_converter = root_validator(pre=True, allow_reuse=True)(
-        convert_bool_to_lower_str
+    _bool_converter = validator("*", pre=True, allow_reuse=True)(
+        convert_bool_to_lower_str_field
     )
 
     # The __rich* properties are only used by methods defined when Rich
@@ -97,6 +100,35 @@ class BaseModel(PydanticBaseModel):
     def __rich_panel_title__(self) -> Optional[str]:
         """Title of the panel that wraps the table representation of the model."""
         return None
+
+    def convert_to(
+        self, model: Type[BaseModelType], extra: bool = False
+    ) -> BaseModelType:
+        """Converts the model to a different model type.
+
+        By default, only fields that are defined in the destination model
+        are included in the converted model.
+
+        Parameters
+        ----------
+        model : Type[BaseModelType]
+            The model type to convert to.
+        extra : bool
+            Whether to include fields that are not defined in the destination model.
+
+        Returns
+        -------
+        BaseModelType
+            The converted model.
+        """
+        # TODO: include mapping of source fields to destination fields
+        # e.g. Project.name -> ProjectReq.project_name
+        # pass in mapping: {"name": "project_name"}
+        if extra:
+            include = None
+        else:
+            include = model.__fields__.keys()
+        return model.parse_obj(self.dict(include=include))
 
     if rich_installed:
 

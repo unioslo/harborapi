@@ -6,7 +6,7 @@ The endpoint methods themselves have no parameters beyond the single model insta
 
 ## Create
 
-Creating resources is done by calling one of the `create_*` methods on the client object. The model type expected for these methods is usually subtly different from the ones returned by `get_*` methods, and generally have the suffix `*Req` (e.g. [`ProjectReq`][harborapi.models.ProjectReq] instead of [`Project`][harborapi.models.Project]).
+Creating resources is done by calling one of the `create_*` methods on the client object. The model type expected for these methods is usually subtly different from the ones returned by `get_*` methods, and generally has the suffix `*Req` (e.g. [`ProjectReq`][harborapi.models.ProjectReq] instead of [`Project`][harborapi.models.Project]).
 
 ```python
 import asyncio
@@ -70,7 +70,7 @@ In the example, we only set the `metadata.enable_content_trust` field on the `Pr
 
 See the [Idiomatic REST updating](#idiomatic-rest-updating) section for more information on why this _might_ not be the correct way to do things, and why it _could_ change in the future if Harbor changes the API.
 
-### Idiomatic REST updating
+## Idiomatic REST updating
 
 The update endpoints are HTTP PUT endpoints that should expect a full resource definition according to [RFC 7231](https://datatracker.ietf.org/doc/html/rfc7231#section-4.3.4). However, testing has shown that the API supports updating with partial models. The API updates only the fields present in the request model and does not update the existing resource fields that are not present in the request model. By default, `harborapi` will only send the fields that are present in the request model, and leave out the rest:
 
@@ -101,7 +101,40 @@ Will send the following over the wire, where unset fields are excluded:
 
 Despite this behavior, it _might_ a good idea to pass the full resource definition to the `update_*` methods, as the support for partial updates through the API may change in the future independently of this library.
 
-Below is an example demonstrating how to fetch the existing resource, use it to construct the update model, and then update the resource with the new model.
+
+### Converting GET models to PUT models
+
+Using the method [`convert_to()`][harborapi.models.base.BaseModel.convert_to] which is available on all models, we can easily convert an existing resource model to the model that the update endpoint expects.
+
+The method expects a model type as its first argument, and returns an instance of that model type:
+
+```py
+from harborapi.models import Project, ProjectReq
+
+project = Project(...)
+req = project.convert_to(ProjectReq)
+assert isinstance(req, ProjectReq)
+```
+
+!!! note
+    The `extra` parameter is mainly available to ensure compatibility with future API changes, but is documented here for completeness.
+
+If we want to, we can also pass in `extra=True` to include all fields present in the original model, even if they are not defined in the schema of the model we are converting to:
+
+```py
+from harborapi.models import Project, ProjectReq
+
+project = Project(owner_id=1, ...)
+req = project.convert_to(ProjectReq, extra=True)
+assert isinstance(req, ProjectReq)
+req.owner_id = 1
+```
+
+Even though the `ProjectReq` model does not have an `owner_id` field, we can still set it on the `Project` model and pass it to `convert_to()` with `extra=True` to include it in the resulting model.
+
+### Updating a resource using `convert_to()`
+
+Below is an example demonstrating how to fetch the existing resource ([`Project`][harborapi.models.Project]) and convert it to the model type the update method expects ([`ProjectReq`][harborapi.models.ProjectReq]):
 
 ```py
 import asyncio
@@ -114,13 +147,10 @@ async def main() -> None:
     # Get the project
     project = await client.get_project("test-project")
 
-    # Create the update model from the existing project
-    req = ProjectReq.parse_obj(
-        project,
-        # OR
-        # optionally only include fields from the request model:
-        # project.dict(include=ProjectReq.__fields__.keys()),
-    )
+    # Convert to ProjectReq
+    req = project.convert_to(ProjectReq)
+
+    # Change the field we want to update
     req.metadata.enable_content_trust = True
 
     # Update the project
@@ -129,13 +159,6 @@ async def main() -> None:
 
 asyncio.run(main())
 ```
-
-[`update_project()`][harborapi.client.HarborAsyncClient.update_project] expects a [`ProjectReq`][harborapi.models.Project] model, while the [`get_project()`][harborapi.client.HarborAsyncClient.get_project] method returns a [`Project`][harborapi.models.Project] model. How do we use the `Project` model to create a `ProjectReq`?
-
-We can create a `ProjectReq` by passing the `Project` instance to the `parse_obj()` method on the `ProjectReq` class. This will create a new `ProjectReq` instance with the same values as the `Project` instance.
-
-To only include values that are present in the `ProjectReq` model, we can first convert the model to a dictionary and use the `include` parameter with `ProjectReq.__fields__.keys()` as the argument, before passing it to `ProjectReq.parse_obj()`.
-
 
 [^1]: You can defend this behavior with certain interpretations of this quote from the RFC: *When a PUT
    representation is inconsistent with the target resource, the origin
