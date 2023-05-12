@@ -10,11 +10,14 @@ The **third number** is the patch version (bug fixes)
 
 <!-- changelog follows -->
 
-## Unreleased
+<!-- ## Unreleased -->
+
+## [0.18.1](https://github.com/pederhan/harborapi/tree/harborapi-v0.18.1) - 2023-05-12
+
 
 ### Added
 
-- `BaseModel.convert_to`, which allows converting a model to another model type. This is useful for converting a model to a different model that has a similar schema, such as converting a `Project` to a `ProjectReq` model.
+- `BaseModel.convert_to`, which allows converting a model to another model type that has a similar schema, such as `Project` to `ProjectReq`.
 
 
 ### Fixed
