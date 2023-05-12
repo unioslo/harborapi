@@ -114,6 +114,9 @@ from harborapi.models import Project, ProjectReq
 project = Project(...)
 req = project.convert_to(ProjectReq)
 assert isinstance(req, ProjectReq)
+
+print(req.metadata) # OK
+print(req.owner_id) # FAIL - ProjectReq does not have an owner_id field
 ```
 
 !!! note
@@ -121,13 +124,15 @@ assert isinstance(req, ProjectReq)
 
 If we want to, we can also pass in `extra=True` to include all fields present in the original model, even if they are not defined in the schema of the model we are converting to:
 
-```py
+```py hl_lines="4"
 from harborapi.models import Project, ProjectReq
 
 project = Project(owner_id=1, ...)
 req = project.convert_to(ProjectReq, extra=True)
 assert isinstance(req, ProjectReq)
-req.owner_id = 1
+
+print(req.metadata) # OK
+print(req.owner_id) # OK - Inherited from Project via extra=True
 ```
 
 Even though the `ProjectReq` model does not have an `owner_id` field, we can still set it on the `Project` model and pass it to `convert_to()` with `extra=True` to include it in the resulting model.
@@ -160,7 +165,7 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-[^1]: You can defend this behavior with certain interpretations of this quote from the RFC: *When a PUT
+[^1]: You can defend this behavior with certain interpretations of this quote from the RFC: *"When a PUT
    representation is inconsistent with the target resource, the origin
    server SHOULD either make them consistent, by transforming the
-   representation or changing the resource configuration [...]*. However, this is implicit behavior that is not documented anywhere by Harbor, so we have no way of knowing if it is intentional or not.
+   representation or changing the resource configuration [...]"*. However, this implicit behavior is not documented anywhere by Harbor, so we have no way of knowing if it is intentional or not.
