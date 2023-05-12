@@ -54,7 +54,7 @@ client = HarborAsyncClient(...)
 async def main() -> None:
     location = await client.create_project(
         ProjectReq(
-            project_name="test-project2",
+            project_name="test-project",
             public=True,
             metadata=ProjectMetadata(
                 auto_scan=True,
@@ -102,9 +102,14 @@ This mainly affects the `ProjectMetadata` model, which contains a whopping 6 fie
 - `auto_scan`
 - `reuse_sys_cve_allowlist`
 
-For compatibility with the API, the type of these fields in the model have _not_  been changed to `bool`. When you access these fields, they will be `'true'` or `'false'` strings:
+For compatibility with the API, the type of these fields in the model have _not_  been changed to `bool`. When you access these fields, they will one of the strings `'true'` or `'false'`:
 
-However, you _can_ instantiate these fields with bools, and they will be converted to the appropriate strings once the model is instantiated:
+```py
+project = await client.get_project("test-project")
+assert project.metadata.public in ["true", "false"]
+```
+
+However, you _can_ instantiate these fields with bools, and they will be converted to the appropriate strings once the model is created:
 
 ```py
 from harborapi.models import ProjectMetadata
@@ -119,6 +124,19 @@ assert project.enable_content_trust == "false"
 ```
 
 With the model's custom field validator, the arguments are coerced into the strings `'true'` and `'false'`. This maintains compatibility with the API while allowing you to use bools in your code.
+
+So in general, when you assign to these fields, you don't need to think about this at all. Just use bools as you normally would. However, when you access them, you need to be aware that they are strings:
+
+```py
+if project.metadata.public: # WRONG - will match 'false' too
+    print("Project is public")
+
+if project.metadata.public == "true": # CORRECT
+    print("Project is public")
+```
+
+
+This is a bit unfortunate, but it's the best we can do without breaking compatibility with the API.
 
 
 !!! quote "Author's note"
