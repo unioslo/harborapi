@@ -132,7 +132,13 @@ class BaseModel(PydanticBaseModel):
 
     @classmethod
     def get_model_fields(cls) -> List[str]:
-        """Returns a list containing the name of the model's fields."""
+        """Get a list of the names of the model's fields.
+
+        Returns
+        -------
+        List[str]
+            The names of the model's fields.
+        """
         return list(cls.__fields__.keys())
 
     if rich_installed:
