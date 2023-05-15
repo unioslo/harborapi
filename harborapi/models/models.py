@@ -44,10 +44,10 @@ from ._models import (
     Annotations,
 )
 from ._models import Artifact as _Artifact
-from ._models import AuditLog, AuthproxySetting, BoolConfigItem
-from ._models import ChartMetadata as _ChartMetadata
-from ._models import ChartVersion as _ChartVersion
 from ._models import (
+    AuditLog,
+    AuthproxySetting,
+    BoolConfigItem,
     ComponentHealthStatus,
     Configurations,
     ConfigurationsResponse,
@@ -160,11 +160,11 @@ from ._models import (
 from ._models import ScanOverview as _ScanOverview
 from ._models import Schedule as _Schedule
 from ._models import ScheduleObj as _ScheduleObj
-from ._models import SchedulerStatus, ScheduleTask
-from ._models import Search as _Search
-from ._models import SearchRepository
-from ._models import SearchResult as _SearchResult
 from ._models import (
+    SchedulerStatus,
+    ScheduleTask,
+    Search,
+    SearchRepository,
     StartReplicationExecution,
     Statistic,
     Stats,
@@ -203,7 +203,6 @@ __all__ = [
     "Model",
     "Error",
     "SearchRepository",
-    "ChartMetadata",
     "Repository",
     "Tag",
     "ExtraAttrs",
@@ -315,7 +314,6 @@ __all__ = [
     "ScheduleTask",
     "SchedulerStatus",
     "Errors",
-    "ChartVersion",
     "AdditionLinks",
     "Reference",
     "NativeReportSummary",
@@ -337,7 +335,6 @@ __all__ = [
     "ConfigurationsResponse",
     "ProjectMember",
     "OverallHealthStatus",
-    "SearchResult",
     "ScanOverview",
     "ProjectReq",
     "Project",
@@ -352,81 +349,6 @@ __all__ = [
     "Search",
     "Artifact",
 ]
-
-# Shadow broken models with new definitions, and update references
-
-
-# START ChartMetadata
-
-
-# Problem: ChartMetadata.engine can be omitted from the response
-# Changed: Make all fields optional
-class ChartMetadata(_ChartMetadata):
-    name: Optional[str] = Field(None, description="The name of the chart")  # type: ignore # changed to Optional[str]
-    home: Optional[str] = Field(
-        None, description="The URL to the relevant project page"
-    )
-    sources: Optional[List[str]] = Field(
-        None, description="The URL to the source code of chart"
-    )
-    version: Optional[str] = Field(None, description="A SemVer 2 version of chart")  # type: ignore # changed to Optional[str]
-    description: Optional[str] = Field(
-        None, description="A one-sentence description of chart"
-    )
-    keywords: Optional[List[str]] = Field(None, description="A list of string keywords")
-    engine: Optional[str] = Field(None, description="The name of template engine")  # type: ignore # changed to Optional[str]
-    icon: Optional[str] = Field(None, description="The URL to an icon file")  # type: ignore # changed to Optional[str]
-    api_version: Optional[str] = Field(
-        None, alias="apiVersion", description="The API version of this chart"
-    )  # type: ignore # changed to Optional[str]
-    app_version: str = Field(
-        None,
-        alias="appVersion",
-        description="The version of the application enclosed in the chart",
-    )
-    deprecated: Optional[bool] = Field(
-        None, description="Whether or not this chart is deprecated"
-    )
-
-
-class ChartVersion(ChartMetadata, _ChartVersion):
-    created: Optional[str] = Field(
-        None, description="The created time of the chart entry"
-    )
-    removed: Optional[bool] = Field(
-        None, description="A flag to indicate if the chart entry is removed"
-    )
-    digest: Optional[str] = Field(
-        None, description="The digest value of the chart entry"
-    )
-    urls: Optional[List[str]] = Field(None, description="The urls of the chart entry")
-    labels: Optional[List[Label]] = Field(None, description="A list of label")
-
-
-class SearchResult(_SearchResult):
-    name: Optional[str] = Field(
-        None, alias="Name", description="The chart name with repo name"
-    )
-    score: Optional[int] = Field(None, alias="Score", description="The matched level")
-    chart: Optional[ChartVersion] = Field(None, alias="Chart")
-
-
-class Search(_Search):
-    project: Optional[List[Project]] = Field(
-        None,
-        description="Search results of the projects that matched the filter keywords.",
-    )
-    repository: Optional[List[SearchRepository]] = Field(
-        None,
-        description="Search results of the repositories that matched the filter keywords.",
-    )
-    chart: Optional[List[SearchResult]] = Field(
-        None,
-        description="Search results of the charts that macthed the filter keywords.",
-    )  # type: ignore # uses fixed definition
-
-
-# END ChartMetadata
 
 
 # START Repository
@@ -794,7 +716,7 @@ class LdapConf(_LdapConf):
 
 # /replication/adapterinfos returns a dict of RegistryProviderInfo objects,
 # where each key is the name of registry provider.
-# There is, however, no model for this in the spec.
+# There is no model for this in the spec.
 class RegistryProviders(BaseModel):
     __root__: Dict[str, RegistryProviderInfo] = Field(
         {},
@@ -967,7 +889,7 @@ class RetentionRule(_RetentionRule):
 class RetentionPolicy(_RetentionPolicy):
     id: Optional[int] = None
     algorithm: Optional[str] = None
-    rules: Optional[List[RetentionRule]] = None
+    rules: Optional[List[RetentionRule]] = None  # type: ignore
     trigger: Optional[RetentionRuleTrigger] = None
     scope: Optional[RetentionPolicyScope] = None
 
