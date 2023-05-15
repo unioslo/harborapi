@@ -10,15 +10,17 @@ The **third number** is the patch version (bug fixes)
 
 <!-- changelog follows -->
 
-## Unreleased
+<!-- ## Unreleased -->
+
+## [0.19.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.19.0) - 2023-05-15
 
 ### Added
 
-- `BaseModel.get_model_fields`, which returns a list of names of all fields defined in the model's schema.
+- `BaseModel.get_model_fields`, a class method which returns a list of names of all fields defined in the model's schema.
 
 ### Changed
 
-- Updated model schemas ([`10c54c0..b232c90](https://github.com/goharbor/harbor/compare/b232c9044247be7326fdb4032eaeeb0001717e2e..10c54c0d822288bb067067558829fc5196455d52)). Changes listed below:
+- **BREAKING:** Updated model schemas ([`10c54c0..b232c90](https://github.com/goharbor/harbor/compare/b232c9044247be7326fdb4032eaeeb0001717e2e..10c54c0d822288bb067067558829fc5196455d52)). Changes listed below:
   - Add model: `PayloadFormatType`
   - Add model: `PayloadFormat`
   - Add field: `SupportedWebhookEventTypes.payload_formats`
