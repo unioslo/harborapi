@@ -130,9 +130,10 @@ class BaseModel(PydanticBaseModel):
             include = model.__fields__.keys()
         return model.parse_obj(self.dict(include=include))
 
-    def get_model_fields(self) -> List[str]:
+    @classmethod
+    def get_model_fields(cls) -> List[str]:
         """Returns a list containing the name of the model's fields."""
-        return list(self.__fields__.keys())
+        return list(cls.__fields__.keys())
 
     if rich_installed:
 

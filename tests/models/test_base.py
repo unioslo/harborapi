@@ -128,13 +128,20 @@ def test_convert_to_req(extra: bool) -> None:
 
 
 # TODO: test all models without increasing test run time too much
-def test_get_model_fields_project() -> None:
-    model = Project()  # instantiate with defaults
+@pytest.mark.parametrize("instantiate", [True, False])
+def test_get_model_fields_project(instantiate: bool) -> None:
+    if instantiate:
+        model = Project()  # instantiate with defaults
+    else:
+        model = Project
     fields = model.get_model_fields()
     assert isinstance(fields, list)
     for field in fields:
         assert isinstance(field, str)
-        getattr(model, field)  # will raise if field does not exist
+        if instantiate:  # try to access field on model if instantiated
+            getattr(model, field)  # will raise if field does not exist
+
+    # Explicitly test fields
     assert "project_id" in fields
     assert "owner_id" in fields
     assert "name" in fields
