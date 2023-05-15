@@ -75,7 +75,6 @@ def test_convert_to_req(extra: bool) -> None:
         current_user_role_id=4,
         current_user_role_ids=[4],
         repo_count=5,
-        chart_count=6,
         metadata=ProjectMetadata(
             # NOTE: these will be coerced to the strings "true" and "false"
             public=True,
@@ -148,6 +147,5 @@ def test_get_model_fields_project() -> None:
     assert "current_user_role_id" in fields
     assert "current_user_role_ids" in fields
     assert "repo_count" in fields
-    assert "chart_count" in fields
     assert "metadata" in fields
     assert "cve_allowlist" in fields

@@ -17,6 +17,33 @@ The **third number** is the patch version (bug fixes)
 - `BaseModel.get_model_fields`, which returns a list of names of all fields defined in the model's schema.
 
 
+### Changed
+
+- Updated model schemas ([`10c54c0..b232c90](https://github.com/goharbor/harbor/compare/b232c9044247be7326fdb4032eaeeb0001717e2e..10c54c0d822288bb067067558829fc5196455d52)). Changes listed below:
+  - Add model: `PayloadFormatType`
+  - Add model: `PayloadFormat`
+  - Add field: `SupportedWebhookEventTypes.payload_formats`
+  - Add field: `Accessory.subject_artifact_digest`
+  - Add field: `Accessory.subject_artifact_repo`
+  - Update field: `Access.resource` description
+  - Update field: `Access.action` description
+  - Update field: `ComponentHealthStatus.status` description
+  - Update field: `Robot.name` description
+  - Update field: `Robot.expires_at` description
+  - Update field: `RobotCreate.name` description
+  - Deprecate field: `Accessory.subject_artifact_id`
+  - Remove model:`ChartMetadata` (deprecated)
+  - Remove model:`ChartVersion` (deprecated)
+  - Remove model:`SearchResult` (deprecated)
+  - Remove field `Project.chart_count`(deprecated)
+
+
+
+### Removed
+
+
+
+
 ## [0.18.1](https://github.com/pederhan/harborapi/tree/harborapi-v0.18.1) - 2023-05-12
 
 
