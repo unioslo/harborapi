@@ -84,12 +84,27 @@ await client.get_projects(
 )
 ```
 
-!!! note
+!!! warning
     The field we query for owner name is called `owner` despite the field on the [`Project`][harborapi.models.Project] model being called `owner_name`. This is one of many examples of divergences in the API spec that we have no control over.
 
     As you work with the API, it is likely you will encounter more of these inconsistencies.
 
-<!-- TODO: add BaseModel.get_model_fields() example -->
+
+To get an idea of the fields you can query, call [`get_model_fields()`][harborapi.models.base.BaseModel.get_model_fields] on the model the method returns. This will return a list of field names that you can use in your query. As the warning above states, the actual field names the API expects might be subtly different than the ones on the actual model, but the list should give you a good idea of what is available:
+
+```py
+from harborapi.models import Project
+
+print(Project.get_model_fields())
+# or
+print(Project().get_model_fields())
+```
+
+```py title="Result"
+['project_id', 'owner_id', 'name', 'registry_id', 'creation_time', 'update_time', 'deleted', 'owner_name', 'togglable', 'current_user_role_id', 'current_user_role_ids', 'repo_count', 'metadata', 'cve_allowlist']
+```
+
+The method can be called on both the class itself or an instance of the class.
 
 ----
 
@@ -111,9 +126,9 @@ await client.get_projects(
 )
 ```
 
-!!! note
+!!! warning
 
-    Not all fields support sorting. This is not documented anywhere by Harbor, and the only way to know which fields work is to try them out. Unsortable field names are ignored by the API.
+    Not all fields support sorting. This is not documented anywhere by Harbor, and the only way to know which fields work is to try them out. Unsortable/unknown field names are ignored by the API. The same naming logic for field names apply to `sort` as they do to `query`. Some field names diverge from the names in the spec when used in this manner. See [query](#query) for more information.
 
 ----
 
