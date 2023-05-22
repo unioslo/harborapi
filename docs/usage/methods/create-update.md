@@ -72,6 +72,10 @@ See the [Idiomatic REST updating](#idiomatic-rest-updating) section for more inf
 
 ## Idiomatic REST updating
 
+
+!!! note
+    The following sections are _optional_ reading, and are only relevant if you want to following idiomatic REST principles when updating resources. If you don't care about that, you can safely ignore the following sections.
+
 The update endpoints are HTTP PUT endpoints that should expect a full resource definition according to [RFC 7231](https://datatracker.ietf.org/doc/html/rfc7231#section-4.3.4). However, as described above, testing has shown that the API supports updating with partial models. By default, `harborapi` will only include the fields that are present in the request model, and leave out the rest, which enables us to take advantage of this behavior in the API:
 
 ```py
@@ -123,12 +127,12 @@ This is because Pydantic knows which fields have been set and which have not on 
 !!! note
     The reason for `"auto_scan": "true"` instead of `"auto_scan": true` can be found [here](../../models/#string-fields-with-true-and-false-values-in-api-spec).
 
-Despite this behavior, it _might_ a good idea to pass the full resource definition to the `update_*` methods, as the support for partial updates through the API may change in the future independently of this library without notice.
+Despite this behavior, it _might_ a good idea to pass the full resource definition to the `update_*` methods, as the support for partial updates through the API may change in the future independently of this library without notice. The following sections demonstrate how to do this.
 
 
 ### Converting GET models to PUT models
 
-Using the method [`convert_to()`][harborapi.models.base.BaseModel.convert_to] which is available on all models, we can easily convert a model we receive from a `get_*` call to the model type that the update endpoint expects.
+As outlined in [Update](#update), `update_*` methods exepct subtly different models from the ones returned by `get_*` methods. By using the method [`convert_to()`][harborapi.models.base.BaseModel.convert_to] which is available on all models, we can easily convert a model we receive from a `get_*` method to the model type that the corresponding `update_*` method expects.
 
 The method expects a model type as its first argument, and returns an instance of that model type:
 
@@ -144,7 +148,7 @@ print(req.owner_id) # FAIL - ProjectReq does not have an owner_id field
 ```
 
 !!! note
-    The `extra` parameter is mainly available to ensure compatibility with future API changes, but is documented here for completeness.
+    The `extra` parameter is mainly available to ensure compatibility with future API changes, so unless you know you need to use it, you can safely ignore it.
 
 If we want to, we can also pass in `extra=True` to include all fields present in the original model, even if they are not defined in the schema of the model type we are converting to:
 
