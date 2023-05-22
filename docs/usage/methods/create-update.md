@@ -72,7 +72,7 @@ See the [Idiomatic REST updating](#idiomatic-rest-updating) section for more inf
 
 ## Idiomatic REST updating
 
-The update endpoints are HTTP PUT endpoints that should expect a full resource definition according to [RFC 7231](https://datatracker.ietf.org/doc/html/rfc7231#section-4.3.4). However, testing has shown that the API supports updating with partial models. The API updates only the fields present in the request model and does not update the existing resource fields that are not present in the request model. By default, `harborapi` will only send the fields that are present in the request model, and leave out the rest:
+The update endpoints are HTTP PUT endpoints that should expect a full resource definition according to [RFC 7231](https://datatracker.ietf.org/doc/html/rfc7231#section-4.3.4). However, as described above, testing has shown that the API supports updating with partial models. By default, `harborapi` will only include the fields that are present in the request model, and leave out the rest, which enables us to take advantage of this behavior in the API:
 
 ```py
 from harborapi.models import ProjectReq, ProjectMetadata
@@ -96,15 +96,39 @@ Will send the following over the wire, where unset fields are excluded:
 }
 ```
 
+Even though the internal representation of the model is:
+
+```py
+ProjectReq(
+    project_name=None,
+    public=True,
+    metadata=ProjectMetadata(
+        public=None,
+        enable_content_trust=None,
+        enable_content_trust_cosign=None,
+        prevent_vul=None,
+        severity=None,
+        auto_scan='true',
+        reuse_sys_cve_allowlist=None,
+        retention_id=None
+    ),
+    cve_allowlist=None,
+    storage_limit=None,
+    registry_id=None
+)
+```
+
+This is because Pydantic knows which fields have been set and which have not on the model instance, and only serializes the fields that have been set. This way, we ensure that we don't send any data the user hasn't explicitly set.
+
 !!! note
     The reason for `"auto_scan": "true"` instead of `"auto_scan": true` can be found [here](../../models/#string-fields-with-true-and-false-values-in-api-spec).
 
-Despite this behavior, it _might_ a good idea to pass the full resource definition to the `update_*` methods, as the support for partial updates through the API may change in the future independently of this library.
+Despite this behavior, it _might_ a good idea to pass the full resource definition to the `update_*` methods, as the support for partial updates through the API may change in the future independently of this library without notice.
 
 
 ### Converting GET models to PUT models
 
-Using the method [`convert_to()`][harborapi.models.base.BaseModel.convert_to] which is available on all models, we can easily convert an existing resource model to the model that the update endpoint expects.
+Using the method [`convert_to()`][harborapi.models.base.BaseModel.convert_to] which is available on all models, we can easily convert a model we receive from a `get_*` call to the model type that the update endpoint expects.
 
 The method expects a model type as its first argument, and returns an instance of that model type:
 
@@ -122,7 +146,7 @@ print(req.owner_id) # FAIL - ProjectReq does not have an owner_id field
 !!! note
     The `extra` parameter is mainly available to ensure compatibility with future API changes, but is documented here for completeness.
 
-If we want to, we can also pass in `extra=True` to include all fields present in the original model, even if they are not defined in the schema of the model we are converting to:
+If we want to, we can also pass in `extra=True` to include all fields present in the original model, even if they are not defined in the schema of the model type we are converting to:
 
 ```py hl_lines="4"
 from harborapi.models import Project, ProjectReq
