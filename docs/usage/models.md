@@ -13,14 +13,14 @@ from harborapi.models import *
 Through the Pydantic models, we get a lot of nice features for free, such as:
 
 - Validation of data
-- Type hints
 - Automatic conversion of data types
+- Utility functions for (de)serializing data
 
-We'll look at the validation and type hints later, but first, let's look at how the models are used.
+We'll look at some of these features later, but first, let's look at how the models are used at a basic level.
 
 ## Using models returned by the API
 
-When calling a GET endpoint, we usually get a model instance back. For example, when calling the [`get_project`](../methods/get.md/#get_project) method, we get a [`Project`](../models/project.md/#project) instance back:
+When calling a GET endpoint with a `get_*` method, we usually get a model instance back. For example, when calling the [`get_project`](../methods/get.md/#get_project) method, we get a [`Project`](../models/project.md/#project) instance back:
 
 ```py
 import asyncio
@@ -35,14 +35,16 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-In the IDE, we can see the various attributes the project model instance has:
+In the IDE, we can see the various attributes the model instance has:
 
 ![IDE screenshot showing the attributes of a project model instance](../img/usage/models/autocomplete.png)
+
+Also shown in the screenshot are the utility methods `json` and `dict`, which allows you to convert models to JSON and Python dictionaries, respectively.
 
 
 ## Using models to create and update resources
 
-Similar to how the `get_*` methods _return_ models, the create and update methods _take_ models as arguments. For example, the [`create_project`](../methods/create-update.md/#create_project) method takes a [`ProjectReq`](../models/project.md/#projectreq) model as an argument:
+Similar to how the `get_*` methods _return_ models, the `create_*` and `update_*` methods _take_ models as arguments. For example, the [`create_project`](../methods/create-update.md/#create_project) method takes a [`ProjectReq`](../models/project.md/#projectreq) model as an argument:
 
 ```py
 import asyncio
@@ -68,13 +70,18 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-Again, we are assisted by the IDE when creating the model instance:
+Again, we are assisted by the IDE when creating the model instance we pass to the method:
 
 ![IDE screenshot showing the types of the model fields](../img/usage/models/autocomplete2.png)
 
+We get IDE autocompletion for the different fields when constructing the model instance:
+
 ![IDE screenshot showing autocomplete for a project model instance](../img/usage/models/autocomplete3.png)
 
+When assigning a value to a field, we can see the type of the field:
+
 ![IDE screenshot showing the type of a model field](../img/usage/models/autocomplete4.png)
+
 
 ## String fields with 'true' and 'false' values in API spec
 
