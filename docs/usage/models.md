@@ -37,7 +37,7 @@ asyncio.run(main())
 
 In the IDE, we can see the various attributes the model instance has:
 
-![IDE screenshot showing the attributes of a project model instance](../img/usage/models/autocomplete.png)
+![IDE screenshot showing the attributes of a project model instance](../img/usage/models/autocomplete0.png)
 
 Also shown in the screenshot are the utility methods `json` and `dict`, which allows you to convert models to JSON and Python dictionaries, respectively.
 
@@ -70,6 +70,20 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
+### IDE autocompletion
+
+When using the models, the IDE can help us out by showing us the available fields and their types. For example, when calling the [`create_project`][harborapi.HarborAsyncClient.create_project] method, we know we need to pass a model to the method.
+
+The IDE tells us the name of the model to pass to the method:
+
+![IDE screenshot showing the type of the argument to the create_project method](../img/usage/models/autocomplete1.png)
+
+Since we know all models can be imported from `harborapi.models`, all we have to do is to add:
+
+```py
+from harborapi.models import ProjectReq
+```
+
 Again, we are assisted by the IDE when creating the model instance we pass to the method:
 
 ![IDE screenshot showing the types of the model fields](../img/usage/models/autocomplete2.png)
@@ -81,6 +95,29 @@ We get IDE autocompletion for the different fields when constructing the model i
 When assigning a value to a field, we can see the type of the field:
 
 ![IDE screenshot showing the type of a model field](../img/usage/models/autocomplete4.png)
+
+Certain models contain fields that are of a different model type. For example, the [`ProjectReq`][harborapi.models.ProjectReq] model has a field named `metadata` which expects a [`ProjectMetadata`](../models/project.md/#projectmetadata) instance. When assigning a value to such a field, we can see the type of the field:
+
+![IDE screenshot showing the type of a model field that is also a model](../img/usage/models/autocomplete5.png)
+
+
+First we need to import the model we want to use:
+
+```py
+from harborapi.models import ProjectMetadata
+```
+
+After which, the IDE will help us construct the model instance:
+
+![IDE screenshot showing autocomplete for a project metadata model instance](../img/usage/models/autocomplete6.png)
+
+
+The IDE used for demonstration (VSCode) does _not_ show the Pydantic model field descriptions, however. So it's recommended to always check the documentation to gain a more complete understanding of the models:
+
+* [`ProjectReq`][harborapi.models.ProjectReq]
+* [`ProjectMetadata`][harborapi.models.ProjectMetadata]
+
+Unfortunately, the documentation does not yet generate clickable links to other models referenced in a model's field type, so you'll have to search for the model name in the sidebar or use the search field if a field type is not immediately clear to you. CTRL+F is your friend.
 
 
 ## String fields with 'true' and 'false' values in API spec
