@@ -132,7 +132,7 @@ Despite this behavior, it _might_ a good idea to pass the full resource definiti
 
 ### Converting GET models to PUT models
 
-As outlined in [Update](#update), `update_*` methods exepct subtly different models from the ones returned by `get_*` methods. By using the method [`convert_to()`][harborapi.models.base.BaseModel.convert_to] which is available on all models, we can easily convert a model we receive from a `get_*` method to the model type that the corresponding `update_*` method expects.
+As outlined in [Update](#update), `update_*` methods expect subtly different models from the ones returned by `get_*` methods. By using the method [`convert_to()`][harborapi.models.base.BaseModel.convert_to] which is available on all models, we can easily convert a model we receive from a `get_*` method to the model type that the corresponding `update_*` method expects.
 
 The method expects a model type as its first argument, and returns an instance of that model type:
 
@@ -150,7 +150,7 @@ print(req.owner_id) # FAIL - ProjectReq does not have an owner_id field
 !!! note
     The `extra` parameter is mainly available to ensure compatibility with future API changes, so unless you know you need to use it, you can safely ignore it.
 
-If we want to, we can also pass in `extra=True` to include all fields present in the original model, even if they are not defined in the schema of the model type we are converting to:
+If we want to, we can also pass in `extra=True` to include all fields of the original model on converted model, even if they are not defined in the schema of the model type we are converting to:
 
 ```py hl_lines="4"
 from harborapi.models import Project, ProjectReq
@@ -163,7 +163,7 @@ print(req.metadata) # OK
 print(req.owner_id) # OK - Inherited from Project via extra=True
 ```
 
-Even though the `ProjectReq` model does not have an `owner_id` field, we can still set it on the `Project` model and pass it to `convert_to()` with `extra=True` to include it in the resulting model.
+Even though the `ProjectReq` model does not have an `owner_id` field in its schema, the resulting model instance received it from the `Project` model that it was converted from because we used `convert_to(..., extra=True)`.
 
 ### Updating a resource using `convert_to()`
 

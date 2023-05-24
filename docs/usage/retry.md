@@ -19,6 +19,8 @@ client = HarborAsyncClient(
 )
 ```
 
+The default waiting strategy uses exponential backoff ([Wikipedia](https://en.wikipedia.org/wiki/Exponential_backoff), [Google](https://cloud.google.com/iot/docs/how-tos/exponential-backoff#example_algorithm)), which is represented internally by the [`backoff.expo`](https://github.com/litl/backoff/blob/d82b23c42d7a7e2402903e71e7a7f03014a00076/backoff/_wait_gen.py#L8-L32) function. See [Advanced configuration](#advanced-configuration) for how to modify and/or replace the waiting strategy.
+
 
 ## Changing configuration
 
@@ -26,7 +28,7 @@ The configuration can be changed at any time by modifying the `retry` attribute 
 
 ```py
 client.retry.max_tries = 10
-client.max_time = 300
+client.retry.max_time = 300
 ```
 
 Or by replacing it altogether:
@@ -68,7 +70,7 @@ client = HarborAsyncClient(
 )
 ```
 
-### Temporary disabling with `no_retry()`
+### `no_retry()` context manager
 
 We can also disable retry temporarily without having to get rid of the retry settings using the [`no_retry()`][harborapi.HarborAsyncClient.no_retry] context manager. This is useful if we want to disable retry for a single request, but want to keep the retry settings for future requests.
 
@@ -84,7 +86,7 @@ with client.no_retry():
 # retry is enabled again
 ```
 
-## Advanced Configuration
+## Advanced configuration
 
 [`RetrySettings`][harborapi.retry.RetrySettings] supports a wide range of configuration options:
 
@@ -107,7 +109,7 @@ def adder(
     # Advance past initial .send() call
     yield  # type: ignore[misc]
 
-    # just add the factor to the base
+    # increment by value for each iteration
     while True:
         yield base
         base += value
@@ -126,7 +128,7 @@ def on_success(details: Details) -> None:
 
 def on_giveup(details: Details) -> None:
     print(f"Giving up calling {details['target']} after {details['tries']} tries.")
-    # can raise here
+    # can (and should) raise here
 
 
 def on_backoff(details: Details) -> None:
@@ -143,8 +145,8 @@ client = HarborAsyncClient(
         max_time=20,
         exception=(InternalServerError, MethodNotAllowed),
         wait_gen=adder,
-        base=1,  # wait_gen kwarg
-        value=2,  # wait_gen kwarg
+        base=1,  # kwarg passed to adder
+        value=2,  # kwarg passed to adder
         jitter=backoff.full_jitter,  # default jitter function
         giveup=giveup_predicate,
         on_success=on_success,
@@ -198,7 +200,7 @@ RetrySettings(
 
 The `wait_gen` field takes a [`_WaitGenerator`][backoff._typing._WaitGenerator], which is a callable that takes any number of keyword arguments and returns a generator that yields floats. The generator is used to generate the wait time between retries. The default wait generator is [`backoff.expo`](https://github.com/litl/backoff/blob/d82b23c42d7a7e2402903e71e7a7f03014a00076/backoff/_wait_gen.py#L8-L32).
 
-In the example we define the custom wait generator function `adder`, which takes the arguments `base` and `value`. These parameters both have the default value `1`. If we want to, we can override the default arguments by passing them to the `RetrySettings` constructor as keyword arguments.
+In the example, we define the custom wait generator function `adder`, which takes the arguments `base` and `value`. These parameters both have the default value `1`. If we want to, we can override the default arguments by passing them to the `RetrySettings` constructor as keyword arguments.
 
 Any extra keyword arguments passed to the `RetrySettings` constructor will in turn be passed to the wait generator function:
 
