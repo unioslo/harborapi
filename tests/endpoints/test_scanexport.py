@@ -4,6 +4,7 @@ from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
 from harborapi.client import HarborAsyncClient
+from harborapi.exceptions import HarborAPIException
 from harborapi.models import (
     ScanDataExportExecution,
     ScanDataExportExecutionList,
@@ -72,6 +73,27 @@ async def test_export_scan_data_mock(
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.export_scan_data(request, scan_type)
     assert resp == job
+
+
+@pytest.mark.asyncio
+@given(st.builds(ScanDataExportRequest))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+async def test_export_scan_data_empty_response_mock(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+    request: ScanDataExportRequest,
+):
+    scan_type = "application/vnd.security.vulnerability.report; version=1.1"
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/export/cve",
+        method="POST",
+        headers={"X-Scan-Data-Type": scan_type},
+        data=request.json(exclude_unset=True),
+    ).respond_with_data("{}", content_type="application/json")
+    async_client.url = httpserver.url_for("/api/v2.0")
+    with pytest.raises(HarborAPIException) as exc_info:
+        await async_client.export_scan_data(request, scan_type)
+    assert "empty response" in exc_info.value.args[0].lower()
 
 
 @pytest.mark.asyncio

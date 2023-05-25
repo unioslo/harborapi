@@ -10,7 +10,12 @@ The **third number** is the patch version (bug fixes)
 
 <!-- changelog follows -->
 
-<!-- ## Unreleased -->
+## Unreleased
+
+
+### Changed
+
+- `HarborAsyncClient.delete_scanner` now raises `HarborAPIException` if no scanner response is returned from the API (was `UnprocessableEntity` before).
 
 ## [0.19.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.19.0) - 2023-05-15
 

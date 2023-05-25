@@ -1515,7 +1515,7 @@ class HarborAsyncClient:
         resp = await self.post("/robots", json=robot)
         j = handle_optional_json_response(resp)
         if not j:
-            raise HarborAPIException("Server did not return a JSON response.")
+            raise HarborAPIException("Server returned an empty response.")
         robot_created = self.construct_model(RobotCreated, j)
         if path:
             new_authfile_from_robotcreate(
@@ -1863,8 +1863,8 @@ class HarborAsyncClient:
         headers = {"X-Scan-Data-Type": scan_type}
         resp = await self.post(f"/export/cve", headers=headers, json=criteria)
         j = handle_optional_json_response(resp)
-        if j is None:
-            raise HarborAPIException("API returned no response body.")
+        if not j:
+            raise HarborAPIException("API returned empty response body.")
         return self.construct_model(ScanDataExportJob, j)
 
     # GET /export/cve/download/{execution_id}
@@ -4166,8 +4166,8 @@ class HarborAsyncClient:
             f"/scanners/{registration_id}", missing_ok=missing_ok
         )
         if not scanner:
-            raise UnprocessableEntity(
-                "Deletion request returned no data. Is the scanner registered?"
+            raise HarborAPIException(
+                "Expected deletion request to return the deleted scanner registration, but got nothing. Is the scanner registered?"
             )
         return self.construct_model(ScannerRegistration, scanner)
 

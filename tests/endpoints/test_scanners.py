@@ -4,6 +4,7 @@ from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
 from harborapi.client import HarborAsyncClient
+from harborapi.exceptions import HarborAPIException
 from harborapi.models import (
     IsDefault,
     ScannerAdapterMetadata,
@@ -95,6 +96,23 @@ async def test_delete_scanner_mock(
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.delete_scanner(1234)
     assert resp == scanner
+
+
+@pytest.mark.asyncio
+@given(st.builds(ScannerRegistration))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+async def test_delete_scanner_no_response_mock(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+    scanner: ScannerRegistration,
+):
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/scanners/1234", method="DELETE"
+    ).respond_with_data("{}", content_type="application/json")
+    async_client.url = httpserver.url_for("/api/v2.0")
+    with pytest.raises(HarborAPIException) as exc_info:
+        await async_client.delete_scanner(1234)
+    assert "got nothing" in exc_info.value.args[0]
 
 
 @pytest.mark.asyncio

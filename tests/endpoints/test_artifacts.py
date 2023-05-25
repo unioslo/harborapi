@@ -214,15 +214,20 @@ async def test_delete_artifact_tag(
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("status_code", [200, 201])
 async def test_copy_artifact(
     async_client: HarborAsyncClient,
     httpserver: HTTPServer,
+    caplog: pytest.LogCaptureFixture,
+    status_code: int,
 ):
     httpserver.expect_oneshot_request(
         "/api/v2.0/projects/testproj/repositories/testrepo/artifacts",
         query_string={"from": "oldproj/oldrepo:oldtag"},
         method="POST",
-    ).respond_with_data(status=201, headers={"Location": "/api/v2.0/artifacts/123"})
+    ).respond_with_data(
+        status=status_code, headers={"Location": "/api/v2.0/artifacts/123"}
+    )
     async_client.url = httpserver.url_for("/api/v2.0")
 
     location = await async_client.copy_artifact(
@@ -231,6 +236,8 @@ async def test_copy_artifact(
         "oldproj/oldrepo:oldtag",
     )
     assert location == "/api/v2.0/artifacts/123"
+    if status_code == 200:
+        assert "expected 201" in caplog.text
 
 
 @pytest.mark.asyncio

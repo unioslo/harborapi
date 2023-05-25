@@ -38,3 +38,19 @@ async def test_get_system_info_mock(
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_system_info()
     assert resp == generalinfo
+
+
+@pytest.mark.asyncio
+@given(st.binary())
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+async def test_get_system_certificate_mock(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+    content: bytes,
+):
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/systeminfo/getcert", method="GET"
+    ).respond_with_data(content)
+    async_client.url = httpserver.url_for("/api/v2.0")
+    resp = await async_client.get_system_certificate()
+    assert resp.content == content
