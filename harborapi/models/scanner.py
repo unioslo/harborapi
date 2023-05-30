@@ -10,10 +10,10 @@ from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Tuple, Un
 if TYPE_CHECKING:
     from typing import Final  # noqa: F401
 
-from loguru import logger
 from pydantic import Field, validator
 from pydantic.fields import ModelField
 
+from ..log import logger
 from ..version import SemVer, get_semver
 from ._scanner import Artifact as ScanArtifact
 from ._scanner import CVSSDetails, Error, ErrorResponse
@@ -250,7 +250,7 @@ class VulnerabilityItem(_VulnerabilityItem):
                 continue
             elif not isinstance(vendor_cvss, dict):
                 logger.warning(
-                    f"Received non-dict value for vendor CVSS data: {vendor_cvss}"
+                    "Received non-dict value for vendor CVSS data: %s", vendor_cvss
                 )
                 continue
             # NOTE: we can't guarantee these values are floats (dangerous)

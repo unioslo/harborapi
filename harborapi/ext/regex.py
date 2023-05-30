@@ -3,7 +3,7 @@ import re
 from functools import lru_cache
 from typing import Dict, Optional, Tuple
 
-from loguru import logger
+from ..log import logger
 
 # NOTE: Regex type generics require >=3.9. Have to wrap in a string.
 
@@ -42,5 +42,5 @@ def match(pattern: "re.Pattern[str]", s: str) -> Optional["re.Match[str]"]:
     try:
         return pattern.match(s)
     except Exception as e:
-        logger.error(f"Error matching pattern {pattern} to string {s}: {e}")
+        logger.error(f"Error matching pattern %s to string %s: %s", pattern, s, e)
         return None

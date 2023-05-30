@@ -5,10 +5,10 @@ from typing import Dict, Mapping, Optional, Union
 from urllib.parse import quote_plus, unquote_plus
 
 from httpx import Response
-from loguru import logger
 from pydantic import SecretStr
 
 from ._types import JSONType, ParamType
+from .log import logger
 
 
 def is_json(response: Response) -> bool:
@@ -59,8 +59,8 @@ def handle_optional_json_response(resp: Response) -> Optional[JSONType]:
     try:
         j = resp.json()
     except JSONDecodeError as e:
-        logger.error("Failed to parse JSON from {}: {}", resp.url, e)
-        raise HarborAPIException("Failed to parse JSON from {}".format(resp.url)) from e
+        logger.error("Failed to parse JSON from %s: %s", resp.url, e)
+        raise HarborAPIException(f"Failed to parse JSON from {resp.url}") from e
     # we assume Harbor API returns dict or list,
     # if not, they are breaking their own schema and that is not our fault
     return j  # type: ignore

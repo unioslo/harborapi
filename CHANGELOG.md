@@ -17,6 +17,11 @@ The **third number** is the patch version (bug fixes)
 
 - `HarborAsyncClient.delete_scanner` now raises `HarborAPIException` if no scanner response is returned from the API (was `UnprocessableEntity` before).
 
+
+### Removed
+
+- Loguru dependency. The library now uses the standard Python logging library for logging purposes. See [Logging](https://pederhan.github.io/harborapi/usage/logging/) in the docs for more information.
+
 ## [0.19.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.19.0) - 2023-05-15
 
 ### Added
