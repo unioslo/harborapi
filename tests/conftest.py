@@ -4,9 +4,7 @@ from pathlib import Path
 from typing import Iterable, Union
 
 import pytest
-from _pytest.logging import LogCaptureFixture
 from hypothesis import Verbosity, settings
-from loguru import logger
 from pytest_httpserver import HTTPServer
 
 from harborapi.client import HarborAsyncClient
@@ -49,14 +47,6 @@ def async_client(httpserver: HTTPServer) -> HarborAsyncClient:
         url=httpserver.url_for("/api/v2.0"),
         logging=True,
     )
-
-
-@pytest.fixture
-def caplog(caplog: LogCaptureFixture):
-    # https://loguru.readthedocs.io/en/stable/resources/migration.html#making-things-work-with-pytest-and-caplog
-    handler_id = logger.add(caplog.handler, format="{message}")
-    yield caplog
-    logger.remove(handler_id)
 
 
 @pytest.fixture(scope="function")

@@ -28,9 +28,10 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-from loguru import logger
 from pydantic import BaseModel as PydanticBaseModel
 from pydantic import Extra, Field, root_validator
+
+from ..log import logger
 
 # isort kind of mangles these imports by sorting them alphabetically
 # but still splitting each "as _" import into its own line.
@@ -416,7 +417,7 @@ class Repository(_Repository):
         if len(components) != 2:  # no slash in name
             # Shouldn't happen, but we account for it anyway
             logger.warning(
-                "Repository '{}' name is not in the format <project>/<repo>", self.name
+                "Repository name '%s' is not in the format <project>/<repo>", self.name
             )
             return None
         return components[0], components[1]

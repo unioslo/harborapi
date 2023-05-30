@@ -15,9 +15,9 @@ from typing import (
 
 import backoff
 from httpx import TimeoutException
-from loguru import logger
 
 from ..exceptions import NotFound
+from ..log import logger
 from ..models import Artifact, Repository, UserResp
 from .artifact import ArtifactInfo
 
@@ -355,7 +355,7 @@ async def run_coros(
     # Create semaphore to limit concurrent connections
     maxconn = max_connections or 0  # semamphore expects an int
     sem = asyncio.Semaphore(maxconn)
-    logger.debug("Running with max connections: {}", maxconn)
+    logger.debug("Running with max connections: %s", maxconn)
 
     # Instead of passing the semaphore to each coroutine, we wrap each coroutine
     # in a function that acquires the semaphore before calling the coroutine.
@@ -391,7 +391,7 @@ async def _get_artifact_report(
     """
     digest = artifact.artifact.digest
     if digest is None:  # should never happen
-        logger.error(f"Artifact {artifact.name_with_tag} has no digest")
+        logger.error(f"Artifact %s has no digest", artifact.name_with_tag)
         return artifact
 
     s = artifact.repository.split_name()
@@ -407,10 +407,11 @@ async def _get_artifact_report(
         digest,
     )
     if report is None:
-        logger.debug(
-            "No vulnerabilities found for artifact '{}'".format(
-                f"{project_name}/{repo_name}@{digest}"
-            )
+        logger.info(
+            "No vulnerabilities found for artifact '%s/%s@%s'",
+            project_name,
+            repo_name,
+            digest,
         )
     else:
         artifact.report = report

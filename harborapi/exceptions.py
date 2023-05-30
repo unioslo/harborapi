@@ -2,10 +2,10 @@ import warnings
 from typing import Any, List, Optional
 
 from httpx import HTTPStatusError, NetworkError, Response, TimeoutException
-from loguru import logger
 
 from harborapi.utils import is_json
 
+from .log import logger
 from .models import Error, Errors
 
 # NOTE: this should probably be configurable somehow
@@ -167,11 +167,11 @@ def check_response_status(
         status_code = response.status_code
         # TODO: remove in v1.0.0
         if missing_ok and status_code == 404:
-            logger.debug("{} not found", response.request.url)
+            logger.warning("%s not found", response.request.url)
             return
         errors = try_parse_errors(response)
-        logger.bind(httpx_err=e, errors=errors).error(
-            "Harbor API returned status code {} for {}",
+        logger.error(
+            "Harbor API returned status code %s for %s",
             response.status_code,
             response.url,
         )
@@ -197,7 +197,7 @@ def try_parse_errors(response: Response) -> Optional[Errors]:
         try:
             return Errors(**response.json())
         except Exception as e:
-            logger.bind(error=e).error(
-                "Failed to parse error response from {} as JSON", response.url
+            logger.error(
+                "Failed to parse error response from %s as JSON: %s", response.url, e
             )
     return None

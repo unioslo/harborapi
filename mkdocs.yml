@@ -63,6 +63,7 @@ nav:
       - usage/validation.md
       - usage/retry.md
       - usage/responselog.md
+      - usage/logging.md
       - usage/async-sync.md
       - usage/creating-system-robot.md
       - usage/rich.md

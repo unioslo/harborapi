@@ -1,8 +1,3 @@
-# Disable the loguru logger unless otherwise specified
-from loguru import logger
-
-logger.disable("harborapi")
-
 from . import _types, auth, client, client_sync, exceptions, utils, version
 from .__about__ import __version__ as __version__
 from .client import HarborAsyncClient

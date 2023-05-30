@@ -1,5 +1,6 @@
 import contextlib
 import json
+import os
 import warnings
 from http.cookiejar import CookieJar
 from pathlib import Path
@@ -20,7 +21,6 @@ from typing import (
 import httpx
 from httpx import Response, Timeout
 from httpx._types import VerifyTypes
-from loguru import logger
 from pydantic import BaseModel, SecretStr, ValidationError
 
 from ._types import JSONType
@@ -31,6 +31,7 @@ from .exceptions import (
     UnprocessableEntity,
     check_response_status,
 )
+from .log import enable_logging, logger
 from .models import (
     Accessory,
     Artifact,
@@ -128,6 +129,7 @@ __all__ = ["HarborAsyncClient"]
 
 T = TypeVar("T", bound=BaseModel)
 
+
 # TODO: move pydantic model functions to separate module
 
 
@@ -210,7 +212,7 @@ class HarborAsyncClient:
             If False, use Pydantic models to parse the response.
             Takes precedence over `validate` if `raw=True`.
         logging : bool
-            Enable client logging with `Loguru`.
+            Enable logging for the library.
         max_logs : Optional[int]
             The maximum number of entries to keep in the response log.
         follow_redirects : bool
@@ -244,8 +246,8 @@ class HarborAsyncClient:
         self.raw = raw
         self.retry = retry
 
-        if logging:
-            logger.enable("harborapi")
+        if logging or os.environ.get("HARBORAPI_LOGGING", "") == "1":
+            enable_logging()
 
         self.response_log = ResponseLog(max_logs=max_logs)
 
@@ -418,7 +420,7 @@ class HarborAsyncClient:
             else:
                 return cls.construct(**data)
         except ValidationError as e:
-            logger.error("Failed to construct {} with {}", cls, data)
+            logger.error("Failed to construct %s with %s", cls, data)
             raise e
 
     # CATEGORY: user
@@ -1521,7 +1523,7 @@ class HarborAsyncClient:
             new_authfile_from_robotcreate(
                 path, robot, robot_created, overwrite=overwrite
             )
-            logger.debug("Saved robot credentials to {path}", path=path)
+            logger.info("Saved robot credentials to %s", path)
         return robot_created
 
     # GET /robots
@@ -2837,7 +2839,7 @@ class HarborAsyncClient:
         resp = await self.post(f"{path}/scan")
         if resp.status_code != 202:
             logger.warning(
-                "Scan request for {} returned status code {}, expected 202",
+                "Scan request for %s returned status code %s, expected 202",
                 path,
                 resp.status_code,
             )
@@ -2887,7 +2889,7 @@ class HarborAsyncClient:
         resp = await self.post(f"{path}/scan/stop")
         if resp.status_code != 202:
             logger.warning(
-                "Stop scan request for {} returned status code {}, expected 202",
+                "Stop scan request for %s returned status code %s, expected 202",
                 path,
                 resp.status_code,
             )
@@ -2927,7 +2929,9 @@ class HarborAsyncClient:
         j = handle_optional_json_response(resp)
         if not j:  # pragma: no cover # this shouldn't happen
             logger.warning(
-                f"Empty response from LDAP ping ({resp.request.method} {resp.request.url})"
+                f"Empty response from LDAP ping (%s %s)",
+                resp.request.method,
+                resp.request.url,
             )
             return LdapPingResult()
         return self.construct_model(LdapPingResult, j)
@@ -3221,7 +3225,7 @@ class HarborAsyncClient:
         resp = await self.post(f"{path}/tags", json=tag)
         if resp.status_code != 201:
             logger.warning(
-                "Create tag request for {} returned status code {}, expected 201",
+                "Create tag request for %s returned status code %s, expected 201",
                 path,
                 resp.status_code,
             )
@@ -3418,7 +3422,7 @@ class HarborAsyncClient:
         resp = await self.post(f"{path}/artifacts", params={"from": source})
         if resp.status_code != 201:
             logger.warning(
-                "Copy artifact request for {} returned status code {}, expected 201",
+                "Copy artifact request for %s returned status code %s, expected 201",
                 path,
                 resp.status_code,
             )
@@ -3787,7 +3791,7 @@ class HarborAsyncClient:
             try:
                 return int(project.metadata.retention_id)
             except ValueError as e:
-                logger.error("Could not convert retention ID to integer: {e}", e)
+                logger.error("Could not convert retention ID to integer: %s", e)
         return None
 
     # GET /retentions/{id}
@@ -4824,7 +4828,7 @@ class HarborAsyncClient:
             )
             # TODO: add toggle for this coercion (coerce or throw exception)
             #       or should we even accomodate this use-case? Always throw exception?
-            logger.info("Coercing value from {} to list", path)
+            logger.info("Coercing value from %s to list", path)
             j = [j]
 
         # Send requests as long as we get next links
@@ -4974,7 +4978,7 @@ class HarborAsyncClient:
 
         # If we have "Link" in headers, we need to parse the next page link
         if follow_links and (link := resp.headers.get("link")):
-            logger.debug("Handling paginated results. Header value: {}", link)
+            logger.debug("Handling paginated results. Header value: %s", link)
             return j, parse_pagination_url(link)
 
         return j, None

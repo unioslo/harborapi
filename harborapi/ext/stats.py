@@ -2,7 +2,7 @@ import statistics
 from numbers import Number
 from typing import Any, Callable, Iterable
 
-from loguru import logger
+from ..log import logger
 
 __all__ = [
     "mean",
@@ -53,6 +53,6 @@ def _do_stats_math(
     try:
         res = func(a)
     except statistics.StatisticsError:
-        logger.error(f"{func.__name__}({repr(a)}) failed. Defaulting to {default}")
+        logger.error("%s(%s) failed. Defaulting to %s", func.__name__, repr(a), default)
         return float(default)
     return float(res)
