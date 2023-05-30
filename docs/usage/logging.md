@@ -1,6 +1,6 @@
 # Logging
 
-The library uses the standard Python logging library for logging purposes, and uses a single logger with the name `harborapi`. This logger is disabled by default, but can be enabled if desired.
+The library uses the standard Python logging library for logging purposes, and provides a single logger named `harborapi`. The logger is disabled by default, but can be enabled if desired.
 
 
 ## Enable logging
