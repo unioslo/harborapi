@@ -10,7 +10,13 @@ The **third number** is the patch version (bug fixes)
 
 <!-- changelog follows -->
 
-<!-- ## Unreleased -->
+## Unreleased
+
+### Removed
+
+- Deprecated fields removed in [`bf7c82b`](https://github.com/goharbor/harbor/commit/bf7c82b9a8dc0721fa2f347c56c9f01828a8bb6e):
+  - `harborapi.models.Tag.signed`
+  - `harborapi.models.GeneralInfo.with_notary`
 
 ## [0.20.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.20.0) - 2023-05-30
 
