@@ -163,26 +163,83 @@ def test_client_logging_enabled(
     assert "Test info" in captured.err
 
 
+# NOTE: Could refactor into 5 tests, but this lets us test that modifying
+# the envvar/logging arg behaves as expected for repeated instantiations
 def test_client_logging_envvar(
     caplog: pytest.LogCaptureFixture, capsys: pytest.CaptureFixture
 ) -> None:
+    """Tests that the client respects the HARBORAPI_LOGGING envvar, and that
+    it takes priority over the logging arg."""
     assert "HARBORAPI_LOGGING" not in os.environ
 
+    # No envvar set, no logging arg passed (Disabled)
     disable_logging()  # Make sure we have disabled logging first (other tests may have enabled it)
-    HarborAsyncClient(url="https://example.com", username="username", secret="secret")
+    HarborAsyncClient(
+        url="https://example.com/api/v2.0", username="username", secret="secret"
+    )
     assert logger.level == logging.CRITICAL == DEFAULT_LEVEL_DISABLED
     logger.info("Disabled")
     assert len(caplog.records) == 0
     captured = capsys.readouterr()
     assert captured.err == ""
 
+    # Envvar set, no logging arg passed (Enabled)
     os.environ["HARBORAPI_LOGGING"] = "1"
-    # Instantiation of the client controls the library logger
-    HarborAsyncClient(url="https://example.com", username="username", secret="secret")
+    HarborAsyncClient(
+        url="https://example.com/api/v2.0", username="username", secret="secret"
+    )
     assert logger.level == logging.INFO == DEFAULT_LEVEL
-    logger.info("Enabled")
+    logger.info("Envvar, no arg")
     assert len(caplog.records) == 1
-    assert caplog.records[0].message == "Enabled"
+    assert caplog.records[0].message == "Envvar, no arg"
     captured = capsys.readouterr()
+    assert "Envvar, no arg" in captured.err
 
+    # Envvar set, logging=False arg passed (Enabled)
+    disable_logging()  # disable logging first
+    os.environ["HARBORAPI_LOGGING"] = "1"
+    HarborAsyncClient(
+        url="https://example.com/api/v2.0",
+        username="username",
+        secret="secret",
+        logging=False,
+    )
+    assert logger.level == logging.INFO == DEFAULT_LEVEL
+    logger.info("Envvar, arg=False")
+    assert len(caplog.records) == 2  # previous + 1
+    assert caplog.records[1].message == "Envvar, arg=False"
+    captured = capsys.readouterr()
+    assert "Envvar, arg=False" in captured.err
+
+    # Envvar set, logging=True arg passed (Enabled)
+    disable_logging()  # disable logging first
+    os.environ["HARBORAPI_LOGGING"] = "1"
+    HarborAsyncClient(
+        url="https://example.com/api/v2.0",
+        username="username",
+        secret="secret",
+        logging=True,
+    )
+    assert logger.level == logging.INFO == DEFAULT_LEVEL
+    logger.info("Envvar, arg=True")
+    assert len(caplog.records) == 3  # previous + 1
+    assert caplog.records[2].message == "Envvar, arg=True"
+    captured = capsys.readouterr()
+    assert "Envvar, arg=True" in captured.err
+
+    # No envvar set, logging=True arg passed (Enabled)
     os.environ.pop("HARBORAPI_LOGGING")
+    disable_logging()
+    HarborAsyncClient(
+        url="https://example.com/api/v2.0",
+        username="username",
+        secret="secret",
+        logging=True,
+    )
+
+    assert logger.level == logging.INFO == DEFAULT_LEVEL
+    logger.info("No envvar, arg=True")
+    assert len(caplog.records) == 4  # previous + 1
+    assert caplog.records[3].message == "No envvar, arg=True"
+    captured = capsys.readouterr()
+    assert "No envvar, arg=True" in captured.err
