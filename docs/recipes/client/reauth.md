@@ -6,20 +6,23 @@ To change the authentication credentials and/or API URL after the client has bee
 from harborapi import HarborAsyncClient
 
 client = HarborAsyncClient(
-    url="https://example.com", username="user1", secret="user1pwd"
+    url="https://example.com/api/v2.0",
+    username="user1",
+    secret="user1pw",
 )
 
-# Use API @ https://example.com as user1
-# ...
+# Client uses API @ https://example.com as user1
+await client.get_projects()
 
+# NOTE: not async!
 client.authenticate(
-    username="other_user1",
-    secret="new_password1",
+    username="user2",
+    secret="user2pw",
     url="https://demo.goharbor.io/api/v2.0",  # optionally set a new url
 )
 
-# Use API @ https://demo.goharbor.io as other_user1
-# ...
+# Client uses API @ https://demo.goharbor.io as user2
+await client.get_projects()
 ```
 
 We can also use it to only set a new URL:
