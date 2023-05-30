@@ -10,10 +10,6 @@ DEFAULT_LEVEL = logging.INFO
 DEFAULT_LEVEL_DISABLED = logging.CRITICAL
 
 logger = logging.getLogger("harborapi")
-logger.setLevel(logging.CRITICAL)  # Disable logging by default
-
-# Add a null handler to prevent "No handler found" warnings
-logger.addHandler(logging.NullHandler())
 
 
 def enable_logging(level: int = DEFAULT_LEVEL) -> None:
@@ -40,6 +36,7 @@ def disable_logging() -> None:
     logger.setLevel(DEFAULT_LEVEL_DISABLED)
     if logger.hasHandlers():
         logger.handlers.clear()  # Remove existing handlers
+    # Add a null handler to prevent "No handler found" warnings
     logger.addHandler(logging.NullHandler())
 
 
