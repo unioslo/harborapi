@@ -114,6 +114,37 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-
-
 See [Get artifact scan overview](get-artifact-scan-overview.md) for more in-depth usage of this feature.
+
+
+## Other extra data
+
+As outlined previously, different types of extra information can be fetched for an artifact. Adding these arguments will populate the relevant fields of the artifact with the relevant data.
+
+```py
+import asyncio
+from harborapi import HarborAsyncClient
+
+client = HarborAsyncClient(...)
+
+async def main() -> None:
+    artifact = await client.get_artifact(
+        "library",
+        "hello-world",
+        "latest",
+        with_accessory=True,
+        with_immutable_status=True,
+        with_label=True,
+        with_scan_overview=True,
+        with_signature=True,
+        with_tag=True,
+    )
+    print(artifact.accessories)
+    print(artifact.labels)
+    print(artifact.scan_overview)
+    print(artifact.tags)
+    # immutable status and signature unknown...
+
+
+asyncio.run(main())
+```
