@@ -1,6 +1,6 @@
 # Data validation
 
-By default, data validation is enabled for all requests, which means the data in HTTP responses are validated by passing them to Pydantic models defined for each specific endpoint. This process ensures that the data returned from the API is both valid and in the correct format. In turn, we get a Pydantic model instance (or a list of them), that we can use to access the data through attributes (dot notation). See [`harborapi.models`][harborapi.models.models] for a list of all available models and their fields.
+By default, data validation is enabled for all requests, which means the data in HTTP responses are validated by passing them to Pydantic models defined for each specific endpoint. This process ensures that the data returned from the API is both valid and in the correct format. In turn, we get a Pydantic model instance (or a list of them), that we can use to access the data through attributes (dot notation). See [`harborapi.models`][harborapi.models.models] for a list of all available models and their fields. The [Models](models.md) page contains more information about how models are used in `harborapi`.
 
 By having access to the data through instance attributes intead of dictionary keys, users are provided with auto-completion and type hints in their IDEs, which makes it easier to work with and reason about the data. Furthermore, the data is already validated, so we can be sure that it is in the correct format when working with it.
 

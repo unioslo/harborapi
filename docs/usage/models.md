@@ -120,6 +120,58 @@ The IDE used for demonstration (VSCode) does _not_ show the Pydantic model field
 Unfortunately, the documentation does not yet generate clickable links to other models referenced in a model's field type, so you'll have to search for the model name in the sidebar or use the search field if a field type is not immediately clear to you. CTRL+F is your friend.
 
 
+## Model validation
+
+Pydantic models validate the data they are given. This can take the form of checking that a given argument is of the correct type, or that it is within a certain range of values. Other validation methods include checking that a string matches a certain regular expression, or it is a valid URL, or is of a certain length. See the [Pydantic docs](https://docs.pydantic.dev/latest/usage/types/) for more information. The [Data validation](validation.md) page also contains more in-depth information about validation.
+
+### Validation
+
+When we fetch data from the API, it is validated through the models. For example, when we call the [`get_project`][harborapi.HarborAsyncClient.get_project] method, we get a [`Project`][harborapi.models.Project] instance back. The model provides certain guarantees about the type of the data it contains. For example, the `project_id` field is guaranteed to be an `int` or `None`:
+
+```py title="models.py (excerpt)"
+class Project(BaseModel):
+    project_id: Optional[int] = Field(None, description="Project ID")
+```
+
+Meaning that when we access the `project_id` field, we can be sure it is an `int` or `None`:
+
+```py
+project = await client.get_project("library")
+if project.project_id is not None:
+    new_id = project.project_id + 1 # Guaranteed to be an int
+```
+
+This guards against unexpected values returned by the API, and it allows us to write code that is more robust. Furtermore, should the API change in the future, the validation will fail and we will get an error. This is a good thing, as it allows us to catch breaking changes early. If you need to use a method that return a model that fails validation, you can use the [`no_validation()`](validation.md#no_validation-context-manager) context manager to disable validation for that specific request.
+
+### Type coercion
+
+Fields will generally attempt to coerce a value to its target type if possible. For example, the [`ProjectReq`][harborapi.models.ProjectReq] model has a field named `project_name` which expects a string argument. Pydantic provides some leniency with regards to which types it accepts, so we can pass not only a `str` to the field, but also number types, certain bytes types and `str` enums, and they will both be converted to a string:
+
+
+```pycon
+>>> from harborapi.models import ProjectReq
+>>> ProjectReq(project_name="test-project")
+ProjectReq(project_name='test-project', public=None, metadata=None, cve_allowlist=None, storage_limit=None, registry_id=None)
+>>> ProjectReq(project_name=123)
+ProjectReq(project_name='123', public=None, metadata=None, cve_allowlist=None, storage_limit=None, registry_id=None)
+```
+
+Not every type will be converted, so if we try to pass an arbitrary object to the field, we get an error:
+
+```pycon
+>>> ProjectReq(project_name=object())
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "pydantic/main.py", line 341, in pydantic.main.BaseModel.__init__
+pydantic.error_wrappers.ValidationError: 1 validation error for ProjectReq
+project_name
+  str type expected (type=type_error.str)
+```
+
+See the [Pydantic docs](https://docs.pydantic.dev/latest/usage/types/#standard-library-types) on standard library types for more information about how coercion works.
+
+
+
 ## String fields with 'true' and 'false' values in API spec
 
 !!! info
