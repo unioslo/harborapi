@@ -12,12 +12,12 @@ Python async client for the Harbor REST API v2.0 based on the official Harbor RE
 
 ## Features
 
-- Async API
+- [Async API](https://pederhan.github.io/harborapi/usage/)
 - Extensive type hint coverage
-- Data validation with [Pydantic](https://github.com/pydantic/pydantic)
-- Built-in retry functionality with [backoff](https://github.com/litl/backoff)
+- [Data validation](https://pederhan.github.io/harborapi/usage/models/) with [Pydantic](https://github.com/pydantic/pydantic)
+- Built-in [retry functionality](https://pederhan.github.io/harborapi/usage/retry/) with [backoff](https://github.com/litl/backoff)
 - Extensive test coverage powered by [Hypothesis](https://github.com/HypothesisWorks/hypothesis)
-- Optional [rich](https://github.com/Textualize/rich/) support
+- Optional [Rich](https://github.com/Textualize/rich/) [support](https://pederhan.github.io/harborapi/usage/rich/)
 
 ## Installation
 
