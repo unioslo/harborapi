@@ -12,6 +12,22 @@ The **third number** is the patch version (bug fixes)
 
 ## Unreleased
 
+
+### Added
+
+- Missing `limit` optional argument for methods that return multiple resources:
+  - `HarborAsyncClient.get_replication_tasks`
+  - `HarborAsyncClient.search_usergroups`
+  - `HarborAsyncClient.get_webhook_policy_last_trigger`
+  - `HarborAsyncClient.search_ldap_groups`
+  - `HarborAsyncClient.search_ldap_users`
+  - `HarborAsyncClient.get_registry_adapters`
+  - `HarborAsyncClient.get_artifact_build_history`
+
+### Changed
+
+- `HarborAsyncClient.get_replication_tasks` argument order changed. Now `status` and `resource_type` follow the required argument `project_id`.
+
 ### Removed
 
 - Deprecated fields removed in [`bf7c82b`](https://github.com/goharbor/harbor/commit/bf7c82b9a8dc0721fa2f347c56c9f01828a8bb6e):

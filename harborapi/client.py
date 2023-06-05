@@ -950,7 +950,11 @@ class HarborAsyncClient:
     # GET /usergroups/search
     # Search groups by groupname
     async def search_usergroups(
-        self, group_name: str, page: int = 1, page_size: int = 10
+        self,
+        group_name: str,
+        page: int = 1,
+        page_size: int = 10,
+        limit: Optional[int] = None,
     ) -> List[UserGroupSearchItem]:
         """Search for user groups by group name.
 
@@ -962,6 +966,8 @@ class HarborAsyncClient:
             The page of results to return
         page_size : int
             The number of results to return per page
+        limit : Optional[int]
+            The maximum number of results to return.
 
         Returns
         -------
@@ -969,7 +975,7 @@ class HarborAsyncClient:
             List of user groups.
         """
         params = get_params(groupname=group_name, page=page, page_size=page_size)
-        resp = await self.get("/usergroups/search", params=params)
+        resp = await self.get("/usergroups/search", params=params, limit=limit)
         return self.construct_model(UserGroupSearchItem, resp, is_list=True)
 
     # POST /usergroups
@@ -1116,11 +1122,12 @@ class HarborAsyncClient:
     async def get_replication_tasks(
         self,
         execution_id: int,
+        status: Optional[str] = None,
+        resource_type: Optional[str] = None,
         sort: Optional[str] = None,
         page: int = 1,
         page_size: int = 10,
-        status: Optional[str] = None,
-        resource_type: Optional[str] = None,
+        limit: Optional[int] = None,
     ) -> List[ReplicationTask]:
         """Get a list of replication tasks for a specific execution.
 
@@ -1152,7 +1159,7 @@ class HarborAsyncClient:
             resource_type=resource_type,
         )
         resp = await self.get(
-            f"/replication/executions/{execution_id}/tasks", params=params
+            f"/replication/executions/{execution_id}/tasks", params=params, limit=limit
         )
         return self.construct_model(ReplicationTask, resp, is_list=True)
 
@@ -2714,7 +2721,9 @@ class HarborAsyncClient:
     # GET /projects/{project_name_or_id}/webhook/lasttrigger
     # Get project webhook policy last trigger info
     async def get_webhook_policy_last_trigger(
-        self, project_name_or_id: Union[str, int]
+        self,
+        project_name_or_id: Union[str, int],
+        limit: Optional[int] = None,
     ) -> List[WebhookLastTrigger]:
         """Get a list of the last webhook policy triggers.
 
@@ -2724,6 +2733,8 @@ class HarborAsyncClient:
             The name or ID of the project
             String arguments are treated as project names.
             Integer arguments are treated as project IDs.
+        limit : Optional[int]
+            The maximum number of triggers to return.
 
         Returns
         -------
@@ -2732,7 +2743,9 @@ class HarborAsyncClient:
         """
         headers = get_project_headers(project_name_or_id)
         last_trigger = await self.get(
-            f"/projects/{project_name_or_id}/webhook/lasttrigger", headers=headers
+            f"/projects/{project_name_or_id}/webhook/lasttrigger",
+            headers=headers,
+            limit=limit,
         )
         return self.construct_model(WebhookLastTrigger, last_trigger, is_list=True)
 
@@ -2939,7 +2952,10 @@ class HarborAsyncClient:
     # GET /ldap/groups/search
     # Search available ldap groups.
     async def search_ldap_groups(
-        self, group_name: Optional[str] = None, group_dn: Optional[str] = None
+        self,
+        group_name: Optional[str] = None,
+        group_dn: Optional[str] = None,
+        limit: Optional[int] = None,
     ) -> List[UserGroup]:
         """Search for LDAP groups with a name or DN.
 
@@ -2947,9 +2963,10 @@ class HarborAsyncClient:
         ----------
         group_name : str
             The name of the LDAP group to search for.
-
         group_dn : str
             The DN of the LDAP group to search for.
+        limit : Optional[int]
+            The maximum number of results to return.
 
         Returns
         -------
@@ -2961,18 +2978,22 @@ class HarborAsyncClient:
             raise ValueError("Must specify either group_dn or group_name")
 
         params = get_params(groupname=group_name, groupdn=group_dn)
-        resp = await self.get("/ldap/groups/search", params=params)
+        resp = await self.get("/ldap/groups/search", params=params, limit=limit)
         return self.construct_model(UserGroup, resp, is_list=True)
 
     # GET /ldap/users/search
     # Search available ldap users.
-    async def search_ldap_users(self, username: str) -> List[LdapUser]:
+    async def search_ldap_users(
+        self, username: str, limit: Optional[int] = None
+    ) -> List[LdapUser]:
         """Search for LDAP users with a given username.
 
         Parameters
         ----------
         username : str
             The username to search for.
+        limit : Optional[int]
+            The maximum number of results to return.
 
         Returns
         -------
@@ -2980,7 +3001,7 @@ class HarborAsyncClient:
             The list of LDAP users that match the search.
         """
         params = get_params(username=username)
-        resp = await self.get("/ldap/users/search", params=params)
+        resp = await self.get("/ldap/users/search", params=params, limit=limit)
         return self.construct_model(LdapUser, resp, is_list=True)
 
     # POST /ldap/users/import
@@ -3016,15 +3037,20 @@ class HarborAsyncClient:
         await self.post("/registries/ping", json=ping)
 
     # GET /replication/adapters
-    async def get_registry_adapters(self) -> List[str]:
+    async def get_registry_adapters(self, limit: Optional[int] = None) -> List[str]:
         """Get the list of available registry adapters.
+
+        Parameters
+        ----------
+        limit : Optional[int]
+            The maximum number of results to return.
 
         Returns
         -------
         List[str]
             The list of available registry adapters
         """
-        resp = await self.get("/replication/adapters")
+        resp = await self.get("/replication/adapters", limit=limit)
         return resp  # type: ignore # we know this is a list of strings
 
     # GET /registries/{id}/info
@@ -3727,7 +3753,11 @@ class HarborAsyncClient:
 
     # GET /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/build_history
     async def get_artifact_build_history(
-        self, project_name: str, repository_name: str, reference: str
+        self,
+        project_name: str,
+        repository_name: str,
+        reference: str,
+        limit: Optional[int] = None,
     ) -> List[BuildHistoryEntry]:
         """Get the build history for an artifact.
 
@@ -3739,15 +3769,17 @@ class HarborAsyncClient:
             The name of the repository
         reference : str
             The reference of the artifact, can be digest or tag
+        limit : Optional[int]
+            The maximum number of build history entries to return
 
         Returns
         -------
-        BuildHistory
+        List[BuildHistoryEntry]
             The build history for the artifact
         """
         path = get_artifact_path(project_name, repository_name, reference)
         url = f"{path}/additions/build_history"
-        resp = await self.get(url)
+        resp = await self.get(url, limit=limit)
         return self.construct_model(BuildHistoryEntry, resp, is_list=True)
 
     # NYI:
