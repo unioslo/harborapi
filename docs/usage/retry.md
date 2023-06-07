@@ -59,7 +59,7 @@ max_tries
 
 ## Disabling retry
 
-We can also disable retrying by passing `retry=None` to the client constructor.
+Retrying can be disabled entirely by passing `retry=None` to the client constructor.
 
 ```py
 from harborapi import HarborAsyncClient
@@ -72,7 +72,7 @@ client = HarborAsyncClient(
 
 ### `no_retry()` context manager
 
-We can also disable retry temporarily without having to get rid of the retry settings using the [`no_retry()`][harborapi.HarborAsyncClient.no_retry] context manager. This is useful if we want to disable retry for a single request, but want to keep the retry settings for future requests.
+We can also temporarily disable retry without having to discard the current retry settings by using the [`no_retry()`][harborapi.HarborAsyncClient.no_retry] context manager. The context manager lets us disable retry for just a single block of code.
 
 ```py
 from harborapi import HarborAsyncClient
@@ -83,7 +83,7 @@ with client.no_retry():
     # do something that should not be retried
     ...
 
-# retry is enabled again
+# retry settings are restored outside the block
 ```
 
 ## Advanced configuration
