@@ -19,18 +19,8 @@ pcrun:
     -pre-commit run --all-files
 
 
-# Recipes for generating Pydantic models from Swagger API schemas
-codegendir := "codegen"
-default_scanner_version := "1.1"
-
-
-# Make codegen directory
-mkcodegendir:
-    mkdir -p {{codegendir}}
-
-
 # Generate new Harbor API models
-genapi: mkcodegendir
+genapi:
     datamodel-codegen \
         --url https://raw.githubusercontent.com/goharbor/harbor/main/api/v2.0/swagger.yaml  \
         --output ./harborapi/models/_models.py
@@ -38,7 +28,7 @@ genapi: mkcodegendir
     # Finished fetching new definitions and generating models for the Harbor API
 
 # Generate new Scanner API models
-genscanner: mkcodegendir
+genscanner:
     datamodel-codegen \
         --url https://raw.githubusercontent.com/goharbor/pluggable-scanner-spec/master/api/spec/scanner-adapter-openapi-v1.1.yaml \
         --output ./harborapi/models/_scanner.py \
