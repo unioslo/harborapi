@@ -114,6 +114,7 @@ profile = "black"
 asyncio_mode = "auto"
 
 [tool.datamodel-codegen]
+base-class = ".base.BaseModel"
 field-constraints = true
 snake-case-field = true
 strip-default-none = false
