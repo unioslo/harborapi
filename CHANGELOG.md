@@ -32,6 +32,7 @@ While the project is still on major version 0, breaking changes may be introduce
 ### Changed
 
 - `HarborAsyncClient.get_replication_tasks` argument order changed. Now `status` and `resource_type` follow the required argument `project_id` instead of after the optional `query`, `sort`, `page`, `page_size` and `limit` arguments.
+- `harborapi.models.ScannerProperties` now takes an arbitrary number of extra fields instead of using a `__root__` field.
 
 ### Removed
 
