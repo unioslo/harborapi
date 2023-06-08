@@ -8,14 +8,19 @@ The **first number** is the major version (API changes, breaking changes)
 The **second number** is the minor version (new features)
 The **third number** is the patch version (bug fixes)
 
+While the project is still on major version 0, breaking changes may be introduced in minor versions. This will be documented in the changelog where relevant.
+
 <!-- changelog follows -->
 
-## Unreleased
+<!-- ## Unreleased -->
+
+
+## [0.21.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.21.0) - 2023-06-08
 
 
 ### Added
 
-- Missing `limit` optional argument for methods that return multiple resources:
+- Missing optional `limit` argument for methods that fetch multiple resources:
   - `HarborAsyncClient.get_replication_tasks`
   - `HarborAsyncClient.search_usergroups`
   - `HarborAsyncClient.get_webhook_policy_last_trigger`
@@ -26,7 +31,7 @@ The **third number** is the patch version (bug fixes)
 
 ### Changed
 
-- `HarborAsyncClient.get_replication_tasks` argument order changed. Now `status` and `resource_type` follow the required argument `project_id`.
+- `HarborAsyncClient.get_replication_tasks` argument order changed. Now `status` and `resource_type` follow the required argument `project_id` instead of after the optional `query`, `sort`, `page`, `page_size` and `limit` arguments.
 
 ### Removed
 
