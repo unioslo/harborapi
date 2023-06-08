@@ -825,9 +825,6 @@ class GeneralInfo(_GeneralInfo):
     current_time: Optional[datetime] = Field(
         None, description="The current time of the server."
     )
-    with_notary: Optional[bool] = Field(
-        None, description="If the Harbor instance is deployed with nested notary."
-    )
     registry_url: Optional[str] = Field(
         None,
         description="The url of registry against which the docker command should be issued.",

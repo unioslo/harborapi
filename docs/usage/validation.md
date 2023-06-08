@@ -132,7 +132,6 @@ asyncio.run(main())
 ```py
 GeneralInfo.construct(
     current_time="2023-02-06T14:34:42.449000+00:00",
-    with_notary=True,
     with_chartmuseum=True,
     registry_url="demo.goharbor.io",
     external_url="https://demo.goharbor.io",
@@ -185,7 +184,6 @@ asyncio.run(main())
 ```py
 {
   "current_time": "2023-02-06T14:34:42.449000+00:00",
-  "with_notary": True,
   "with_chartmuseum": True,
   "registry_url": "demo.goharbor.io",
   "external_url": "https://demo.goharbor.io",

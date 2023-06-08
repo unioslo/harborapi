@@ -30,7 +30,7 @@ The **third number** is the patch version (bug fixes)
 
 ### Removed
 
-- Deprecated fields removed in [`bf7c82b`](https://github.com/goharbor/harbor/commit/bf7c82b9a8dc0721fa2f347c56c9f01828a8bb6e):
+- Deprecated fields removed in API spec([`bf7c82b`](https://github.com/goharbor/harbor/commit/bf7c82b9a8dc0721fa2f347c56c9f01828a8bb6e#diff-e7a0f542a154a5a929dec2d81ea59ecdd4dda32096e908b655bc62f397602b09)):
   - `harborapi.models.Tag.signed`
   - `harborapi.models.GeneralInfo.with_notary`
 
