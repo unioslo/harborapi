@@ -330,7 +330,7 @@ class HarborAsyncClient:
 
     @contextlib.contextmanager
     def no_retry(self) -> Generator[None, None, None]:
-        """Context manager that temporarily disables retrying."""
+        """Context manager that temporarily disables retrying failed requests."""
         old_retry = self.retry
         self.retry = None
         try:
@@ -340,7 +340,7 @@ class HarborAsyncClient:
 
     @contextlib.contextmanager
     def no_validation(self) -> Generator[None, None, None]:
-        """Context manager that temporarily disables validation."""
+        """Context manager that temporarily disables validation of response data."""
         old_validate = self.validate
         self.validate = False
         try:
@@ -350,7 +350,15 @@ class HarborAsyncClient:
 
     @contextlib.contextmanager
     def raw_mode(self) -> Generator[None, None, None]:
-        """Context manager that temporarily enables raw mode."""
+        """Context manager that temporarily enables raw mode.
+
+        Raw mode causes the client to return the raw response (usually JSON)
+        from the server instead of parsing it into a Pydantic model.
+
+        See Also
+        --------
+        <https://pederhan.github.io/harborapi/usage/validation/#getting-raw-data>
+        """
         old_raw = self.raw
         self.raw = True
         try:

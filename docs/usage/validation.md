@@ -50,58 +50,7 @@ with client.no_validation():
     projects = await client.get_projects()
 ```
 
-## Getting Raw Data
-
-In certain cases, we might want to access the raw JSON response from the API, and completely skip the conversion to Pydantic models altogether. In such cases, we can set the `raw` attribute on the client object.
-
-This means that the return type of the various API endpoint methods will be `dict` or `list` (or a primitive type like `str`, `int`, `float`, `bool`, `None`) instead of a Pydantic model.
-
-!!! note
-    In cases where an endpoint stops returning JSON responses altogether, `raw` will not help. In such cases, you will have to use a different tool to interact with the API.
-
-```python
-from harborapi import HarborAsyncClient
-
-client = HarborAsyncClient(..., raw=True)
-# or
-client = HarborAsyncClient(...)
-client.raw = True
-```
-
-### `raw_mode()` context manager
-
-We can also use the [`raw_mode()`][harborapi.HarborAsyncClient.raw_mode] context manager to temporarily enable raw mode for a single request:
-
-```py
-
-from harborapi import HarborAsyncClient
-
-client = HarborAsyncClient(...)
-
-with client.raw_mode():
-    projects = await client.get_projects()
-    # projects is a list of dicts
-```
-
-
-## The difference between `raw` and `validate`
-
-The `raw=True` attribute on the client object will cause the client to return the raw JSON data from the API, while the `validate=False` attribute will cause the client to skip validation of the data from the API, but still return the expected Pydantic model. `validate=False` is equivalent to constructing Pydantic models with [`BaseModel.construct()`](https://docs.pydantic.dev/usage/models/#creating-models-without-validation) instead of the usual [`BaseModel.parse_obj()`](https://docs.pydantic.dev/usage/models/#parsing-data-into-a-specified-type).
-
-
-`raw` always takes precedence over `validate` if it is set. By default, `raw` is set to `False` and `validate` is set to `True`. I.e.:
-
-```py
-client = HarborAsyncClient(
-    ...,
-    raw=False,
-    validate=True
-)
-```
-
-### Examples
-
-#### Get system info (no validation)
+### Example
 
 Without validation, the data is still returned as a [`GeneralInfo`][harborapi.models.GeneralInfo] model, but none of the fields are validated:
 
@@ -110,16 +59,10 @@ import asyncio
 from harborapi import HarborAsyncClient
 from harborapi.models import GeneralInfo
 
-client = HarborAsyncClient(
-    ...,
-    validate=False
-)
+client = HarborAsyncClient()
 
 async def main():
-    info = await client.get_system_info()
-    assert isinstance(info, GeneralInfo)
-
-    # or (temporarily disable validation)
+    # temporarily disable validation
     with client.no_validation():
         info = await client.get_system_info()
         assert isinstance(info, dict)
@@ -158,7 +101,40 @@ notification_enable
   value could not be parsed to a boolean (type=type_error.bool)
 ```
 
-#### Get system info (raw)
+## Getting Raw Data
+
+In certain cases, we might want to access the raw JSON response from the API, and completely skip the conversion to Pydantic models altogether. In such cases, we can set the `raw` attribute on the client object.
+
+This means that the return type of the various API endpoint methods will be `dict` or `list` (or a primitive type like `str`, `int`, `float`, `bool`, `None`) instead of a Pydantic model.
+
+!!! note
+    In cases where an endpoint stops returning JSON responses altogether, `raw` will not help. In such cases, you will have to use a different tool to interact with the API.
+
+```python
+from harborapi import HarborAsyncClient
+
+client = HarborAsyncClient(..., raw=True)
+# or
+client = HarborAsyncClient(...)
+client.raw = True
+```
+
+### `raw_mode()` context manager
+
+We can also use the [`raw_mode()`][harborapi.HarborAsyncClient.raw_mode] context manager to temporarily enable raw mode for a single request:
+
+```py
+
+from harborapi import HarborAsyncClient
+
+client = HarborAsyncClient(...)
+
+with client.raw_mode():
+    projects = await client.get_projects()
+    # projects is a list of dicts
+```
+
+### Example
 
 With raw mode enabled, the client returns the parsed JSON data as a dict:
 
@@ -166,13 +142,10 @@ With raw mode enabled, the client returns the parsed JSON data as a dict:
 import asyncio
 from harborapi import HarborAsyncClient
 
-client = HarborAsyncClient(..., raw=True)
+client = HarborAsyncClient(...)
 
 async def main():
-    info = await client.get_system_info()
-    assert isinstance(info, dict)
-
-    # or (temporarily enable raw mode)
+    # temporarily enable raw mode
     with client.raw_mode():
         info = await client.get_system_info()
         assert isinstance(info, dict)
@@ -197,6 +170,26 @@ asyncio.run(main())
   "notification_enable": 2,
   "authproxy_settings": None
 }
+```
+
+
+## The difference between `raw` and `validate`
+
+[Raw mode](#getting-raw-data) will cause the client to return the raw JSON data from the API, while [no validation](#disable-validation) will cause the client to skip validation of the data from the API, but still return the expected Pydantic model.
+
+
+!!! info
+    `validate=False` is equivalent to constructing Pydantic models with [`BaseModel.construct()`](https://docs.pydantic.dev/usage/models/#creating-models-without-validation) instead of the usual [`BaseModel.parse_obj()`](https://docs.pydantic.dev/usage/models/#parsing-data-into-a-specified-type). The latter method will validate the data and construct submodels, while the former will not.
+
+
+`raw` always takes precedence over `validate` if it is set. By default, `raw` is set to `False` and `validate` is set to `True`. I.e.:
+
+```py
+client = HarborAsyncClient(
+    ...,
+    raw=False,
+    validate=True
+)
 ```
 
 ## Skipping validation for request models
@@ -233,4 +226,4 @@ asyncio.run(main())
 In the future, the type hints will be updated to reflect this behavior, but for now it remains undocumented in the code itself.
 
 !!! note
-    If you are using a static type checker in your CI or pre-commit config, you will need to add a `# type: ignore` comment to the line where you pass in the dict, to prevent the type checker from complaining about the type mismatch.
+    If you are using a static type checker in your CI or pre-commit config, you will need to add a `# type: ignore` comment to the line where you pass in the dict to prevent the type checker from complaining about the type mismatch.
