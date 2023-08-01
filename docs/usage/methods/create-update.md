@@ -64,7 +64,7 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-The API implicitly updates only the fields that are set on the model instance, and leaves the rest of the values unchanged. This is not idiomatic REST when you consider that these are HTTP PUT requests, but in practice this is quite convenient from a user-perspective for now.
+In a departure from traditional REST semantics, the API updates only the fields that are explicitly defined on the model instance, preserving the undefined values as-is. This approach, while not aligning with the idiomatic use of HTTP PUT requests in REST, provides a measure of convenience from a user's perspective, since it allows us to update only the fields we care about, and leave the rest unchanged.
 
 In the example, we only set the `metadata.enable_content_trust` field on the `ProjectReq` model, which means that only that one setting will be updated on the project. The rest of the project settings will be left unchanged.
 
