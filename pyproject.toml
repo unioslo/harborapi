@@ -60,7 +60,7 @@ dependencies = [
   "hypothesis>=6.62.1",
   "rich>=12.6.0",
   "typer>=0.7.0",
-  "datamodel-code-generator==0.13.0",
+  "datamodel-code-generator>=0.21.2",
 
 ]
 [tool.hatch.envs.default.scripts]

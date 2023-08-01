@@ -82,7 +82,6 @@ from ._models import (
     LdapUser,
     Metadata,
     Metrics,
-    Model,
 )
 from ._models import NativeReportSummary as _NativeReportSummary
 from ._models import (
@@ -201,7 +200,6 @@ from .scanner import Severity
 # Explicit re-export of all models
 
 __all__ = [
-    "Model",
     "Error",
     "SearchRepository",
     "Repository",

@@ -22,7 +22,7 @@ pcrun:
 # Generate new Harbor API models
 genapi:
     datamodel-codegen \
-        --url https://raw.githubusercontent.com/goharbor/harbor/main/api/v2.0/swagger.yaml  \
+        --url https://converter.swagger.io/api/convert?url=https://raw.githubusercontent.com/goharbor/harbor/main/api/v2.0/swagger.yaml  \
         --output ./harborapi/models/_models.py
     black ./harborapi/models/_models.py
     # Finished fetching new definitions and generating models for the Harbor API
@@ -30,7 +30,7 @@ genapi:
 # Generate new Scanner API models
 genscanner:
     datamodel-codegen \
-        --url https://raw.githubusercontent.com/goharbor/pluggable-scanner-spec/master/api/spec/scanner-adapter-openapi-v1.1.yaml \
+        --url https://converter.swagger.io/api/convert?url=https://raw.githubusercontent.com/goharbor/pluggable-scanner-spec/master/api/spec/scanner-adapter-openapi-v1.1.yaml \
         --output ./harborapi/models/_scanner.py \
         --input-file-type openapi
     black ./harborapi/models/_scanner.py
