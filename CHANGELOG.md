@@ -14,6 +14,13 @@ While the project is still on major version 0, breaking changes may be introduce
 
 <!-- ## Unreleased -->
 
+## [0.22.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.22.0) - 2023-08-01
+
+### Changed
+
+- Pydantic version capped at <2.0.0.
+  - Migration to Pydantic V2 will begin soon.
+
 
 ## [0.21.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.21.0) - 2023-06-08
 
