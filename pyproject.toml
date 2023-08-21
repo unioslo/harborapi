@@ -120,3 +120,5 @@ snake-case-field = true
 strip-default-none = false
 target-python-version = "3.8"
 use-schema-description = false # bad docs coverage and numerous spelling errors (as of 2022-06-29)
+use-field-descriptions = true
+input-file-type = "openapi"

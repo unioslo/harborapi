@@ -32,6 +32,5 @@ genscanner:
     datamodel-codegen \
         --url https://converter.swagger.io/api/convert?url=https://raw.githubusercontent.com/goharbor/pluggable-scanner-spec/master/api/spec/scanner-adapter-openapi-v1.1.yaml \
         --output ./harborapi/models/_scanner.py \
-        --input-file-type openapi
     black ./harborapi/models/_scanner.py
     # Finished fetching new definitions and generating models for the Harbor Pluggable Scanner API
