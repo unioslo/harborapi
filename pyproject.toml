@@ -61,6 +61,7 @@ dependencies = [
   "rich>=12.6.0",
   "typer>=0.7.0",
   "datamodel-code-generator>=0.21.2",
+  "isort>=5.12.0",
 
 ]
 [tool.hatch.envs.default.scripts]
@@ -68,6 +69,7 @@ test = "pytest {args}"
 cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=harborapi --cov=tests {args}"
 no-cov = "cov --no-cov {args}"
 bump = "python scripts/bump_version.py {args}"
+genapi = "./codegen/generate.sh"
 
 [tool.hatch.envs.docs]
 dependencies = [
@@ -98,6 +100,8 @@ ignore = [
   "E501", # line too long (we let black handle this)
   "F541", # f-string is missing placeholders
 ]
+exclude = ["codegen/ast/fragments"]
+
 [tool.ruff.per-file-ignores]
 "__init__.py" = ["E402", "F401", "F403"]
 
@@ -119,6 +123,6 @@ field-constraints = true
 snake-case-field = true
 strip-default-none = false
 target-python-version = "3.8"
-use-schema-description = false # bad docs coverage and numerous spelling errors (as of 2022-06-29)
+use-schema-description = true  # bad docs coverage and numerous spelling errors (as of 2022-06-29)
 use-field-descriptions = true
 input-file-type = "openapi"
