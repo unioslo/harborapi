@@ -2,6 +2,11 @@
 
 [![PyPI - Version](https://img.shields.io/pypi/v/harborapi.svg)](https://pypi.org/project/harborapi)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/harborapi.svg)](https://pypi.org/project/harborapi)
+![Tests](https://github.com/pederhan/harborapi/workflows/test/badge.svg)
+[![Docs](https://github.com/pederhan/harborapi/workflows/docs/badge.svg)](https://pederhan.github.io/harborapi/)
+[![Checked with mypy](https://www.mypy-lang.org/static/mypy_badge.svg)](https://mypy-lang.org/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Linting: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 -----
 
@@ -16,7 +21,6 @@ Python async client for the Harbor REST API v2.0 based on the official Harbor RE
 - Extensive type hint coverage
 - [Data validation](https://pederhan.github.io/harborapi/usage/models/) with [Pydantic](https://github.com/pydantic/pydantic)
 - Built-in [retry functionality](https://pederhan.github.io/harborapi/usage/retry/) with [backoff](https://github.com/litl/backoff)
-- Extensive test coverage powered by [Hypothesis](https://github.com/HypothesisWorks/hypothesis)
 - Optional [Rich](https://github.com/Textualize/rich/) [support](https://pederhan.github.io/harborapi/usage/rich/)
 
 ## Installation
