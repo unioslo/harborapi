@@ -3,7 +3,7 @@
 [![PyPI - Version](https://img.shields.io/pypi/v/harborapi.svg)](https://pypi.org/project/harborapi)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/harborapi.svg)](https://pypi.org/project/harborapi)
 ![Tests](https://github.com/pederhan/harborapi/workflows/test/badge.svg)
-[![Docs](https://github.com/pederhan/harborapi/workflows/build-docs/badge.svg)](https://pederhan.github.io/harborapi/)
+[![Docs](https://github.com/pederhan/harborapi/workflows/docs/badge.svg)](https://pederhan.github.io/harborapi/)
 [![Checked with mypy](https://www.mypy-lang.org/static/mypy_badge.svg)](https://mypy-lang.org/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Linting: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
