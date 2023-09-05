@@ -14,6 +14,12 @@ While the project is still on major version 0, breaking changes may be introduce
 
 <!-- ## Unreleased -->
 
+## [0.22.1](https://github.com/pederhan/harborapi/tree/harborapi-v0.22.1) - 2023-09-05
+
+### Changed
+
+- Reduced sdist size significantly by removing unnecessary files (docs, tests, etc.).
+
 ## [0.22.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.22.0) - 2023-08-01
 
 ### Changed

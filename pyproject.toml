@@ -84,6 +84,12 @@ serve = "mkdocs serve --dev-addr localhost:8000"
 [[tool.hatch.envs.test.matrix]]
 python = ["38", "39", "310", "311"]
 
+[tool.hatch.build.targets.sdist]
+exclude = ["/.github", "/docs", "/tests", "/scripts"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["harborapi"]
+
 [tool.coverage.run]
 branch = true
 parallel = true
