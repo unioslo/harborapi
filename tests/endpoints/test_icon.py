@@ -1,5 +1,9 @@
+from __future__ import annotations
+
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given
+from hypothesis import HealthCheck
+from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
@@ -17,7 +21,7 @@ async def test_get_icon_mock(
 ):
     httpserver.expect_oneshot_request(
         "/api/v2.0/icons/digest", method="GET"
-    ).respond_with_data(icon.json(), content_type="application/json")
+    ).respond_with_data(icon.model_dump_json(), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_icon("digest")
     assert resp.content_type == icon.content_type

@@ -1,129 +1,129 @@
+from __future__ import annotations
+
 import contextlib
-import json
 import os
 import warnings
 from http.cookiejar import CookieJar
 from pathlib import Path
-from typing import (
-    Any,
-    Dict,
-    Generator,
-    List,
-    Literal,
-    Optional,
-    Tuple,
-    Type,
-    TypeVar,
-    Union,
-    overload,
-)
+from typing import Any
+from typing import Dict
+from typing import Generator
+from typing import List
+from typing import Literal
+from typing import Optional
+from typing import overload
+from typing import Tuple
+from typing import Type
+from typing import TypeVar
+from typing import Union
 
 import httpx
-from httpx import Response, Timeout
+from httpx import Response
+from httpx import Timeout
 from httpx._types import VerifyTypes
-from pydantic import BaseModel, SecretStr, ValidationError
+from pydantic import BaseModel
+from pydantic import SecretStr
+from pydantic import ValidationError
 
 from ._types import JSONType
-from .auth import load_harbor_auth_file, new_authfile_from_robotcreate
-from .exceptions import (
-    HarborAPIException,
-    NotFound,
-    UnprocessableEntity,
-    check_response_status,
-)
-from .log import enable_logging, logger
-from .models import (
-    Accessory,
-    Artifact,
-    AuditLog,
-    Configurations,
-    ConfigurationsResponse,
-    CVEAllowlist,
-    ExecHistory,
-    GCHistory,
-    GeneralInfo,
-    Icon,
-    IsDefault,
-    Label,
-    LdapConf,
-    LdapImportUsers,
-    LdapPingResult,
-    LdapUser,
-    OIDCTestReq,
-    OverallHealthStatus,
-    PasswordReq,
-    Permission,
-    Project,
-    ProjectDeletable,
-    ProjectMember,
-    ProjectMemberEntity,
-    ProjectMetadata,
-    ProjectReq,
-    ProjectScanner,
-    ProjectSummary,
-    Quota,
-    QuotaUpdateReq,
-    Registry,
-    RegistryInfo,
-    RegistryPing,
-    RegistryProviders,
-    RegistryUpdate,
-    ReplicationExecution,
-    ReplicationPolicy,
-    ReplicationTask,
-    Repository,
-    RetentionExecution,
-    RetentionExecutionTask,
-    RetentionMetadata,
-    RetentionPolicy,
-    Robot,
-    RobotCreate,
-    RobotCreated,
-    RobotSec,
-    RoleRequest,
-    ScanDataExportExecution,
-    ScanDataExportExecutionList,
-    ScanDataExportJob,
-    ScanDataExportRequest,
-    ScannerAdapterMetadata,
-    ScannerRegistration,
-    ScannerRegistrationReq,
-    ScannerRegistrationSettings,
-    Schedule,
-    Search,
-    StartReplicationExecution,
-    Statistic,
-    Stats,
-    SupportedWebhookEventTypes,
-    SystemInfo,
-    Tag,
-    UserCreationReq,
-    UserEntity,
-    UserGroup,
-    UserGroupSearchItem,
-    UserProfile,
-    UserResp,
-    UserSearchRespItem,
-    UserSysAdminFlag,
-    WebhookJob,
-    WebhookLastTrigger,
-    WebhookPolicy,
-)
+from .auth import load_harbor_auth_file
+from .auth import new_authfile_from_robotcreate
+from .exceptions import check_response_status
+from .exceptions import HarborAPIException
+from .exceptions import NotFound
+from .exceptions import UnprocessableEntity
+from .log import enable_logging
+from .log import logger
+from .models import Accessory
+from .models import Artifact
+from .models import AuditLog
+from .models import Configurations
+from .models import ConfigurationsResponse
+from .models import CVEAllowlist
+from .models import ExecHistory
+from .models import GCHistory
+from .models import GeneralInfo
+from .models import Icon
+from .models import IsDefault
+from .models import Label
+from .models import LdapConf
+from .models import LdapImportUsers
+from .models import LdapPingResult
+from .models import LdapUser
+from .models import OIDCTestReq
+from .models import OverallHealthStatus
+from .models import PasswordReq
+from .models import Permission
+from .models import Project
+from .models import ProjectDeletable
+from .models import ProjectMember
+from .models import ProjectMemberEntity
+from .models import ProjectMetadata
+from .models import ProjectReq
+from .models import ProjectScanner
+from .models import ProjectSummary
+from .models import Quota
+from .models import QuotaUpdateReq
+from .models import Registry
+from .models import RegistryInfo
+from .models import RegistryPing
+from .models import RegistryProviders
+from .models import RegistryUpdate
+from .models import ReplicationExecution
+from .models import ReplicationPolicy
+from .models import ReplicationTask
+from .models import Repository
+from .models import RetentionExecution
+from .models import RetentionExecutionTask
+from .models import RetentionMetadata
+from .models import RetentionPolicy
+from .models import Robot
+from .models import RobotCreate
+from .models import RobotCreated
+from .models import RobotSec
+from .models import RoleRequest
+from .models import ScanDataExportExecution
+from .models import ScanDataExportExecutionList
+from .models import ScanDataExportJob
+from .models import ScanDataExportRequest
+from .models import ScannerAdapterMetadata
+from .models import ScannerRegistration
+from .models import ScannerRegistrationReq
+from .models import ScannerRegistrationSettings
+from .models import Schedule
+from .models import Search
+from .models import StartReplicationExecution
+from .models import Statistic
+from .models import Stats
+from .models import SupportedWebhookEventTypes
+from .models import SystemInfo
+from .models import Tag
+from .models import UserCreationReq
+from .models import UserEntity
+from .models import UserGroup
+from .models import UserGroupSearchItem
+from .models import UserProfile
+from .models import UserResp
+from .models import UserSearchRespItem
+from .models import UserSysAdminFlag
+from .models import WebhookJob
+from .models import WebhookLastTrigger
+from .models import WebhookPolicy
 from .models.buildhistory import BuildHistoryEntry
 from .models.file import FileResponse
 from .models.scanner import HarborVulnerabilityReport
-from .responselog import ResponseLog, ResponseLogEntry
-from .retry import RetrySettings, retry
-from .utils import (
-    get_artifact_path,
-    get_basicauth,
-    get_params,
-    get_project_headers,
-    get_repo_path,
-    handle_optional_json_response,
-    parse_pagination_url,
-    urldecode_header,
-)
+from .responselog import ResponseLog
+from .responselog import ResponseLogEntry
+from .retry import retry
+from .retry import RetrySettings
+from .utils import get_artifact_path
+from .utils import get_basicauth
+from .utils import get_params
+from .utils import get_project_headers
+from .utils import get_repo_path
+from .utils import handle_optional_json_response
+from .utils import parse_pagination_url
+from .utils import urldecode_header
 
 __all__ = ["HarborAsyncClient"]
 
@@ -135,22 +135,7 @@ T = TypeVar("T", bound=BaseModel)
 
 def model_to_dict(model: BaseModel) -> Any:
     """Creates a JSON-serializable dict from a Pydantic model."""
-    # Round-trip through BaseModel.json() to ensure that all dict values
-    # are JSON-serializable. BaseModel.dict() can contain Python objects
-    # that are not natively serializable by the built-in JSON encoder.
-    #
-    # Until https://github.com/pydantic/pydantic/issues/1409 is fixed,
-    # this is the easiest way to do this without having to implement
-    # custom encoders for all Pydantic models.
-    #
-    # This is of course not ideal, but since we are dealing with network
-    # requests here, this extra encoding should only represent a small
-    # fraction of the overall time spent.
-    #
-    # This does put a spanner in the works with regards to typing, since
-    # json.loads() returns Any. However, HTTPX expects Any for the `json`
-    # parameter on its HTTP methods, so it's not a huge deal.
-    return json.loads(model.json(exclude_unset=True))
+    return model.model_dump(mode="json", exclude_unset=True)
 
 
 class CookieDiscarder(CookieJar):

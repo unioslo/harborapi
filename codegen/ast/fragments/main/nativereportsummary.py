@@ -1,3 +1,8 @@
+from __future__ import annotations
+
+from .scanner import Severity
+
+
 class NativeReportSummary(BaseModel):
     @property
     def severity_enum(self) -> Optional[Severity]:

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Sequence
 
 from pydantic import BaseModel
@@ -8,4 +10,4 @@ def json_from_list(models: Sequence[BaseModel]) -> str:
     We use this to deal with missing support for datetime serialization
     in pytest-httpserver.
     """
-    return "[" + ",".join(m.json() for m in models) + "]"
+    return "[" + ",".join(m.model_dump_json() for m in models) + "]"

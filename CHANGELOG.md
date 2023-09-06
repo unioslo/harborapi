@@ -12,7 +12,22 @@ While the project is still on major version 0, breaking changes may be introduce
 
 <!-- changelog follows -->
 
-<!-- ## Unreleased -->
+## Unreleased
+
+The big Pydantic V2 update. This is a major update, and will be released as version 1.0.0. In general, a lot things have become more strict, and most models that used to accept both strings and ints for string fields now _only_ accept strings.
+
+### Changed
+
+- `ProjectMetadata`
+   - `retention_id` now accepts both string and integer arguments. Band-aid fix until Harbor fixes their API spec and specifies that all retention IDs should be ints, not strings.
+
+- `harborapi.ext.report.ArtifactReport`
+  - No longer supports iteration directly on the object itself. Use the `artifacts` attribute instead.
+
+
+### Deprecated
+
+- `harborapi.models._models` module. This module is no longer needed, as all the models are now defined in `harborapi.models.models`.
 
 
 ## [0.21.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.21.0) - 2023-06-08

@@ -1,14 +1,17 @@
+from __future__ import annotations
+
 from typing import List
 
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given
+from hypothesis import HealthCheck
+from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
+from ..utils import json_from_list
 from harborapi.client import HarborAsyncClient
 from harborapi.models import Label
-
-from ..utils import json_from_list
 
 
 @pytest.mark.asyncio
@@ -22,7 +25,9 @@ async def test_get_label_mock(
     label_id = 123
     httpserver.expect_oneshot_request(
         f"/api/v2.0/labels/{label_id}", method="GET"
-    ).respond_with_data(label.json(), headers={"Content-Type": "application/json"})
+    ).respond_with_data(
+        label.model_dump_json(), headers={"Content-Type": "application/json"}
+    )
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_label(123)
     assert resp == label

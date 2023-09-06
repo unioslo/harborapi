@@ -1,7 +1,7 @@
 """Fragment that adds new properties and methods to the Repository model"""
-from typing import Optional
+from __future__ import annotations
 
-from pydantic import BaseModel
+from typing import Optional
 
 
 class Repository(BaseModel):

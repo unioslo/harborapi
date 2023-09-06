@@ -3,9 +3,10 @@ from __future__ import annotations
 import abc
 import ast
 import sys
-from collections import defaultdict
+from enum import Enum
 from pathlib import Path
 from typing import Any
+from typing import TypedDict
 
 
 def construct_annotation(annotation: str | "ast.expr") -> "ast.expr":
@@ -139,10 +140,12 @@ class Field(Modifier):
         )
 
 
+# TODO: sort this list
 # Changes to existing definitions (change annotation, etc.) or additions
 # that are too minor to create new fragments for.
 models = {
-    "Artifact": [Annotation("scan_overview", "Optional[NativeReportSummary]")],
+    # "Artifact": [Annotation("scan_overview", "Optional[NativeReportSummary]")],
+    "ProjectMetadata": [Annotation("retention_id", "Optional[Union[str, int]]")],
     "Error": [Docstring("Error response from Harbor.")],
     "ScanOverview": [Docstring("Overview of scan results.")],
     "VulnerabilitySummary": [Docstring("Summary of vulnerabilities found in a scan.")],
@@ -248,8 +251,8 @@ def modify_module(tree: ast.Module) -> ast.Module:
 
 
 ADD_IMPORTS = {
-    "pydantic": ["root_validator", "BaseModel as PydanticBaseModel"],
-    "typing": ["Tuple"],
+    "pydantic": ["model_validator"],
+    "typing": ["Tuple", "Union"],
     ".scanner": ["Severity"],
     "..log": ["logger"],
 }
@@ -275,47 +278,149 @@ def add_imports(tree: ast.Module) -> ast.Module:
     return tree
 
 
-def extract_nodes(fragment_ast: ast.Module) -> dict[str, list[ast.stmt]]:
-    # TODO: gather imports
-    nodes = defaultdict(list)
-    for node in ast.walk(fragment_ast):
-        if isinstance(node, ast.ClassDef):
-            for class_node in node.body:
-                nodes[node.name].append(class_node)
-    return nodes
+def _get_class_base_name(classdef: ast.ClassDef) -> str | None:
+    if not classdef.bases:
+        return None
+    if isinstance(classdef.bases[0], ast.Name):
+        return getattr(classdef.bases[0], "id", None)
+    elif isinstance(classdef.bases[0], ast.Subscript):
+        return getattr(classdef.bases[0].value, "id", None)
+    return None
 
 
-def insert_nodes(tree: ast.Module, nodes: dict[str, list[ast.stmt]]) -> ast.Module:
+def both_rootmodels(classdef1: ast.ClassDef, classdef2: ast.ClassDef) -> bool:
+    """Checks if both classdefs are root models.
+    NOTE: Only supports RootModel as the first and only base."""
+    return all(
+        name == "RootModel"
+        for name in [_get_class_base_name(classdef1), _get_class_base_name(classdef2)]
+    )
+
+
+def fix_rootmodel_base(classdef: ast.ClassDef) -> ast.ClassDef:
+    # Already has a base that is a RootModel with subscript
+    # Not touching this.
+    if not classdef.bases or isinstance(classdef.bases[0], ast.Subscript):
+        return classdef
+
+    # Find the root field and use its annotation to construct the base
+    for node in classdef.body:
+        if (
+            isinstance(node, ast.AnnAssign)
+            and getattr(node.target, "id", None) == "root"
+        ):
+            classdef.bases = [
+                ast.Subscript(
+                    slice=node.annotation,
+                    value=ast.Name(id="RootModel"),
+                )
+            ]
+            break
+    return classdef
+
+
+def insert_or_update_classdefs(
+    tree: ast.Module, classdefs: dict[str, ast.ClassDef]
+) -> ast.Module:
+    updated = set()
+
+    # Update existing classes
     for node in ast.walk(tree):
-        if isinstance(node, ast.ClassDef) and node.name in nodes:
-            node.body.extend(nodes[node.name])
+        if not isinstance(node, ast.ClassDef):
+            continue
+        if node.name in classdefs:
+            classdef = classdefs[node.name]
+            for class_stmt in classdef.body:
+                if isinstance(class_stmt, ast.Pass):
+                    continue
+                node.body.append(class_stmt)
+            updated.add(node.name)
+        if _get_class_base_name(node) == "RootModel":
+            fix_rootmodel_base(node)
+
+    # Add remaining classdefs (new classes)
+    for name in set(classdefs) - updated:
+        tree.body.append(classdefs[name])
+
     return tree
 
 
-def add_fragments(tree: ast.Module) -> ast.Module:
-    nodes = {}
-    for file in Path(basedir / "fragments").iterdir():
+class StatementDict(TypedDict):
+    imports: list[ast.Import | ast.ImportFrom]
+    stmts: list[ast.stmt]
+
+
+def insert_statements(tree: ast.Module, statements: StatementDict) -> ast.Module:
+    tree.body.extend(statements["stmts"])
+    tree.body[1:1] = statements["imports"]
+    return tree
+
+
+def extract_classdefs(fragment_ast: ast.Module) -> dict[str, ast.ClassDef]:
+    # TODO: gather imports
+    classdefs = {}  # type: dict[str, ast.ClassDef]
+    for node in ast.walk(fragment_ast):
+        if isinstance(node, ast.ClassDef):
+            classdefs[node.name] = node
+    return classdefs
+
+
+def extract_statements(fragment_ast: ast.Module) -> StatementDict:
+    stmts = StatementDict(imports=[], stmts=[])
+    for node in fragment_ast.body:
+        if isinstance(node, (ast.ClassDef, ast.Constant)):
+            continue
+        elif hasattr(node, "value") and isinstance(node.value, ast.Constant):
+            continue
+        elif isinstance(node, (ast.Import, ast.ImportFrom)):
+            stmts["imports"].append(node)
+        else:
+            stmts["stmts"].append(node)
+    return stmts
+
+
+def add_fragments(tree: ast.Module, directory: Path) -> ast.Module:
+    classdefs = {}  # type: dict[str, ast.ClassDef]
+    for file in Path(directory).iterdir():
         if file.suffix == ".py":
             fragment_ast = ast.parse(file.read_text())
-            nodes.update(extract_nodes(fragment_ast))
-    return insert_nodes(tree, nodes)
+            classdefs.update(extract_classdefs(fragment_ast))
+            statements = extract_statements(fragment_ast)
+    new_tree = insert_or_update_classdefs(tree, classdefs)
+    new_tree = insert_statements(new_tree, statements)
+    return new_tree
+
+
+class FragmentDir(str, Enum):
+    main = "main"
+    scanner = "scanner"
+
+    def __str__(self) -> str:
+        return self.value
 
 
 if __name__ == "__main__":
     basedir = Path(__file__).parent
 
     if sys.argv[1:]:
-        input_filename = sys.argv[1]
+        input_filename = Path(sys.argv[1])
     else:
         input_filename = basedir.parent / "_models.py"
 
     if sys.argv[2:]:
-        output_filename = sys.argv[2]
+        output_filename = Path(sys.argv[2])
     else:
         output_filename = basedir.parent / "models.py"
 
+    if sys.argv[3:]:
+        directory = FragmentDir(sys.argv[3])
+    else:
+        directory = FragmentDir.main
+    fragment_dir = basedir / "fragments" / directory
+
     print("Input: ", input_filename)
     print("Output: ", output_filename)
+    print("Fragment dir: ", fragment_dir)
 
     with open(input_filename, "r") as f:
         source = f.read()
@@ -324,7 +429,7 @@ if __name__ == "__main__":
     # Modify the AST
     new_tree = modify_module(tree)
     new_tree = add_imports(new_tree)
-    new_tree = add_fragments(new_tree)
+    new_tree = add_fragments(new_tree, fragment_dir)
 
     # Generate new source code from the modified AST
     new_source = ast.unparse(new_tree)

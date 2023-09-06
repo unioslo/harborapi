@@ -1,21 +1,23 @@
-from typing import List, Optional
+from __future__ import annotations
+
+from typing import List
+from typing import Optional
 
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given
+from hypothesis import HealthCheck
+from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
+from ..utils import json_from_list
 from harborapi.client import HarborAsyncClient
 from harborapi.models import UserResp
-from harborapi.models.models import (
-    PasswordReq,
-    Permission,
-    UserCreationReq,
-    UserProfile,
-    UserSearchRespItem,
-)
-
-from ..utils import json_from_list
+from harborapi.models.models import PasswordReq
+from harborapi.models.models import Permission
+from harborapi.models.models import UserCreationReq
+from harborapi.models.models import UserProfile
+from harborapi.models.models import UserSearchRespItem
 
 
 @pytest.mark.asyncio
@@ -113,7 +115,7 @@ async def test_get_current_user_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/users/current",
         method="GET",
-    ).respond_with_data(user.json(), content_type="application/json")
+    ).respond_with_data(user.model_dump_json(), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_current_user()
     assert resp == user
@@ -207,7 +209,7 @@ async def test_get_user_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/users/1234",
         method="GET",
-    ).respond_with_data(user.json(), content_type="application/json")
+    ).respond_with_data(user.model_dump_json(), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_user(1234)
     assert user == resp
@@ -236,7 +238,7 @@ async def test_get_user_by_username_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/users/1234",
         method="GET",
-    ).respond_with_data(user.json(), content_type="application/json")
+    ).respond_with_data(user.model_dump_json(), content_type="application/json")
 
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_user_by_username("test-user")

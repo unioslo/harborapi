@@ -5,18 +5,23 @@ from collections import Counter
 from datetime import datetime
 from enum import Enum
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any
+from typing import Dict
+from typing import Iterable
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import TYPE_CHECKING
+from typing import Union
 
 if TYPE_CHECKING:
     from typing import Final  # noqa: F401
 
-from pydantic import Field, validator
-from pydantic.fields import ModelField
+from pydantic import ConfigDict, Field, FieldValidationInfo, field_validator
 
 from ..log import logger
 from ..version import SemVer, get_semver
-from ._scanner import Artifact as ScanArtifact
-from ._scanner import CVSSDetails, Error, ErrorResponse
+from ._scanner import Artifact, CVSSDetails, Error, ErrorResponse
 from ._scanner import HarborVulnerabilityReport as _HarborVulnerabilityReport
 from ._scanner import Registry
 from ._scanner import Scanner as _Scanner  # Severity not imported (see below)
@@ -36,7 +41,7 @@ __all__ = [
     "ScannerCapability",
     "ScanRequestId",
     "Registry",
-    "ScanArtifact",
+    "Artifact",
     "Severity",
     "Error",
     "Severity",
@@ -168,11 +173,12 @@ class VulnerabilityItem(_VulnerabilityItem):
     )
     vendor_attributes: Optional[Dict[str, Any]] = None
 
-    @validator("severity", pre=True)
+    @field_validator("severity", mode="before")
+    @classmethod
     def _severity_none_is_default(
-        cls, v: Optional[Severity], field: ModelField
+        cls, v: Optional[Severity], info: FieldValidationInfo
     ) -> Severity:
-        return v or field.default
+        return v or cls.model_fields[info.field_name].default
 
     @property
     def semver(self) -> SemVer:
@@ -328,7 +334,7 @@ class HarborVulnerabilityReport(_HarborVulnerabilityReport):
     generated_at: Optional[datetime] = Field(
         None, description="The time the report was generated."
     )
-    artifact: Optional[ScanArtifact] = Field(None, description="The artifact scanned.")
+    artifact: Optional[Artifact] = Field(None, description="The artifact scanned.")
 
     # Changes: references the overridden Scanner class
     scanner: Optional[Scanner] = Field(
@@ -342,9 +348,7 @@ class HarborVulnerabilityReport(_HarborVulnerabilityReport):
     vulnerabilities: List[VulnerabilityItem] = Field(
         default_factory=list, description="The list of vulnerabilities found."
     )  # type: ignore
-
-    class Config:
-        keep_untouched = (cached_property,)
+    model_config = ConfigDict(ignored_types=(cached_property,))
 
     def __repr__(self) -> str:
         return f"HarborVulnerabilityReport(generated_at={self.generated_at}, artifact={self.artifact}, scanner={self.scanner}, severity={self.severity}, vulnerabilities=list(len={len(self.vulnerabilities)}))"

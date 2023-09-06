@@ -1,5 +1,11 @@
+from __future__ import annotations
+
 from enum import Enum
-from typing import Any, Optional, Sequence, Type, Union
+from typing import Any
+from typing import Optional
+from typing import Sequence
+from typing import Type
+from typing import Union
 
 from pydantic import BaseModel
 
@@ -73,8 +79,8 @@ def _override_field_check(
         attrs.update(attr_add)
 
     for attr in attrs:
-        assert getattr(modified.__fields__[field].field_info, attr) == getattr(
-            generated.__fields__[field].field_info, attr
+        assert getattr(modified.model_fields[field], attr) == getattr(
+            generated.model_fields[field], attr
         ), f"Field {field} attribute {attr} does not match"
 
 
@@ -121,5 +127,5 @@ def _no_references_check(
                 continue
         except TypeError:
             continue
-        for field in m.__fields__.values():
+        for field in m.model_fields.values():
             assert field.type_ not in no_references

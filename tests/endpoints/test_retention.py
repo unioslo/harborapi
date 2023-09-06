@@ -1,21 +1,22 @@
+from __future__ import annotations
+
 from typing import List
 
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given
+from hypothesis import HealthCheck
+from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
-from harborapi.client import HarborAsyncClient
-from harborapi.models import (
-    Project,
-    ProjectMetadata,
-    RetentionExecution,
-    RetentionExecutionTask,
-    RetentionMetadata,
-    RetentionPolicy,
-)
-
 from ..utils import json_from_list
+from harborapi.client import HarborAsyncClient
+from harborapi.models import Project
+from harborapi.models import ProjectMetadata
+from harborapi.models import RetentionExecution
+from harborapi.models import RetentionExecutionTask
+from harborapi.models import RetentionMetadata
+from harborapi.models import RetentionPolicy
 
 
 @pytest.mark.asyncio
@@ -36,7 +37,7 @@ async def test_get_project_retention_id_mock(
         f"/api/v2.0/projects/{project_name_or_id}",
         method="GET",
         headers={"X-Is-Resource-Name": "false" if is_id else "true"},
-    ).respond_with_data(project.json(), content_type="application/json")
+    ).respond_with_data(project.model_dump_json(), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_project_retention_id(project_name_or_id)
     assert resp == expect_id
@@ -54,7 +55,7 @@ async def test_get_retention_policy_mock(
     httpserver.expect_oneshot_request(
         f"/api/v2.0/retentions/{retention_id}",
         method="GET",
-    ).respond_with_data(policy.json(), content_type="application/json")
+    ).respond_with_data(policy.model_dump_json(), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_retention_policy(retention_id)
     assert resp == policy
@@ -149,7 +150,7 @@ async def test_get_retention_metadata_mock(
         f"/api/v2.0/retentions/metadatas",
         method="GET",
     ).respond_with_data(
-        metadata.json(),
+        metadata.model_dump_json(),
         headers={"Content-Type": "application/json"},
     )
     async_client.url = httpserver.url_for("/api/v2.0")

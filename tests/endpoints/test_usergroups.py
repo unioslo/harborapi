@@ -1,14 +1,18 @@
+from __future__ import annotations
+
 from typing import List
 
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given
+from hypothesis import HealthCheck
+from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
-from harborapi.client import HarborAsyncClient
-from harborapi.models.models import UserGroup, UserGroupSearchItem
-
 from ..utils import json_from_list
+from harborapi.client import HarborAsyncClient
+from harborapi.models.models import UserGroup
+from harborapi.models.models import UserGroupSearchItem
 
 
 @pytest.mark.asyncio
@@ -102,7 +106,7 @@ async def test_get_usergroup_mock(
         "/api/v2.0/usergroups/123",
         method="GET",
     ).respond_with_data(
-        usergroup.json(),
+        usergroup.model_dump_json(),
         content_type="application/json",
     )
     async_client.url = httpserver.url_for("/api/v2.0")

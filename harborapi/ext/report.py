@@ -1,15 +1,22 @@
+from __future__ import annotations
+
 import re
 from collections import Counter
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Iterable, List, Optional, Union
+from typing import Iterable
+from typing import List
+from typing import Optional
+from typing import Union
 
-from harborapi.models.scanner import Severity, VulnerabilityItem
+from pydantic import ConfigDict
 
 from ..models.base import BaseModel
 from ..version import VersionType
 from .api import ArtifactInfo
 from .cve import CVSSData
+from harborapi.models.scanner import Severity
+from harborapi.models.scanner import VulnerabilityItem
 
 
 @dataclass
@@ -57,8 +64,7 @@ class ArtifactReport(BaseModel):
             artifacts = []
         super().__init__(artifacts=artifacts, **kwargs)
 
-    class Config:
-        keep_untouched = (cached_property,)
+    model_config = ConfigDict(ignored_types=(cached_property,))
 
     @classmethod
     def from_artifacts(cls, artifacts: Iterable[ArtifactInfo]) -> "ArtifactReport":
@@ -79,13 +85,10 @@ class ArtifactReport(BaseModel):
         ArtifactReport
             A report with the given artifacts.
         """
-        return cls.construct(artifacts=artifacts)
+        return cls.model_construct(artifacts=artifacts)
 
     def __bool__(self) -> bool:
         return bool(self.artifacts)
-
-    def __iter__(self) -> Iterable[ArtifactInfo]:
-        return iter(self.artifacts)
 
     def __len__(self) -> int:
         return len(self.artifacts)

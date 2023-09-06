@@ -1,22 +1,31 @@
 """Tests for rich rendering of models."""
+from __future__ import annotations
 
 from datetime import timedelta
 from typing import Union
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given
+from hypothesis import HealthCheck
+from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_mock import MockerFixture
-from rich.console import Console, Group
+from rich.console import Console
+from rich.console import Group
 from rich.panel import Panel
 from rich.table import Table
 
+from ..strategies.artifact import artifact_strategy
+from ..strategies.artifact import get_hbv_strategy
+from ..strategies.ext import artifact_info_strategy
+from ..strategies.ext import artifact_report_strategy
 from harborapi.ext.api import ArtifactInfo
 from harborapi.ext.report import ArtifactReport
-from harborapi.models import Artifact, HarborVulnerabilityReport, Tag
+from harborapi.models import Artifact
+from harborapi.models import HarborVulnerabilityReport
+from harborapi.models import Tag
 from harborapi.models.base import BaseModel
-
-from ..strategies.artifact import artifact_strategy, get_hbv_strategy
-from ..strategies.ext import artifact_info_strategy, artifact_report_strategy
 
 # Ideally we should test all models here, but that's a lot of work.
 # We'll just test a few for now.
@@ -43,14 +52,27 @@ def test_rich_console_protocol(
     model: Union[Artifact, HarborVulnerabilityReport, ArtifactInfo, ArtifactReport],
 ) -> None:
     """Test that rich console protocol is implemented."""
-    console = Console()
+    # NOTE: we cannot use the mocker fixture from pytest-mock here, because
+    # it will not work with the @given decorator.
+    # The mocker fixture is not reset between examples and will cause
+    # the test to fail. So we have to manually set up the mocks.
+    #
+    # This also applies to test_render_table_full_mock()
 
-    assert model.__rich_console__ is not None
-    proto_spy = mocker.spy(model, "__rich_console__")
-    panel_spy = mocker.spy(model, "as_panel")
-    console.print(model)
-    proto_spy.assert_called()
-    panel_spy.assert_called()
+    console = Console()
+    proto_mock = MagicMock()
+    panel_mock = MagicMock()
+
+    with patch(
+        f"{model.__class__.__module__}.{model.__class__.__name__}.__rich_console__",
+        proto_mock,
+    ), patch(
+        f"{model.__class__.__module__}.{model.__class__.__name__}.as_panel", panel_mock
+    ):
+        # Check our spies
+        console.print(model)
+        proto_mock.assert_called_once()
+        panel_mock.assert_not_called()
 
 
 def test_as_table_artifact() -> None:

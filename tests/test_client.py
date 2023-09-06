@@ -1,28 +1,31 @@
+from __future__ import annotations
+
 from pathlib import Path
 from typing import Optional
 
 import pytest
 from httpx import HTTPStatusError
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given
+from hypothesis import HealthCheck
+from hypothesis import settings
 from pydantic import ValidationError
 from pytest_httpserver import HTTPServer
 from pytest_mock import MockerFixture
 
+from .strategies import errors_strategy
 from harborapi.auth import HarborAuthFile
 from harborapi.client import HarborAsyncClient
-from harborapi.exceptions import (
-    BadRequest,
-    Forbidden,
-    InternalServerError,
-    NotFound,
-    PreconditionFailed,
-    StatusError,
-    Unauthorized,
-)
-from harborapi.models import Error, Errors, UserResp
+from harborapi.exceptions import BadRequest
+from harborapi.exceptions import Forbidden
+from harborapi.exceptions import InternalServerError
+from harborapi.exceptions import NotFound
+from harborapi.exceptions import PreconditionFailed
+from harborapi.exceptions import StatusError
+from harborapi.exceptions import Unauthorized
+from harborapi.models import Error
+from harborapi.models import Errors
+from harborapi.models import UserResp
 from harborapi.utils import get_basicauth
-
-from .strategies import errors_strategy
 
 
 # TODO: parametrize this to test both clients
@@ -556,7 +559,7 @@ async def test_get_errors(
 ):
     """Tests handling of data from the server that does not match the schema."""
     httpserver.expect_oneshot_request("/api/v2.0/errorpath").respond_with_json(
-        errors.dict(), status=500
+        errors.model_dump_json(), status=500
     )
 
     async_client.url = httpserver.url_for("/api/v2.0")
@@ -672,7 +675,7 @@ def test_authenticate(
                 name="credentials_username",
                 secret="credentials_secret",
             )
-            f.write(h.json())
+            f.write(h.model_dump_json())
 
     client.authenticate(
         url=url,

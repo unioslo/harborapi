@@ -5,12 +5,20 @@ Support for printing the models as Rich tables is added through the
 use of the special `__rich_console__` method. See the Rich documentation
 for more information: <https://rich.readthedocs.io/en/latest/protocol.html#console-render/>.
 """
+from __future__ import annotations
 
-from typing import Any, Iterable, List, Optional, Type, TypeVar
+from typing import Any
+from typing import Iterable
+from typing import List
+from typing import Optional
+from typing import Type
+from typing import TypeVar
 
 from pydantic import BaseModel as PydanticBaseModel
-from pydantic import validator
-from pydantic.fields import ModelField
+from pydantic import ConfigDict
+from pydantic import field_validator
+from pydantic import FieldValidationInfo
+from pydantic import RootModel as PydanticRootModel
 
 # fmt: off
 try:
@@ -38,48 +46,43 @@ DEPTH_TITLE_COLORS = {
 _strbool_field_phrases = ['"true"', '"false"']
 
 
-def convert_bool_to_lower_str_field(
-    cls: Type["BaseModel"],
-    value: Any,
-    field: ModelField,
-) -> Any:
-    """Harbor API has some models where the accepted values are 'true' and 'false',
-    for fields that have a string type. This validator converts bool arguments
-    to the correct string values.
-
-    Pydantic has built-in conversion from bool to str, but it yields
-    'True' and 'False' instead of 'true' and 'false'.
-
-    Furthermore, this validator only converts the values if the field
-    description contains the phrases '"true"' and '"false"' (with quotes).
-    """
-    # NOTE: we can restrict this validator to a subset of models if needed.
-    # For now, we apply it to all models in case the API changes in the future.
-
-    if field.field_info.description is None:
-        return value
-
-    # We can only convert bools
-    if not isinstance(value, bool):
-        return value
-
-    # NOTE: change to any()?
-    if all(phrase in field.field_info.description for phrase in _strbool_field_phrases):
-        return str(value).lower()
-    return value
+class RootModel(PydanticRootModel):
+    model_config = ConfigDict(validate_assignment=True)
 
 
 class BaseModel(PydanticBaseModel):
-    class Config:
-        # Account for additions to the spec
-        # These fields will not be validated however
-        extra = "allow"
-        validate_assignment = True
+    model_config = ConfigDict(extra="allow", validate_assignment=True, strict=False)
 
     # Validators
-    _bool_converter = validator("*", pre=True, allow_reuse=True)(
-        convert_bool_to_lower_str_field
-    )
+    @field_validator("*", mode="before")
+    @classmethod
+    def convert_bool_to_lower_str_field(
+        cls: Type["PydanticBaseModel"],
+        v: Any,
+        info: FieldValidationInfo,
+    ) -> Any:
+        """Harbor API has some models where the accepted values are 'true' and 'false',
+        for fields that have a string type. This validator converts bool arguments
+        to the correct string values.
+
+        Pydantic has built-in conversion from bool to str, but it yields
+        'True' and 'False' instead of 'true' and 'false'.
+
+        Furthermore, this validator only converts the values if the field
+        description contains the phrases '"true"' and '"false"' (with quotes).
+        """
+        # NOTE: we can restrict this validator to a subset of models if needed.
+        # For now, we apply it to all models in case the API changes in the future.
+        # We can only convert bools
+        if not isinstance(v, bool):
+            return v
+        field = cls.model_fields[info.field_name]
+
+        if not field.description or not all(
+            phrase in field.description for phrase in _strbool_field_phrases
+        ):
+            return v
+        return str(v).lower()
 
     # The __rich* properties are only used by methods defined when Rich
     # is installed, but they are defined here, so that static typing works
@@ -127,8 +130,8 @@ class BaseModel(PydanticBaseModel):
         if extra:
             include = None
         else:
-            include = model.__fields__.keys()
-        return model.parse_obj(self.dict(include=include))
+            include = model.model_fields.keys()
+        return model.model_validate(self.model_dump(include=include))
 
     @classmethod
     def get_model_fields(cls) -> List[str]:
@@ -139,7 +142,7 @@ class BaseModel(PydanticBaseModel):
         List[str]
             The names of the model's fields.
         """
-        return list(cls.__fields__.keys())
+        return list(cls.model_fields.keys())
 
     if rich_installed:
 
@@ -249,20 +252,20 @@ class BaseModel(PydanticBaseModel):
                 return pfield
 
             # Iterate over __dict__, but try to get the field values from the
-            # __fields__ dict since it contains more metadata.
+            # model_fields dict since it contains more metadata.
             # We iterate over __dict__ to account for fields that are not
             # defined in the model, but are added dynamically ("extra" fields).
             # Extra fields do not show up in __fields__, hence we use __dict__.
-            for field_name, value in self.__dict__.items():
+            for field_name, value in self:
                 # Prioritize getting field info from __fields__ dict
                 # since this dict contains more metadata for the field
-                field = self.__fields__.get(field_name)
+                field = self.model_fields.get(field_name)
                 if field is not None:
                     # Try to use field title if available
-                    field_title = str(field.field_info.title or field_name)
+                    field_title = str(field.title or field_name)
                     # Get the field value
                     value = getattr(self, field_name)
-                    description = str(field.field_info.description) or ""
+                    description = str(field.description) or ""
                 else:
                     # If the field was not found in __fields__, then it is an
                     # "extra" field that is not a part of the model spec.

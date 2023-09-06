@@ -1,6 +1,10 @@
+from __future__ import annotations
+
 import asyncio
 
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given
+from hypothesis import HealthCheck
+from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
@@ -18,7 +22,7 @@ def test_get_users_mock_sync(httpserver: HTTPServer, user: UserResp):
     httpserver.expect_oneshot_request(
         "/api/v2.0/users/1234",
         method="GET",
-    ).respond_with_data(user.json(), content_type="application/json")
+    ).respond_with_data(user.model_dump_json(), content_type="application/json")
     client = HarborClient(
         url=httpserver.url_for("/api/v2.0"),
         username="username",
