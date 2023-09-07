@@ -267,12 +267,8 @@ class BaseModel(PydanticBaseModel):
                 subtables.append(submodel_table)
                 return pfield
 
-            # Iterate over __dict__, but try to get the field values from the
-            # model_fields dict since it contains more metadata.
-            # We iterate over __dict__ to account for fields that are not
-            # defined in the model, but are added dynamically ("extra" fields).
-            # Extra fields do not show up in __fields__, hence we use __dict__.
-            for field_name, value in self:
+            # Iterate over self to get model fields + extra fields
+            for field_name, value in super(BaseModel, self).__iter__():
                 # Prioritize getting field info from __fields__ dict
                 # since this dict contains more metadata for the field
                 field = self.model_fields.get(field_name)
@@ -283,20 +279,10 @@ class BaseModel(PydanticBaseModel):
                     value = getattr(self, field_name)
                     description = str(field.description) or ""
                 else:
-                    # If the field was not found in __fields__, then it is an
-                    # "extra" field that is not a part of the model spec.
-                    # We still want to print it, but we don't have any metadata
-                    # for it, so we just print the field name and value.
-                    # We can never have a description for these fields.
                     field_title = field_name
                     description = ""
 
                 submodels = []  # type: Iterable[BaseModel]
-
-                # Check if we are dealing with a nested model or list of nested models
-                # In that case, we need to recurse and fetch the nested model table(s).
-                # We don't print them right away, but instead store them in the subtables
-                # list, which we yield at the end (after the main table).
                 if isinstance(value, BaseModel):
                     submodels = [value]
                 elif isinstance(value, Iterable):
@@ -311,6 +297,7 @@ class BaseModel(PydanticBaseModel):
                     # It's likely this is NOT a generator, but we don't want to
                     # assume that.
                     submodels = list(submodels)
+                    table_title = ""
                     for submodel in submodels:
                         table_title = add_submodel_table(field_title, submodel)
                     value = f"[bold]See below ({table_title})[/bold]"
