@@ -288,15 +288,6 @@ def _get_class_base_name(classdef: ast.ClassDef) -> str | None:
     return None
 
 
-def both_rootmodels(classdef1: ast.ClassDef, classdef2: ast.ClassDef) -> bool:
-    """Checks if both classdefs are root models.
-    NOTE: Only supports RootModel as the first and only base."""
-    return all(
-        name == "RootModel"
-        for name in [_get_class_base_name(classdef1), _get_class_base_name(classdef2)]
-    )
-
-
 def fix_rootmodel_base(classdef: ast.ClassDef) -> ast.ClassDef:
     # Already has a base that is a RootModel with subscript
     # Not touching this.
@@ -331,9 +322,8 @@ def insert_or_update_classdefs(
         if node.name in classdefs:
             classdef = classdefs[node.name]
             for class_stmt in classdef.body:
-                if isinstance(class_stmt, ast.Pass):
-                    continue
-                node.body.append(class_stmt)
+                if not isinstance(class_stmt, ast.Pass):
+                    node.body.append(class_stmt)
             updated.add(node.name)
         if _get_class_base_name(node) == "RootModel":
             fix_rootmodel_base(node)
