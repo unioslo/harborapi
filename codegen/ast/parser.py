@@ -231,7 +231,16 @@ models: dict[str, dict[str, list[Modifier]]] = {
     },
     FragmentDir.main: {
         "ProjectMetadata": [Annotation("retention_id", "Optional[Union[str, int]]")],
-        "ExtraAttrs": [Annotation("root", "Optional[Dict[str, Any]]")],
+        "ExtraAttrs": [
+            Annotation(
+                "root", "Optional[Dict[str, Any]]"
+            )  # Reason: root is not a dict of dicts
+        ],
+        "QuotaRefObject": [
+            Annotation(
+                "root", "Optional[Dict[str, Any]]"
+            )  # Reason: root is not a dict of dicts
+        ],
         "Error": [Docstring("Error response from Harbor.")],
         "ScanOverview": [Docstring("Overview of scan results.")],
         "VulnerabilitySummary": [

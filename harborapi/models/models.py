@@ -133,8 +133,8 @@ class Tag(BaseModel):
     )
 
 
-class ExtraAttrs(RootModel[Optional[Dict[str, Dict[str, Any]]]]):
-    root: Optional[Dict[str, Dict[str, Any]]] = None
+class ExtraAttrs(RootModel[Optional[Dict[str, Any]]]):
+    root: Optional[Dict[str, Any]] = None
 
 
 class Annotations(RootModel[Optional[Dict[str, str]]]):
@@ -829,8 +829,8 @@ class QuotaUpdateReq(BaseModel):
     hard: Optional[ResourceList] = None
 
 
-class QuotaRefObject(RootModel[Optional[Dict[str, Dict[str, Any]]]]):
-    root: Optional[Dict[str, Dict[str, Any]]] = None
+class QuotaRefObject(RootModel[Optional[Dict[str, Any]]]):
+    root: Optional[Dict[str, Any]] = None
 
 
 class Quota(BaseModel):
