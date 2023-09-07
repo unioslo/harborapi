@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Dict
 from typing import Final
+from typing import List
+from typing import Tuple
 
 
 class Severity(Enum):
