@@ -73,11 +73,12 @@ genapi = "./codegen/generate.sh"
 
 [tool.hatch.envs.docs]
 dependencies = [
-  "mkdocs",
-  "mkdocs-material",
-  "mkdocstrings[python]",
-  "mkdocs-exclude-search",
-  "rich",
+  "mkdocs>=1.5.2",
+  "mkdocs-material>=9.2.8",
+  "mkdocstrings>=0.23.0",
+  "mkdocstrings-python>=1.6.2",
+  "mkdocs-exclude-search>=0.6.5",
+  "rich>=13.5.2",
 ]
 [tool.hatch.envs.docs.scripts]
 build = "mkdocs build --clean --strict"
