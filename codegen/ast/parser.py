@@ -113,9 +113,29 @@ class Field(Modifier):
 
     def modify(self, node: ast.ClassDef) -> ast.ClassDef:
         # TODO: support order of insertion
-        # for now, we just insert at the end
-        node.body.append(self.construct_field())
+        # Check if field exists, and replace it if it does
+        for i, stmt in enumerate(node.body):
+            if (
+                isinstance(stmt, ast.AnnAssign)
+                and getattr(stmt.target, "id", None) == self.name
+            ):
+                node.body[i] = self.construct_field()
+                break
+        else:
+            # Otherwise, append it to the end
+            node.body.append(self.construct_field())
         return node
+
+    def construct_kwargs(self) -> list[ast.keyword]:
+        kwargs = []
+        for arg, value in self.field_kwargs.items():
+            if isinstance(value, (str, int, float, bool)) or value is None:
+                kwargs.append(ast.keyword(arg=arg, value=ast.Constant(value=value)))
+            elif isinstance(value, ast.keyword):
+                kwargs.append(value)
+            else:
+                raise ValueError(f"Invalid keyword value: {value}")
+        return kwargs
 
     def construct_field(self) -> ast.AnnAssign:
         args = []
@@ -127,10 +147,7 @@ class Field(Modifier):
                 id="Field",
                 ctx=ast.Load(),
             ),
-            keywords=[
-                ast.keyword(arg=arg, value=ast.Constant(value=value))
-                for arg, value in self.field_kwargs.items()
-            ],
+            keywords=self.construct_kwargs(),
         )
         return ast.AnnAssign(
             target=ast.Name(id=self.name, ctx=ast.Store()),
