@@ -23,4 +23,4 @@ asyncio.run(main())
 
 For a full list of implemented endpoints on `HarborAsyncClient`, check out the [Endpoints](../endpoints/index.md) page. If you're new to asyncio, you can find a good introduction in the [FastAPI package's docs](https://fastapi.tiangolo.com/async/#async-and-await). You can also find more examples in the [Recipes](../recipes/index.md) page. Lastly, the [offical Python asyncio documentation](https://docs.python.org/3/library/asyncio.html) contains the complete reference for the `asyncio` module as well as examples of how it's used.
 
-There are several ways to authenticate with the Harbor API, and they are documented on the [Authentication](authentication.md) page. The [Methods](methods) page shows basic usage of the different types of methods exposed by the client object.
+There are several ways to authenticate with the Harbor API, and they are documented on the [Authentication](authentication.md) page. The [Methods](./methods/index.md) page shows basic usage of the different types of methods exposed by the client object.

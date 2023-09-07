@@ -2,7 +2,7 @@
 
 Methods that create and update resources make use of [Pydantic](https://docs.pydantic.dev/) models that have been generated from the official [Harbor REST API Swagger schema](https://github.com/goharbor/harbor/blob/main/api/v2.0/swagger.yaml).
 
-The endpoint methods themselves have no parameters beyond the single model instance that is passed as the request body. This is done so that models can be updated in the future without breaking the methods that use them. We are at all times beholden to the official Swagger schema, and the models are generated from that schema. To see how to disable this validation and pass arbitrary data to the API, see the [Validation](./validation.md/#validation) page.
+The endpoint methods themselves have no parameters beyond the single model instance that is passed as the request body. This is done so that models can be updated in the future without breaking the methods that use them. We are at all times beholden to the official Swagger schema, and the models are generated from that schema. To see how to disable this validation and pass arbitrary data to the API, see the [Validation](../validation.md) page.
 
 ## Create
 
@@ -125,7 +125,7 @@ ProjectReq(
 This is because Pydantic knows which fields have been set and which have not on the model instance, and only serializes the fields that have been set. This way, we ensure that we don't send any data the user hasn't explicitly set.
 
 !!! note
-    The reason for `"auto_scan": "true"` instead of `"auto_scan": true` can be found [here](../../models/#string-fields-with-true-and-false-values-in-api-spec).
+    The reason for `"auto_scan": "true"` instead of `"auto_scan": true` can be found [here](../models.md#string-fields-with-true-and-false-values-in-api-spec).
 
 Despite this behavior, it _might_ a good idea to pass the full resource definition to the `update_*` methods, as the support for partial updates through the API may change in the future independently of this library without notice. The following sections demonstrate how to do this.
 
@@ -135,7 +135,7 @@ Despite this behavior, it _might_ a good idea to pass the full resource definiti
 As outlined in [Update](#update), `update_*` methods expect subtly different models from the ones returned by `get_*` methods. By using the method [`convert_to()`][harborapi.models.base.BaseModel.convert_to] which is available on all models, we can easily convert a model we receive from a `get_*` method to the model type that the corresponding `update_*` method expects.
 
 The method expects a model type as its first argument, and returns an instance of that model type:
-
+../../reference/index.md'
 ```py
 from harborapi.models import Project, ProjectReq
 

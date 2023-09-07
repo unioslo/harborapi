@@ -20,7 +20,7 @@ We'll look at some of these features later, but first, let's look at how the mod
 
 ## Using models returned by the API
 
-When calling a GET endpoint with a `get_*` method, we usually get a model instance back. For example, when calling the [`get_project`](../methods/get.md/#get_project) method, we get a [`Project`](../models/project.md/#project) instance back:
+When calling a GET endpoint with a `get_*` method, we usually get a model instance back. For example, when calling the [`get_project`][harborapi.client.HarborAsyncClient.get_project] method, we get a [`Project`][harborapi.models.models.Project] instance back:
 
 ```py
 import asyncio
@@ -44,7 +44,7 @@ Also shown in the screenshot are the utility methods `json` and `dict`, which al
 
 ## Using models to create and update resources
 
-Similar to how the `get_*` methods _return_ models, the `create_*` and `update_*` methods _take_ models as arguments. For example, the [`create_project`](../methods/create-update.md/#create_project) method takes a [`ProjectReq`](../models/project.md/#projectreq) model as an argument:
+Similar to how the `get_*` methods _return_ models, the `create_*` and `update_*` methods _take_ models as arguments. For example, the [`create_project`][harborapi.client.HarborAsyncClient.create_project]method takes a [`ProjectReq`][harborapi.models.ProjectReq] model as an argument:
 
 ```py
 import asyncio
@@ -96,7 +96,7 @@ When assigning a value to a field, we can see the type of the field:
 
 ![IDE screenshot showing the type of a model field](../img/usage/models/autocomplete4.png)
 
-Certain models contain fields that are of a different model type. For example, the [`ProjectReq`][harborapi.models.ProjectReq] model has a field named `metadata` which expects a [`ProjectMetadata`](../models/project.md/#projectmetadata) instance. When assigning a value to such a field, we can see the type of the field:
+Certain models contain fields that are of a different model type. For example, the [`ProjectReq`][harborapi.models.ProjectReq] model has a field named `metadata` which expects a [`ProjectMetadata`][harborapi.models.ProjectMetadata] instance. When assigning a value to such a field, we can see the type of the field:
 
 ![IDE screenshot showing the type of a model field that is also a model](../img/usage/models/autocomplete5.png)
 
