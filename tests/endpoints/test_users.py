@@ -31,7 +31,7 @@ async def test_get_users_mock(
 ):
     httpserver.expect_oneshot_request(
         "/api/v2.0/users", method="GET"
-    ).respond_with_json([user1.dict(), user2.dict()])
+    ).respond_with_json([user1.model_dump(mode="json"), user2.model_dump(mode="json")])
     async_client.url = httpserver.url_for("/api/v2.0")
     users = await async_client.get_users()
     assert len(users) == 2
@@ -157,7 +157,9 @@ async def test_set_user_password_mock(
     httpserver.expect_oneshot_request(
         f"/api/v2.0/users/1234/password",
         method="PUT",
-        json=PasswordReq(new_password=new_password, old_password=old_password).dict(),
+        json=PasswordReq(
+            new_password=new_password, old_password=old_password
+        ).model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.set_user_password(1234, new_password, old_password)
@@ -174,7 +176,7 @@ async def test_create_user_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/users",
         method="POST",
-        json=user.dict(exclude_unset=True),
+        json=user.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data(status=201, headers={"Location": "/api/v2.0/users/1234"})
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.create_user(user)
@@ -192,7 +194,7 @@ async def test_update_user_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/users/1234",
         method="PUT",
-        json=user.dict(exclude_unset=True),
+        json=user.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data(status=200)
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.update_user(1234, user)

@@ -93,7 +93,7 @@ async def test_update_retention_policy_mock(
     httpserver.expect_oneshot_request(
         f"/api/v2.0/retentions/{policy_id}",
         method="PUT",
-        json=policy.dict(exclude_unset=True),
+        json=policy.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.update_retention_policy(policy_id, policy)

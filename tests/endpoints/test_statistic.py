@@ -1,5 +1,9 @@
+from __future__ import annotations
+
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given
+from hypothesis import HealthCheck
+from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
@@ -17,7 +21,7 @@ async def test_get_statistics_mock(
 ):
     httpserver.expect_oneshot_request(
         "/api/v2.0/statistics", method="GET"
-    ).respond_with_json(statistic.dict())
+    ).respond_with_json(statistic.model_dump(mode="json", exclude_unset=True))
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_statistics()
     assert resp == statistic

@@ -19,7 +19,7 @@ def _load_harbor_auth_file(path: Union[str, Path]) -> "HarborAuthFile":
         # parse without any guards against exceptions
         # pass the exception to the caller
         j = json.load(f)
-    return HarborAuthFile.parse_obj(j)
+    return HarborAuthFile.model_validate(j)
 
 
 def load_harbor_auth_file(path: Union[str, Path]) -> "HarborAuthFile":
@@ -129,7 +129,7 @@ def new_authfile_from_robot(
     --------
     [harborapi.auth.save_authfile][]
     """
-    authfile = HarborAuthFile.parse_obj(robot.dict())
+    authfile = HarborAuthFile.model_validate(robot.model_dump())
     authfile.secret = secret
     save_authfile(path, authfile, overwrite=overwrite)
 

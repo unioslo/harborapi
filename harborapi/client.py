@@ -409,9 +409,9 @@ class HarborAsyncClient:
     def _construct_model(self, cls: Type[T], data: Any, is_list: bool = False) -> T:
         try:
             if self.validate:
-                return cls.parse_obj(data)
+                return cls.model_validate(data)
             else:
-                return cls.construct(**data)
+                return cls.model_construct(**data)
         except ValidationError as e:
             logger.error("Failed to construct %s with %s", cls, data)
             raise e
@@ -4657,7 +4657,7 @@ class HarborAsyncClient:
 
         !!! note "Validation"
             To validate the metadata client-side before sending it, pass in
-            `ProjectMetadata(field_to_set=value).dict(exclude_unset=True)`
+            `ProjectMetadata(field_to_set=value).model_dump(exclude_unset=True)`
             as the `metadata` argument.
             This will ensure that the metadata is valid according to the
             current version of the API spec that this client is using.
@@ -4679,7 +4679,7 @@ class HarborAsyncClient:
         headers = get_project_headers(project_name_or_id)
         # Parse the metadata as a ProjectMetadata object
         # to ensure that it's valid according to the API spec.
-        m = ProjectMetadata.parse_obj(metadata)
+        m = ProjectMetadata.model_validate(metadata)
         await self.put(
             f"/projects/{project_name_or_id}/metadatas/{metadata_name}",
             json=m,

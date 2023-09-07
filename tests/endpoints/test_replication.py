@@ -146,7 +146,7 @@ async def test_create_replication_policy(
     httpserver.expect_oneshot_request(
         "/api/v2.0/replication/policies",
         method="POST",
-        json=policy.dict(exclude_unset=True),
+        json=policy.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data(
         headers={
             "Location": "http://localhost:8080/api/v2.0/replication/policies/1234"
@@ -169,7 +169,7 @@ async def test_update_replication_policy(
     httpserver.expect_oneshot_request(
         "/api/v2.0/replication/policies/1234",
         method="PUT",
-        json=policy.dict(exclude_unset=True),
+        json=policy.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.update_replication_policy(1234, policy)

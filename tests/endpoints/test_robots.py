@@ -33,7 +33,7 @@ async def test_create_robot_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/robots",
         method="POST",
-        json=robot.dict(exclude_unset=True),
+        json=robot.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data(
         robot_created.model_dump_json(), content_type="application/json"
     )
@@ -53,7 +53,7 @@ async def test_create_robot_empty_response_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/robots",
         method="POST",
-        json=robot.dict(exclude_unset=True),
+        json=robot.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data("{}", content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
     with pytest.raises(HarborAPIException) as exc_info:
@@ -150,7 +150,7 @@ async def test_update_robot_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/robots/1234",
         method="PUT",
-        json=robot.dict(exclude_unset=True),
+        json=robot.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.update_robot(1234, robot)
@@ -180,7 +180,7 @@ async def test_refresh_robot_secret_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/robots/1234",
         method="PATCH",
-        json=expected_resp.dict(),
+        json=expected_resp.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data(
         expected_resp.model_dump_json(), content_type="application/json"
     )

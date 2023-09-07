@@ -29,7 +29,7 @@ async def test_check_registry_status_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/registries/ping",
         method="POST",
-        json=ping.dict(exclude_unset=True),
+        json=ping.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.check_registry_status(ping)
@@ -61,7 +61,7 @@ async def test_get_registry_info_mock(
 ):
     httpserver.expect_oneshot_request(
         "/api/v2.0/registries/123/info", method="GET"
-    ).respond_with_json(registryinfo.dict())
+    ).respond_with_json(registryinfo.model_dump(mode="json", exclude_unset=True))
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.get_registry_info(123)
 
@@ -94,7 +94,9 @@ async def test_update_registry_mock(
     registry: RegistryUpdate,
 ):
     httpserver.expect_oneshot_request(
-        "/api/v2.0/registries/123", method="PUT", json=registry.dict(exclude_unset=True)
+        "/api/v2.0/registries/123",
+        method="PUT",
+        json=registry.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.update_registry(123, registry)
@@ -110,7 +112,7 @@ async def test_get_registry_mock(
 ):
     httpserver.expect_oneshot_request(
         "/api/v2.0/registries/123", method="GET"
-    ).respond_with_json(registry.dict())
+    ).respond_with_json(registry.model_dump(mode="json", exclude_unset=True))
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_registry(123)
     assert resp == registry
@@ -138,7 +140,9 @@ async def test_create_registry_mock(
     registry: Registry,
 ):
     httpserver.expect_oneshot_request(
-        "/api/v2.0/registries", method="POST", json=registry.dict(exclude_unset=True)
+        "/api/v2.0/registries",
+        method="POST",
+        json=registry.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data(headers={"Location": "/api/v2.0/registries/123"})
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.create_registry(registry)

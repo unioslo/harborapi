@@ -28,7 +28,7 @@ def _override_compat_check(modified: BaseModel, generated: BaseModel) -> None:
     test should generally pass. In cases where the field type is changed
     in a non-compatible way, this test will fail and should not be invoked."""
     # we need to serialize by alias, since we can't populate by alias
-    m = modified.parse_obj(generated.dict(by_alias=True))
+    m = modified.model_validate(generated.model_dump(by_alias=True))
     assert m == generated
 
 

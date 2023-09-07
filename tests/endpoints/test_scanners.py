@@ -78,7 +78,7 @@ async def test_get_scanner_metadata_mock(
 ):
     httpserver.expect_oneshot_request(
         "/api/v2.0/scanners/1234/metadata"
-    ).respond_with_json(scannermeta.dict())
+    ).respond_with_json(scannermeta.model_dump(mode="json", exclude_unset=True))
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_scanner_metadata(registration_id=1234)
     assert resp == scannermeta
@@ -130,7 +130,9 @@ async def test_set_default_scanner_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/scanners/1234",
         method="PATCH",
-        json=IsDefault(is_default=is_default).dict(),
+        json=IsDefault(is_default=is_default).model_dump(
+            mode="json", exclude_unset=True
+        ),
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.set_default_scanner(1234, is_default)

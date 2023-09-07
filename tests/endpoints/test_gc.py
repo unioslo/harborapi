@@ -67,7 +67,7 @@ async def test_update_gc_schedule_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/system/gc/schedule",
         method="PUT",
-        json=schedule.dict(exclude_unset=True),
+        json=schedule.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
     await async_client.update_gc_schedule(schedule)
 

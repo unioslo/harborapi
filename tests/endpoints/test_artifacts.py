@@ -200,26 +200,22 @@ async def test_get_artifact_accessories_mock(
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("status_code", [200, 404])
-@pytest.mark.parametrize("missing_ok", [True, False])
 async def test_delete_artifact_tag(
     async_client: HarborAsyncClient,
     httpserver: HTTPServer,
     status_code: int,
-    missing_ok: bool,
 ):
     httpserver.expect_oneshot_request(
         "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/tags/123",
         method="DELETE",
     ).respond_with_data(status=status_code)
     async_client.url = httpserver.url_for("/api/v2.0")
-    if status_code == 404 and not missing_ok:
+    if status_code == 404:
         ctx = pytest.raises(StatusError)
     else:
         ctx = nullcontext()  # type: ignore
     with ctx:
-        await async_client.delete_artifact_tag(
-            "testproj", "testrepo", "latest", "123", missing_ok=missing_ok
-        )
+        await async_client.delete_artifact_tag("testproj", "testrepo", "latest", "123")
 
 
 @pytest.mark.asyncio
@@ -328,12 +324,10 @@ async def test_get_artifact_mock(
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("missing_ok", [True, False])
 @pytest.mark.parametrize("status_code", [200, 404])
 async def test_delete_artifact_mock(
     async_client: HarborAsyncClient,
     httpserver: HTTPServer,
-    missing_ok: bool,
     status_code: int,
 ):
     httpserver.expect_oneshot_request(
@@ -344,23 +338,19 @@ async def test_delete_artifact_mock(
     )
 
     async_client.url = httpserver.url_for("/api/v2.0")
-    if status_code == 404 and not missing_ok:
+    if status_code == 404:
         ctx = pytest.raises(StatusError)
     else:
         ctx = nullcontext()  # type: ignore
     with ctx:
-        await async_client.delete_artifact(
-            "testproj", "testrepo", "latest", missing_ok=missing_ok
-        )
+        await async_client.delete_artifact("testproj", "testrepo", "latest")
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("missing_ok", [True, False])
 @pytest.mark.parametrize("status_code", [200, 404])
 async def test_delete_artifact_label_mock(
     async_client: HarborAsyncClient,
     httpserver: HTTPServer,
-    missing_ok: bool,
     status_code: int,
 ):
     httpserver.expect_oneshot_request(
@@ -371,11 +361,9 @@ async def test_delete_artifact_label_mock(
     )
 
     async_client.url = httpserver.url_for("/api/v2.0")
-    if status_code == 404 and not missing_ok:
+    if status_code == 404:
         ctx = pytest.raises(StatusError)
     else:
         ctx = nullcontext()  # type: ignore
     with ctx:
-        await async_client.delete_artifact_label(
-            "testproj", "testrepo", "latest", 123, missing_ok=missing_ok
-        )
+        await async_client.delete_artifact_label("testproj", "testrepo", "latest", 123)

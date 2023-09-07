@@ -306,8 +306,8 @@ async def test_get_pagination_invalid_mock(
 @pytest.mark.asyncio
 async def test_construct_model(async_client: HarborAsyncClient, mocker: MockerFixture):
     c = async_client
-    construct_spy = mocker.spy(UserResp, "construct")
-    parse_spy = mocker.spy(UserResp, "parse_obj")
+    construct_spy = mocker.spy(UserResp, "model_construct")
+    parse_spy = mocker.spy(UserResp, "model_validate")
 
     # TODO: test create_model with all models
     m = c.construct_model(UserResp, {"username": "user1"})
@@ -332,8 +332,8 @@ async def test_construct_model_no_validation(
 ):
     c = async_client
     c.validate = False
-    construct_spy = mocker.spy(UserResp, "construct")
-    parse_spy = mocker.spy(UserResp, "parse_obj")
+    construct_spy = mocker.spy(UserResp, "model_construct")
+    parse_spy = mocker.spy(UserResp, "model_validate")
 
     # Extra field "foo" is added to the model
     m = c.construct_model(UserResp, {"username": "user1", "foo": "bar"})
@@ -411,8 +411,8 @@ async def test_construct_model_raw(
 ):
     c = async_client
     c.raw = True
-    construct_spy = mocker.spy(UserResp, "construct")
-    parse_spy = mocker.spy(UserResp, "parse_obj")
+    construct_spy = mocker.spy(UserResp, "model_construct")
+    parse_spy = mocker.spy(UserResp, "model_validate")
 
     # Extra field "foo" is added to the model
     expect_resp = {"username": "user1", "foo": "bar"}
@@ -431,8 +431,8 @@ async def test_construct_model_raw_is_list(
 ):
     c = async_client
     c.raw = True
-    construct_spy = mocker.spy(UserResp, "construct")
-    parse_spy = mocker.spy(UserResp, "parse_obj")
+    construct_spy = mocker.spy(UserResp, "model_construct")
+    parse_spy = mocker.spy(UserResp, "model_validate")
 
     expect_resp = [{"username": "user1", "foo": "bar"}, {"username": "user2"}]
     m = c.construct_model(UserResp, expect_resp, is_list=True)
@@ -454,8 +454,8 @@ async def test_construct_model_raw_list_without_is_list(
     """
     c = async_client
     c.raw = True
-    construct_spy = mocker.spy(UserResp, "construct")
-    parse_spy = mocker.spy(UserResp, "parse_obj")
+    construct_spy = mocker.spy(UserResp, "model_construct")
+    parse_spy = mocker.spy(UserResp, "model_validate")
 
     expect_resp = [{"username": "user1", "foo": "bar"}, {"username": "user2"}]
     m = c.construct_model(UserResp, expect_resp, is_list=False)
@@ -477,8 +477,8 @@ async def test_construct_model_raw_is_list_without_list(
     """
     c = async_client
     c.raw = True
-    construct_spy = mocker.spy(UserResp, "construct")
-    parse_spy = mocker.spy(UserResp, "parse_obj")
+    construct_spy = mocker.spy(UserResp, "model_construct")
+    parse_spy = mocker.spy(UserResp, "model_validate")
 
     expect_resp = {"username": "user1", "foo": "bar"}
     m = c.construct_model(UserResp, expect_resp, is_list=True)

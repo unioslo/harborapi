@@ -43,7 +43,7 @@ async def test_set_project_metadata_mock(
     httpserver.expect_oneshot_request(
         f"/api/v2.0/projects/{project_name_or_id}/metadatas",
         method="POST",
-        json=metadata.dict(exclude_unset=True),
+        json=metadata.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.set_project_metadata(project_name_or_id, metadata)

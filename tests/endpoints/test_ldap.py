@@ -30,7 +30,7 @@ async def test_ping_ldap_with_config_mock(
     httpserver.expect_oneshot_request(
         f"/api/v2.0/ldap/ping",
         method="POST",
-        json=config.dict(exclude_unset=True),
+        json=config.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data(result.model_dump_json(), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.ping_ldap(config)

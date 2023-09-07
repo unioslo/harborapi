@@ -45,7 +45,7 @@ async def test_update_label_mock(
     httpserver.expect_oneshot_request(
         f"/api/v2.0/labels/{label_id}",
         method="PUT",
-        json=label.dict(exclude_unset=True),
+        json=label.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.update_label(123, label)
@@ -64,7 +64,7 @@ async def test_create_label_mock(
     httpserver.expect_oneshot_request(
         f"/api/v2.0/labels",
         method="POST",
-        json=label.dict(exclude_unset=True),
+        json=label.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data(headers={"Location": expect_location})
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.create_label(label)

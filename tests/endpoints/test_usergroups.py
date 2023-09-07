@@ -47,7 +47,7 @@ async def test_create_usergroup_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/usergroups",
         method="POST",
-        json=usergroup.dict(exclude_unset=True),
+        json=usergroup.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data(
         headers={"Location": expect_location},
         status=201,
@@ -68,7 +68,7 @@ async def test_update_usergroup_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/usergroups/123",
         method="PUT",
-        json=usergroup.dict(exclude_unset=True),
+        json=usergroup.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
     await async_client.update_usergroup(123, usergroup)
 
