@@ -32,3 +32,16 @@ SEVERITY_PRIORITY: Final[Dict[Severity, int]] = {
     Severity.critical: 6,
 }
 """The priority of severity levels, from lowest to highest. Used for sorting."""
+
+
+def most_severe(severities: Iterable[Severity]) -> Severity:
+    """Returns the highest severity in a list of severities."""
+    return max(severities, key=lambda x: SEVERITY_PRIORITY[x], default=Severity.unknown)
+
+
+def sort_distribution(distribution: "Counter[Severity]") -> List[Tuple[Severity, int]]:
+    """Turn a counter of Severities into a sorted list of (severity, count) tuples."""
+    return [
+        (k, v)
+        for k, v in sorted(distribution.items(), key=lambda x: SEVERITY_PRIORITY[x[0]])
+    ]
