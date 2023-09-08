@@ -14,20 +14,38 @@ While the project is still on major version 0, breaking changes may be introduce
 
 ## Unreleased
 
-The big Pydantic V2 update. This is a major update, and will be released as version 1.0.0. In general, a lot things have become more strict, and most models that used to accept both strings and ints for string fields now _only_ accept strings.
+The big Pydantic V2 update. This is a major update, and will be released as version 1.0.0. In general, a lot things have become more strict, and most models that used to accept both strings and ints for `str` fields now _only_ accept strings.
 
 ### Changed
 
-- `ProjectMetadata`
-   - `retention_id` now accepts both string and integer arguments. Band-aid fix until Harbor fixes their API spec and specifies that all retention IDs should be ints, not strings.
+- Models without fields now inherit from `pydantic.RootModel` and have a single field called `root`. These models have a special `__getitem__` method, so they can be accessed like a dict. Currently, these are:
+  - `harborapi.models.ExtraAttrs`
+  - `harborapi.models.Annotations`
+  - `harborapi.models.ResourceList`
+  - `harborapi.models.QuotaRefObject`
+  - `harborapi.models.EventType`
+  - `harborapi.models.NotifyType`
+  - `harborapi.models.PayloadFormatType`
+  - `harborapi.models.AdditionLinks`
+  - `harborapi.models.InternalConfigurationsResponse`
+  - `harborapi.models.ScanOverview`
+  - `harborapi.models.AdditionLinks`
 
-- `harborapi.ext.report.ArtifactReport`
+- `harborapi.models.ProjectMetadata`:
+  - `retention_id` now accepts both string and integer arguments. Band-aid fix until Harbor fixes their API spec and specifies that all retention IDs should be ints, not strings.
+- `harborapi.models.Artifact`:
+  - `scan_overview` is now a mapping of MIME types and their associated scan overview. Previously, we used some dirty metaprogramming to populate this field with the first scan overview found in the mapping. A new `scan` attribute has been added to access the first scan overview in the mapping, which is the same as the old behavior. This ensures serializing the model matches the original JSON from the API.
+- `harborapi.ext.report.ArtifactReport`:
   - No longer supports iteration directly on the object itself. Use the `artifacts` attribute instead.
 
+### Removed
+
+- `missing_ok` parameter for all relevant client methods.
 
 ### Deprecated
 
-- `harborapi.models._models` module. This module is no longer needed, as all the models are now defined in `harborapi.models.models`.
+- `harborapi.models._models` module. All main API spec models are now defined `harborapi.models.models`.
+- `harborapi.models._scanner` module. All scanner models are now defined in `harborapi.models.scanner`.
 
 
 ## [0.21.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.21.0) - 2023-06-08
