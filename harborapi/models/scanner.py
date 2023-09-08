@@ -19,12 +19,13 @@ from pydantic import ConfigDict
 from pydantic import Field
 from pydantic import field_validator
 from pydantic import FieldValidationInfo
-from pydantic import RootModel
 
 from ..log import logger
 from ..version import get_semver
 from ..version import SemVer
 from .base import BaseModel
+from .base import StrDictRootModel
+from .base import StrRootModel
 
 
 class Scanner(BaseModel):
@@ -48,7 +49,7 @@ class Scanner(BaseModel):
         return get_semver(self.version)
 
 
-class ScannerProperties(RootModel[Optional[Dict[str, str]]]):
+class ScannerProperties(StrDictRootModel[str]):
     """
     A set of custom properties that can further describe capabilities of a given scanner.
 
@@ -87,7 +88,7 @@ class ScannerCapability(BaseModel):
     )
 
 
-class ScanRequestId(RootModel[str]):
+class ScanRequestId(StrRootModel):
     root: str = Field(
         ...,
         description="A unique identifier returned by the [/scan](#/operation/AcceptScanRequest] operations. The format of the\nidentifier is not imposed but it should be unique enough to prevent collisons when polling for scan reports.\n",
@@ -478,10 +479,7 @@ class HarborVulnerabilityReport(BaseModel):
             A list of CVSS scores for each vulnerability.
         """
         return list(
-            filter(
-                None,
-                [v.get_cvss_score(self.scanner) for v in self.vulnerabilities],
-            )
+            filter(None, [v.get_cvss_score(self.scanner) for v in self.vulnerabilities])
         )
 
     def top_vulns(self, n: int = 5, fixable: bool = False) -> List[VulnerabilityItem]:

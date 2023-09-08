@@ -12,10 +12,11 @@ from typing import Union
 from pydantic import AnyUrl
 from pydantic import Field
 from pydantic import model_validator
-from pydantic import RootModel
 
 from ..log import logger
 from .base import BaseModel
+from .base import StrDictRootModel
+from .base import StrRootModel
 from .scanner import Severity
 
 
@@ -133,11 +134,11 @@ class Tag(BaseModel):
     )
 
 
-class ExtraAttrs(RootModel[Optional[Dict[str, Any]]]):
+class ExtraAttrs(StrDictRootModel[Any]):
     root: Optional[Dict[str, Any]] = None
 
 
-class Annotations(RootModel[Optional[Dict[str, str]]]):
+class Annotations(StrDictRootModel[str]):
     root: Optional[Dict[str, str]] = None
 
 
@@ -565,7 +566,7 @@ class FilterStyle(BaseModel):
     values: Optional[List[str]] = Field(None, description="The filter values")
 
 
-class ResourceList(RootModel[Optional[Dict[str, int]]]):
+class ResourceList(StrDictRootModel[int]):
     root: Optional[Dict[str, int]] = None
 
 
@@ -829,7 +830,7 @@ class QuotaUpdateReq(BaseModel):
     hard: Optional[ResourceList] = None
 
 
-class QuotaRefObject(RootModel[Optional[Dict[str, Any]]]):
+class QuotaRefObject(StrDictRootModel[Any]):
     root: Optional[Dict[str, Any]] = None
 
 
@@ -1080,17 +1081,17 @@ class UserGroupSearchItem(BaseModel):
     )
 
 
-class EventType(RootModel[str]):
+class EventType(StrRootModel):
     root: str = Field(
         ..., description="Webhook supported event type.", example="PULL_ARTIFACT"
     )
 
 
-class NotifyType(RootModel[str]):
+class NotifyType(StrRootModel):
     root: str = Field(..., description="Webhook supported notify type.", example="http")
 
 
-class PayloadFormatType(RootModel[str]):
+class PayloadFormatType(StrRootModel):
     root: str = Field(
         ..., description="The type of webhook paylod format.", example="CloudEvents"
     )
@@ -1807,7 +1808,7 @@ class Errors(BaseModel):
     errors: Optional[List[Error]] = None
 
 
-class AdditionLinks(RootModel[Optional[Dict[str, AdditionLink]]]):
+class AdditionLinks(StrDictRootModel[AdditionLink]):
     root: Optional[Dict[str, AdditionLink]] = None
 
 
@@ -2089,9 +2090,7 @@ class SupportedWebhookEventTypes(BaseModel):
     payload_formats: Optional[List[PayloadFormat]] = None
 
 
-class InternalConfigurationsResponse(
-    RootModel[Optional[Dict[str, InternalConfigurationValue]]]
-):
+class InternalConfigurationsResponse(StrDictRootModel[InternalConfigurationValue]):
     root: Optional[Dict[str, InternalConfigurationValue]] = None
 
 
@@ -2209,7 +2208,7 @@ class SecuritySummary(BaseModel):
     )
 
 
-class ScanOverview(RootModel[Optional[Dict[str, NativeReportSummary]]]):
+class ScanOverview(StrDictRootModel[NativeReportSummary]):
     """Overview of scan results."""
 
     root: Optional[Dict[str, NativeReportSummary]] = None
@@ -2474,15 +2473,8 @@ class Artifact(BaseModel):
         return None
 
 
-class RegistryProviders(RootModel[Dict[str, RegistryProviderInfo]]):
+class RegistryProviders(StrDictRootModel[RegistryProviderInfo]):
     root: Dict[str, RegistryProviderInfo] = Field(
         {},
         description="The registry providers. Each key is the name of the registry provider.",
     )
-
-    @property
-    def providers(self) -> Dict[str, RegistryProviderInfo]:
-        return self.root
-
-    def __getitem__(self, key: str) -> RegistryProviderInfo:
-        return self.root[key]
