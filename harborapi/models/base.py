@@ -8,6 +8,7 @@ for more information: <https://rich.readthedocs.io/en/latest/protocol.html#conso
 from __future__ import annotations
 
 from typing import Any
+from typing import Dict
 from typing import Iterable
 from typing import List
 from typing import Optional
@@ -64,6 +65,29 @@ class RootModel(PydanticRootModel[T]):
 
     def __getitem__(self, item: Any) -> Any:
         return self.root[item]  # type: ignore # see comment
+
+
+class StrDictRootModel(RootModel[Optional[Dict[str, T]]]):
+    # All JSON keys are string, so the key type does need to be
+    # parameterized with a generic type.
+
+    def __iter__(self) -> Any:
+        # TODO: fix API spec so root  types can never be none, only
+        # the empty container. That way we can always iterate and access
+        # without checking for None.
+        if self.root is not None:
+            return iter(self.root)
+        return iter([])
+
+    def __getitem__(self, item: str) -> Optional[T]:
+        if self.root is not None:
+            return self.root[item]
+        return None
+
+
+class StrRootModel(RootModel[str]):
+    def __str__(self) -> str:
+        return str(self.root)
 
 
 class BaseModel(PydanticBaseModel):

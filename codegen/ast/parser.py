@@ -8,6 +8,10 @@ from pathlib import Path
 from typing import Any
 from typing import TypedDict
 
+from rich.console import Console
+
+err_console = Console(stderr=True)
+
 
 class FragmentDir(str, Enum):
     main = "main"
@@ -386,26 +390,123 @@ def _get_class_base_name(classdef: ast.ClassDef) -> str | None:
     return None
 
 
-def fix_rootmodel_base(classdef: ast.ClassDef) -> ast.ClassDef:
-    # Already has a base that is a RootModel with subscript
-    # Not touching this.
-    if not classdef.bases or isinstance(classdef.bases[0], ast.Subscript):
-        return classdef
+def get_rootmodel_type(classdef: ast.ClassDef) -> ast.expr:
+    """Using the root field, we can determine the type of the root model.
 
-    # Find the root field and use its annotation to construct the base
+    Example:
+
+    class Foo(RootModel): # lacks parametrized base
+        root: Dict[str, Any]
+
+    >>> get_rootmodel_type(<AST for Foo>)
+    # AST for Dict[str, Any]
+    """
     for node in classdef.body:
         if (
             isinstance(node, ast.AnnAssign)
             and getattr(node.target, "id", None) == "root"
         ):
-            classdef.bases = [
-                ast.Subscript(
-                    slice=node.annotation,
-                    value=ast.Name(id="RootModel"),
-                )
-            ]
-            break
-    return classdef
+            return node.annotation
+    raise ValueError(f"Class definition '{classdef.name}' does not have a root field.")
+
+
+def fix_rootmodel_base(classdef: ast.ClassDef) -> None:
+    """Adds the appropriate subclass as the base of a RootModel type.
+
+    Examples
+    --------
+
+    ```
+    class Foo(RootModel):
+        root: Dict[str, int]
+    # ->
+    class Foo(StrDictRootModel[int]):
+        root: Dict[str, int]
+    ```
+
+    Also works for str root models:
+    ```
+    class Bar(RootModel):
+        root: str
+    # ->
+    class Bar(StrRootModel):
+        root: str
+    ```
+
+    See also
+    --------
+    `harborapi.models.base.StrRootModel`
+    `harborapi.models.base.StrDictRootModel`
+    """
+    # Already has a base that is a RootModel with subscript
+    if not classdef.bases or isinstance(classdef.bases[0], ast.Subscript):
+        err_console.log(
+            f"[bold red]ERROR: Root model '{classdef.name}' has a parametrized RootModel base. "
+            "That means datamodel-codegen version has started adding bases to RootModels. "
+            "Check the generated code and update [green]fix_rootmodel_base()[/green] to reflect this.[/bold red]"
+        )
+
+    # Determine what sort of root model we are dealing with
+    root_type = get_rootmodel_type(classdef)
+    base = "RootModel"
+    vt = "Any"
+    # Root type is a string annotation
+    # e.g. root: "Dict[str, str]"
+    if isinstance(root_type, ast.Name):
+        # HACK: this will break for root models with more complicated signatures,
+        # but we are not dealing with that right now
+        if "Dict[str" in root_type.id:
+            base = "StrDictRootModel"
+            # HACK: create Python statement with the type annotation
+            # and then parse it to get the AST
+            # Say our annotation is `Dict[str, str]`, we want to pass
+            # `str` as the type parameter to `StrDictRootModel`.
+            annotation = ast.parse(f"var: {root_type.id}").body[0].annotation
+            # If the annotation is Optional[Dict[str, str]], then we need
+            # to go through one more slice to get the value type
+            # i.e. Optional[Dict[str, str]] -> Dict[str, str] -> str
+            if "Optional" in root_type.id:
+                slc = annotation.slice.slice
+            else:
+                slc = annotation.slice
+            vt = slc.elts[1].id  # (KT, VT)
+        elif root_type.id == "str":
+            base = "StrRootModel"
+    # Root type is an annotation with a subscript, e.g. Dict[str, T]
+    # or Optional[Dict[str, T]]
+    elif isinstance(root_type, ast.Subscript):
+        # Inspect the AST to determine the type of root model
+        # If annotation is wrapped in Optional[], we need to get the inner slice
+        if getattr(root_type.value, "id", None) == "Optional":
+            inner_root_type = getattr(root_type, "slice")
+        else:
+            inner_root_type = root_type
+        if getattr(inner_root_type.value, "id", None) == "Dict":
+            base = "StrDictRootModel"
+            vt = inner_root_type.slice.elts[1].id  # (KT, VT)
+        # TODO: handle list root types
+    else:
+        raise ValueError(f"Invalid root type: {root_type}")
+
+    if base == "StrDictRootModel":
+        classdef.bases = [
+            ast.Subscript(
+                value=ast.Name(id="StrDictRootModel"),
+                slice=ast.Index(ast.Name(id=vt)),
+            )
+        ]
+    else:
+        # Otherwise, we use the base we determined earlier
+        classdef.bases = [ast.Name(id=base)]
+
+
+def fix_rootmodels(tree: ast.Module, classdefs: dict[str, ast.ClassDef]) -> ast.Module:
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.ClassDef):
+            continue
+        if _get_class_base_name(node) == "RootModel":
+            fix_rootmodel_base(node)
+    return tree
 
 
 def insert_or_update_classdefs(
@@ -423,14 +524,17 @@ def insert_or_update_classdefs(
                 if not isinstance(class_stmt, ast.Pass):
                     node.body.append(class_stmt)
             updated.add(node.name)
-        if _get_class_base_name(node) == "RootModel":
-            fix_rootmodel_base(node)
 
     # Add remaining classdefs (new classes)
     for name in set(classdefs) - updated:
         tree.body.append(classdefs[name])
 
     return tree
+
+
+def replace_rootmodel_import(tree: ast.Module) -> ast.Module:
+    """Replaces the `from pydantic import BaseModel` import with
+    `from .base import RootModel`."""
 
 
 class StatementDict(TypedDict):
@@ -479,6 +583,7 @@ def add_fragments(tree: ast.Module, directory: Path) -> ast.Module:
             statements["stmts"].extend(stmts["stmts"])
     new_tree = insert_or_update_classdefs(tree, classdefs)
     new_tree = insert_statements(new_tree, statements)
+    new_tree = fix_rootmodels(new_tree, classdefs)
     return new_tree
 
 
