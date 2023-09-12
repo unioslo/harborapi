@@ -1,12 +1,19 @@
+from __future__ import annotations
+
 import warnings
-from typing import Any, List, Optional
+from typing import Any
+from typing import List
+from typing import Optional
 
-from httpx import HTTPStatusError, NetworkError, Response, TimeoutException
-
-from harborapi.utils import is_json
+from httpx import HTTPStatusError
+from httpx import NetworkError
+from httpx import Response
+from httpx import TimeoutException
 
 from .log import logger
-from .models import Error, Errors
+from .models import Error
+from .models import Errors
+from harborapi.utils import is_json
 
 # NOTE: this should probably be configurable somehow
 # However, backoff.on_retry needs to receive a TUPLE of exception types

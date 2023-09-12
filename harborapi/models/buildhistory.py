@@ -2,6 +2,7 @@
 
 The models in this module are _NOT_ automatically generated.
 """
+from __future__ import annotations
 
 from datetime import datetime
 from typing import Optional

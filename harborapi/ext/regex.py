@@ -1,7 +1,11 @@
 """Caching functions for the ext module."""
+from __future__ import annotations
+
 import re
 from functools import lru_cache
-from typing import Dict, Optional, Tuple
+from typing import Dict
+from typing import Optional
+from typing import Tuple
 
 from ..log import logger
 

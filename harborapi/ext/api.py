@@ -1,24 +1,24 @@
 from __future__ import annotations
 
 import asyncio
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Awaitable,
-    Callable,
-    List,
-    Optional,
-    Sequence,
-    TypeVar,
-    Union,
-)
+from typing import Any
+from typing import Awaitable
+from typing import Callable
+from typing import List
+from typing import Optional
+from typing import Sequence
+from typing import TYPE_CHECKING
+from typing import TypeVar
+from typing import Union
 
 import backoff
 from httpx import TimeoutException
 
 from ..exceptions import NotFound
 from ..log import logger
-from ..models import Artifact, Repository, UserResp
+from ..models import Artifact
+from ..models import Repository
+from ..models import UserResp
 from .artifact import ArtifactInfo
 
 if TYPE_CHECKING:

@@ -4,7 +4,10 @@ import subprocess
 import sys
 from enum import Enum
 from subprocess import CompletedProcess
-from typing import Any, Iterator, NamedTuple, Sequence
+from typing import Any
+from typing import Iterator
+from typing import NamedTuple
+from typing import Sequence
 
 import typer
 from rich.console import Console

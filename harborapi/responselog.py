@@ -1,6 +1,11 @@
+from __future__ import annotations
+
 from collections import deque
 from dataclasses import dataclass
-from typing import Deque, Iterator, NamedTuple, Optional
+from typing import Deque
+from typing import Iterator
+from typing import NamedTuple
+from typing import Optional
 
 from httpx import URL
 

@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 from hypothesis import strategies as st
 
-from harborapi.models import CVEAllowlist, CVEAllowlistItem
+from harborapi.models import CVEAllowlist
+from harborapi.models import CVEAllowlistItem
 
 cveallowlistitem_strategy = st.builds(
     CVEAllowlistItem,

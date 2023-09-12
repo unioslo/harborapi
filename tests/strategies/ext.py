@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 from hypothesis import strategies as st
 
+from .artifact import artifact_strategy
+from .artifact import get_hbv_strategy
 from harborapi.ext.artifact import ArtifactInfo
 from harborapi.ext.report import ArtifactReport
 from harborapi.models.models import Repository
-
-from .artifact import artifact_strategy, get_hbv_strategy
 
 artifact_info_strategy = st.builds(
     ArtifactInfo,

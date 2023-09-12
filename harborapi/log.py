@@ -3,6 +3,7 @@
 # NOTE: multiple clients with different `logging` argument values will
 # cause problems. However, users should not be creating multiple clients, so
 # this should not be an issue. If it is, we can add a warning.
+from __future__ import annotations
 
 import logging
 

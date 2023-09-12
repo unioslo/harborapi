@@ -1,4 +1,9 @@
-from typing import NamedTuple, Optional, Tuple, Union
+from __future__ import annotations
+
+from typing import NamedTuple
+from typing import Optional
+from typing import Tuple
+from typing import Union
 
 
 class SemVer(NamedTuple):

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 
 import pytest
@@ -6,8 +8,10 @@ from httpx import ConnectError
 from pytest_httpserver import HTTPServer
 
 from harborapi.client import HarborAsyncClient
-from harborapi.exceptions import HarborAPIException, StatusError
-from harborapi.retry import RetrySettings, get_backoff_kwargs
+from harborapi.exceptions import HarborAPIException
+from harborapi.exceptions import StatusError
+from harborapi.retry import get_backoff_kwargs
+from harborapi.retry import RetrySettings
 
 
 def test_retrysettings_basic():

@@ -1,19 +1,23 @@
-from typing import Dict, Optional, Type, Union
+from __future__ import annotations
+
+from typing import Dict
+from typing import Optional
+from typing import Type
+from typing import Union
 
 import pytest
-from httpx import Request, Response
+from httpx import Request
+from httpx import Response
 
 from harborapi._types import JSONType
 from harborapi.exceptions import HarborAPIException
-from harborapi.utils import (
-    get_artifact_path,
-    get_basicauth,
-    get_project_headers,
-    handle_optional_json_response,
-    is_json,
-    parse_pagination_url,
-    urldecode_header,
-)
+from harborapi.utils import get_artifact_path
+from harborapi.utils import get_basicauth
+from harborapi.utils import get_project_headers
+from harborapi.utils import handle_optional_json_response
+from harborapi.utils import is_json
+from harborapi.utils import parse_pagination_url
+from harborapi.utils import urldecode_header
 
 
 @pytest.mark.parametrize(

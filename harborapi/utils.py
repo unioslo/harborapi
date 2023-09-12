@@ -1,13 +1,20 @@
+from __future__ import annotations
+
 import re
 from base64 import b64encode
 from json import JSONDecodeError
-from typing import Dict, Mapping, Optional, Union
-from urllib.parse import quote_plus, unquote_plus
+from typing import Dict
+from typing import Mapping
+from typing import Optional
+from typing import Union
+from urllib.parse import quote_plus
+from urllib.parse import unquote_plus
 
 from httpx import Response
 from pydantic import SecretStr
 
-from ._types import JSONType, ParamType
+from ._types import JSONType
+from ._types import ParamType
 from .log import logger
 
 

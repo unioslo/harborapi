@@ -1,6 +1,10 @@
+from __future__ import annotations
+
 import statistics
 from numbers import Number
-from typing import Any, Callable, Iterable
+from typing import Any
+from typing import Callable
+from typing import Iterable
 
 from ..log import logger
 

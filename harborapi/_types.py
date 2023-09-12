@@ -1,4 +1,12 @@
-from typing import Any, Dict, List, Mapping, Sequence, TypeVar, Union
+from __future__ import annotations
+
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Mapping
+from typing import Sequence
+from typing import TypeVar
+from typing import Union
 
 from pydantic import BaseModel
 

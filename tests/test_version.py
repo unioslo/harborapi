@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import pytest
 
-from harborapi.version import SemVer, get_semver
+from harborapi.version import get_semver
+from harborapi.version import SemVer
 
 
 @pytest.mark.parametrize(
