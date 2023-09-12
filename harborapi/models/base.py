@@ -10,8 +10,8 @@ from __future__ import annotations
 from typing import Any
 from typing import Dict
 from typing import Iterable
-from typing import List
 from typing import Optional
+from typing import Set
 from typing import Type
 from typing import TypeVar
 
@@ -159,11 +159,11 @@ class BaseModel(PydanticBaseModel):
         if extra:
             include = None
         else:
-            include = model.model_fields.keys()
+            include = model.get_model_fields()
         return model.model_validate(self.model_dump(include=include))
 
     @classmethod
-    def get_model_fields(cls) -> List[str]:
+    def get_model_fields(cls) -> Set[str]:
         """Get a list of the names of the model's fields.
 
         Returns
@@ -171,7 +171,7 @@ class BaseModel(PydanticBaseModel):
         List[str]
             The names of the model's fields.
         """
-        return list(cls.model_fields.keys())
+        return set(cls.model_fields)
 
     if rich_installed:
 

@@ -90,7 +90,7 @@ await client.get_projects(
     As you work with the API, it is likely you will encounter more of these inconsistencies.
 
 
-To get an idea of the fields you can query, call [`get_model_fields()`][harborapi.models.base.BaseModel.get_model_fields] on the model the method returns. This will return a list of field names that you can use in your query. As the warning above states, the actual field names the API expects might be subtly different than the ones on the actual model, but the list should give you a good idea of what is available:
+To get an idea of the fields you can query, call [`get_model_fields()`][harborapi.models.base.BaseModel.get_model_fields] on the model the method returns. This will return a set of field names that you can use in your query. As the warning above states, the actual field names the API expects might be subtly different than the field names on the actual model, but the list should give you a good idea of what is available:
 
 ```py
 from harborapi.models import Project
@@ -101,7 +101,7 @@ print(Project().get_model_fields())
 ```
 
 ```py title="Result"
-['project_id', 'owner_id', 'name', 'registry_id', 'creation_time', 'update_time', 'deleted', 'owner_name', 'togglable', 'current_user_role_id', 'current_user_role_ids', 'repo_count', 'metadata', 'cve_allowlist']
+{'project_id', 'owner_id', 'name', 'registry_id', 'creation_time', 'update_time', 'deleted', 'owner_name', 'togglable', 'current_user_role_id', 'current_user_role_ids', 'repo_count', 'metadata', 'cve_allowlist'}
 ```
 
 The method can be called on both the class itself or an instance of the class.

@@ -1,16 +1,18 @@
+from __future__ import annotations
+
 from datetime import datetime
-from typing import Any, Optional, Type
+from typing import Any
+from typing import Optional
+from typing import Type
 
 import pytest
 from pydantic import Field
 
-from harborapi.models import (
-    CVEAllowlist,
-    CVEAllowlistItem,
-    Project,
-    ProjectMetadata,
-    ProjectReq,
-)
+from harborapi.models import CVEAllowlist
+from harborapi.models import CVEAllowlistItem
+from harborapi.models import Project
+from harborapi.models import ProjectMetadata
+from harborapi.models import ProjectReq
 from harborapi.models.base import BaseModel
 
 
@@ -126,6 +128,12 @@ def test_convert_to_req(extra: bool) -> None:
     # Deprecated field, handled by metadata.public
     assert req.public is None
 
+    if extra:
+        assert req.project_id == 1  # set by the extra argument
+    else:
+        assert not hasattr(req, "project_id")
+    # TODO: test that all extra fields were set/unset
+
 
 # TODO: test all models without increasing test run time too much
 @pytest.mark.parametrize("instantiate", [True, False])
@@ -135,7 +143,7 @@ def test_get_model_fields_project(instantiate: bool) -> None:
     else:
         model = Project
     fields = model.get_model_fields()
-    assert isinstance(fields, list)
+    assert isinstance(fields, set)
     for field in fields:
         assert isinstance(field, str)
         if instantiate:  # try to access field on model if instantiated
