@@ -160,7 +160,7 @@ To return the raw API responses without validation and type conversion, set `raw
 - [x] Search
 - [x] Statistic
 - [x] System CVE Allowlist
-- [x] System Info**
+- [x] System Info
 - [x] User
 - [x] Usergroup
 - [x] Webhooks
