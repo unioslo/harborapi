@@ -11,6 +11,7 @@ keywords = []
 authors = [{ name = "pederhan", email = "pederhan@uio.no" }]
 classifiers = [
   "Development Status :: 4 - Beta",
+  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
