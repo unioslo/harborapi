@@ -14,6 +14,14 @@ While the project is still on major version 0, breaking changes may be introduce
 
 <!-- ## Unreleased -->
 
+## [0.22.3](https://github.com/pederhan/harborapi/tree/harborapi-v0.22.3) - 2023-09-13
+
+### Changed
+
+- Lower bounds of dependencies loosened to allow for certain older versions:
+  - `httpx` >= 0.22.0
+  - `typing_extensions` >= 4.4
+
 ## [0.22.2](https://github.com/pederhan/harborapi/tree/harborapi-v0.22.2) - 2023-09-13
 
 ### Changed
