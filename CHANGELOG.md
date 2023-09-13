@@ -14,6 +14,12 @@ While the project is still on major version 0, breaking changes may be introduce
 
 <!-- ## Unreleased -->
 
+## [0.22.2](https://github.com/pederhan/harborapi/tree/harborapi-v0.22.2) - 2023-09-13
+
+### Changed
+
+- License changed from GPLv3 to MIT.
+
 ## [0.22.1](https://github.com/pederhan/harborapi/tree/harborapi-v0.22.1) - 2023-09-05
 
 ### Changed
