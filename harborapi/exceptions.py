@@ -21,6 +21,15 @@ class HarborAPIException(Exception):
     pass
 
 
+class EmptyURLError(HarborAPIException):
+    """The URL for the Harbor API server is missing or is an empty string."""
+
+
+################################
+# HTTP Status Error Exceptions
+################################
+
+
 class StatusError(HarborAPIException):
     def __init__(
         self,

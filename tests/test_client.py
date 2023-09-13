@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Type
 
 import pytest
 from httpx import HTTPStatusError
@@ -11,7 +11,9 @@ from pytest_mock import MockerFixture
 from harborapi.auth import HarborAuthFile
 from harborapi.client import HarborAsyncClient
 from harborapi.exceptions import (
+    APIURLWarning,
     BadRequest,
+    EmptyURLError,
     Forbidden,
     InternalServerError,
     NotFound,
@@ -29,16 +31,29 @@ from .strategies import errors_strategy
 @pytest.mark.parametrize(
     "url, expected",
     [
-        ("https://harbor.example.com/", "https://harbor.example.com"),
-        ("https://harbor.example.com/api/", "https://harbor.example.com/api"),
+        # URLs without /api/ component are tested in test_client_init_no_api_path_component
         ("https://harbor.example.com/api/v2.0", "https://harbor.example.com/api/v2.0"),
         ("https://harbor.example.com/api/v2.0/", "https://harbor.example.com/api/v2.0"),
     ],
 )
 def test_client_init_url(url: str, expected: str):
-    # manually set version to v2.0 for this test
     client = HarborAsyncClient(username="username", secret="secret", url=url)
     assert client.url == expected
+
+
+@pytest.mark.parametrize("warning_category", [UserWarning, APIURLWarning])
+def test_client_init_no_api_path_component(warning_category: Type[Warning]):
+    # Test ensures the warning is a subclass of UserWarning, so applications
+    # that suppress all UserWarnings also suppress this warning
+    with pytest.warns(warning_category) as warnings:
+        client = HarborAsyncClient(
+            url="https://harbor.example.com", username="username", secret="secret"
+        )
+    assert len(warnings) == 1
+    assert "api" in str(warnings[0].message)
+    # We don't enforce any type of URLs, so the invalid URL is kept
+    # It's up to the user to heed the warnings we emit
+    assert client.url == "https://harbor.example.com"
 
 
 def test_client_init_username():
@@ -104,7 +119,7 @@ def test_client_init_credentials_file(credentials_file: Path):
 
 @pytest.mark.parametrize("url", [None, ""])
 def test_client_init_url_empty_url(url: Optional[str]):
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(EmptyURLError) as e:
         HarborAsyncClient(url=url, username="user", secret="secret")  # type: ignore
     assert "url" in str(e.value).lower()
 

@@ -12,7 +12,13 @@ While the project is still on major version 0, breaking changes may be introduce
 
 <!-- changelog follows -->
 
-<!-- ## Unreleased -->
+## Unreleased
+
+### Changed
+
+- Passing an empty string or None to the `url` parameter of `HarborAsyncClient` will now raise a `harborapi.exceptions.EmptyURLError` exception instead of a `ValueError`.
+- Passing a URL without a `/api/v2.0` path component now emits a warning. The warning can be suppressed in the usual ways by handling `harborapi.exceptions.APIURLWarning` or `UserWarning`.
+- All `DeprecationWarnings` from `harborapi` are now shown by default. This can be suppressed with `warnings.filterwarnings("ignore", category=DeprecationWarning, module="harborapi")`.
 
 ## [0.22.3](https://github.com/pederhan/harborapi/tree/harborapi-v0.22.3) - 2023-09-13
 

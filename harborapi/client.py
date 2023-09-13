@@ -26,6 +26,7 @@ from pydantic import BaseModel, SecretStr, ValidationError
 from ._types import JSONType
 from .auth import load_harbor_auth_file, new_authfile_from_robotcreate
 from .exceptions import (
+    EmptyURLError,
     HarborAPIException,
     NotFound,
     UnprocessableEntity,
@@ -124,6 +125,7 @@ from .utils import (
     parse_pagination_url,
     urldecode_header,
 )
+from .warnings import APIURLWarning
 
 __all__ = ["HarborAsyncClient"]
 
@@ -192,6 +194,7 @@ class HarborAsyncClient:
         url : str
             The URL of the Harbor server in the format `http://host:[port]/api/v<version>`
             Example: `http://localhost:8080/api/v2.0`
+            Cannot be an empty string, but is not validated beyond that.
         username : Optional[str]
             Username to use for authentication.
             If not provided, the client attempts to use `basicauth` to authenticate.
@@ -230,7 +233,8 @@ class HarborAsyncClient:
             Unknown kwargs are ignored.
         """
         if not url:
-            raise ValueError("A Harbor API URL is required.")
+            raise EmptyURLError("A Harbor API URL is required.")
+
         self.authenticate(username, secret, basicauth, credentials_file, url, **kwargs)
 
         # Instantiate persistent HTTP client using the redirect policy
@@ -289,7 +293,6 @@ class HarborAsyncClient:
             warnings.warn(
                 "Parameter 'password' is deprecated. Use 'secret' instead.",
                 DeprecationWarning,
-                stacklevel=2,
             )
             assert isinstance(password, str), "password must be a string"
             secret = password
@@ -301,7 +304,6 @@ class HarborAsyncClient:
             warnings.warn(
                 "parameter 'credentials' is deprecated and will be removed in the future, use 'basicauth'",
                 DeprecationWarning,
-                stacklevel=2,
             )
 
         # All authentication methods ultimately resolve to basicauth
@@ -320,13 +322,21 @@ class HarborAsyncClient:
                 "Must provide username and secret, basicauth, or credentials_file"
             )
 
-        # Only set URL if it's provided
-        # This is guaranteed to be a non-empty string when this method is called
-        # by __init__(), but not necessarily when called directly.
-        # This means that the URL is set on instantation, but not necessarily
-        # when the user calls authenticate() directly without providing a URL.
         if url:
             self.url = url.strip("/")  # make sure URL doesn't have a trailing slash
+            # NOTE: we don't want to _force_ the user to provide a URL containing
+            # the expected API version, but in most cases where it's omitted, it's
+            # probably a mistake. So, we warn the user if the URL does not contain
+            if "/api/v2.0" not in self.url:
+                # TODO: document how to suppress warnings
+                warnings.warn(
+                    (
+                        "Provided Harbor API URL does not contain '/api/v2.0'. "
+                        "Ensure this is intentional."
+                    ),
+                    APIURLWarning,
+                    stacklevel=3,
+                )
 
     @contextlib.contextmanager
     def no_retry(self) -> Generator[None, None, None]:
