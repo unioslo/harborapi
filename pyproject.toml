@@ -28,10 +28,10 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
-  "httpx>=0.23.0",
+  "httpx>=0.22.0",
   "pydantic>=1.9.1,<2.0",
   "backoff>=2.1.2",
-  "typing_extensions>=4.5.0",
+  "typing_extensions>=4.4.0",
 ]
 dynamic = ["version", "readme"]
 
