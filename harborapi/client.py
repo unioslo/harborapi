@@ -26,6 +26,7 @@ from pydantic import SecretStr
 from pydantic import ValidationError
 
 from ._types import JSONType
+from ._types import QueryParamMapping
 from .auth import load_harbor_auth_file
 from .auth import new_authfile_from_robotcreate
 from .exceptions import check_response_status
@@ -166,7 +167,7 @@ class HarborAsyncClient:
         timeout: Union[float, Timeout] = 10.0,
         verify: VerifyTypes = True,
         # Retry options
-        retry: Optional[RetrySettings] = RetrySettings(),
+        retry: Optional[RetrySettings] = RetrySettings(),  # type: ignore[call-arg]
         **kwargs: Any,
     ) -> None:
         """Initialize a new HarborAsyncClient with either a username and secret,
@@ -1755,7 +1756,7 @@ class HarborAsyncClient:
             # a JSONDecodeError (which we normally catch and re-raise as a
             # HarborAPIException).
             # We catch this exception and return an empty ExecHistory object.
-            return ExecHistory()
+            return ExecHistory()  # type: ignore[call-arg] # Mypy doesn't understand defaults?
         return self.construct_model(ExecHistory, resp)
 
     # GET /system/purgeaudit
@@ -2403,14 +2404,12 @@ class HarborAsyncClient:
             The URL of the new project member
         """
         if isinstance(username_or_id, str):
-            user_kwargs = {
-                "username": username_or_id
-            }  # type: Dict[str, Union[str, int]]
+            user = UserEntity(username=username_or_id)  # type: ignore[call-arg]
         else:
-            user_kwargs = {"user_id": username_or_id}
+            user = UserEntity(user_id=username_or_id)  # type: ignore[call-arg]
 
         member = ProjectMember(
-            member_user=UserEntity(**user_kwargs),
+            member_user=user,
             role_id=role_id,
         )
         return await self.add_project_member(project_name_or_id, member)
@@ -2446,14 +2445,12 @@ class HarborAsyncClient:
             The URL of the new project member
         """
         if isinstance(ldap_group_dn_or_id, str):
-            group_kwargs = {
-                "ldap_group_dn": ldap_group_dn_or_id
-            }  # type: Dict[str, Union[str, int]]
+            ug = UserGroup(ldap_group_dn=ldap_group_dn_or_id)  # type: ignore[call-arg]
         else:
-            group_kwargs = {"id": ldap_group_dn_or_id}
+            ug = UserGroup(id=ldap_group_dn_or_id)  # type: ignore[call-arg]
 
         member = ProjectMember(
-            member_group=UserGroup(**group_kwargs),
+            member_group=ug,
             role_id=role_id,
         )
         return await self.add_project_member(project_name_or_id, member)
@@ -2939,7 +2936,7 @@ class HarborAsyncClient:
                 resp.request.method,
                 resp.request.url,
             )
-            return LdapPingResult()
+            return LdapPingResult()  # type: ignore[call-arg]
         return self.construct_model(LdapPingResult, j)
 
     # GET /ldap/groups/search
@@ -4801,7 +4798,7 @@ class HarborAsyncClient:
     async def get(
         self,
         path: str,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         headers: Optional[Dict[str, Any]] = None,
         follow_links: bool = True,
         limit: Optional[int] = None,
@@ -4888,7 +4885,7 @@ class HarborAsyncClient:
     async def get_text(
         self,
         path: str,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         headers: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> str:
@@ -4903,7 +4900,7 @@ class HarborAsyncClient:
     async def get_file(
         self,
         path: str,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         headers: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> FileResponse:
@@ -4931,7 +4928,7 @@ class HarborAsyncClient:
     async def _get_file(
         self,
         path: str,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         headers: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> FileResponse:
@@ -4965,7 +4962,7 @@ class HarborAsyncClient:
     async def _get(
         self,
         path: str,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         headers: Optional[Dict[str, Any]] = None,
         follow_links: bool = True,
         **kwargs: Any,
@@ -5014,7 +5011,7 @@ class HarborAsyncClient:
         self,
         path: str,
         json: Optional[Union[BaseModel, JSONType]] = None,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         headers: Optional[Dict[str, Any]] = None,
     ) -> Response:
         """Sends a POST request to a path, optionally with a JSON body."""
@@ -5029,7 +5026,7 @@ class HarborAsyncClient:
         self,
         path: str,
         json: Optional[Union[BaseModel, JSONType]] = None,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         headers: Optional[Dict[str, Any]] = None,
     ) -> Response:
         if isinstance(json, BaseModel):
@@ -5049,7 +5046,7 @@ class HarborAsyncClient:
         self,
         path: str,
         json: Optional[Union[BaseModel, JSONType]] = None,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         headers: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> Optional[JSONType]:
@@ -5066,7 +5063,7 @@ class HarborAsyncClient:
         self,
         path: str,
         json: Optional[Union[BaseModel, JSONType]] = None,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         headers: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> Response:
@@ -5088,7 +5085,7 @@ class HarborAsyncClient:
         self,
         path: str,
         json: Union[BaseModel, JSONType],
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         headers: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> Optional[JSONType]:
@@ -5105,7 +5102,7 @@ class HarborAsyncClient:
         self,
         path: str,
         json: Union[BaseModel, JSONType],
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         headers: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> Response:
@@ -5127,7 +5124,7 @@ class HarborAsyncClient:
     async def delete(
         self,
         path: str,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         headers: Optional[Dict[str, Any]] = None,
         missing_ok: Optional[bool] = None,
         **kwargs: Any,
@@ -5145,7 +5142,7 @@ class HarborAsyncClient:
         self,
         path: str,
         headers: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         missing_ok: Optional[bool] = None,
         **kwargs: Any,
     ) -> Response:
@@ -5163,7 +5160,7 @@ class HarborAsyncClient:
     async def head(
         self,
         path: str,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         headers: Optional[Dict[str, Any]] = None,
         missing_ok: Optional[bool] = None,
         **kwargs: Any,
@@ -5181,7 +5178,7 @@ class HarborAsyncClient:
         self,
         path: str,
         headers: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         missing_ok: Optional[bool] = None,
         **kwargs: Any,
     ) -> Response:

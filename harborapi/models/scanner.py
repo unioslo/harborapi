@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import functools
+import typing
 from collections import Counter
 from datetime import datetime
 from enum import Enum
@@ -327,9 +328,21 @@ class VulnerabilityItem(BaseModel):
                 )
                 continue
             if version == 3:
-                return vendor_cvss.get("V3Score", default)
+                score = vendor_cvss.get("V3Score", default)
+                if isinstance(score, float):
+                    return score
+                else:
+                    logger.error(
+                        "Received non-float value for vendor CVSS V3Score: %s", score
+                    )
             elif version == 2:
-                return vendor_cvss.get("V2Score", default)
+                score = vendor_cvss.get("V2Score", default)
+                if isinstance(score, float):
+                    return score
+                else:
+                    logger.error(
+                        "Received non-float value for vendor CVSS V2Score: %s", score
+                    )
         return default
 
     def get_severity(
@@ -424,7 +437,7 @@ class HarborVulnerabilityReport(BaseModel):
 
     @property
     def distribution(self) -> Counter[Severity]:
-        dist = Counter()
+        dist: typing.Counter[Severity] = Counter()
         for vulnerability in self.vulnerabilities:
             if vulnerability.severity:
                 dist[vulnerability.severity] += 1

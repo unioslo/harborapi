@@ -12,7 +12,7 @@ from .scanner import Scanner as ScanScanner
 from .scanner import ScannerAdapterMetadata as ScanScannerAdapterMetadata
 from .scanner import ScannerCapability as ScanScannerCapability
 from .scanner import Severity
-from .scanner import VulnerabilityItem
+from .scanner import VulnerabilityItem as ScanVulnerabilityItem
 
 # Due to some overlap in the names of the models generated from the two schemas,
 # we need to explicitly import the conflicting models from the other schema prefixed

@@ -3,8 +3,8 @@ from __future__ import annotations
 import re
 from base64 import b64encode
 from json import JSONDecodeError
+from typing import cast
 from typing import Dict
-from typing import Mapping
 from typing import Optional
 from typing import Union
 from urllib.parse import quote_plus
@@ -14,7 +14,8 @@ from httpx import Response
 from pydantic import SecretStr
 
 from ._types import JSONType
-from ._types import ParamType
+from ._types import QueryParamMapping
+from ._types import QueryParamValue
 from .log import logger
 
 
@@ -251,17 +252,18 @@ def get_project_headers(project_name_or_id: Union[str, int]) -> Dict[str, str]:
     return {"X-Is-Resource-Name": str(isinstance(project_name_or_id, str)).lower()}
 
 
-def get_params(**kwargs: ParamType) -> Mapping[str, ParamType]:
+def get_params(**kwargs: QueryParamValue) -> QueryParamMapping:
     """Get parameters for an API call as a dict, where `None` values are ignored.
 
     Parameters
     ----------
     **kwargs: ParamType
         The parameters to use for the request.
+        Each keyword argument type must be a primitive, JSON-serializable type.
 
     Returns
     -------
-    Mapping[str, Any]
+    QueryParamMapping
         The dict representation of the parameters with `None` values removed.
     """
     params = {k: v for k, v in kwargs.items() if v is not None}
@@ -270,4 +272,4 @@ def get_params(**kwargs: ParamType) -> Mapping[str, ParamType]:
     # parameter name used by the Harbor API.
     if "query" in params and not params.get("q"):
         params["q"] = params.pop("query")
-    return params
+    return cast(QueryParamMapping, params)

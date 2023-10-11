@@ -429,7 +429,11 @@ class ArtifactReport(BaseModel):
             "|".join(repositories), flags=re.IGNORECASE if not case_sensitive else 0
         )
         return ArtifactReport.from_artifacts(
-            [a for a in self.artifacts if pattern.match(a.repository.name)]
+            [
+                a
+                for a in self.artifacts
+                if a.repository.name and pattern.match(a.repository.name)
+            ]
         )
 
     def has_tag(self, tag: str) -> bool:
