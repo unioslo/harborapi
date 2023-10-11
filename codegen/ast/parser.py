@@ -521,7 +521,22 @@ def insert_or_update_classdefs(
         if node.name in classdefs:
             classdef = classdefs[node.name]
             for class_stmt in classdef.body:
-                if not isinstance(class_stmt, ast.Pass):
+                # Pass statements are ignored
+                if isinstance(class_stmt, ast.Pass):
+                    continue
+                # Replace existing assignment statement (if exists)
+                for i, stmt in enumerate(node.body):
+                    if all(
+                        isinstance(s, ast.AnnAssign) for s in [class_stmt, stmt]
+                    ) and getattr(
+                        stmt.target, "id", None  # type: ignore
+                    ) == getattr(
+                        class_stmt.target, "id", None  # type: ignore
+                    ):
+                        node.body[i] = class_stmt
+                        break
+                else:
+                    # Otherwise, append it to the end
                     node.body.append(class_stmt)
             updated.add(node.name)
 

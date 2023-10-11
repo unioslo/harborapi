@@ -2064,10 +2064,9 @@ class RetentionRule(BaseModel):
     disabled: Optional[bool] = None
     action: Optional[str] = None
     template: Optional[str] = None
-    params: Optional[Dict[str, Dict[str, Any]]] = None
+    params: Optional[Dict[str, Any]] = None
     tag_selectors: Optional[List[RetentionSelector]] = None
     scope_selectors: Optional[Dict[str, List[RetentionSelector]]] = None
-    params: Optional[Dict[str, Any]] = None
 
 
 class ImmutableRule(BaseModel):
@@ -2076,10 +2075,9 @@ class ImmutableRule(BaseModel):
     disabled: Optional[bool] = None
     action: Optional[str] = None
     template: Optional[str] = None
-    params: Optional[Dict[str, Dict[str, Any]]] = None
+    params: Optional[Dict[str, Any]] = None
     tag_selectors: Optional[List[ImmutableSelector]] = None
     scope_selectors: Optional[Dict[str, List[ImmutableSelector]]] = None
-    params: Optional[Dict[str, Any]] = None
 
 
 class SupportedWebhookEventTypes(BaseModel):
