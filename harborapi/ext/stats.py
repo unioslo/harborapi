@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import statistics
-from numbers import Number
 from typing import Any
 from typing import Callable
 from typing import Iterable
@@ -21,29 +20,29 @@ _max = max
 DEFAULT_VALUE = 0.0
 
 
-def mean(a: Iterable[Number]) -> float:
+def mean(a: Iterable[float]) -> float:
     return _do_stats_math(statistics.mean, a)
 
 
-def median(a: Iterable[Number]) -> float:
+def median(a: Iterable[float]) -> float:
     return _do_stats_math(statistics.median, a)
 
 
-def stdev(a: Iterable[Number]) -> float:
+def stdev(a: Iterable[float]) -> float:
     return _do_stats_math(statistics.stdev, a)
 
 
-def min(a: Iterable[Number]) -> float:  # todo : fix type
+def min(a: Iterable[float]) -> float:
     return _min(a, default=DEFAULT_VALUE)
 
 
-def max(a: Iterable[Number]) -> float:  # todo : fix type
+def max(a: Iterable[float]) -> float:
     return _max(a, default=DEFAULT_VALUE)
 
 
 def _do_stats_math(
     func: Callable[[Any], float],
-    a: Iterable[Number],
+    a: Iterable[float],
     default: float = DEFAULT_VALUE,
     filter_none: bool = False,
 ) -> float:
