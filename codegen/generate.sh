@@ -6,6 +6,9 @@ if [[ "$1" == "--help" ]]; then
   exit 0
 fi
 
+# TODO: use https://github.com/RonnyPfannschmidt/prance
+#       instead of relying on swagger converter API
+
 # Initialize variable to determine whether codegen should run
 run_codegen=true
 
@@ -43,7 +46,7 @@ mkdir -p ./codegen/temp
 # Run datamodel-codegen only if run_codegen is true
 if [ "$run_codegen" = true ]; then
   datamodel-codegen \
-    --url "$source_url" \
+    --url "https://converter.swagger.io/api/convert?url=$source_url" \
     --output "$output_file"
 fi
 
