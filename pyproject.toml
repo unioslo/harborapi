@@ -65,11 +65,20 @@ dependencies = [
 
 ]
 [tool.hatch.envs.default.scripts]
+# Tests
 test = "pytest {args}"
 cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=harborapi --cov=tests {args}"
 no-cov = "cov --no-cov {args}"
+covhtml = "cov {args} && coverage html && open htmlcov/index.html"
+
+# Version bumping
 bump = "python scripts/bump_version.py {args}"
-genapi = "./codegen/generate.sh"
+
+# API Models Codegen
+_gen = "./codegen/generate.sh {args}"
+gen-models = "gen-main && gen-scanner"
+gen-main = "_gen main"
+gen-scanner = "_gen scanner"
 
 [tool.hatch.envs.docs]
 dependencies = [
@@ -114,7 +123,6 @@ exclude = [
 python_version = "3.8"
 ignore_missing_imports = true
 strict = true
-exclude = ["tests"]
 
 [tool.isort]
 profile = "black"
