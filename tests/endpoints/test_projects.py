@@ -376,7 +376,7 @@ async def test_update_project_member_role_mock(
     if as_int:
         role_arg = role_id
     else:
-        role_arg = RoleRequest(role_id=role_id) if as_int else role_id
+        role_arg = RoleRequest(role_id=role_id)
 
     httpserver.expect_oneshot_request(
         "/api/v2.0/projects/1234/members/567",
