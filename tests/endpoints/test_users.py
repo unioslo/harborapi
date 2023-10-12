@@ -12,6 +12,8 @@ from pytest_httpserver import HTTPServer
 
 from ..utils import json_from_list
 from harborapi.client import HarborAsyncClient
+from harborapi.exceptions import HarborAPIException
+from harborapi.exceptions import NotFound
 from harborapi.models import UserResp
 from harborapi.models.models import PasswordReq
 from harborapi.models.models import Permission
@@ -245,6 +247,32 @@ async def test_get_user_by_username_mock(
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_user_by_username("test-user")
     assert resp == user
+
+
+@pytest.mark.asyncio
+async def test_get_user_by_username_user_not_found_mock(
+    async_client: HarborAsyncClient, httpserver: HTTPServer
+):
+    """Try to find user that doesn't exist."""
+    httpserver.expect_oneshot_request("/api/v2.0/users/search").respond_with_json([])
+    async_client.url = httpserver.url_for("/api/v2.0")
+    with pytest.raises(NotFound):
+        await async_client.get_user_by_username("test-user")
+
+
+@pytest.mark.asyncio
+async def test_get_user_by_username_user_no_id_mock(
+    async_client: HarborAsyncClient, httpserver: HTTPServer
+):
+    """Returned user has no user ID."""
+    user = UserSearchRespItem(username="test-user")
+    httpserver.expect_oneshot_request("/api/v2.0/users/search").respond_with_json(
+        [user.model_dump(mode="json")]
+    )
+    async_client.url = httpserver.url_for("/api/v2.0")
+    with pytest.raises(HarborAPIException) as exc_info:
+        await async_client.get_user_by_username("test-user")
+    assert "no id" in exc_info.exconly().lower()
 
 
 @pytest.mark.asyncio
