@@ -4832,59 +4832,42 @@ class HarborAsyncClient:
         JSONType
             The JSON response from the API.
         """
-        j, next_url = await self._get(
-            path,
-            params=params,
-            headers=headers,
-            follow_links=follow_links,
-            **kwargs,
-        )
-        if not next_url:  # no pagination
-            return j
-
-        # Handle paginated results
-        # Coerce limit to n>=0
         limit = limit if limit and limit > 0 else 0
-
-        # Make sure j is a list
-        if not isinstance(j, list):
-            logger.warning(
-                "Unable to handle paginated results: Expected a list from 'GET %s', but got %s",
-                path,
-                type(j),
-            )
-            # TODO: add toggle for this coercion (coerce or throw exception)
-            #       or should we even accomodate this use-case? Always throw exception?
-            logger.info("Coercing value from %s to list", path)
-            j = [j]
-
-        # Send requests as long as we get next links
+        next_url = path  # type: str | None
+        paginating = False
+        results = []  # type: List[JSONType]
         while next_url:
-            paginated, next_url = await self._get(
+            res, next_url = await self._get(
                 next_url,
-                # don't pass params (they should be in next URL)
+                # When paginating, params are in next link
+                params=None if paginating else params,
                 headers=headers,
                 follow_links=follow_links,
                 **kwargs,
             )
-            if not isinstance(paginated, list):
-                logger.warning(
+
+            # No next URL - return the result directly
+            if not next_url and not paginating:
+                return res
+
+            # Expect list results from here on out
+            paginating = True
+            if not isinstance(res, list):
+                logger.error(
                     "Unable to handle paginated results: Expected a list from 'GET %s', but got %s",
                     next_url,
-                    type(paginated),
+                    type(res),
                 )
-                # NOTE: we could also abort here, so we don't get partial results
-                #       but right now it's unclear whether this can ever happen
+                # OPINION: do best-effort to return results instead of raising an exception (bad?)
                 continue
-            j.extend(paginated)
+            results.extend(res)
 
-            # Check if we have reached our limit
             if limit:
-                if len(j) > limit:
-                    j = j[:limit]
+                if len(results) > limit:
+                    results = results[:limit]
                     break
 
-        return j
+        return results
 
     @retry()
     async def get_text(
@@ -4894,12 +4877,12 @@ class HarborAsyncClient:
         headers: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> str:
-        """Bad workaround in order to have a cleaner API for text/plain responses."""
+        """Hacky workaround to have a cleaner API for fetching text/plain responses."""
         headers = headers or {}
         headers.update({"Accept": "text/plain"})
         resp, _ = await self._get(path, params=params, headers=headers, **kwargs)
-        # assume text is never paginated
-        return resp  # type: ignore
+        # OPINION: assume text is never paginated
+        return str(resp)
 
     @retry()
     async def get_file(
