@@ -84,10 +84,9 @@ covhtml = "cov {args} && coverage html && open htmlcov/index.html"
 bump = "python scripts/bump_version.py {args}"
 
 # API Models Codegen
-_gen = "./codegen/generate.sh {args}"
-gen-models = "gen-main && gen-scanner"
-gen-main = "_gen main"
-gen-scanner = "_gen scanner"
+generate = ["generate-main", "generate-scanner"]
+generate-main = "./codegen/generate.sh main {args}"
+generate-scanner = "./codegen/generate.sh scanner {args}"
 
 [tool.hatch.envs.docs]
 dependencies = [

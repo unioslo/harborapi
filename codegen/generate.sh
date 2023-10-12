@@ -2,7 +2,7 @@
 
 # Display help message
 if [[ "$1" == "--help" ]]; then
-  echo "USAGE: generate.sh [main|scanner] [--nocodegen]"
+  echo "USAGE: generate.sh [main|scanner] [--no-fetch]"
   exit 0
 fi
 
@@ -31,9 +31,9 @@ fi
 # Loop through command line arguments for flags
 for arg in "$@"; do
   case $arg in
-    --nocodegen)
+    --no-fetch)
       run_codegen=false
-      shift # Remove --nocodegen from processing
+      shift # Remove --no-fetch from processing
       ;;
     *)
       shift # Remove generic argument from processing

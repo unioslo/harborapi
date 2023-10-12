@@ -4,33 +4,40 @@ The application relies on code generation to generate models for the Harbor API.
 
 Furthermore, the Harbor API is constantly evolving, and this code generation tool is a way to ensure we always have up-to-date models in the client (and if it's not backwards-compatible, blame Harbor for not caring about proper versioning and deprecation of their API).
 
-## What is happening here?
+## How do I generate code?
 
-The steps to generate code for the application is as follows:
+Running the code generation is done via a Hatch script:
+
+```
+hatch run generate
+```
+
+Under the hood, the Hatch script runs the `generate.sh` script, which is the main entrypoint for generating models.
+
+Each invocation of `generate.sh` can be decomposed into the following:
 
 1. Download the Swagger v2.0 API specification from the Harbor API repository.
 2. Convert the spec to OpenAPI v3.0 with the [Swagger converter API](https://converter.swagger.io/)
 3. Generate the models with [datamodel-code-generator](https://github.com/koxudaxi/datamodel-code-generator)
-4. Modify the generated models to fix inconsistencies and errors in the API spec, as well as add new fields and methods.
+4. Modify the generated models to fix inconsistencies and errors in the API spec, as well as add new fields and methods using the AST manipulation tool (`ast/parser.py`).
 5. Format the generated code with [black](https://github.com/psf/black) and [reorder-python-imports](https://github.com/asottile/reorder-python-imports).
 
+In general, the hatch script `hatch run generate` should always be used, but if you need to generate code for a specific module, you can use the following:
+
+- `hatch run generate-main`
+- `hatch run generate-scanner`
+
+If you don't need to fetch new API definitions, the `--no-fetch` flag can be used to skip steps 1-3, and only run steps 4-5. This assumes you have already run the script once and have the base models in place:
+
+```
+hatch run generate --no-fetch
+```
 
 ## Why AST manipulation instead of modifying the YAML spec?
 
-Basically, because we already need to manipulate the AST to add new methods and use custom root model classes, it's easier to just do everything in the AST manipulation step instead of adding/modifying behavior in two different places. Most of the code changes are done via "fragments" which are code snippets that target specific classes, which are then inserted into the AST at the appropriate places. See the section on [AST manipulation](#ast-manipulation) below for more details.
+Because we already need to manipulate the AST to add new methods and use custom root model classes, it's easier to just do everything in the AST manipulation step instead of adding/modifying behavior in two different places. Most of the code changes are made via "fragments" which are code snippets that target specific classes, that are then inserted into the AST at the appropriate places. See the section on [AST manipulation](#ast-manipulation) below for more details.
 
-
-## How do I generate code?
-
-It's all orchestrated by the `generate.sh` script:
-
-```
-USAGE: generate.sh [main|scanner] [--nocodegen]
-```
-
-The script takes two arguments, the first being the name of the module to generate code for, and the second being an optional flag to skip fetching new API definitions and running `datamodel-codegen`, and instead only run the AST manipulation and formatting steps.
-
-### Scanner?
+### Scanner API Spec?
 
 Yeah, for some reason Harbor has a separate ["pluggable scanner API spec"](https://github.com/goharbor/pluggable-scanner-spec), which they actually use in their API without it being fully documented in the main API spec. So, we have to generate code for that as well.
 
