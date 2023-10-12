@@ -47,6 +47,33 @@ The big Pydantic V2 update. This is a major update, and will be released as vers
 - `harborapi.models._models` module. All main API spec models are now defined `harborapi.models.models`.
 - `harborapi.models._scanner` module. All scanner models are now defined in `harborapi.models.scanner`.
 
+## [0.22.3](https://github.com/pederhan/harborapi/tree/harborapi-v0.22.3) - 2023-09-13
+
+### Changed
+
+- Lower bounds of dependencies loosened to allow for certain older versions:
+  - `httpx` >= 0.22.0
+  - `typing_extensions` >= 4.4
+
+## [0.22.2](https://github.com/pederhan/harborapi/tree/harborapi-v0.22.2) - 2023-09-13
+
+### Changed
+
+- License changed from GPLv3 to MIT.
+
+## [0.22.1](https://github.com/pederhan/harborapi/tree/harborapi-v0.22.1) - 2023-09-05
+
+### Changed
+
+- Reduced sdist size significantly by removing unnecessary files (docs, tests, etc.).
+
+## [0.22.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.22.0) - 2023-08-01
+
+### Changed
+
+- Pydantic version capped at <2.0.0.
+  - Migration to Pydantic V2 will begin soon.
+
 
 ## [0.21.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.21.0) - 2023-06-08
 
