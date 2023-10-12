@@ -3789,11 +3789,9 @@ class HarborAsyncClient:
         !!! note "API Spec Inconsistency"
             The retention policy ID field for a project is marked as a string in the
             API spec, but the retention endpoints expect an integer ID.
-            This method returns an integer if possible, and None otherwise.
-            A warning is logged if the ID cannot be converted to an integer,
-            so that we know if this breaks/changes in the future.
-
-            Yet another ticking time-bomb stemming from handwritten API specs...
+            This method will always return an integer. If the project
+            has a retention ID that cannot be converted to int, the method
+            raises a [HarborAPIException][harborapi.exceptions.HarborAPIException]
 
         Parameters
         ----------
@@ -3804,17 +3802,24 @@ class HarborAsyncClient:
 
         Returns
         -------
-        Optional[int]
-            The retention policy ID for the project, or None if the project
-            does not have a retention policy or the ID cannot be converted to int.
+        int
+            The retention policy ID for the project.
+
+        Raises
+        ------
+        NotFound
+            If the project does not have a retention policy ID.
         """
         project = await self.get_project(project_name_or_id)
-        if project.metadata and project.metadata.retention_id is not None:
-            try:
-                return int(project.metadata.retention_id)
-            except ValueError as e:
-                logger.error("Could not convert retention ID to integer: %s", e)
-        return None
+        if not project.metadata or project.metadata.retention_id is None:
+            raise NotFound(f"Project {project.name!r} does not have a retention ID")
+
+        try:
+            return int(project.metadata.retention_id)
+        except ValueError:
+            raise HarborAPIException(
+                f"Could not convert project {project_name_or_id!r} retention ID {project.metadata.retention_id} to integer."
+            )
 
     # GET /retentions/{id}
     # Get Retention Policy

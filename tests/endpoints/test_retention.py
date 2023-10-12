@@ -11,6 +11,8 @@ from pytest_httpserver import HTTPServer
 
 from ..utils import json_from_list
 from harborapi.client import HarborAsyncClient
+from harborapi.exceptions import HarborAPIException
+from harborapi.exceptions import NotFound
 from harborapi.models import Project
 from harborapi.models import ProjectMetadata
 from harborapi.models import RetentionExecution
@@ -41,6 +43,48 @@ async def test_get_project_retention_id_mock(
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_project_retention_id(project_name_or_id)
     assert resp == expect_id
+
+
+@pytest.mark.asyncio
+@given(st.builds(Project, metadata=st.builds(ProjectMetadata)))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+async def test_get_project_retention_id_no_retention_id_mock(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+    project: Project,
+) -> None:
+    """No retention ID raises a NotFound exception."""
+    project.metadata.retention_id = None
+    project_name_or_id = 12
+    httpserver.expect_oneshot_request(
+        f"/api/v2.0/projects/{project_name_or_id}",
+        method="GET",
+    ).respond_with_json(project.model_dump(mode="json"))
+    async_client.url = httpserver.url_for("/api/v2.0")
+    with pytest.raises(NotFound) as exc_info:
+        await async_client.get_project_retention_id(project_name_or_id)
+    assert "retention ID" in exc_info.exconly()
+
+
+@pytest.mark.asyncio
+@given(st.builds(Project, metadata=st.builds(ProjectMetadata)))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+async def test_get_project_retention_id_invalid_id(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+    project: Project,
+) -> None:
+    """A retention ID that is not an integer raises a HarborAPIException."""
+    project.metadata.retention_id = "not an integer"
+    project_name_or_id = 123
+    httpserver.expect_oneshot_request(
+        f"/api/v2.0/projects/{project_name_or_id}",
+        method="GET",
+    ).respond_with_json(project.model_dump(mode="json"))
+    async_client.url = httpserver.url_for("/api/v2.0")
+    with pytest.raises(HarborAPIException) as exc_info:
+        await async_client.get_project_retention_id(project_name_or_id)
+    assert "convert" in exc_info.exconly()
 
 
 @pytest.mark.asyncio
