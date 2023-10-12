@@ -1,8 +1,8 @@
 # Code Generation
 
-The application relies on code generation to generate models for the Harbor API. Some of these model definitions are not entirely correct, however, and this is where we have to do some extra work to fix them.
+The application relies on code generation to generate models for the Harbor API. Some of the model definitions in the API specification are not entirely correct, however, and this is where we have to do some extra work to fix them.
 
-Furthermore, the API is constantly evolving, and this is a way to ensure we always have up-to-date models for the API (and if it's not backwards-compatible, blame Harbor for not caring about proper versioning and deprecation of their API).
+Furthermore, the Harbor API is constantly evolving, and this code generation tool is a way to ensure we always have up-to-date models in the client (and if it's not backwards-compatible, blame Harbor for not caring about proper versioning and deprecation of their API).
 
 ## What is happening here?
 
@@ -17,7 +17,7 @@ The steps to generate code for the application is as follows:
 
 ## Why AST manipulation instead of modifying the YAML spec?
 
-Basically, because we already need to manipulat the AST to add new methods and have our Root models use custom base classes. It's easier to just do everything in the AST manipulation step instead of adding/modifying behavior in two different places.
+Basically, because we already need to manipulate the AST to add new methods and use custom root model classes, it's easier to just do everything in the AST manipulation step instead of adding/modifying behavior in two different places. Most of the code changes are done via "fragments" which are code snippets that target specific classes, which are then inserted into the AST at the appropriate places. See the section on [AST manipulation](#ast-manipulation) below for more details.
 
 
 ## How do I generate code?
@@ -45,10 +45,12 @@ Because right now we have divergent definitions for things like `Artifact`, `Vul
 
 ## AST Manipulation
 
-In order to add new fields, change certain field type annotations, add or modify class docstrings, and more, we use AST manipulation. The file `ast/parser.py` includes the code for parsing and modifying the AST, as well as certain in-line definitions of the classes to change.
+In order to add new fields, change certain field type annotations, add or modify class docstrings, and more, we use AST manipulation. The file `ast/parser.py` contains the code for parsing and modifying the AST, as well as certain in-line definitions of the classes to change.
 
 
-Inline code changes use special classes to signify what to change:
+### Inline changes
+
+Inline code changes use special constructs to signify where and what should be changed. For example, to add a new field to the `Artifact` class, we use the `Field` class:
 
 ```py
 models = {
@@ -68,6 +70,9 @@ models = {
 ```
 
 All inline changes are documented in `ast/parser.py`.
+
+
+### Fragments
 
 The inline changes should be reserved for small changes. For larger changes, we use "fragments" of the classes to change, which are then inserted into the AST at the appropriate places. The directories `ast/fragments/{main,scanner}` contain fragments for the main and scanner models. A class fragment can look like this:
 
@@ -115,6 +120,27 @@ class Foo(BaseModel):
 
 The new import (`from typing import Iterable`) from the fragment has been added, along with the new field `gux` and the method `count`.
 
-## TODO
+#### Overriding Fields
 
-- [ ] Replace fields in original models with fields from fragments
+Fields from fragments with names that are identical to fields in the original class will override the original field. For example, if we have the following class:
+
+```py
+class Foo(BaseModel):
+    bar: str = Field(..., description="This is a bar")
+    baz: int = Field(..., description="This is a baz")
+```
+
+And we have the following fragment:
+
+```py
+class Foo(BaseModel):
+    bar: str = Field(..., description="This is a new bar")
+```
+
+The resulting class will look like this:
+
+```py
+class Foo(BaseModel):
+    bar: str = Field(..., description="This is a new bar")
+    baz: int = Field(..., description="This is a baz")
+```
