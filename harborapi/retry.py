@@ -125,6 +125,16 @@ def get_backoff_kwargs(client: "HarborAsyncClient") -> Dict[str, Any]:
     )
 
 
+@functools.lru_cache()
+def _get_client_type() -> Type["HarborAsyncClient"]:
+    """In order to prevent circular imports, as well as to avoid importing
+    each time the wrapper function is called, we use a cached function to
+    get the client type."""
+    from .client import HarborAsyncClient
+
+    return HarborAsyncClient
+
+
 P = ParamSpec("P")
 T = TypeVar("T")
 
@@ -140,7 +150,9 @@ def retry() -> Callable[[Callable[P, T]], Callable[P, T]]:
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
             if not args:
                 raise ValueError("Must be applied on a method, not a function.")
-            client = args[0]  # type: HarborAsyncClient # type: ignore
+            client = args[0]
+            if not isinstance(client, _get_client_type()):
+                raise TypeError(f"Must be applied on a HarborAsyncClient method.")
             if not client.retry or not client.retry.enabled:
                 return func(*args, **kwargs)
 
