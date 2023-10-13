@@ -137,6 +137,7 @@ exclude = [
 python_version = "3.8"
 ignore_missing_imports = true
 strict = true
+exclude = ['tests', 'codegen/temp']
 
 [tool.isort]
 profile = "black"
