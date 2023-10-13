@@ -148,11 +148,11 @@ def retry() -> Callable[[Callable[P, T]], Callable[P, T]]:
     def decorator(func: Callable[P, T]) -> Callable[P, T]:
         @functools.wraps(func)
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
-            if not args:
-                raise ValueError("Must be applied on a method, not a function.")
+            if not args or not isinstance(args[0], _get_client_type()):
+                raise TypeError(
+                    f"retry decorator must be applied on a HarborAsyncClient method."
+                )
             client = args[0]
-            if not isinstance(client, _get_client_type()):
-                raise TypeError(f"Must be applied on a HarborAsyncClient method.")
             if not client.retry or not client.retry.enabled:
                 return func(*args, **kwargs)
 

@@ -224,15 +224,15 @@ async def test_no_retry_ctx_manager(
 
 def test_retry_decorator_on_function() -> None:
     """Applying the retry decorator on a function without arguments
-    should raise a ValueError."""
-    with pytest.raises(ValueError) as exc_info:
+    should raise a TypeError."""
+    with pytest.raises(TypeError) as exc_info:
 
         @retry()
         def foo():
             pass
 
         foo()
-    assert "method" in str(exc_info.value)
+    assert "HarborAsyncClient method" in str(exc_info.value)
 
 
 def test_retry_decorator_on_other_class() -> None:
@@ -247,4 +247,4 @@ def test_retry_decorator_on_other_class() -> None:
 
         f = Foo()
         f.foo()
-    assert "HarborAsyncClient" in str(exc_info.value)
+    assert "HarborAsyncClient method" in str(exc_info.value)
