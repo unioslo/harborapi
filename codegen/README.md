@@ -27,7 +27,7 @@ In general, the hatch script `hatch run generate` should always be used, but if 
 - `hatch run generate-main`
 - `hatch run generate-scanner`
 
-If you don't need to fetch new API definitions, the `--no-fetch` flag can be used to skip steps 1-3, and only run steps 4-5. This assumes you have already run the script once and have the base models in place:
+If you don't want to fetch new API definitions, the `--no-fetch` flag can be used to skip steps 1-3, and only run steps 4-5. This assumes you have already run the script once and have the base models in place:
 
 ```
 hatch run generate --no-fetch

@@ -10,7 +10,7 @@ fi
 #       instead of relying on swagger converter API
 
 # Initialize variable to determine whether codegen should run
-run_codegen=true
+fetch_spec=true
 
 # Default values for source_url, output_file, final_file, and source_type
 source_url="https://raw.githubusercontent.com/goharbor/harbor/main/api/v2.0/swagger.yaml"
@@ -32,7 +32,7 @@ fi
 for arg in "$@"; do
   case $arg in
     --no-fetch)
-      run_codegen=false
+      fetch_spec=false
       shift # Remove --no-fetch from processing
       ;;
     *)
@@ -43,8 +43,8 @@ done
 
 mkdir -p ./codegen/temp
 
-# Run datamodel-codegen only if run_codegen is true
-if [ "$run_codegen" = true ]; then
+# Run datamodel-codegen only if fetch_spec is true
+if [ "$fetch_spec" = true ]; then
   datamodel-codegen \
     --url "https://converter.swagger.io/api/convert?url=$source_url" \
     --output "$output_file"

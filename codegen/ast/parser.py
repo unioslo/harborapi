@@ -8,7 +8,9 @@ from pathlib import Path
 from typing import Any
 from typing import TypedDict
 
+import rich
 from rich.console import Console
+from rich.table import Table
 
 err_console = Console(stderr=True)
 
@@ -547,11 +549,6 @@ def insert_or_update_classdefs(
     return tree
 
 
-def replace_rootmodel_import(tree: ast.Module) -> ast.Module:
-    """Replaces the `from pydantic import BaseModel` import with
-    `from .base import RootModel`."""
-
-
 class StatementDict(TypedDict):
     imports: list[ast.Import | ast.ImportFrom]
     stmts: list[ast.stmt]
@@ -621,9 +618,13 @@ if __name__ == "__main__":
         directory = FragmentDir.main
     fragment_dir = basedir / "fragments" / directory
 
-    print("Input: ", input_filename)
-    print("Output: ", output_filename)
-    print("Fragment dir: ", fragment_dir)
+    table = Table(title="Codegen arguments")
+    table.add_column("Argument")
+    table.add_column("Value")
+    table.add_row("Input", str(input_filename))
+    table.add_row("Output", str(output_filename))
+    table.add_row("Fragment dir", str(fragment_dir))
+    rich.print(table)
 
     with open(input_filename, "r") as f:
         source = f.read()
