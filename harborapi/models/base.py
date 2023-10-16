@@ -17,8 +17,6 @@ from typing import TypeVar
 
 from pydantic import BaseModel as PydanticBaseModel
 from pydantic import ConfigDict
-from pydantic import field_validator
-from pydantic import FieldValidationInfo
 from pydantic import RootModel as PydanticRootModel
 
 # fmt: off
@@ -44,7 +42,6 @@ DEPTH_TITLE_COLORS = {
     5: "red",
 }
 
-_strbool_field_phrases = ['"true"', '"false"']
 
 T = TypeVar("T")
 
@@ -73,6 +70,13 @@ class StrDictRootModel(RootModel[Optional[Dict[str, T]]]):
             return self.root[item]
         return None
 
+    # Enables dot access to dict keys for backwards compatibility
+    def __getattr__(self, attr: str) -> T:
+        try:
+            return self.root[attr]  # type: ignore # forego None check and let KeyError raise
+        except (KeyError, TypeError):
+            raise AttributeError(f"{self.__class__.__name__} has no attribute {attr}")
+
 
 class StrRootModel(RootModel[str]):
     def __str__(self) -> str:
@@ -83,35 +87,6 @@ class BaseModel(PydanticBaseModel):
     model_config = ConfigDict(extra="allow", validate_assignment=True, strict=False)
 
     # Validators
-    @field_validator("*", mode="before")
-    @classmethod
-    def convert_bool_to_lower_str_field(
-        cls: Type["PydanticBaseModel"],
-        v: Any,
-        info: FieldValidationInfo,
-    ) -> Any:
-        """Harbor API has some models where the accepted values are 'true' and 'false',
-        for fields that have a string type. This validator converts bool arguments
-        to the correct string values.
-
-        Pydantic has built-in conversion from bool to str, but it yields
-        'True' and 'False' instead of 'true' and 'false'.
-
-        Furthermore, this validator only converts the values if the field
-        description contains the phrases '"true"' and '"false"' (with quotes).
-        """
-        # NOTE: we can restrict this validator to a subset of models if needed.
-        # For now, we apply it to all models in case the API changes in the future.
-        # We can only convert bools
-        if not isinstance(v, bool):
-            return v
-        field = cls.model_fields[info.field_name]
-
-        if not field.description or not all(
-            phrase in field.description for phrase in _strbool_field_phrases
-        ):
-            return v
-        return str(v).lower()
 
     # The __rich* properties are only used by methods defined when Rich
     # is installed, but they are defined here, so that static typing works

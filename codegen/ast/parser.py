@@ -236,7 +236,6 @@ models: dict[str, dict[str, list[Modifier]]] = {
         ],
     },
     FragmentDir.main: {
-        "ProjectMetadata": [Annotation("retention_id", "Optional[Union[str, int]]")],
         "ExtraAttrs": [
             Annotation(
                 "root", "Optional[Dict[str, Any]]"

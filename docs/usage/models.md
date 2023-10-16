@@ -119,7 +119,6 @@ The IDE used for demonstration (VSCode) does _not_ show the Pydantic model field
 
 Unfortunately, the documentation does not yet generate clickable links to other models referenced in a model's field type, so you'll have to search for the model name in the sidebar or use the search field if a field type is not immediately clear to you. CTRL+F is your friend.
 
-
 ## Model validation
 
 Pydantic models validate the data they are given. This can take the form of checking that a given argument is of the correct type, or that it is within a certain range of values. Other validation methods include checking that a string matches a certain regular expression, or it is a valid URL, or is of a certain length. See the [Pydantic docs](https://docs.pydantic.dev/latest/usage/types/) for more information. The [Data validation](validation.md) page also contains more in-depth information about validation.
@@ -175,7 +174,7 @@ See the [Pydantic docs](https://docs.pydantic.dev/latest/usage/types/#standard-l
 ## String fields with 'true' and 'false' values in API spec
 
 !!! info
-    This section only refers to a very particular subset of models. The vast majority of models use `bool` fields as they should.
+    This section only refers to the [`ProjectMetadata`][harborapi.models.ProjectMetadata] model. The other models are not affected by this as of Harbor API schema version [403b616](https://raw.githubusercontent.com/goharbor/harbor/main/api/v2.0/swagger.yaml)
 
 For some reason, some model fields in the API spec that by all accounts should have been bools are actually string fields that accept `'true'` and `'false'`.
 
@@ -189,7 +188,7 @@ For some reason, some model fields in the API spec that by all accounts should h
         description: 'The public status of the project. The valid values are "true", "false".'
 ```
 
-This mainly affects the `ProjectMetadata` model, which contains a whopping 6 fields following this pattern:
+This only affects the `ProjectMetadata` model, which contains a whopping 6 fields following this pattern:
 
 - `public`
 - `enable_content_trust`
@@ -212,16 +211,26 @@ from harborapi.models import ProjectMetadata
 
 
 project = ProjectMetadata(
-    public=True,
-    enable_content_trust=False,
+    public=False,
+    enable_content_trust=True,
 )
-assert project.public == "true"
-assert project.enable_content_trust == "false"
+assert project.public == "false"
+assert project.enable_content_trust == "true"
 ```
 
 With the model's custom field validator, the arguments are coerced into the strings `'true'` and `'false'`. This maintains compatibility with the API while allowing you to use bools in your code.
 
-So in general, when you assign to these fields, you don't need to think about this at all. Just use bools as you normally would. However, when you access them, you need to be aware that they are strings:
+So in general, when you assign to these fields, you don't need to think about this at all. Just use bools as you normally would:
+
+```py
+project.public = True
+project.enable_content_trust = False
+
+assert project.public == "true"
+assert project.enable_content_trust == "false"
+```
+
+However, when you access them, you need to be aware that they are strings:
 
 ```py
 if project.metadata.public: # WRONG - will match 'false' too
@@ -231,8 +240,7 @@ if project.metadata.public == "true": # CORRECT
     print("Project is public")
 ```
 
-
-This is a bit unfortunate, but it's the best we can do without breaking compatibility with the API.
+This is an inconvenient API and very unpythonic, but it's the best we can do without breaking compatibility with the Harbor API.
 
 
 !!! quote "Author's note"

@@ -30,13 +30,13 @@ The big Pydantic V2 update. This is a major update, and will be released as vers
   - `harborapi.models.InternalConfigurationsResponse`
   - `harborapi.models.ScanOverview`
   - `harborapi.models.AdditionLinks`
-
 - `harborapi.models.ProjectMetadata`:
   - `retention_id` now accepts both string and integer arguments. Band-aid fix until Harbor fixes their API spec and specifies that all retention IDs should be ints, not strings.
 - `harborapi.models.Artifact`:
   - `scan_overview` is now a mapping of MIME types and their associated scan overview. Previously, we used some dirty metaprogramming to populate this field with the first scan overview found in the mapping. A new `scan` attribute has been added to access the first scan overview in the mapping, which is the same as the old behavior. This ensures serializing the model matches the original JSON from the API.
 - `harborapi.ext.report.ArtifactReport`:
   - No longer supports iteration directly on the object itself. Use the `artifacts` attribute instead.
+- Bool to string converter now limited to `harborapi.models.ProjectMetadata` model. This aberrant behavior is limited to ProjectMetadata, so the converter has been moved to the model itself. This band-aid fix will remain until Harbor changes their API spec and make these fields bools.
 
 ### Removed
 
