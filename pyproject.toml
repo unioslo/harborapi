@@ -71,6 +71,7 @@ dependencies = [
   "typer>=0.7.0",
   "datamodel-code-generator>=0.21.4",
   "ruff>=0.0.287",
+  "coverage>=7.3.2",
 
 ]
 [tool.hatch.envs.default.scripts]
@@ -123,12 +124,9 @@ source = ["harborapi", "tests"]
 exclude_also = [
   'except ImportError',
   'except ModuleNotFoundError',
-  '@overload',
-  'def __repr__',
-  'pass',
-  'import',
+  '^\s*pass\s*$',
   'raise NotImplementedError',
-  'if TYPE_CHECKING:',
+  '^\s*if TYPE_CHECKING:$',
   '^\s*?\.\.\.\s*$',
   'if __name__ == __main__:',
 ]
