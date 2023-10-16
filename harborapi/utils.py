@@ -3,7 +3,6 @@ from __future__ import annotations
 import re
 from base64 import b64encode
 from json import JSONDecodeError
-from typing import cast
 from typing import Dict
 from typing import Optional
 from typing import Union
@@ -266,10 +265,10 @@ def get_params(**kwargs: QueryParamValue) -> QueryParamMapping:
     QueryParamMapping
         The dict representation of the parameters with `None` values removed.
     """
-    params = {k: v for k, v in kwargs.items() if v is not None}
+    params: QueryParamMapping = {k: v for k, v in kwargs.items() if v is not None}
     # Ensure that the "query" parameter is renamed to "q"
     # We use "query" as the parameter name in this library, but "q" is the
     # parameter name used by the Harbor API.
     if "query" in params and not params.get("q"):
         params["q"] = params.pop("query")
-    return cast(QueryParamMapping, params)
+    return params
