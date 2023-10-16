@@ -111,13 +111,27 @@ exclude = ["/.github", "/docs", "/tests", "/scripts"]
 packages = ["harborapi"]
 
 [tool.coverage.run]
+source = ["./"]
+omit = ["harborapi/__about__.py", "*/*.pyi"]
 branch = true
 parallel = true
-omit = ["harborapi/__about__.py"]
+
+[tool.coverage.paths]
+source = ["harborapi", "tests"]
 
 [tool.coverage.report]
-exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
-include = ["./harborapi/*.py", "./tests/*.py"]
+exclude_also = [
+  'except ImportError',
+  'except ModuleNotFoundError',
+  '@overload',
+  'def __repr__',
+  'pass',
+  'import',
+  'raise NotImplementedError',
+  'if TYPE_CHECKING:',
+  '^\s*?\.\.\.\s*$',
+  'if __name__ == __main__:',
+]
 
 [tool.ruff]
 ignore = [
