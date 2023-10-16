@@ -13,6 +13,11 @@ from pytest_httpserver import HTTPServer
 
 from .strategies import init_strategies
 from harborapi.client import HarborAsyncClient
+from harborapi.log import enable_logging
+
+# Enable logging for tests
+enable_logging()
+
 
 # Init custom hypothesis strategies
 init_strategies()

@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+import pytest
 from hypothesis import given
 from hypothesis import HealthCheck
 from hypothesis import settings
+from hypothesis import strategies as st
+from pytest_mock import MockerFixture
 
 from ..strategies.artifact import get_hbv_strategy
+from harborapi.models.scanner import CVSSDetails
 from harborapi.models.scanner import HarborVulnerabilityReport
+from harborapi.models.scanner import Scanner
 from harborapi.models.scanner import Severity
 from harborapi.models.scanner import VulnerabilityItem
 
@@ -150,3 +155,129 @@ def test_vulnerability_item_severity_none() -> None:
     )
     assert v.severity is not None
     assert v.severity == Severity.unknown
+
+
+@pytest.mark.parametrize("scanner_name", ["Trivy", "Clair"])
+def test_vulnerability_item_get_cvss_score(scanner_name: str) -> None:
+    """Test that the CVSS score is correctly computed when no preferred CVSS is present."""
+    v = VulnerabilityItem(preferred_cvss=None)
+    assert v.preferred_cvss is None
+    v.vendor_attributes = {
+        "CVSS": {
+            "nvd": {"V2Score": 1.0, "V3Score": 2.0},
+            "redhat": {"V2Score": 3.0, "V3Score": 4.0},
+        },
+    }
+    scanner = Scanner(name=scanner_name)
+
+    if scanner.name == "Trivy":
+        # NVD vendor (default)
+        assert v.get_cvss_score(scanner, version=2) == 1.0
+        assert v.get_cvss_score(scanner, version=3) == 2.0
+        assert v.get_cvss_score(scanner, vendor_priority=["nvd"], version=3) == 2.0
+        assert v.get_cvss_score(scanner, vendor_priority=["nvd"], version=3) == 2.0
+        # RedHat vendor
+        assert v.get_cvss_score(scanner, vendor_priority=["redhat"], version=2) == 3.0
+        assert v.get_cvss_score(scanner, vendor_priority=["redhat"], version=3) == 4.0
+    else:
+        assert v.get_cvss_score(scanner) == 0.0
+        # other args are ignored because of unknown scanner
+        assert v.get_cvss_score(scanner, version=2) == 0.0
+        assert v.get_cvss_score(scanner, version=3) == 0.0
+        assert v.get_cvss_score(scanner, vendor_priority=["nvd"], version=3) == 0.0
+        assert v.get_cvss_score(scanner, vendor_priority=["redhat"], version=2) == 0.0
+
+
+@pytest.mark.parametrize("scanner_name", ["Trivy", "Clair"])
+def test_vulnerability_item_get_cvss_score_no_cvss_data(scanner_name: str) -> None:
+    """Tests that the default score is returned if vendor data is empty."""
+    v = VulnerabilityItem()
+    v.vendor_attributes = {}
+    scanner = Scanner(name=scanner_name)
+
+    # Regardless of which scanner we pass in, we should get the default score
+    assert v.get_cvss_score(scanner) == 0.0
+
+    # Vendor attributes contains empty CVSS dict
+    v.vendor_attributes = {"CVSS": {}}
+    assert v.get_cvss_score(scanner) == 0.0
+
+
+def test_vulnerability_item_get_cvss_score_malformed_trivy_cvss_data(
+    caplog: pytest.LogCaptureFixture, mocker: MockerFixture
+) -> None:
+    """Tests that the default score is returned if vendor data is empty."""
+    v = VulnerabilityItem()
+    v.vendor_attributes = {"CVSS": {"nvd": ["malformed", "data"]}}
+    scanner = Scanner(name="Trivy")
+    trivy_method = mocker.spy(v, "_get_trivy_cvss_score")
+
+    # Call the method and check that the underlying Trivy method was called
+    version = 3
+    vendor_priority = ["nvd", "redhat"]
+    default = 0.0
+    assert (
+        v.get_cvss_score(
+            scanner, version=version, vendor_priority=vendor_priority, default=default
+        )
+        == default
+    )
+
+    assert "malformed vendor cvss data" in caplog.text.lower()
+    trivy_method.assert_called_once_with(
+        version=version, vendor_priority=vendor_priority, default=default
+    )
+
+
+@given(
+    st.builds(
+        VulnerabilityItem,
+        preferred_cvss=st.builds(CVSSDetails),
+    ),
+    st.floats(0.0, 10.0),
+    st.floats(0.0, 10.0),
+)
+def test_vulnerability_item_get_cvss_score_preferred_cvss(
+    v: VulnerabilityItem,
+    score_v2: float,
+    score_v3: float,
+) -> None:
+    """Test that preferred CVSS takes precedence if it exists.
+
+    NOTE
+    ----
+    As of 2023-10-16, preferred CVSS has always been observed to be None in practice,
+    and the CVSS scores are always computed from the vendor attributes,
+    but we have to make sure this works in case Harbor starts using it.
+    """
+    assert v.preferred_cvss is not None
+    v.preferred_cvss.score_v2 = score_v2
+    v.preferred_cvss.score_v3 = score_v3
+    assert v.preferred_cvss.score_v3 == score_v3
+    assert v.preferred_cvss.score_v2 == score_v2
+
+    # Test the method
+    assert v.get_cvss_score(version=2) == score_v2
+    assert v.get_cvss_score(version=3) == score_v3
+    assert v.get_cvss_score() == score_v3  # default
+
+    # Scanner and priority arguments are ignored
+    assert v.get_cvss_score(scanner=Scanner(name="Clair")) == score_v3  # default
+    assert v.get_cvss_score(scanner=Scanner(name="Trivy"), version=2) == score_v2
+    assert v.get_cvss_score(scanner=Scanner(name="Clair"), version=3) == score_v3
+    assert (
+        v.get_cvss_score(scanner=Scanner(name="Trivy"), vendor_priority=["nvd"])
+        == score_v3
+    )
+
+
+# TODO: Add tests:
+# - VulnerabilityItem:
+#   - low
+#   - medium
+#   - high
+#   - critical
+#   - vulnerabilities_by_severity
+#   - top_vulns
+#   - get_severity with all severities
+# - sort_distribution
