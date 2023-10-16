@@ -5,7 +5,7 @@ from . import auth
 from . import client
 from . import client_sync
 from . import exceptions
-from . import ext  # isort: skip
+from . import ext
 from . import utils
 from . import version
 from .__about__ import __version__ as __version__

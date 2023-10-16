@@ -139,8 +139,6 @@ ignore_missing_imports = true
 strict = true
 exclude = ['tests', 'codegen/temp']
 
-[tool.isort]
-profile = "black"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

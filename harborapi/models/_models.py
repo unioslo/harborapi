@@ -148,9 +148,6 @@ from .models import WebhookTargetObject
 from .models import Worker
 from .models import WorkerPool
 
-# isort kind of mangles these imports by sorting them alphabetically
-# but still splitting each "as _" import into its own line.
-
 # Explicit re-export of all models
 
 __all__ = [
