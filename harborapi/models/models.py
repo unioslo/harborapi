@@ -458,6 +458,8 @@ class ProjectMetadata(BaseModel):
         """
         if not isinstance(v, bool):
             return v
+        if not info.field_name:
+            raise ValueError("Validator is not attached to a field.")
         field = cls.model_fields[info.field_name]
         if not field.description or '"true"' not in field.description:
             return v

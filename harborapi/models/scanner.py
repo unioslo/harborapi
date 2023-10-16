@@ -264,6 +264,8 @@ class VulnerabilityItem(BaseModel):
     def _severity_none_is_default(
         cls, v: Optional[Severity], info: ValidationInfo
     ) -> Severity:
+        if not info.field_name:
+            raise ValueError("Validator is not attached to a field.")
         return v or cls.model_fields[info.field_name].default
 
     @property
