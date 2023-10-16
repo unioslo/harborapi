@@ -326,22 +326,15 @@ class VulnerabilityItem(BaseModel):
                     "Received non-dict value for vendor CVSS data: %s", vendor_cvss
                 )
                 continue
-            if version == 3:
-                score = vendor_cvss.get("V3Score", default)
-                if isinstance(score, float):
-                    return score
-                else:
-                    logger.error(
-                        "Received non-float value for vendor CVSS V3Score: %s", score
-                    )
-            elif version == 2:
-                score = vendor_cvss.get("V2Score", default)
-                if isinstance(score, float):
-                    return score
-                else:
-                    logger.error(
-                        "Received non-float value for vendor CVSS V2Score: %s", score
-                    )
+            score = vendor_cvss.get(f"V{version}Score", default)
+            if isinstance(score, (int, float)):
+                return float(score)
+            else:
+                logger.error(
+                    "Received non-float value for vendor CVSS V%dScore: %s",
+                    version,
+                    score,
+                )
         return default
 
     def get_severity(
