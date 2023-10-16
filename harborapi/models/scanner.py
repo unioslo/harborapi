@@ -18,7 +18,7 @@ from typing import Union
 from pydantic import ConfigDict
 from pydantic import Field
 from pydantic import field_validator
-from pydantic import FieldValidationInfo
+from pydantic import ValidationInfo
 
 from ..log import logger
 from ..version import get_semver
@@ -262,7 +262,7 @@ class VulnerabilityItem(BaseModel):
     @field_validator("severity", mode="before")
     @classmethod
     def _severity_none_is_default(
-        cls, v: Optional[Severity], info: FieldValidationInfo
+        cls, v: Optional[Severity], info: ValidationInfo
     ) -> Severity:
         return v or cls.model_fields[info.field_name].default
 

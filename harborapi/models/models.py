@@ -13,8 +13,8 @@ from typing import Union
 from pydantic import AnyUrl
 from pydantic import Field
 from pydantic import field_validator
-from pydantic import FieldValidationInfo
 from pydantic import model_validator
+from pydantic import ValidationInfo
 
 from ..log import logger
 from .base import BaseModel
@@ -444,7 +444,7 @@ class ProjectMetadata(BaseModel):
     @field_validator("*", mode="before")
     @classmethod
     def _validate_strbool(
-        cls: PyType["BaseModel"], v: Any, info: FieldValidationInfo
+        cls: PyType["BaseModel"], v: Any, info: ValidationInfo
     ) -> Any:
         """The project metadata model spec specifies that all fields are
         strings, but their valid values are 'true' and 'false'.
