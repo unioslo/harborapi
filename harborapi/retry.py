@@ -34,9 +34,6 @@ RETRY_ERRORS = (
 )
 
 
-ExceptionType = Type[Exception]
-
-
 def DEFAULT_PREDICATE(e: Exception) -> bool:
     """Predicate function that always returns False."""
     return False
@@ -127,9 +124,7 @@ def get_backoff_kwargs(client: "HarborAsyncClient") -> Dict[str, Any]:
 
 @functools.lru_cache()
 def _get_client_type() -> Type["HarborAsyncClient"]:
-    """In order to prevent circular imports, as well as to avoid importing
-    each time the wrapper function is called, we use a cached function to
-    get the client type."""
+    """Cached client type lazy-import getter."""
     from .client import HarborAsyncClient
 
     return HarborAsyncClient
