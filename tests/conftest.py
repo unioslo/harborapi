@@ -33,9 +33,8 @@ settings.load_profile(os.getenv("HYPOTHESIS_PROFILE", "default"))
 @pytest.fixture(scope="function")
 def httpserver(httpserver: HTTPServer) -> Iterable[HTTPServer]:
     yield httpserver
-    # Ensure server is running after each test
     if not httpserver.is_running():
-        httpserver.start()  # type: ignore
+        httpserver.start()
     # Ensure server has no handlers after each test
     httpserver.clear_all_handlers()  # type: ignore
     # Maybe run httpserver.clear() too?
