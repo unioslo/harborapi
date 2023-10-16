@@ -1,35 +1,12 @@
+"""DEPRECATED: This module will be removed in a future version.
+Module kept only for backwards compatibility with old code generation scheme."""
 from __future__ import annotations
 
-from .scanner import Artifact
-from .scanner import CVSSDetails
-from .scanner import Error
-from .scanner import ErrorResponse
-from .scanner import HarborVulnerabilityReport
-from .scanner import Registry
-from .scanner import Scanner
-from .scanner import ScannerAdapterMetadata
-from .scanner import ScannerCapability
-from .scanner import ScannerProperties
-from .scanner import ScanRequest
-from .scanner import ScanRequestId
-from .scanner import ScanResponse
-from .scanner import Severity
-from .scanner import VulnerabilityItem
+import warnings
 
-__all__ = [
-    "Artifact",
-    "CVSSDetails",
-    "Error",
-    "ErrorResponse",
-    "HarborVulnerabilityReport",
-    "Registry",
-    "Scanner",
-    "ScannerAdapterMetadata",
-    "ScannerCapability",
-    "ScannerProperties",
-    "ScanRequest",
-    "ScanRequestId",
-    "ScanResponse",
-    "Severity",
-    "VulnerabilityItem",
-]
+warnings.warn(
+    "The harborapi.models._scanner module is deprecated and will be removed in a future version. Use harborapi.models.scanner instead.",
+    DeprecationWarning,
+)
+
+from .scanner import *
