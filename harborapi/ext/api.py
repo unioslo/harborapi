@@ -310,19 +310,23 @@ async def get_artifact_vulnerabilities(
         callback=callback,
         **kwargs,
     )
+
     # Filter out artifacts without a successful scan
     # A failed scan will not produce a report
-    artifacts = [
-        a
-        for a in artifacts
-        if a.artifact.scan_overview is not None
-        and a.artifact.scan_overview.scan_status != "Error"  # type: ignore
-    ]
+    has_scan = []
+    for artifact in artifacts:
+        if artifact.artifact.scan_overview is None:
+            continue
+        try:
+            if artifact.artifact.scan_overview.scan_status == "Success":
+                has_scan.append(artifact)
+        except AttributeError:
+            continue
 
     # We must fetch each report individually, since the API doesn't support
     # getting all reports in one call.
     # This is done concurrently to speed up the process.
-    coros = [_get_artifact_report(client, artifact) for artifact in artifacts]
+    coros = [_get_artifact_report(client, artifact) for artifact in has_scan]
     artifacts = await run_coros(coros, max_connections=max_connections)
     return handle_gather(artifacts, callback=callback)
 
