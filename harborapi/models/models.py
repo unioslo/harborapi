@@ -1541,6 +1541,15 @@ class Permission(BaseModel):
     action: Optional[str] = Field(None, description="The permission action")
 
 
+class Permissions(BaseModel):
+    system: Optional[List[Permission]] = Field(
+        None, description="The system level permissions"
+    )
+    project: Optional[List[Permission]] = Field(
+        None, description="The project level permissions"
+    )
+
+
 class OIDCCliSecretReq(BaseModel):
     secret: Optional[str] = Field(None, description="The new secret")
 
