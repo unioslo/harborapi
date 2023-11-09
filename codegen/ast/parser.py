@@ -402,6 +402,7 @@ def get_rootmodel_type(classdef: ast.ClassDef) -> ast.expr:
     >>> get_rootmodel_type(<AST for Foo>)
     # AST for Dict[str, Any]
     """
+    # TODO: return actual root model base if it _is_ parametrized
     for node in classdef.body:
         if (
             isinstance(node, ast.AnnAssign)
@@ -414,15 +415,24 @@ def get_rootmodel_type(classdef: ast.ClassDef) -> ast.expr:
 def fix_rootmodel_base(classdef: ast.ClassDef) -> None:
     """Adds the appropriate subclass as the base of a RootModel type.
 
+    Depending on the root value annotation, the function will assign one of two
+    bases:
+
+    - `StrDictRootModel` if the root value annotation is `Optional[Dict[str, T]]`
+    - `StrRootModel` if the root value annotation is `str`
+
+    As of goharbor/harbor@5c02fd8, there are no models encapsulating dicts
+    whose root value type is `Dict[str, T]`; they are always `Optional[Dict[str, T]]`.
+
     Examples
     --------
 
     ```
     class Foo(RootModel):
-        root: Dict[str, int]
+        root: Optional[Dict[str, str]]
     # ->
-    class Foo(StrDictRootModel[int]):
-        root: Dict[str, int]
+    class Foo(StrDictRootModel[str]):
+        root: Optional[Dict[str, str]]
     ```
 
     Also works for str root models:
@@ -439,14 +449,6 @@ def fix_rootmodel_base(classdef: ast.ClassDef) -> None:
     `harborapi.models.base.StrRootModel`
     `harborapi.models.base.StrDictRootModel`
     """
-    # Already has a base that is a RootModel with subscript
-    if not classdef.bases or isinstance(classdef.bases[0], ast.Subscript):
-        err_console.log(
-            f"[bold red]ERROR: Root model '{classdef.name}' has a parametrized RootModel base. "
-            "That means datamodel-codegen version has started adding bases to RootModels. "
-            "Check the generated code and update [green]fix_rootmodel_base()[/green] to reflect this.[/bold red]"
-        )
-
     # Determine what sort of root model we are dealing with
     root_type = get_rootmodel_type(classdef)
     base = "RootModel"
@@ -489,6 +491,7 @@ def fix_rootmodel_base(classdef: ast.ClassDef) -> None:
     else:
         raise ValueError(f"Invalid root type: {root_type}")
 
+    # Construct the node for the class's new base
     if base == "StrDictRootModel":
         classdef.bases = [
             ast.Subscript(
