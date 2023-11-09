@@ -6,6 +6,7 @@ import warnings
 from http.cookiejar import CookieJar
 from pathlib import Path
 from typing import Any
+from typing import cast
 from typing import Dict
 from typing import Generator
 from typing import List
@@ -134,9 +135,9 @@ T = TypeVar("T", bound=BaseModel)
 # TODO: move pydantic model functions to separate module
 
 
-def model_to_dict(model: BaseModel) -> Any:
+def model_to_dict(model: BaseModel) -> JSONType:
     """Creates a JSON-serializable dict from a Pydantic model."""
-    return model.model_dump(mode="json", exclude_unset=True)
+    return cast(JSONType, model.model_dump(mode="json", exclude_unset=True))
 
 
 class CookieDiscarder(CookieJar):
