@@ -28,7 +28,7 @@ class ArtifactInfo(BaseModel):
 
     artifact: Artifact
     repository: Repository
-    report: HarborVulnerabilityReport = HarborVulnerabilityReport()  # type: ignore # why complain?
+    report: HarborVulnerabilityReport = HarborVulnerabilityReport()
     model_config = ConfigDict(ignored_types=(cached_property,))
 
     @property

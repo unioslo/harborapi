@@ -16,5 +16,5 @@ from .errors import errors_strategy
 # TODO: make sure we generate None for Optional fields as well!
 
 
-def init_strategies():
-    st.register_type_strategy(AnyUrl, urls())
+def init_strategies() -> None:
+    st.register_type_strategy(AnyUrl, urls())  # type: ignore # AnyUrl accepts str args

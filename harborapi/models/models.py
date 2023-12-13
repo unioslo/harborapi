@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from datetime import datetime
 from enum import Enum
 from typing import Any
 from typing import Dict
@@ -11,6 +10,7 @@ from typing import Type as PyType
 from typing import Union
 
 from pydantic import AnyUrl
+from pydantic import AwareDatetime
 from pydantic import Field
 from pydantic import field_validator
 from pydantic import model_validator
@@ -69,10 +69,10 @@ class Repository(BaseModel):
     pull_count: Optional[int] = Field(
         None, description="The count that the artifact inside the repository pulled"
     )
-    creation_time: Optional[datetime] = Field(
+    creation_time: Optional[AwareDatetime] = Field(
         None, description="The creation time of the repository"
     )
-    update_time: Optional[datetime] = Field(
+    update_time: Optional[AwareDatetime] = Field(
         None, description="The update time of the repository"
     )
 
@@ -128,8 +128,10 @@ class Tag(BaseModel):
         None, description="The ID of the artifact that the tag attached to"
     )
     name: Optional[str] = Field(None, description="The name of the tag")
-    push_time: Optional[datetime] = Field(None, description="The push time of the tag")
-    pull_time: Optional[datetime] = Field(
+    push_time: Optional[AwareDatetime] = Field(
+        None, description="The push time of the tag"
+    )
+    pull_time: Optional[AwareDatetime] = Field(
         None, description="The latest pull time of the tag"
     )
     immutable: Optional[bool] = Field(
@@ -179,23 +181,23 @@ class Label(BaseModel):
     project_id: Optional[int] = Field(
         None, description="The ID of project that the label belongs to"
     )
-    creation_time: Optional[datetime] = Field(
+    creation_time: Optional[AwareDatetime] = Field(
         None, description="The creation time the label"
     )
-    update_time: Optional[datetime] = Field(
+    update_time: Optional[AwareDatetime] = Field(
         None, description="The update time of the label"
     )
 
 
 class Scanner(BaseModel):
     name: Optional[str] = Field(
-        None, description="Name of the scanner", example="Trivy"
+        None, description="Name of the scanner", examples=["Trivy"]
     )
     vendor: Optional[str] = Field(
-        None, description="Name of the scanner provider", example="Aqua Security"
+        None, description="Name of the scanner provider", examples=["Aqua Security"]
     )
     version: Optional[str] = Field(
-        None, description="Version of the scanner adapter", example="v0.9.1"
+        None, description="Version of the scanner adapter", examples=["v0.9.1"]
     )
 
 
@@ -203,15 +205,17 @@ class VulnerabilitySummary(BaseModel):
     """Summary of vulnerabilities found in a scan."""
 
     total: Optional[int] = Field(
-        None, description="The total number of the found vulnerabilities", example=500
+        None,
+        description="The total number of the found vulnerabilities",
+        examples=[500],
     )
     fixable: Optional[int] = Field(
-        None, description="The number of the fixable vulnerabilities", example=100
+        None, description="The number of the fixable vulnerabilities", examples=[100]
     )
     summary: Optional[Dict[str, int]] = Field(
         None,
         description="Numbers of the vulnerabilities with different severity",
-        example={"Critical": 5, "High": 5},
+        examples=[{"Critical": 5, "High": 5}],
     )
     critical: int = Field(
         0,
@@ -258,10 +262,10 @@ class AuditLog(BaseModel):
     operation: Optional[str] = Field(
         None, description="The operation against the repository in this log entry."
     )
-    op_time: Optional[datetime] = Field(
+    op_time: Optional[AwareDatetime] = Field(
         None,
         description="The time when this operation is triggered.",
-        example="2006-01-02T15:04:05Z",
+        examples=["2006-01-02T15:04:05Z"],
     )
 
 
@@ -325,10 +329,10 @@ class PreheatPolicy(BaseModel):
     enabled: Optional[bool] = Field(
         None, description="Whether the preheat policy enabled"
     )
-    creation_time: Optional[datetime] = Field(
+    creation_time: Optional[AwareDatetime] = Field(
         None, description="The Create Time of preheat policy"
     )
-    update_time: Optional[datetime] = Field(
+    update_time: Optional[AwareDatetime] = Field(
         None, description="The Update Time of preheat policy"
     )
 
@@ -521,10 +525,10 @@ class Registry(BaseModel):
     )
     description: Optional[str] = Field(None, description="Description of the registry.")
     status: Optional[str] = Field(None, description="Health status of the registry.")
-    creation_time: Optional[datetime] = Field(
+    creation_time: Optional[AwareDatetime] = Field(
         None, description="The create time of the policy."
     )
-    update_time: Optional[datetime] = Field(
+    update_time: Optional[AwareDatetime] = Field(
         None, description="The update time of the policy."
     )
 
@@ -606,8 +610,8 @@ class ReplicationExecution(BaseModel):
     )
     status: Optional[str] = Field(None, description="The status of the execution")
     trigger: Optional[str] = Field(None, description="The trigger mode")
-    start_time: Optional[datetime] = Field(None, description="The start time")
-    end_time: Optional[datetime] = Field(None, description="The end time")
+    start_time: Optional[AwareDatetime] = Field(None, description="The start time")
+    end_time: Optional[AwareDatetime] = Field(None, description="The end time")
     status_text: Optional[str] = Field(None, description="The status text")
     total: Optional[int] = Field(None, description="The total count of all executions")
     failed: Optional[int] = Field(None, description="The count of failed executions")
@@ -645,10 +649,12 @@ class ReplicationTask(BaseModel):
     dst_resource: Optional[str] = Field(
         None, description="The destination resource that the task operates"
     )
-    start_time: Optional[datetime] = Field(
+    start_time: Optional[AwareDatetime] = Field(
         None, description="The start time of the task"
     )
-    end_time: Optional[datetime] = Field(None, description="The end time of the task")
+    end_time: Optional[AwareDatetime] = Field(
+        None, description="The end time of the task"
+    )
 
 
 class RobotCreated(BaseModel):
@@ -657,7 +663,7 @@ class RobotCreated(BaseModel):
     id: Optional[int] = Field(None, description="The ID of the robot")
     name: Optional[str] = Field(None, description="The name of the robot")
     secret: Optional[str] = Field(None, description="The secret of the robot")
-    creation_time: Optional[datetime] = Field(
+    creation_time: Optional[AwareDatetime] = Field(
         None, description="The creation time of the robot."
     )
     expires_at: Optional[int] = Field(
@@ -756,7 +762,7 @@ class ScheduleObj(BaseModel):
     cron: Optional[str] = Field(
         None, description="A cron expression, a time-based job scheduler."
     )
-    next_scheduled_time: Optional[datetime] = Field(
+    next_scheduled_time: Optional[AwareDatetime] = Field(
         None, description="The next time to schedule to run the job."
     )
 
@@ -775,17 +781,17 @@ class Stats(BaseModel):
     total: Optional[int] = Field(
         None,
         description="The total number of scan processes triggered by the scan all action",
-        example=100,
+        examples=[100],
     )
     completed: Optional[int] = Field(
         None,
         description="The number of the finished scan processes triggered by the scan all action",
-        example=90,
+        examples=[90],
     )
     metrics: Optional[Dict[str, int]] = Field(
         None,
         description="The metrics data for the each status",
-        example={"Success": 5, "Error": 2, "Running": 3},
+        examples=[{"Success": 5, "Error": 2, "Running": 3}],
     )
     ongoing: Optional[bool] = Field(
         None, description="A flag indicating job status of scan all."
@@ -868,10 +874,10 @@ class Quota(BaseModel):
     ref: Optional[QuotaRefObject] = None
     hard: Optional[ResourceList] = None
     used: Optional[ResourceList] = None
-    creation_time: Optional[datetime] = Field(
+    creation_time: Optional[AwareDatetime] = Field(
         None, description="the creation time of the quota"
     )
-    update_time: Optional[datetime] = Field(
+    update_time: Optional[AwareDatetime] = Field(
         None, description="the update time of the quota"
     )
 
@@ -883,17 +889,19 @@ class ScannerRegistration(BaseModel):
         None, description="The unique identifier of this registration."
     )
     name: Optional[str] = Field(
-        None, description="The name of this registration.", example="Trivy"
+        None, description="The name of this registration.", examples=["Trivy"]
     )
     description: Optional[str] = Field(
         None,
         description="An optional description of this registration.",
-        example="A free-to-use tool that scans container images for package vulnerabilities.\n",
+        examples=[
+            "A free-to-use tool that scans container images for package vulnerabilities.\n"
+        ],
     )
     url: Optional[AnyUrl] = Field(
         None,
         description="A base URL of the scanner adapter",
-        example="http://harbor-scanner-trivy:8080",
+        examples=["http://harbor-scanner-trivy:8080"],
     )
     disabled: Optional[bool] = Field(
         False, description="Indicate whether the registration is enabled or not"
@@ -905,12 +913,12 @@ class ScannerRegistration(BaseModel):
     auth: Optional[str] = Field(
         "",
         description='Specify what authentication approach is adopted for the HTTP communications.\nSupported types Basic", "Bearer" and api key header "X-ScannerAdapter-API-Key"\n',
-        example="Bearer",
+        examples=["Bearer"],
     )
     access_credential: Optional[str] = Field(
         None,
         description="An optional value of the HTTP Authorization header sent with each request to the Scanner Adapter API.\n",
-        example="Bearer: JWTTOKENGOESHERE",
+        examples=["Bearer: JWTTOKENGOESHERE"],
     )
     skip_cert_verify: Optional[bool] = Field(
         False,
@@ -921,53 +929,57 @@ class ScannerRegistration(BaseModel):
         False,
         description="Indicate whether use internal registry addr for the scanner to pull content or not",
     )
-    create_time: Optional[datetime] = Field(
+    create_time: Optional[AwareDatetime] = Field(
         None, description="The creation time of this registration"
     )
-    update_time: Optional[datetime] = Field(
+    update_time: Optional[AwareDatetime] = Field(
         None, description="The update time of this registration"
     )
     adapter: Optional[str] = Field(
         None,
         description="Optional property to describe the name of the scanner registration",
-        example="Trivy",
+        examples=["Trivy"],
     )
     vendor: Optional[str] = Field(
         None,
         description="Optional property to describe the vendor of the scanner registration",
-        example="CentOS",
+        examples=["CentOS"],
     )
     version: Optional[str] = Field(
         None,
         description="Optional property to describe the version of the scanner registration",
-        example="1.0.1",
+        examples=["1.0.1"],
     )
     health: Optional[str] = Field(
-        "", description="Indicate the healthy of the registration", example="healthy"
+        "", description="Indicate the healthy of the registration", examples=["healthy"]
     )
 
 
 class ScannerRegistrationReq(BaseModel):
-    name: str = Field(..., description="The name of this registration", example="Trivy")
+    name: str = Field(
+        ..., description="The name of this registration", examples=["Trivy"]
+    )
     description: Optional[str] = Field(
         None,
         description="An optional description of this registration.",
-        example="A free-to-use tool that scans container images for package vulnerabilities.\n",
+        examples=[
+            "A free-to-use tool that scans container images for package vulnerabilities.\n"
+        ],
     )
     url: AnyUrl = Field(
         ...,
         description="A base URL of the scanner adapter.",
-        example="http://harbor-scanner-trivy:8080",
+        examples=["http://harbor-scanner-trivy:8080"],
     )
     auth: Optional[str] = Field(
         None,
         description='Specify what authentication approach is adopted for the HTTP communications.\nSupported types Basic", "Bearer" and api key header "X-ScannerAdapter-API-Key"\n',
-        example="Bearer",
+        examples=["Bearer"],
     )
     access_credential: Optional[str] = Field(
         None,
         description="An optional value of the HTTP Authorization header sent with each request to the Scanner Adapter API.\n",
-        example="Bearer: JWTTOKENGOESHERE",
+        examples=["Bearer: JWTTOKENGOESHERE"],
     )
     skip_cert_verify: Optional[bool] = Field(
         False,
@@ -984,11 +996,13 @@ class ScannerRegistrationReq(BaseModel):
 
 
 class ScannerRegistrationSettings(BaseModel):
-    name: str = Field(..., description="The name of this registration", example="Trivy")
+    name: str = Field(
+        ..., description="The name of this registration", examples=["Trivy"]
+    )
     url: AnyUrl = Field(
         ...,
         description="A base URL of the scanner adapter.",
-        example="http://harbor-scanner-trivy:8080",
+        examples=["http://harbor-scanner-trivy:8080"],
     )
     auth: Optional[str] = Field(
         "",
@@ -997,7 +1011,7 @@ class ScannerRegistrationSettings(BaseModel):
     access_credential: Optional[str] = Field(
         None,
         description="An optional value of the HTTP Authorization header sent with each request to the Scanner Adapter API.\n",
-        example="Bearer: JWTTOKENGOESHERE",
+        examples=["Bearer: JWTTOKENGOESHERE"],
     )
 
 
@@ -1018,7 +1032,8 @@ class ScannerAdapterMetadata(BaseModel):
     scanner: Optional[Scanner] = None
     capabilities: Optional[List[ScannerCapability]] = None
     properties: Optional[Dict[str, str]] = Field(
-        None, example={"harbor.scanner-adapter/registry-authorization-type": "Bearer"}
+        None,
+        examples=[{"harbor.scanner-adapter/registry-authorization-type": "Bearer"}],
     )
 
 
@@ -1110,17 +1125,19 @@ class UserGroupSearchItem(BaseModel):
 
 class EventType(StrRootModel):
     root: str = Field(
-        ..., description="Webhook supported event type.", example="PULL_ARTIFACT"
+        ..., description="Webhook supported event type.", examples=["PULL_ARTIFACT"]
     )
 
 
 class NotifyType(StrRootModel):
-    root: str = Field(..., description="Webhook supported notify type.", example="http")
+    root: str = Field(
+        ..., description="Webhook supported notify type.", examples=["http"]
+    )
 
 
 class PayloadFormatType(StrRootModel):
     root: str = Field(
-        ..., description="The type of webhook paylod format.", example="CloudEvents"
+        ..., description="The type of webhook paylod format.", examples=["CloudEvents"]
     )
 
 
@@ -1161,10 +1178,10 @@ class WebhookPolicy(BaseModel):
     creator: Optional[str] = Field(
         None, description="The creator of the webhook policy."
     )
-    creation_time: Optional[datetime] = Field(
+    creation_time: Optional[AwareDatetime] = Field(
         None, description="The create time of the webhook policy."
     )
-    update_time: Optional[datetime] = Field(
+    update_time: Optional[AwareDatetime] = Field(
         None, description="The update time of the webhook policy."
     )
     enabled: Optional[bool] = Field(
@@ -1180,10 +1197,10 @@ class WebhookLastTrigger(BaseModel):
     enabled: Optional[bool] = Field(
         None, description="Whether or not the webhook policy enabled."
     )
-    creation_time: Optional[datetime] = Field(
+    creation_time: Optional[AwareDatetime] = Field(
         None, description="The creation time of webhook policy."
     )
-    last_trigger_time: Optional[datetime] = Field(
+    last_trigger_time: Optional[AwareDatetime] = Field(
         None, description="The last trigger time of webhook policy."
     )
 
@@ -1199,10 +1216,10 @@ class WebhookJob(BaseModel):
     job_detail: Optional[str] = Field(
         None, description="The webhook job notify detailed data."
     )
-    creation_time: Optional[datetime] = Field(
+    creation_time: Optional[AwareDatetime] = Field(
         None, description="The webhook job creation time."
     )
-    update_time: Optional[datetime] = Field(
+    update_time: Optional[AwareDatetime] = Field(
         None, description="The webhook job update time."
     )
 
@@ -1483,10 +1500,10 @@ class OIDCUserInfo(BaseModel):
         None,
         description="the secret of the OIDC user that can be used for CLI to push/pull artifacts",
     )
-    creation_time: Optional[datetime] = Field(
+    creation_time: Optional[AwareDatetime] = Field(
         None, description="The creation time of the OIDC user info record."
     )
-    update_time: Optional[datetime] = Field(
+    update_time: Optional[AwareDatetime] = Field(
         None, description="The update time of the OIDC user info record."
     )
 
@@ -1503,10 +1520,10 @@ class UserResp(BaseModel):
         description="indicate the admin privilege is grant by authenticator (LDAP), is always false unless it is the current login user",
     )
     oidc_user_meta: Optional[OIDCUserInfo] = None
-    creation_time: Optional[datetime] = Field(
+    creation_time: Optional[AwareDatetime] = Field(
         None, description="The creation time of the user."
     )
-    update_time: Optional[datetime] = Field(
+    update_time: Optional[AwareDatetime] = Field(
         None, description="The update time of the user."
     )
 
@@ -1617,7 +1634,7 @@ class Accessory(BaseModel):
     )
     type: Optional[str] = Field(None, description="The artifact size of the accessory")
     icon: Optional[str] = Field(None, description="The icon of the accessory")
-    creation_time: Optional[datetime] = Field(
+    creation_time: Optional[AwareDatetime] = Field(
         None, description="The creation time of the accessory"
     )
 
@@ -1666,8 +1683,8 @@ class ScanDataExportExecution(BaseModel):
     )
     status: Optional[str] = Field(None, description="The status of the execution")
     trigger: Optional[str] = Field(None, description="The trigger mode")
-    start_time: Optional[datetime] = Field(None, description="The start time")
-    end_time: Optional[datetime] = Field(None, description="The end time")
+    start_time: Optional[AwareDatetime] = Field(None, description="The start time")
+    end_time: Optional[AwareDatetime] = Field(None, description="The end time")
     status_text: Optional[str] = Field(None, description="The status text")
     user_name: Optional[str] = Field(
         None, description="The name of the user triggering the job"
@@ -1690,10 +1707,10 @@ class WorkerPool(BaseModel):
 
     pid: Optional[int] = Field(None, description="the process id of jobservice")
     worker_pool_id: Optional[str] = Field(None, description="the id of the worker pool")
-    start_at: Optional[datetime] = Field(
+    start_at: Optional[AwareDatetime] = Field(
         None, description="The start time of the work pool"
     )
-    heartbeat_at: Optional[datetime] = Field(
+    heartbeat_at: Optional[AwareDatetime] = Field(
         None, description="The heartbeat time of the work pool"
     )
     concurrency: Optional[int] = Field(
@@ -1713,13 +1730,13 @@ class Worker(BaseModel):
     job_id: Optional[str] = Field(
         None, description="the id of the running job in the worker"
     )
-    start_at: Optional[datetime] = Field(
+    start_at: Optional[AwareDatetime] = Field(
         None, description="The start time of the worker"
     )
     check_in: Optional[str] = Field(
         None, description="the checkin of the running job in the worker"
     )
-    checkin_at: Optional[datetime] = Field(
+    checkin_at: Optional[AwareDatetime] = Field(
         None, description="The checkin time of the worker"
     )
 
@@ -1766,7 +1783,7 @@ class ScheduleTask(BaseModel):
     cron: Optional[str] = Field(
         None, description="the cron of the current schedule task"
     )
-    update_time: Optional[datetime] = Field(
+    update_time: Optional[AwareDatetime] = Field(
         None, description="the update time of the schedule task"
     )
 
@@ -1865,34 +1882,34 @@ class NativeReportSummary(BaseModel):
     report_id: Optional[str] = Field(
         None,
         description="id of the native scan report",
-        example="5f62c830-f996-11e9-957f-0242c0a89008",
+        examples=["5f62c830-f996-11e9-957f-0242c0a89008"],
     )
     scan_status: Optional[str] = Field(
         None,
         description="The status of the report generating process",
-        example="Success",
+        examples=["Success"],
     )
     severity: Optional[str] = Field(
-        None, description="The overall severity", example="High"
+        None, description="The overall severity", examples=["High"]
     )
     duration: Optional[int] = Field(
-        None, description="The seconds spent for generating the report", example=300
+        None, description="The seconds spent for generating the report", examples=[300]
     )
     summary: Optional[VulnerabilitySummary] = None
-    start_time: Optional[datetime] = Field(
+    start_time: Optional[AwareDatetime] = Field(
         None,
         description="The start time of the scan process that generating report",
-        example="2006-01-02T14:04:05Z",
+        examples=["2006-01-02T14:04:05Z"],
     )
-    end_time: Optional[datetime] = Field(
+    end_time: Optional[AwareDatetime] = Field(
         None,
         description="The end time of the scan process that generating report",
-        example="2006-01-02T15:04:05Z",
+        examples=["2006-01-02T15:04:05Z"],
     )
     complete_percent: Optional[int] = Field(
         None,
         description="The complete percent of the scanning which value is between 0 and 100",
-        example=100,
+        examples=[100],
     )
     scanner: Optional[Scanner] = None
 
@@ -1928,10 +1945,10 @@ class CVEAllowlist(BaseModel):
         description="the time for expiration of the allowlist, in the form of seconds since epoch.  This is an optional attribute, if it's not set the CVE allowlist does not expire.",
     )
     items: Optional[List[CVEAllowlistItem]] = None
-    creation_time: Optional[datetime] = Field(
+    creation_time: Optional[AwareDatetime] = Field(
         None, description="The creation time of the allowlist."
     )
-    update_time: Optional[datetime] = Field(
+    update_time: Optional[AwareDatetime] = Field(
         None, description="The update time of the allowlist."
     )
 
@@ -1981,9 +1998,11 @@ class GeneralInfo(BaseModel):
     banner_message: Optional[str] = Field(
         None,
         description="The banner message for the UI. It is the stringified result of the banner message object.",
-        example='{"closable":true,"message":"your banner message content","type":"warning","fromDate":"06/19/2023","toDate":"06/21/2023"}',
+        examples=[
+            '{"closable":true,"message":"your banner message content","type":"warning","fromDate":"06/19/2023","toDate":"06/21/2023"}'
+        ],
     )
-    current_time: Optional[datetime] = Field(
+    current_time: Optional[AwareDatetime] = Field(
         None, description="The current time of the server."
     )
     registry_url: Optional[str] = Field(
@@ -2026,6 +2045,10 @@ class GeneralInfo(BaseModel):
         description="The flag to indicate whether notification mechanism is enabled on Harbor instance.",
     )
     authproxy_settings: Optional[AuthproxySetting] = None
+    oidc_provider_name: Optional[str] = Field(
+        None,
+        description="The OIDC provider name, empty if current auth is not OIDC_auth or OIDC provider is not configured.",
+    )
     with_chartmuseum: Optional[bool] = Field(
         None,
         description="DEPRECATED: Harbor instance is deployed with nested chartmuseum.",
@@ -2042,10 +2065,10 @@ class GCHistory(BaseModel):
     schedule: Optional[ScheduleObj] = None
     job_status: Optional[str] = Field(None, description="the status of gc job.")
     deleted: Optional[bool] = Field(None, description="if gc job was deleted.")
-    creation_time: Optional[datetime] = Field(
+    creation_time: Optional[AwareDatetime] = Field(
         None, description="the creation time of gc job."
     )
-    update_time: Optional[datetime] = Field(
+    update_time: Optional[AwareDatetime] = Field(
         None, description="the update time of gc job."
     )
 
@@ -2060,10 +2083,10 @@ class ExecHistory(BaseModel):
     schedule: Optional[ScheduleObj] = None
     job_status: Optional[str] = Field(None, description="the status of purge job.")
     deleted: Optional[bool] = Field(None, description="if purge job was deleted.")
-    creation_time: Optional[datetime] = Field(
+    creation_time: Optional[AwareDatetime] = Field(
         None, description="the creation time of purge job."
     )
-    update_time: Optional[datetime] = Field(
+    update_time: Optional[AwareDatetime] = Field(
         None, description="the update time of purge job."
     )
 
@@ -2071,10 +2094,10 @@ class ExecHistory(BaseModel):
 class Schedule(BaseModel):
     id: Optional[int] = Field(None, description="The id of the schedule.")
     status: Optional[str] = Field(None, description="The status of the schedule.")
-    creation_time: Optional[datetime] = Field(
+    creation_time: Optional[AwareDatetime] = Field(
         None, description="the creation time of the schedule."
     )
-    update_time: Optional[datetime] = Field(
+    update_time: Optional[AwareDatetime] = Field(
         None, description="the update time of the schedule."
     )
     schedule: Optional[ScheduleObj] = None
@@ -2277,10 +2300,10 @@ class Project(BaseModel):
         None,
         description="The ID of referenced registry when the project is a proxy cache project.",
     )
-    creation_time: Optional[datetime] = Field(
+    creation_time: Optional[AwareDatetime] = Field(
         None, description="The creation time of the project."
     )
-    update_time: Optional[datetime] = Field(
+    update_time: Optional[AwareDatetime] = Field(
         None, description="The update time of the project."
     )
     deleted: Optional[bool] = Field(None, description="A deletion mark of the project.")
@@ -2362,10 +2385,10 @@ class ReplicationPolicy(BaseModel):
     enabled: Optional[bool] = Field(
         None, description="Whether the policy is enabled or not."
     )
-    creation_time: Optional[datetime] = Field(
+    creation_time: Optional[AwareDatetime] = Field(
         None, description="The create time of the policy."
     )
-    update_time: Optional[datetime] = Field(
+    update_time: Optional[AwareDatetime] = Field(
         None, description="The update time of the policy."
     )
     speed: Optional[int] = Field(None, description="speed limit for each task")
@@ -2400,10 +2423,10 @@ class Robot(BaseModel):
         None, description="The expiration date of the robot"
     )
     permissions: Optional[List[RobotPermission]] = None
-    creation_time: Optional[datetime] = Field(
+    creation_time: Optional[AwareDatetime] = Field(
         None, description="The creation time of the robot."
     )
-    update_time: Optional[datetime] = Field(
+    update_time: Optional[AwareDatetime] = Field(
         None, description="The update time of the robot."
     )
 
@@ -2479,10 +2502,10 @@ class Artifact(BaseModel):
     digest: Optional[str] = Field(None, description="The digest of the artifact")
     size: Optional[int] = Field(None, description="The size of the artifact")
     icon: Optional[str] = Field(None, description="The digest of the icon")
-    push_time: Optional[datetime] = Field(
+    push_time: Optional[AwareDatetime] = Field(
         None, description="The push time of the artifact"
     )
-    pull_time: Optional[datetime] = Field(
+    pull_time: Optional[AwareDatetime] = Field(
         None, description="The latest pull time of the artifact"
     )
     extra_attrs: Optional[ExtraAttrs] = None

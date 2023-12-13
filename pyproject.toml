@@ -70,7 +70,8 @@ dependencies = [
   "coverage>=7.3.2",
   "rich>=12.6.0",
   "typer>=0.7.0",
-  "datamodel-code-generator>=0.21.4",
+  "datamodel-code-generator>=0.25.1",
+  "python-dateutil>=2.8.2",
 ]
 [tool.hatch.envs.default.scripts]
 # Tests

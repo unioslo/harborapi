@@ -22,8 +22,6 @@ tag_strategy = st.builds(
     repository_id=st.integers(),
     artifact_id=st.integers(),
     name=st.text(),
-    push_time=st.datetimes(),
-    pull_time=st.datetimes(),
     immutable=st.booleans(),
     signed=st.booleans(),
 )
@@ -45,8 +43,6 @@ artifact_strategy = st.builds(
     digest=st.text(),
     size=st.integers(),
     icon=st.one_of(st.text(), st.none()),
-    push_time=st.datetimes(),
-    pull_time=st.datetimes(),
     annotations=st.builds(Annotations),
     extra_attrs=st.builds(ExtraAttrs),
     tags=st.lists(tag_strategy, min_size=1),
@@ -91,7 +87,6 @@ def get_hbv_strategy() -> st.SearchStrategy[HarborVulnerabilityReport]:
     # TODO: add parameter for CVSS type to pass to get_vulnerability_item_strategy
     return st.builds(
         HarborVulnerabilityReport,
-        generated_at=st.datetimes(),
         artifact=st.builds(ScanArtifact),
         scanner=scanner_strategy,
         vulnerabilities=st.lists(get_vulnerability_item_strategy()),

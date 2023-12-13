@@ -185,40 +185,6 @@ class Field(Modifier):
 # that are too minor to create new fragments for.
 models: dict[str, dict[str, list[Modifier]]] = {
     FragmentDir.scanner: {
-        "HarborVulnerabilityReport": [
-            Field(
-                "generated_at",
-                "Optional[datetime]",
-                default=None,
-                description="The time the report was generated.",
-            ),
-            Field(
-                "artifact",
-                "Optional[Artifact]",
-                default=None,
-                description="The scanned artifact.",
-            ),
-            Field(
-                "scanner",
-                "Optional[Scanner]",
-                default=None,
-                description="The scanner used to generate the report.",
-            ),
-            Field(
-                "severity",
-                "Optional[Severity]",
-                default=None,
-                description="The overall severity of the vulnerabilities.",
-            ),
-            Field(
-                "vulnerabilities",
-                "List[VulnerabilityItem]",
-                default_factory=ast.keyword(
-                    arg="default_factory", value=ast.Name(id="list")
-                ),
-                description="The list of vulnerabilities found.",
-            ),
-        ],
         "VulnerabilityItem": [
             Field(
                 "severity",

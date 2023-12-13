@@ -17,7 +17,7 @@ from harborapi.models.models import Schedule
 
 
 @pytest.mark.asyncio
-@given(st.builds(Schedule, creation_time=st.datetimes()))
+@given(st.builds(Schedule))
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 async def test_get_gc_schedule_mock(
     async_client: HarborAsyncClient,
@@ -34,7 +34,7 @@ async def test_get_gc_schedule_mock(
 
 
 @pytest.mark.asyncio
-@given(st.builds(Schedule, creation_time=st.datetimes()))
+@given(st.builds(Schedule))
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 async def test_create_gc_schedule_mock(
     async_client: HarborAsyncClient,
