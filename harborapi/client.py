@@ -408,7 +408,7 @@ class HarborAsyncClient:
         else:
             return self._construct_model(cls, data)
 
-    def _construct_model(self, cls: Type[T], data: Any, is_list: bool = False) -> T:
+    def _construct_model(self, cls: Type[T], data: Any) -> T:
         try:
             if self.validate:
                 return cls.model_validate(data)
