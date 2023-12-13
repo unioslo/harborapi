@@ -28,6 +28,7 @@ if TYPE_CHECKING:
 
 from typing_extensions import ParamSpec
 
+
 RETRY_ERRORS = (
     TimeoutException,
     NetworkError,
@@ -145,7 +146,7 @@ def retry() -> Callable[[Callable[P, T]], Callable[P, T]]:
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
             if not args or not isinstance(args[0], _get_client_type()):
                 raise TypeError(
-                    f"retry decorator must be applied on a HarborAsyncClient method."
+                    "retry decorator must be applied on a HarborAsyncClient method."
                 )
             client = args[0]
             if not client.retry or not client.retry.enabled:

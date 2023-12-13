@@ -1699,7 +1699,7 @@ class HarborAsyncClient:
         schedule : Schedule
             The new schedule to use.
         """
-        await self.put(f"/system/purgeaudit/schedule", json=schedule)
+        await self.put("/system/purgeaudit/schedule", json=schedule)
 
     # POST /system/purgeaudit/schedule
     # Create a purge job schedule.
@@ -1737,7 +1737,7 @@ class HarborAsyncClient:
         str
             The location of the new schedule.
         """
-        resp = await self.post(f"/system/purgeaudit/schedule", json=schedule)
+        resp = await self.post("/system/purgeaudit/schedule", json=schedule)
         return urldecode_header(resp, "Location")
 
     # GET /system/purgeaudit/schedule
@@ -1750,7 +1750,7 @@ class HarborAsyncClient:
             The purge audit log schedule.
         """
         try:
-            resp = await self.get(f"/system/purgeaudit/schedule")
+            resp = await self.get("/system/purgeaudit/schedule")
         except HarborAPIException:  # TODO: catch a more specific exception somehow
             # If the schedule has not been created, the API returns a 200 OK with
             # an empty body. Calling Response.json() on this response, raises
@@ -1802,7 +1802,7 @@ class HarborAsyncClient:
             A list of log rotation jobs matching the query.
         """
         params = get_params(q=query, sort=sort, page=page, page_size=page_size)
-        resp = await self.get(f"/system/purgeaudit", params=params, limit=limit)
+        resp = await self.get("/system/purgeaudit", params=params, limit=limit)
         return self.construct_model(ExecHistory, resp, is_list=True)
 
     # CATEGORY: scan data export
@@ -1817,7 +1817,7 @@ class HarborAsyncClient:
         ScanDataExportExecutionList
             A list of scan data export execution jobs for the current user.
         """
-        resp = await self.get(f"/export/cve/executions")
+        resp = await self.get("/export/cve/executions")
         return self.construct_model(ScanDataExportExecutionList, resp)
 
     # GET /export/cve/execution/{execution_id}
@@ -1865,7 +1865,7 @@ class HarborAsyncClient:
             The ID of the scan data export job.
         """
         headers = {"X-Scan-Data-Type": scan_type}
-        resp = await self.post(f"/export/cve", headers=headers, json=criteria)
+        resp = await self.post("/export/cve", headers=headers, json=criteria)
         j = handle_optional_json_response(resp)
         if not j:
             raise HarborAPIException("API returned empty response body.")
@@ -2022,7 +2022,7 @@ class HarborAsyncClient:
             The name of the project
         """
         try:
-            await self.head(f"/projects", params={"project_name": project_name})
+            await self.head("/projects", params={"project_name": project_name})
         except NotFound:
             return False
         return True
@@ -2933,7 +2933,7 @@ class HarborAsyncClient:
         j = handle_optional_json_response(resp)
         if not j:  # pragma: no cover # this shouldn't happen
             logger.warning(
-                f"Empty response from LDAP ping (%s %s)",
+                "Empty response from LDAP ping (%s %s)",
                 resp.request.method,
                 resp.request.url,
             )

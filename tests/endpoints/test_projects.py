@@ -253,9 +253,7 @@ async def test_add_project_member_mock_fuzz(
     httpserver.expect_oneshot_request(
         "/api/v2.0/projects/1234/members",
         method="POST",
-    ).respond_with_data(
-        status=201
-    )  # TODO: header location
+    ).respond_with_data(status=201)  # TODO: header location
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.add_project_member("1234", member)
 

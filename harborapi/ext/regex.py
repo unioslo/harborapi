@@ -46,5 +46,5 @@ def match(pattern: "re.Pattern[str]", s: str) -> Optional["re.Match[str]"]:
     try:
         return pattern.match(s)
     except Exception as e:
-        logger.error(f"Error matching pattern %s to string %s: %s", pattern, s, e)
+        logger.error("Error matching pattern %s to string %s: %s", pattern, s, e)
         return None

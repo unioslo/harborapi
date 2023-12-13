@@ -216,7 +216,7 @@ async def test_get_pagination_no_follow(
         headers={"link": '</api/v2.0/users?page=2>; rel="next"'},
     )
     httpserver.expect_oneshot_request(
-        "/api/v2.0/users", query_string=f"page=2"
+        "/api/v2.0/users", query_string="page=2"
     ).respond_with_json(
         [{"username": "user3"}],
         headers={"link": '</api/v2.0/users?page=1>; rel="prev"'},
@@ -239,7 +239,7 @@ async def test_get_pagination_limit(
         headers={"link": '</api/v2.0/users?page=2>; rel="next"'},
     )
     httpserver.expect_oneshot_request(
-        "/api/v2.0/users", query_string=f"page=2"
+        "/api/v2.0/users", query_string="page=2"
     ).respond_with_json(
         [{"username": "user3"}],
         headers={"link": '</api/v2.0/users?page=1>; rel="prev"'},
@@ -262,7 +262,7 @@ async def test_get_pagination_no_limit(
         headers={"link": '</api/v2.0/users?page=2>; rel="next"'},
     )
     httpserver.expect_oneshot_request(
-        "/api/v2.0/users", query_string=f"page=2"
+        "/api/v2.0/users", query_string="page=2"
     ).respond_with_json(
         [{"username": "user3"}],
         headers={"link": '</api/v2.0/users?page=1>; rel="prev"'},

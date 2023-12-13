@@ -28,7 +28,7 @@ async def test_ping_ldap_with_config_mock(
     result: LdapPingResult,
 ):
     httpserver.expect_oneshot_request(
-        f"/api/v2.0/ldap/ping",
+        "/api/v2.0/ldap/ping",
         method="POST",
         json=config.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data(result.model_dump_json(), content_type="application/json")
@@ -46,7 +46,7 @@ async def test_ping_ldap_no_config_mock(
     result: LdapPingResult,
 ):
     httpserver.expect_oneshot_request(
-        f"/api/v2.0/ldap/ping",
+        "/api/v2.0/ldap/ping",
         method="POST",
     ).respond_with_data(result.model_dump_json(), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
@@ -68,7 +68,7 @@ async def test_search_ldap_groups_mock(
     results: List[UserGroup],
 ):
     httpserver.expect_oneshot_request(
-        f"/api/v2.0/ldap/groups/search",
+        "/api/v2.0/ldap/groups/search",
         method="GET",
     ).respond_with_data(json_from_list(results), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
@@ -92,7 +92,7 @@ async def test_search_ldap_users_mock(
     results: List[LdapUser],
 ):
     httpserver.expect_oneshot_request(
-        f"/api/v2.0/ldap/users/search",
+        "/api/v2.0/ldap/users/search",
         method="GET",
     ).respond_with_data(json_from_list(results), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
@@ -110,7 +110,7 @@ async def test_import_ldap_users_mock(
     user_ids: List[str],
 ):
     httpserver.expect_oneshot_request(
-        f"/api/v2.0/ldap/users/import",
+        "/api/v2.0/ldap/users/import",
         method="POST",
         json={"ldap_uid_list": user_ids},
     ).respond_with_data()

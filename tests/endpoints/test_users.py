@@ -131,7 +131,7 @@ async def test_set_user_admin_mock(
     is_admin: bool,
 ):
     httpserver.expect_oneshot_request(
-        f"/api/v2.0/users/1234/sysadmin",
+        "/api/v2.0/users/1234/sysadmin",
         method="PUT",
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
@@ -157,7 +157,7 @@ async def test_set_user_password_mock(
     # NOTE: This mock could stand to be expanded/improved
     #       We are not mocking the distinction between user and admin behavior
     httpserver.expect_oneshot_request(
-        f"/api/v2.0/users/1234/password",
+        "/api/v2.0/users/1234/password",
         method="PUT",
         json=PasswordReq(
             new_password=new_password, old_password=old_password

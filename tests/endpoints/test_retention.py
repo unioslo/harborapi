@@ -115,7 +115,7 @@ async def test_create_retention_policy_mock(
 ) -> None:
     expect_location = "/api/v2.0/retentions/123"
     httpserver.expect_oneshot_request(
-        f"/api/v2.0/retentions",
+        "/api/v2.0/retentions",
         method="POST",
     ).respond_with_data(
         headers={"Location": expect_location},
@@ -170,7 +170,7 @@ async def test_get_retention_tasks_mock(
     httpserver.expect_oneshot_request(
         f"/api/v2.0/retentions/{policy_id}/executions/{execution_id}/tasks",
         method="GET",
-        query_string=f"page=1&page_size=10",
+        query_string="page=1&page_size=10",
     ).respond_with_data(
         json_from_list(tasks),
         headers={"Content-Type": "application/json"},
@@ -191,7 +191,7 @@ async def test_get_retention_metadata_mock(
     metadata: RetentionMetadata,
 ) -> None:
     httpserver.expect_oneshot_request(
-        f"/api/v2.0/retentions/metadatas",
+        "/api/v2.0/retentions/metadatas",
         method="GET",
     ).respond_with_data(
         metadata.model_dump_json(),
@@ -236,7 +236,7 @@ async def test_get_retention_executions_mock(
     httpserver.expect_oneshot_request(
         f"/api/v2.0/retentions/{retention_id}/executions",
         method="GET",
-        query_string=f"page=1&page_size=10",
+        query_string="page=1&page_size=10",
     ).respond_with_data(
         json_from_list(executions),
         headers={"Content-Type": "application/json"},

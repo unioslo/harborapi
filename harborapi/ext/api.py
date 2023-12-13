@@ -395,7 +395,7 @@ async def _get_artifact_report(
     """
     digest = artifact.artifact.digest
     if digest is None:  # should never happen
-        logger.error(f"Artifact %s has no digest", artifact.name_with_tag)
+        logger.error("Artifact %s has no digest", artifact.name_with_tag)
         return artifact
 
     s = artifact.repository.split_name()

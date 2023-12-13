@@ -154,7 +154,7 @@ def test_as_table_long_value() -> None:
     max_examples=10,  # large models are slow, see `test_rich_console_protocol`
 )
 def test_model_as_panel(
-    model: Union[Artifact, HarborVulnerabilityReport, ArtifactInfo, ArtifactReport]
+    model: Union[Artifact, HarborVulnerabilityReport, ArtifactInfo, ArtifactReport],
 ) -> None:
     """Test that the as_panel method on various models works."""
     # TODO: test kwargs

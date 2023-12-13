@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from base64 import b64encode
 from json import JSONDecodeError
+from typing import cast
 from typing import Dict
 from typing import Optional
 from typing import Union
@@ -64,13 +65,12 @@ def handle_optional_json_response(resp: Response) -> Optional[JSONType]:
     if not is_json(resp) or resp.status_code == 204:
         return None
     try:
-        j = resp.json()
+        # We assume Harbor API returns dict or list.
+        # If not, they are breaking their own schema and that is not our fault
+        return cast(JSONType, resp.json())
     except JSONDecodeError as e:
         logger.error("Failed to parse JSON from %s: %s", resp.url, e)
         raise HarborAPIException(f"Failed to parse JSON from {resp.url}") from e
-    # we assume Harbor API returns dict or list,
-    # if not, they are breaking their own schema and that is not our fault
-    return j  # type: ignore
 
 
 def urlencode_repo(repository_name: str) -> str:

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from json import JSONDecodeError
 from typing import Dict
 from typing import Optional
-from typing import Type
 from typing import Union
 
 import pytest
@@ -50,30 +50,17 @@ def test_get_basicauth():
 
 
 @pytest.mark.parametrize(
-    "response, expected, exception",
+    "response, expected",
     [
         (
             Response(
                 200, text='{"foo": "bar"}', headers={"content-type": "application/json"}
             ),
             {"foo": "bar"},
-            None,
         ),
         (
             Response(200, text="{}", headers={"content-type": "application/json"}),
             {},
-            None,
-        ),
-        (
-            Response(
-                200,
-                text="",
-                headers={"content-type": "application/json"},
-                # need to set request here for some reason (because empty body?)
-                request=Request("GET", "http://example.com"),
-            ),
-            None,
-            HarborAPIException,
         ),
         (
             Response(
@@ -81,7 +68,6 @@ def test_get_basicauth():
                 text="",
                 headers={"content-type": "application/json"},
             ),
-            None,
             None,
         ),
         (
@@ -91,20 +77,45 @@ def test_get_basicauth():
                 headers={"content-type": "text/plain"},
             ),
             None,
-            None,
         ),
     ],
 )
 def test_handle_optional_json_response(
     response: Response,
     expected: Optional[JSONType],
-    exception: Optional[Type[Exception]],
 ):
-    if exception:
-        with pytest.raises(exception):
-            handle_optional_json_response(response)
-    else:
-        assert handle_optional_json_response(response) == expected
+    assert handle_optional_json_response(response) == expected
+
+
+@pytest.mark.parametrize(
+    "response",
+    [
+        pytest.param(
+            Response(
+                200,
+                text="",
+                headers={"content-type": "application/json"},
+                request=Request("GET", "http://example.com"),
+            ),
+            id="empty body",
+        ),
+        pytest.param(
+            Response(
+                200,
+                text='{"a": "b",}',
+                headers={"content-type": "application/json"},
+                request=Request("GET", "http://example.com"),
+            ),
+            id="invalid json (trailing comma)",
+        ),
+    ],
+)
+def test_handle_optional_json_fail(
+    response: Response,
+):
+    with pytest.raises(HarborAPIException) as exc_info:
+        handle_optional_json_response(response)
+    assert isinstance(exc_info.value.__cause__, JSONDecodeError)
 
 
 @pytest.mark.parametrize(

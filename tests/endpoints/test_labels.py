@@ -62,7 +62,7 @@ async def test_create_label_mock(
     label_id = 123
     expect_location = f"/api/v2.0/labels/{label_id}"
     httpserver.expect_oneshot_request(
-        f"/api/v2.0/labels",
+        "/api/v2.0/labels",
         method="POST",
         json=label.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data(headers={"Location": expect_location})

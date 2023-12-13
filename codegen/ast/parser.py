@@ -533,9 +533,13 @@ def insert_or_update_classdefs(
                     if all(
                         isinstance(s, ast.AnnAssign) for s in [class_stmt, stmt]
                     ) and getattr(
-                        stmt.target, "id", None  # type: ignore
+                        stmt.target,
+                        "id",
+                        None,  # type: ignore
                     ) == getattr(
-                        class_stmt.target, "id", None  # type: ignore
+                        class_stmt.target,
+                        "id",
+                        None,  # type: ignore
                     ):
                         node.body[i] = class_stmt
                         break

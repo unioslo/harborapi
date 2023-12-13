@@ -24,7 +24,7 @@ async def test_get_scan_exports_mock(
     exports: ScanDataExportExecutionList,
 ):
     httpserver.expect_oneshot_request(
-        f"/api/v2.0/export/cve/executions",
+        "/api/v2.0/export/cve/executions",
         method="GET",
     ).respond_with_data(
         exports.model_dump_json(),
