@@ -16,6 +16,7 @@ from pydantic import SecretStr
 from ._types import JSONType
 from ._types import QueryParamMapping
 from ._types import QueryParamValue
+from .exceptions import HarborAPIException  # avoid circular import
 from .log import logger
 
 
@@ -59,8 +60,6 @@ def handle_optional_json_response(resp: Response) -> Optional[JSONType]:
         JSONDecodeError.
 
     """
-    # import here to resolve circular import
-    from .exceptions import HarborAPIException
 
     if not is_json(resp) or resp.status_code == 204:
         return None
