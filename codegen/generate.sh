@@ -52,6 +52,6 @@ fi
 
 python codegen/ast/parser.py "$output_file" "$final_file" "$source_type"
 reorder-python-imports "$final_file"
-black "$final_file"
 ruff --fix "$final_file"
+ruff format "$final_file"
 cp "$final_file" "./harborapi/models/$(basename "$final_file")"
