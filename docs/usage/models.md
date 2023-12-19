@@ -144,30 +144,51 @@ This guards against unexpected values returned by the API, and it allows us to w
 
 ### Type coercion
 
-Fields will generally attempt to coerce a value to its target type if possible. For example, the [`ProjectReq`][harborapi.models.ProjectReq] model has a field named `project_name` which expects a string argument. Pydantic provides some leniency with regards to which types it accepts, so we can pass not only a `str` to the field, but also number types, certain bytes types and `str` enums, and they will both be converted to a string:
+Fields will generally attempt to coerce a value to its target type if possible. By default, the [`ProjectReq.registry_id`][harborapi.models.ProjectReq.registry_id] field expects an `int` argument:
 
 
 ```pycon
 >>> from harborapi.models import ProjectReq
->>> ProjectReq(project_name="test-project")
-ProjectReq(project_name='test-project', public=None, metadata=None, cve_allowlist=None, storage_limit=None, registry_id=None)
->>> ProjectReq(project_name=123)
-ProjectReq(project_name='123', public=None, metadata=None, cve_allowlist=None, storage_limit=None, registry_id=None)
+>>> ProjectReq(registry_id="123")
+ProjectReq(..., registry_id=123)
 ```
 
-Not every type will be converted, so if we try to pass an arbitrary object to the field, we get an error:
+However, Pydantic provides some leniency with regards to types that fields accept as inputs, so we can pass in not only an `int`, but also a `str`, which is then converted to an `int`:
+
+```pycon
+>>> ProjectReq(registry_id="123")
+ProjectReq(..., registry_id=123)
+```
+
+`str` fields such as [`project_name`][harborapi.models.ProjectReq.project_name] cannot convert `int` to `str`, however, so if we try to pass an integer value to the field, we get an error:
+
+```pycon
+>>> ProjectReq(project_name=123)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/Users/pederhan/Library/Application Support/hatch/env/virtual/harborapi/Utij2nsk/harborapi/lib/python3.10/site-packages/pydantic/main.py", line 164, in __init__
+    __pydantic_self__.__pydantic_validator__.validate_python(data, self_instance=__pydantic_self__)
+pydantic_core._pydantic_core.ValidationError: 1 validation error for ProjectReq
+project_name
+  Input should be a valid string [type=string_type, input_value=123, input_type=int]
+    For further information visit https://errors.pydantic.dev/2.4/v/string_type
+```
+
+The same goes for passing arbitrary objects:
 
 ```pycon
 >>> ProjectReq(project_name=object())
 Traceback (most recent call last):
   File "<stdin>", line 1, in <module>
-  File "pydantic/main.py", line 341, in pydantic.main.BaseModel.__init__
-pydantic.error_wrappers.ValidationError: 1 validation error for ProjectReq
+  File "/Users/pederhan/Library/Application Support/hatch/env/virtual/harborapi/Utij2nsk/harborapi/lib/python3.10/site-packages/pydantic/main.py", line 164, in __init__
+    __pydantic_self__.__pydantic_validator__.validate_python(data, self_instance=__pydantic_self__)
+pydantic_core._pydantic_core.ValidationError: 1 validation error for ProjectReq
 project_name
-  str type expected (type=type_error.str)
+  Input should be a valid string [type=string_type, input_value=<object object at 0x1047fa280>, input_type=object]
+    For further information visit https://errors.pydantic.dev/2.4/v/string_type
 ```
 
-See the [Pydantic docs](https://docs.pydantic.dev/latest/usage/types/#standard-library-types) on standard library types for more information about how coercion works.
+See the [Pydantic docs](https://docs.pydantic.dev/latest/api/standard_library_types/) on standard library types for more information about how coercion works.
 
 
 
@@ -197,7 +218,7 @@ This only affects the `ProjectMetadata` model, which contains a whopping 6 field
 - `auto_scan`
 - `reuse_sys_cve_allowlist`
 
-For compatibility with the API, the type of these fields in the model have _not_  been changed to `bool`. When you access these fields, they will one of the strings `'true'` or `'false'`:
+For compatibility with the API, the type of these fields in the model have _not_  been changed to `bool`. When you access these fields, their value will be one of the strings `'true'` or `'false'`:
 
 ```py
 project = await client.get_project("test-project")
@@ -206,16 +227,13 @@ assert project.metadata.public in ["true", "false"]
 
 However, you _can_ instantiate these fields with bools, and they will be converted to the appropriate strings once the model is created:
 
-```py
-from harborapi.models import ProjectMetadata
-
-
-project = ProjectMetadata(
+```pycon
+>>> from harborapi.models import ProjectMetadata
+>>> ProjectMetadata(
     public=False,
     enable_content_trust=True,
 )
-assert project.public == "false"
-assert project.enable_content_trust == "true"
+ProjectMetadata(public='false', enable_content_trust='true', enable_content_trust_cosign=None, prevent_vul=None, severity=None, auto_scan=None, reuse_sys_cve_allowlist=None, retention_id=None)
 ```
 
 With the model's custom field validator, the arguments are coerced into the strings `'true'` and `'false'`. This maintains compatibility with the API while allowing you to use bools in your code.
@@ -223,16 +241,18 @@ With the model's custom field validator, the arguments are coerced into the stri
 So in general, when you assign to these fields, you don't need to think about this at all. Just use bools as you normally would:
 
 ```py
-project.public = True
-project.enable_content_trust = False
-
-assert project.public == "true"
-assert project.enable_content_trust == "false"
+>>> metadata = ProjectMetadata()
+>>> metadata.public = True
+>>> metadata.enable_content_trust = False
+>>> metadata
+ProjectMetadata(public='true', enable_content_trust='false', enable_content_trust_cosign=None, prevent_vul=None, severity=None, auto_scan=None, reuse_sys_cve_allowlist=None, retention_id=None)
 ```
 
 However, when you access them, you need to be aware that they are strings:
 
 ```py
+project = await client.get_project("test-project")
+
 if project.metadata.public: # WRONG - will match 'false' too
     print("Project is public")
 
@@ -240,10 +260,12 @@ if project.metadata.public == "true": # CORRECT
     print("Project is public")
 ```
 
-This is an inconvenient API and very unpythonic, but it's the best we can do without breaking compatibility with the Harbor API.
+This is an inconvenient API and very unpythonic, but it's the best we can do[^1] without breaking compatibility with the Harbor API.
 
 
 !!! quote "Author's note"
     It was decided to keep the offending fields as strings to maintain consistency with the API spec and avoid obscure bugs stemming from improper (de)serialization and validation.
 
     It's probably also a good idea to keep the models as close to the API spec as possible, so that the library doesn't diverge too much from the spec over time. There are, after all, a _lot_ of endpoints and models to keep track of.
+
+[^1]: With the introduction of custom model serializers in Pydantic V2, we could convert the values to bools in Python, while still serializing them as strings in JSON format. However, this breaks compatibility with previous versions of `harborapi`, and would likely just lead to more confusion among users.

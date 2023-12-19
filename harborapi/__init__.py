@@ -6,6 +6,7 @@ from . import client
 from . import client_sync
 from . import exceptions
 from . import ext
+from . import models
 from . import utils
 from . import version
 from .__about__ import __version__ as __version__
@@ -19,6 +20,7 @@ __all__ = [
     "HarborAsyncClient",
     "HarborClient",
     "auth",
+    "models",
     "client",
     "client_sync",
     "exceptions",

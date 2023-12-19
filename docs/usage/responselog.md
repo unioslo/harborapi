@@ -85,7 +85,7 @@ client.response_log.resize(3)
 assert len(client.response_log) == 3
 ```
 
-`ResponseLog.resize()` accepts a single integer argument, `max_logs`, which specifies the new maximum size of the log. If the new size is smaller than the current size, the oldest responses will be removed until the log is the specified size.
+`ResponseLog.resize()` accepts a single integer argument which specifies the new maximum size of the log. If the new size is smaller than the current size, the log discards the oldest responses until the new size is reached.
 
 ## Clear the log
 
