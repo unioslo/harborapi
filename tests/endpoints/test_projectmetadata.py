@@ -1,7 +1,12 @@
-from typing import Dict, Union
+from __future__ import annotations
+
+from typing import Dict
+from typing import Union
 
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given
+from hypothesis import HealthCheck
+from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
@@ -20,7 +25,7 @@ async def test_get_project_metadata_mock(
 ):
     httpserver.expect_oneshot_request(
         f"/api/v2.0/projects/{project_name_or_id}/metadatas", method="GET"
-    ).respond_with_data(metadata.json(), content_type="application/json")
+    ).respond_with_data(metadata.model_dump_json(), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_project_metadata(project_name_or_id)
     assert resp == metadata
@@ -38,7 +43,7 @@ async def test_set_project_metadata_mock(
     httpserver.expect_oneshot_request(
         f"/api/v2.0/projects/{project_name_or_id}/metadatas",
         method="POST",
-        json=metadata.dict(exclude_unset=True),
+        json=metadata.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.set_project_metadata(project_name_or_id, metadata)

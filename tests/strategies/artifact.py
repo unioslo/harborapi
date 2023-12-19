@@ -1,22 +1,20 @@
+from __future__ import annotations
+
 from hypothesis import strategies as st
 
-from harborapi.models.models import (
-    Accessory,
-    AdditionLinks,
-    Annotations,
-    Artifact,
-    ExtraAttrs,
-    Label,
-    ScanOverview,
-    Tag,
-)
-from harborapi.models.scanner import (
-    HarborVulnerabilityReport,
-    ScanArtifact,
-    Scanner,
-    Severity,
-    VulnerabilityItem,
-)
+from harborapi.models.models import Accessory
+from harborapi.models.models import AdditionLinks
+from harborapi.models.models import Annotations
+from harborapi.models.models import Artifact
+from harborapi.models.models import ExtraAttrs
+from harborapi.models.models import Label
+from harborapi.models.models import ScanOverview
+from harborapi.models.models import Tag
+from harborapi.models.scanner import Artifact as ScanArtifact
+from harborapi.models.scanner import HarborVulnerabilityReport
+from harborapi.models.scanner import Scanner
+from harborapi.models.scanner import Severity
+from harborapi.models.scanner import VulnerabilityItem
 
 tag_strategy = st.builds(
     Tag,
@@ -24,8 +22,6 @@ tag_strategy = st.builds(
     repository_id=st.integers(),
     artifact_id=st.integers(),
     name=st.text(),
-    push_time=st.datetimes(),
-    pull_time=st.datetimes(),
     immutable=st.booleans(),
     signed=st.booleans(),
 )
@@ -47,14 +43,12 @@ artifact_strategy = st.builds(
     digest=st.text(),
     size=st.integers(),
     icon=st.one_of(st.text(), st.none()),
-    push_time=st.datetimes(),
-    pull_time=st.datetimes(),
     annotations=st.builds(Annotations),
     extra_attrs=st.builds(ExtraAttrs),
     tags=st.lists(tag_strategy, min_size=1),
     addition_links=st.builds(AdditionLinks),
     labels=st.lists(st.builds(Label)),
-    scan_overview=st.builds(ScanOverview),
+    scan_overview=st.one_of(st.builds(ScanOverview), st.none()),
     accessories=st.lists(st.builds(Accessory)),
 )
 artifact_or_none_strategy = st.one_of(st.none(), artifact_strategy)
@@ -80,7 +74,7 @@ scanner_strategy = st.one_of(
 def get_vulnerability_item_strategy() -> st.SearchStrategy[VulnerabilityItem]:
     return st.builds(
         VulnerabilityItem,
-        id=st.integers(),
+        id=st.text(),
         package=st.text(),
         version=st.text(),  # should major.minor.patch
         fix_version=st.text(),
@@ -93,7 +87,6 @@ def get_hbv_strategy() -> st.SearchStrategy[HarborVulnerabilityReport]:
     # TODO: add parameter for CVSS type to pass to get_vulnerability_item_strategy
     return st.builds(
         HarborVulnerabilityReport,
-        generated_at=st.datetimes(),
         artifact=st.builds(ScanArtifact),
         scanner=scanner_strategy,
         vulnerabilities=st.lists(get_vulnerability_item_strategy()),

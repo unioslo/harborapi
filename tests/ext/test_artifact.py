@@ -1,12 +1,16 @@
-import pytest
-from hypothesis import HealthCheck, given, settings
+from __future__ import annotations
 
-from harborapi.ext.artifact import ArtifactInfo
-from harborapi.models import Tag
-from harborapi.models.scanner import Severity, VulnerabilityItem
-from harborapi.version import SemVer
+import pytest
+from hypothesis import given
+from hypothesis import HealthCheck
+from hypothesis import settings
 
 from ..strategies.ext import artifact_info_strategy
+from harborapi.ext.artifact import ArtifactInfo
+from harborapi.models import Tag
+from harborapi.models.scanner import Severity
+from harborapi.models.scanner import VulnerabilityItem
+from harborapi.version import SemVer
 
 
 @given(artifact_info_strategy)
@@ -72,7 +76,7 @@ def test_artifactinfo(
     # regex
     assert not artifact.has_package(".*package-2")
 
-    vuln2 = vuln.copy(deep=True)
+    vuln2 = vuln.model_copy(deep=True)
     vuln2.id = "CVE-2022-test-2"
     vuln2.description = None
     artifact.report.vulnerabilities.append(vuln2)

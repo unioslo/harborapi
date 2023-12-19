@@ -1,14 +1,21 @@
-from typing import List, Optional, Union
+from __future__ import annotations
+
+from typing import List
+from typing import Optional
 
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given
+from hypothesis import HealthCheck
+from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
-from harborapi.client import HarborAsyncClient
-from harborapi.models.models import LdapConf, LdapPingResult, LdapUser, UserGroup
-
 from ..utils import json_from_list
+from harborapi.client import HarborAsyncClient
+from harborapi.models.models import LdapConf
+from harborapi.models.models import LdapPingResult
+from harborapi.models.models import LdapUser
+from harborapi.models.models import UserGroup
 
 
 @pytest.mark.asyncio
@@ -21,10 +28,10 @@ async def test_ping_ldap_with_config_mock(
     result: LdapPingResult,
 ):
     httpserver.expect_oneshot_request(
-        f"/api/v2.0/ldap/ping",
+        "/api/v2.0/ldap/ping",
         method="POST",
-        json=config.dict(exclude_unset=True),
-    ).respond_with_data(result.json(), content_type="application/json")
+        json=config.model_dump(mode="json", exclude_unset=True),
+    ).respond_with_data(result.model_dump_json(), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.ping_ldap(config)
     assert resp == result
@@ -39,9 +46,9 @@ async def test_ping_ldap_no_config_mock(
     result: LdapPingResult,
 ):
     httpserver.expect_oneshot_request(
-        f"/api/v2.0/ldap/ping",
+        "/api/v2.0/ldap/ping",
         method="POST",
-    ).respond_with_data(result.json(), content_type="application/json")
+    ).respond_with_data(result.model_dump_json(), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.ping_ldap()
     assert resp == result
@@ -61,7 +68,7 @@ async def test_search_ldap_groups_mock(
     results: List[UserGroup],
 ):
     httpserver.expect_oneshot_request(
-        f"/api/v2.0/ldap/groups/search",
+        "/api/v2.0/ldap/groups/search",
         method="GET",
     ).respond_with_data(json_from_list(results), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
@@ -85,7 +92,7 @@ async def test_search_ldap_users_mock(
     results: List[LdapUser],
 ):
     httpserver.expect_oneshot_request(
-        f"/api/v2.0/ldap/users/search",
+        "/api/v2.0/ldap/users/search",
         method="GET",
     ).respond_with_data(json_from_list(results), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
@@ -95,23 +102,19 @@ async def test_search_ldap_users_mock(
 
 
 @pytest.mark.asyncio
-@given(st.lists(st.one_of(st.text(), st.integers())))
+@given(st.lists(st.text()))
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 async def test_import_ldap_users_mock(
     async_client: HarborAsyncClient,
     httpserver: HTTPServer,
-    user_ids: List[Union[str, int]],
+    user_ids: List[str],
 ):
-    # We pass in lists containing both strings and ints to check that the
-    # pydantic model converts these to strings
     httpserver.expect_oneshot_request(
-        f"/api/v2.0/ldap/users/import",
+        "/api/v2.0/ldap/users/import",
         method="POST",
-        # make sure the user ids are converted to strings
-        json={"ldap_uid_list": [str(uid) for uid in user_ids]},
+        json={"ldap_uid_list": user_ids},
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
-
     # The method constructs the request model,
     # we just pass in the list of user IDs.
-    await async_client.import_ldap_users(user_ids)  # type: ignore
+    await async_client.import_ldap_users(user_ids)

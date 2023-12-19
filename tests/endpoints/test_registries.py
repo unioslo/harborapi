@@ -1,20 +1,21 @@
+from __future__ import annotations
+
 from typing import List
 
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given
+from hypothesis import HealthCheck
+from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
-from harborapi.client import HarborAsyncClient
-from harborapi.models import (
-    Registry,
-    RegistryInfo,
-    RegistryPing,
-    RegistryProviders,
-    RegistryUpdate,
-)
-
 from ..utils import json_from_list
+from harborapi.client import HarborAsyncClient
+from harborapi.models import Registry
+from harborapi.models import RegistryInfo
+from harborapi.models import RegistryPing
+from harborapi.models import RegistryProviders
+from harborapi.models import RegistryUpdate
 
 
 @pytest.mark.asyncio
@@ -28,7 +29,7 @@ async def test_check_registry_status_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/registries/ping",
         method="POST",
-        json=ping.dict(exclude_unset=True),
+        json=ping.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.check_registry_status(ping)
@@ -60,7 +61,7 @@ async def test_get_registry_info_mock(
 ):
     httpserver.expect_oneshot_request(
         "/api/v2.0/registries/123/info", method="GET"
-    ).respond_with_json(registryinfo.dict())
+    ).respond_with_json(registryinfo.model_dump(mode="json", exclude_unset=True))
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.get_registry_info(123)
 
@@ -76,7 +77,7 @@ async def test_get_registry_providers_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/replication/adapterinfos", method="GET"
     ).respond_with_data(
-        providers.json(),
+        providers.model_dump_json(),
         headers={"Content-Type": "application/json"},
     )
     async_client.url = httpserver.url_for("/api/v2.0")
@@ -93,7 +94,9 @@ async def test_update_registry_mock(
     registry: RegistryUpdate,
 ):
     httpserver.expect_oneshot_request(
-        "/api/v2.0/registries/123", method="PUT", json=registry.dict(exclude_unset=True)
+        "/api/v2.0/registries/123",
+        method="PUT",
+        json=registry.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.update_registry(123, registry)
@@ -109,7 +112,7 @@ async def test_get_registry_mock(
 ):
     httpserver.expect_oneshot_request(
         "/api/v2.0/registries/123", method="GET"
-    ).respond_with_json(registry.dict())
+    ).respond_with_json(registry.model_dump(mode="json", exclude_unset=True))
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_registry(123)
     assert resp == registry
@@ -137,7 +140,9 @@ async def test_create_registry_mock(
     registry: Registry,
 ):
     httpserver.expect_oneshot_request(
-        "/api/v2.0/registries", method="POST", json=registry.dict(exclude_unset=True)
+        "/api/v2.0/registries",
+        method="POST",
+        json=registry.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data(headers={"Location": "/api/v2.0/registries/123"})
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.create_registry(registry)

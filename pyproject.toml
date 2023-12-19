@@ -29,7 +29,7 @@ classifiers = [
 ]
 dependencies = [
   "httpx>=0.22.0",
-  "pydantic>=1.9.1,<2.0",
+  "pydantic>=2.2.1",
   "backoff>=2.1.2",
   "typing_extensions>=4.4.0",
 ]
@@ -59,32 +59,43 @@ path = "harborapi/__about__.py"
 
 [tool.hatch.envs.default]
 dependencies = [
-  "black>=22.10.0",
-  "mypy>=0.991",
+  "mypy>=1.7.0",
+  "ruff>=0.1.7",
   "pytest>=7.2.0",
   "pytest-asyncio>=0.18.3",
   "pytest-cov>=4.0.0",
   "pytest-httpserver>=1.0.4",
   "pytest-mock>=3.10.0",
   "hypothesis>=6.62.1",
+  "coverage>=7.3.2",
   "rich>=12.6.0",
   "typer>=0.7.0",
-  "datamodel-code-generator==0.13.0",
-
+  "datamodel-code-generator>=0.25.1",
+  "python-dateutil>=2.8.2",
 ]
 [tool.hatch.envs.default.scripts]
+# Tests
 test = "pytest {args}"
 cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=harborapi --cov=tests {args}"
 no-cov = "cov --no-cov {args}"
+covhtml = "cov {args} && coverage html && open htmlcov/index.html"
+
+# Version bumping
 bump = "python scripts/bump_version.py {args}"
+
+# API Models Codegen
+generate = ["generate-main", "generate-scanner"]
+generate-main = "./codegen/generate.sh main {args}"
+generate-scanner = "./codegen/generate.sh scanner {args}"
 
 [tool.hatch.envs.docs]
 dependencies = [
-  "mkdocs",
-  "mkdocs-material",
-  "mkdocstrings[python]",
-  "mkdocs-exclude-search",
-  "rich",
+  "mkdocs>=1.5.2",
+  "mkdocs-material>=9.2.8",
+  "mkdocstrings>=0.23.0",
+  "mkdocstrings-python>=1.6.2",
+  "mkdocs-exclude-search>=0.6.5",
+  "rich>=13.5.2",
 ]
 [tool.hatch.envs.docs.scripts]
 build = "mkdocs build --clean --strict"
@@ -100,19 +111,52 @@ exclude = ["/.github", "/docs", "/tests", "/scripts"]
 packages = ["harborapi"]
 
 [tool.coverage.run]
+source = ["./"]
+omit = ["harborapi/__about__.py", "*/*.pyi"]
 branch = true
 parallel = true
-omit = ["harborapi/__about__.py"]
+
+[tool.coverage.paths]
+source = ["harborapi", "tests"]
 
 [tool.coverage.report]
-exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
-include = ["./harborapi/*.py", "./tests/*.py"]
+exclude_also = [
+  'except ImportError',
+  'except ModuleNotFoundError',
+  '^\s*pass\s*$',
+  'raise NotImplementedError',
+  '^\s*if TYPE_CHECKING:$',
+  '^\s*?\.\.\.\s*$',
+  'if __name__ == __main__:',
+]
 
 [tool.ruff]
 ignore = [
-  "E501", # line too long (we let black handle this)
-  "F541", # f-string is missing placeholders
+  # Rules disabled due to using Ruff as formatter
+  # See: https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
+  "W191",   # Indentation contains tabs
+  "E111",   # Indentation is not a multiple of four
+  "E114",   # Indentation is not a multiple of four (comment)
+  "E117",   # Over-indented
+  "D206",   # Docstring should be indented with spaces, not tabs
+  "D300",   # Use """triple double quotes""" (found '''-quotes)
+  "Q000",   # Remove bad quotes (inlined)
+  "Q001",   # Remove bad quotes (multiline)
+  "Q002",   # Remove bad quotes (docstring)
+  "Q003",   # Avoidable escape quote
+  "COM812", # Missing trailing comma in Python 3.6+
+  "COM819", # Prohibited trailing comma
+  "ISC001", # Implicit string concatenation (single line)
+  "ISC002", # Implicit string concatenation (multiline)
+  # Other rules
+  "E501", # line too long (we let the formatter handle this)
 ]
+exclude = [
+  "codegen/ast/fragments",
+  "harborapi/models/_models.py",
+  "harborapi/models/_scanner.py",
+]
+
 [tool.ruff.per-file-ignores]
 "__init__.py" = ["E402", "F401", "F403"]
 
@@ -120,10 +164,8 @@ ignore = [
 python_version = "3.8"
 ignore_missing_imports = true
 strict = true
-exclude = ["tests"]
+exclude = ['tests', 'codegen/temp']
 
-[tool.isort]
-profile = "black"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
@@ -134,4 +176,7 @@ field-constraints = true
 snake-case-field = true
 strip-default-none = false
 target-python-version = "3.8"
-use-schema-description = false # bad docs coverage and numerous spelling errors (as of 2022-06-29)
+use-schema-description = true
+use-field-descriptions = true
+input-file-type = "openapi"
+output-model-type = "pydantic_v2.BaseModel"

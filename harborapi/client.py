@@ -1,129 +1,131 @@
+from __future__ import annotations
+
 import contextlib
-import json
 import os
 import warnings
 from http.cookiejar import CookieJar
 from pathlib import Path
-from typing import (
-    Any,
-    Dict,
-    Generator,
-    List,
-    Literal,
-    Optional,
-    Tuple,
-    Type,
-    TypeVar,
-    Union,
-    overload,
-)
+from typing import Any
+from typing import cast
+from typing import Dict
+from typing import Generator
+from typing import List
+from typing import Literal
+from typing import Optional
+from typing import overload
+from typing import Tuple
+from typing import Type
+from typing import TypeVar
+from typing import Union
 
 import httpx
-from httpx import Response, Timeout
+from httpx import Response
+from httpx import Timeout
 from httpx._types import VerifyTypes
-from pydantic import BaseModel, SecretStr, ValidationError
+from pydantic import BaseModel
+from pydantic import SecretStr
+from pydantic import ValidationError
 
 from ._types import JSONType
-from .auth import load_harbor_auth_file, new_authfile_from_robotcreate
-from .exceptions import (
-    HarborAPIException,
-    NotFound,
-    UnprocessableEntity,
-    check_response_status,
-)
-from .log import enable_logging, logger
-from .models import (
-    Accessory,
-    Artifact,
-    AuditLog,
-    Configurations,
-    ConfigurationsResponse,
-    CVEAllowlist,
-    ExecHistory,
-    GCHistory,
-    GeneralInfo,
-    Icon,
-    IsDefault,
-    Label,
-    LdapConf,
-    LdapImportUsers,
-    LdapPingResult,
-    LdapUser,
-    OIDCTestReq,
-    OverallHealthStatus,
-    PasswordReq,
-    Permission,
-    Project,
-    ProjectDeletable,
-    ProjectMember,
-    ProjectMemberEntity,
-    ProjectMetadata,
-    ProjectReq,
-    ProjectScanner,
-    ProjectSummary,
-    Quota,
-    QuotaUpdateReq,
-    Registry,
-    RegistryInfo,
-    RegistryPing,
-    RegistryProviders,
-    RegistryUpdate,
-    ReplicationExecution,
-    ReplicationPolicy,
-    ReplicationTask,
-    Repository,
-    RetentionExecution,
-    RetentionExecutionTask,
-    RetentionMetadata,
-    RetentionPolicy,
-    Robot,
-    RobotCreate,
-    RobotCreated,
-    RobotSec,
-    RoleRequest,
-    ScanDataExportExecution,
-    ScanDataExportExecutionList,
-    ScanDataExportJob,
-    ScanDataExportRequest,
-    ScannerAdapterMetadata,
-    ScannerRegistration,
-    ScannerRegistrationReq,
-    ScannerRegistrationSettings,
-    Schedule,
-    Search,
-    StartReplicationExecution,
-    Statistic,
-    Stats,
-    SupportedWebhookEventTypes,
-    SystemInfo,
-    Tag,
-    UserCreationReq,
-    UserEntity,
-    UserGroup,
-    UserGroupSearchItem,
-    UserProfile,
-    UserResp,
-    UserSearchRespItem,
-    UserSysAdminFlag,
-    WebhookJob,
-    WebhookLastTrigger,
-    WebhookPolicy,
-)
+from ._types import QueryParamMapping
+from .auth import load_harbor_auth_file
+from .auth import new_authfile_from_robotcreate
+from .exceptions import check_response_status
+from .exceptions import HarborAPIException
+from .exceptions import NotFound
+from .exceptions import UnprocessableEntity
+from .log import enable_logging
+from .log import logger
+from .models import Accessory
+from .models import Artifact
+from .models import AuditLog
+from .models import Configurations
+from .models import ConfigurationsResponse
+from .models import CVEAllowlist
+from .models import ExecHistory
+from .models import GCHistory
+from .models import GeneralInfo
+from .models import Icon
+from .models import IsDefault
+from .models import Label
+from .models import LdapConf
+from .models import LdapImportUsers
+from .models import LdapPingResult
+from .models import LdapUser
+from .models import OIDCTestReq
+from .models import OverallHealthStatus
+from .models import PasswordReq
+from .models import Permission
+from .models import Project
+from .models import ProjectDeletable
+from .models import ProjectMember
+from .models import ProjectMemberEntity
+from .models import ProjectMetadata
+from .models import ProjectReq
+from .models import ProjectScanner
+from .models import ProjectSummary
+from .models import Quota
+from .models import QuotaUpdateReq
+from .models import Registry
+from .models import RegistryInfo
+from .models import RegistryPing
+from .models import RegistryProviders
+from .models import RegistryUpdate
+from .models import ReplicationExecution
+from .models import ReplicationPolicy
+from .models import ReplicationTask
+from .models import Repository
+from .models import RetentionExecution
+from .models import RetentionExecutionTask
+from .models import RetentionMetadata
+from .models import RetentionPolicy
+from .models import Robot
+from .models import RobotCreate
+from .models import RobotCreated
+from .models import RobotSec
+from .models import RoleRequest
+from .models import ScanDataExportExecution
+from .models import ScanDataExportExecutionList
+from .models import ScanDataExportJob
+from .models import ScanDataExportRequest
+from .models import ScannerAdapterMetadata
+from .models import ScannerRegistration
+from .models import ScannerRegistrationReq
+from .models import ScannerRegistrationSettings
+from .models import Schedule
+from .models import Search
+from .models import StartReplicationExecution
+from .models import Statistic
+from .models import Stats
+from .models import SupportedWebhookEventTypes
+from .models import SystemInfo
+from .models import Tag
+from .models import UserCreationReq
+from .models import UserEntity
+from .models import UserGroup
+from .models import UserGroupSearchItem
+from .models import UserProfile
+from .models import UserResp
+from .models import UserSearchRespItem
+from .models import UserSysAdminFlag
+from .models import WebhookJob
+from .models import WebhookLastTrigger
+from .models import WebhookPolicy
 from .models.buildhistory import BuildHistoryEntry
 from .models.file import FileResponse
 from .models.scanner import HarborVulnerabilityReport
-from .responselog import ResponseLog, ResponseLogEntry
-from .retry import RetrySettings, retry
-from .utils import (
-    get_artifact_path,
-    get_basicauth,
-    get_params,
-    get_project_headers,
-    get_repo_path,
-    handle_optional_json_response,
-    parse_pagination_url,
-    urldecode_header,
-)
+from .responselog import ResponseLog
+from .responselog import ResponseLogEntry
+from .retry import retry
+from .retry import RetrySettings
+from .utils import get_artifact_path
+from .utils import get_basicauth
+from .utils import get_params
+from .utils import get_project_headers
+from .utils import get_repo_path
+from .utils import handle_optional_json_response
+from .utils import parse_pagination_url
+from .utils import urldecode_header
 
 __all__ = ["HarborAsyncClient"]
 
@@ -133,24 +135,9 @@ T = TypeVar("T", bound=BaseModel)
 # TODO: move pydantic model functions to separate module
 
 
-def model_to_dict(model: BaseModel) -> Any:
+def model_to_dict(model: BaseModel) -> JSONType:
     """Creates a JSON-serializable dict from a Pydantic model."""
-    # Round-trip through BaseModel.json() to ensure that all dict values
-    # are JSON-serializable. BaseModel.dict() can contain Python objects
-    # that are not natively serializable by the built-in JSON encoder.
-    #
-    # Until https://github.com/pydantic/pydantic/issues/1409 is fixed,
-    # this is the easiest way to do this without having to implement
-    # custom encoders for all Pydantic models.
-    #
-    # This is of course not ideal, but since we are dealing with network
-    # requests here, this extra encoding should only represent a small
-    # fraction of the overall time spent.
-    #
-    # This does put a spanner in the works with regards to typing, since
-    # json.loads() returns Any. However, HTTPX expects Any for the `json`
-    # parameter on its HTTP methods, so it's not a huge deal.
-    return json.loads(model.json(exclude_unset=True))
+    return cast(JSONType, model.model_dump(mode="json", exclude_unset=True))
 
 
 class CookieDiscarder(CookieJar):
@@ -181,7 +168,7 @@ class HarborAsyncClient:
         timeout: Union[float, Timeout] = 10.0,
         verify: VerifyTypes = True,
         # Retry options
-        retry: Optional[RetrySettings] = RetrySettings(),
+        retry: Optional[RetrySettings] = RetrySettings(),  # type: ignore[call-arg]
         **kwargs: Any,
     ) -> None:
         """Initialize a new HarborAsyncClient with either a username and secret,
@@ -421,12 +408,12 @@ class HarborAsyncClient:
         else:
             return self._construct_model(cls, data)
 
-    def _construct_model(self, cls: Type[T], data: Any, is_list: bool = False) -> T:
+    def _construct_model(self, cls: Type[T], data: Any) -> T:
         try:
             if self.validate:
-                return cls.parse_obj(data)
+                return cls.model_validate(data)
             else:
-                return cls.construct(**data)
+                return cls.model_construct(**data)
         except ValidationError as e:
             logger.error("Failed to construct %s with %s", cls, data)
             raise e
@@ -1712,7 +1699,7 @@ class HarborAsyncClient:
         schedule : Schedule
             The new schedule to use.
         """
-        await self.put(f"/system/purgeaudit/schedule", json=schedule)
+        await self.put("/system/purgeaudit/schedule", json=schedule)
 
     # POST /system/purgeaudit/schedule
     # Create a purge job schedule.
@@ -1750,7 +1737,7 @@ class HarborAsyncClient:
         str
             The location of the new schedule.
         """
-        resp = await self.post(f"/system/purgeaudit/schedule", json=schedule)
+        resp = await self.post("/system/purgeaudit/schedule", json=schedule)
         return urldecode_header(resp, "Location")
 
     # GET /system/purgeaudit/schedule
@@ -1763,14 +1750,14 @@ class HarborAsyncClient:
             The purge audit log schedule.
         """
         try:
-            resp = await self.get(f"/system/purgeaudit/schedule")
+            resp = await self.get("/system/purgeaudit/schedule")
         except HarborAPIException:  # TODO: catch a more specific exception somehow
             # If the schedule has not been created, the API returns a 200 OK with
             # an empty body. Calling Response.json() on this response, raises
             # a JSONDecodeError (which we normally catch and re-raise as a
             # HarborAPIException).
             # We catch this exception and return an empty ExecHistory object.
-            return ExecHistory()
+            return ExecHistory()  # type: ignore[call-arg] # Mypy doesn't understand defaults?
         return self.construct_model(ExecHistory, resp)
 
     # GET /system/purgeaudit
@@ -1815,7 +1802,7 @@ class HarborAsyncClient:
             A list of log rotation jobs matching the query.
         """
         params = get_params(q=query, sort=sort, page=page, page_size=page_size)
-        resp = await self.get(f"/system/purgeaudit", params=params, limit=limit)
+        resp = await self.get("/system/purgeaudit", params=params, limit=limit)
         return self.construct_model(ExecHistory, resp, is_list=True)
 
     # CATEGORY: scan data export
@@ -1830,7 +1817,7 @@ class HarborAsyncClient:
         ScanDataExportExecutionList
             A list of scan data export execution jobs for the current user.
         """
-        resp = await self.get(f"/export/cve/executions")
+        resp = await self.get("/export/cve/executions")
         return self.construct_model(ScanDataExportExecutionList, resp)
 
     # GET /export/cve/execution/{execution_id}
@@ -1878,7 +1865,7 @@ class HarborAsyncClient:
             The ID of the scan data export job.
         """
         headers = {"X-Scan-Data-Type": scan_type}
-        resp = await self.post(f"/export/cve", headers=headers, json=criteria)
+        resp = await self.post("/export/cve", headers=headers, json=criteria)
         j = handle_optional_json_response(resp)
         if not j:
             raise HarborAPIException("API returned empty response body.")
@@ -2035,7 +2022,7 @@ class HarborAsyncClient:
             The name of the project
         """
         try:
-            await self.head(f"/projects", params={"project_name": project_name})
+            await self.head("/projects", params={"project_name": project_name})
         except NotFound:
             return False
         return True
@@ -2418,14 +2405,12 @@ class HarborAsyncClient:
             The URL of the new project member
         """
         if isinstance(username_or_id, str):
-            user_kwargs = {
-                "username": username_or_id
-            }  # type: Dict[str, Union[str, int]]
+            user = UserEntity(username=username_or_id)  # type: ignore[call-arg]
         else:
-            user_kwargs = {"user_id": username_or_id}
+            user = UserEntity(user_id=username_or_id)  # type: ignore[call-arg]
 
         member = ProjectMember(
-            member_user=UserEntity(**user_kwargs),
+            member_user=user,
             role_id=role_id,
         )
         return await self.add_project_member(project_name_or_id, member)
@@ -2461,14 +2446,12 @@ class HarborAsyncClient:
             The URL of the new project member
         """
         if isinstance(ldap_group_dn_or_id, str):
-            group_kwargs = {
-                "ldap_group_dn": ldap_group_dn_or_id
-            }  # type: Dict[str, Union[str, int]]
+            ug = UserGroup(ldap_group_dn=ldap_group_dn_or_id)  # type: ignore[call-arg]
         else:
-            group_kwargs = {"id": ldap_group_dn_or_id}
+            ug = UserGroup(id=ldap_group_dn_or_id)  # type: ignore[call-arg]
 
         member = ProjectMember(
-            member_group=UserGroup(**group_kwargs),
+            member_group=ug,
             role_id=role_id,
         )
         return await self.add_project_member(project_name_or_id, member)
@@ -2950,11 +2933,11 @@ class HarborAsyncClient:
         j = handle_optional_json_response(resp)
         if not j:  # pragma: no cover # this shouldn't happen
             logger.warning(
-                f"Empty response from LDAP ping (%s %s)",
+                "Empty response from LDAP ping (%s %s)",
                 resp.request.method,
                 resp.request.url,
             )
-            return LdapPingResult()
+            return LdapPingResult()  # type: ignore[call-arg]
         return self.construct_model(LdapPingResult, j)
 
     # GET /ldap/groups/search
@@ -3807,11 +3790,9 @@ class HarborAsyncClient:
         !!! note "API Spec Inconsistency"
             The retention policy ID field for a project is marked as a string in the
             API spec, but the retention endpoints expect an integer ID.
-            This method returns an integer if possible, and None otherwise.
-            A warning is logged if the ID cannot be converted to an integer,
-            so that we know if this breaks/changes in the future.
-
-            Yet another ticking time-bomb stemming from handwritten API specs...
+            This method will always return an integer. If the project
+            has a retention ID that cannot be converted to int, the method
+            raises a [HarborAPIException][harborapi.exceptions.HarborAPIException]
 
         Parameters
         ----------
@@ -3822,17 +3803,24 @@ class HarborAsyncClient:
 
         Returns
         -------
-        Optional[int]
-            The retention policy ID for the project, or None if the project
-            does not have a retention policy or the ID cannot be converted to int.
+        int
+            The retention policy ID for the project.
+
+        Raises
+        ------
+        NotFound
+            If the project does not have a retention policy ID.
         """
         project = await self.get_project(project_name_or_id)
-        if project.metadata and project.metadata.retention_id is not None:
-            try:
-                return int(project.metadata.retention_id)
-            except ValueError as e:
-                logger.error("Could not convert retention ID to integer: %s", e)
-        return None
+        if not project.metadata or project.metadata.retention_id is None:
+            raise NotFound(f"Project {project.name!r} does not have a retention ID")
+
+        try:
+            return int(project.metadata.retention_id)
+        except ValueError:
+            raise HarborAPIException(
+                f"Could not convert project {project_name_or_id!r} retention ID {project.metadata.retention_id} to integer."
+            )
 
     # GET /retentions/{id}
     # Get Retention Policy
@@ -4672,7 +4660,7 @@ class HarborAsyncClient:
 
         !!! note "Validation"
             To validate the metadata client-side before sending it, pass in
-            `ProjectMetadata(field_to_set=value).dict(exclude_unset=True)`
+            `ProjectMetadata(field_to_set=value).model_dump(exclude_unset=True)`
             as the `metadata` argument.
             This will ensure that the metadata is valid according to the
             current version of the API spec that this client is using.
@@ -4694,7 +4682,7 @@ class HarborAsyncClient:
         headers = get_project_headers(project_name_or_id)
         # Parse the metadata as a ProjectMetadata object
         # to ensure that it's valid according to the API spec.
-        m = ProjectMetadata.parse_obj(metadata)
+        m = ProjectMetadata.model_validate(metadata)
         await self.put(
             f"/projects/{project_name_or_id}/metadatas/{metadata_name}",
             json=m,
@@ -4816,7 +4804,7 @@ class HarborAsyncClient:
     async def get(
         self,
         path: str,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         headers: Optional[Dict[str, Any]] = None,
         follow_links: bool = True,
         limit: Optional[int] = None,
@@ -4845,80 +4833,63 @@ class HarborAsyncClient:
         JSONType
             The JSON response from the API.
         """
-        j, next_url = await self._get(
-            path,
-            params=params,
-            headers=headers,
-            follow_links=follow_links,
-            **kwargs,
-        )
-        if not next_url:  # no pagination
-            return j
-
-        # Handle paginated results
-        # Coerce limit to n>=0
         limit = limit if limit and limit > 0 else 0
-
-        # Make sure j is a list
-        if not isinstance(j, list):
-            logger.warning(
-                "Unable to handle paginated results: Expected a list from 'GET %s', but got %s",
-                path,
-                type(j),
-            )
-            # TODO: add toggle for this coercion (coerce or throw exception)
-            #       or should we even accomodate this use-case? Always throw exception?
-            logger.info("Coercing value from %s to list", path)
-            j = [j]
-
-        # Send requests as long as we get next links
+        next_url = path  # type: str | None
+        paginating = False
+        results = []  # type: List[JSONType]
         while next_url:
-            paginated, next_url = await self._get(
+            res, next_url = await self._get(
                 next_url,
-                # don't pass params (they should be in next URL)
+                # When paginating, params are in next link
+                params=None if paginating else params,
                 headers=headers,
                 follow_links=follow_links,
                 **kwargs,
             )
-            if not isinstance(paginated, list):
-                logger.warning(
+
+            # No next URL - return the result directly
+            if not next_url and not paginating:
+                return res
+
+            # Expect list results from here on out
+            paginating = True
+            if not isinstance(res, list):
+                logger.error(
                     "Unable to handle paginated results: Expected a list from 'GET %s', but got %s",
                     next_url,
-                    type(paginated),
+                    type(res),
                 )
-                # NOTE: we could also abort here, so we don't get partial results
-                #       but right now it's unclear whether this can ever happen
+                # OPINION: do best-effort to return results instead of raising an exception (bad?)
                 continue
-            j.extend(paginated)
+            results.extend(res)
 
-            # Check if we have reached our limit
             if limit:
-                if len(j) > limit:
-                    j = j[:limit]
+                if len(results) > limit:
+                    results = results[:limit]
                     break
 
-        return j
+        return results
 
     @retry()
     async def get_text(
         self,
         path: str,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         headers: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> str:
-        """Bad workaround in order to have a cleaner API for text/plain responses."""
+        """Hacky workaround to have a cleaner API for fetching text/plain responses."""
         headers = headers or {}
         headers.update({"Accept": "text/plain"})
         resp, _ = await self._get(path, params=params, headers=headers, **kwargs)
-        # assume text is never paginated
-        return resp  # type: ignore
+        # OPINION: assume text is never paginated
+        return str(resp)
 
     @retry()
     async def get_file(
         self,
         path: str,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         headers: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> FileResponse:
@@ -4946,7 +4917,7 @@ class HarborAsyncClient:
     async def _get_file(
         self,
         path: str,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         headers: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> FileResponse:
@@ -4980,7 +4951,7 @@ class HarborAsyncClient:
     async def _get(
         self,
         path: str,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         headers: Optional[Dict[str, Any]] = None,
         follow_links: bool = True,
         **kwargs: Any,
@@ -5029,7 +5000,7 @@ class HarborAsyncClient:
         self,
         path: str,
         json: Optional[Union[BaseModel, JSONType]] = None,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         headers: Optional[Dict[str, Any]] = None,
     ) -> Response:
         """Sends a POST request to a path, optionally with a JSON body."""
@@ -5044,7 +5015,7 @@ class HarborAsyncClient:
         self,
         path: str,
         json: Optional[Union[BaseModel, JSONType]] = None,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         headers: Optional[Dict[str, Any]] = None,
     ) -> Response:
         if isinstance(json, BaseModel):
@@ -5064,7 +5035,7 @@ class HarborAsyncClient:
         self,
         path: str,
         json: Optional[Union[BaseModel, JSONType]] = None,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         headers: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> Optional[JSONType]:
@@ -5081,7 +5052,7 @@ class HarborAsyncClient:
         self,
         path: str,
         json: Optional[Union[BaseModel, JSONType]] = None,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         headers: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> Response:
@@ -5103,7 +5074,7 @@ class HarborAsyncClient:
         self,
         path: str,
         json: Union[BaseModel, JSONType],
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         headers: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> Optional[JSONType]:
@@ -5120,7 +5091,7 @@ class HarborAsyncClient:
         self,
         path: str,
         json: Union[BaseModel, JSONType],
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         headers: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> Response:
@@ -5142,7 +5113,7 @@ class HarborAsyncClient:
     async def delete(
         self,
         path: str,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         headers: Optional[Dict[str, Any]] = None,
         missing_ok: Optional[bool] = None,
         **kwargs: Any,
@@ -5160,7 +5131,7 @@ class HarborAsyncClient:
         self,
         path: str,
         headers: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         missing_ok: Optional[bool] = None,
         **kwargs: Any,
     ) -> Response:
@@ -5178,7 +5149,7 @@ class HarborAsyncClient:
     async def head(
         self,
         path: str,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         headers: Optional[Dict[str, Any]] = None,
         missing_ok: Optional[bool] = None,
         **kwargs: Any,
@@ -5196,7 +5167,7 @@ class HarborAsyncClient:
         self,
         path: str,
         headers: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[QueryParamMapping] = None,
         missing_ok: Optional[bool] = None,
         **kwargs: Any,
     ) -> Response:

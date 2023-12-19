@@ -1,21 +1,25 @@
-from typing import List, Optional
+from __future__ import annotations
+
+from typing import List
+from typing import Optional
 
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given
+from hypothesis import HealthCheck
+from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
-from harborapi.client import HarborAsyncClient
-from harborapi.models import UserResp
-from harborapi.models.models import (
-    PasswordReq,
-    Permission,
-    UserCreationReq,
-    UserProfile,
-    UserSearchRespItem,
-)
-
 from ..utils import json_from_list
+from harborapi.client import HarborAsyncClient
+from harborapi.exceptions import HarborAPIException
+from harborapi.exceptions import NotFound
+from harborapi.models import UserResp
+from harborapi.models.models import PasswordReq
+from harborapi.models.models import Permission
+from harborapi.models.models import UserCreationReq
+from harborapi.models.models import UserProfile
+from harborapi.models.models import UserSearchRespItem
 
 
 @pytest.mark.asyncio
@@ -29,7 +33,7 @@ async def test_get_users_mock(
 ):
     httpserver.expect_oneshot_request(
         "/api/v2.0/users", method="GET"
-    ).respond_with_json([user1.dict(), user2.dict()])
+    ).respond_with_json([user1.model_dump(mode="json"), user2.model_dump(mode="json")])
     async_client.url = httpserver.url_for("/api/v2.0")
     users = await async_client.get_users()
     assert len(users) == 2
@@ -113,7 +117,7 @@ async def test_get_current_user_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/users/current",
         method="GET",
-    ).respond_with_data(user.json(), content_type="application/json")
+    ).respond_with_data(user.model_dump_json(), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_current_user()
     assert resp == user
@@ -127,7 +131,7 @@ async def test_set_user_admin_mock(
     is_admin: bool,
 ):
     httpserver.expect_oneshot_request(
-        f"/api/v2.0/users/1234/sysadmin",
+        "/api/v2.0/users/1234/sysadmin",
         method="PUT",
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
@@ -153,9 +157,11 @@ async def test_set_user_password_mock(
     # NOTE: This mock could stand to be expanded/improved
     #       We are not mocking the distinction between user and admin behavior
     httpserver.expect_oneshot_request(
-        f"/api/v2.0/users/1234/password",
+        "/api/v2.0/users/1234/password",
         method="PUT",
-        json=PasswordReq(new_password=new_password, old_password=old_password).dict(),
+        json=PasswordReq(
+            new_password=new_password, old_password=old_password
+        ).model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.set_user_password(1234, new_password, old_password)
@@ -172,7 +178,7 @@ async def test_create_user_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/users",
         method="POST",
-        json=user.dict(exclude_unset=True),
+        json=user.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data(status=201, headers={"Location": "/api/v2.0/users/1234"})
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.create_user(user)
@@ -190,7 +196,7 @@ async def test_update_user_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/users/1234",
         method="PUT",
-        json=user.dict(exclude_unset=True),
+        json=user.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data(status=200)
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.update_user(1234, user)
@@ -207,7 +213,7 @@ async def test_get_user_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/users/1234",
         method="GET",
-    ).respond_with_data(user.json(), content_type="application/json")
+    ).respond_with_data(user.model_dump_json(), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_user(1234)
     assert user == resp
@@ -236,11 +242,37 @@ async def test_get_user_by_username_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/users/1234",
         method="GET",
-    ).respond_with_data(user.json(), content_type="application/json")
+    ).respond_with_data(user.model_dump_json(), content_type="application/json")
 
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_user_by_username("test-user")
     assert resp == user
+
+
+@pytest.mark.asyncio
+async def test_get_user_by_username_user_not_found_mock(
+    async_client: HarborAsyncClient, httpserver: HTTPServer
+):
+    """Try to find user that doesn't exist."""
+    httpserver.expect_oneshot_request("/api/v2.0/users/search").respond_with_json([])
+    async_client.url = httpserver.url_for("/api/v2.0")
+    with pytest.raises(NotFound):
+        await async_client.get_user_by_username("test-user")
+
+
+@pytest.mark.asyncio
+async def test_get_user_by_username_user_no_id_mock(
+    async_client: HarborAsyncClient, httpserver: HTTPServer
+):
+    """Returned user has no user ID."""
+    user = UserSearchRespItem(username="test-user")
+    httpserver.expect_oneshot_request("/api/v2.0/users/search").respond_with_json(
+        [user.model_dump(mode="json")]
+    )
+    async_client.url = httpserver.url_for("/api/v2.0")
+    with pytest.raises(HarborAPIException) as exc_info:
+        await async_client.get_user_by_username("test-user")
+    assert "no id" in exc_info.exconly().lower()
 
 
 @pytest.mark.asyncio

@@ -1,20 +1,16 @@
+from __future__ import annotations
+
 import warnings
-from typing import Any, List, Optional
+from typing import Any
+from typing import List
+from typing import Optional
 
-from httpx import HTTPStatusError, NetworkError, Response, TimeoutException
-
-from harborapi.utils import is_json
+from httpx import HTTPStatusError
+from httpx import Response
 
 from .log import logger
-from .models import Error, Errors
-
-# NOTE: this should probably be configurable somehow
-# However, backoff.on_retry needs to receive a TUPLE of exception types
-# (despite claiming it can be a sequence), so it can't be a list
-RETRY_ERRORS = (
-    TimeoutException,
-    NetworkError,
-)
+from .models import Error
+from .models import Errors
 
 
 class HarborAPIException(Exception):
@@ -193,6 +189,8 @@ def try_parse_errors(response: Response) -> Optional[Errors]:
     Optional[Errors]
         The errors from the response.
     """
+    from .utils import is_json  # avoid circular import
+
     if is_json(response):
         try:
             return Errors(**response.json())

@@ -1,34 +1,38 @@
+from __future__ import annotations
+
 import functools
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Dict,
-    Iterable,
-    Optional,
-    Tuple,
-    Type,
-    TypeVar,
-    Union,
-)
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import Iterable
+from typing import Optional
+from typing import Tuple
+from typing import Type
+from typing import TYPE_CHECKING
+from typing import TypeVar
+from typing import Union
 
 import backoff
-from backoff._typing import _Handler, _Jitterer, _Predicate, _WaitGenerator
-from httpx import NetworkError, TimeoutException
-from pydantic import BaseModel, Extra, Field
+from backoff._typing import _Handler
+from backoff._typing import _Jitterer
+from backoff._typing import _Predicate
+from backoff._typing import _WaitGenerator
+from httpx import NetworkError
+from httpx import TimeoutException
+from pydantic import BaseModel
+from pydantic import ConfigDict
+from pydantic import Field
 
 if TYPE_CHECKING:
     from .client import HarborAsyncClient
 
 from typing_extensions import ParamSpec
 
+
 RETRY_ERRORS = (
     TimeoutException,
     NetworkError,
 )
-
-
-ExceptionType = Type[Exception]
 
 
 def DEFAULT_PREDICATE(e: Exception) -> bool:
@@ -83,16 +87,15 @@ class RetrySettings(BaseModel):
         default=True,
         description="Whether to raise the exception when giving up.",
     )
-
-    class Config:
-        extra = Extra.allow
-        validate_assignment = True
+    model_config = ConfigDict(extra="allow", validate_assignment=True)
 
     @property
     def wait_gen_kwargs(self) -> Dict[str, Any]:
         """Dict of extra model fields."""
-        fields = self.__fields__.keys()
-        return {key: value for key, value in self.__dict__.items() if key not in fields}
+        fields = self.model_fields.keys()
+        return {
+            key: value for key, value in self.model_dump().items() if key not in fields
+        }
 
 
 def get_backoff_kwargs(client: "HarborAsyncClient") -> Dict[str, Any]:
@@ -120,6 +123,14 @@ def get_backoff_kwargs(client: "HarborAsyncClient") -> Dict[str, Any]:
     )
 
 
+@functools.lru_cache()
+def _get_client_type() -> Type["HarborAsyncClient"]:
+    """Cached client type lazy-import getter."""
+    from .client import HarborAsyncClient
+
+    return HarborAsyncClient
+
+
 P = ParamSpec("P")
 T = TypeVar("T")
 
@@ -133,9 +144,11 @@ def retry() -> Callable[[Callable[P, T]], Callable[P, T]]:
     def decorator(func: Callable[P, T]) -> Callable[P, T]:
         @functools.wraps(func)
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
-            if not args:
-                raise ValueError("Must be applied on a method, not a function.")
-            client = args[0]  # type: HarborAsyncClient # type: ignore
+            if not args or not isinstance(args[0], _get_client_type()):
+                raise TypeError(
+                    "retry decorator must be applied on a HarborAsyncClient method."
+                )
+            client = args[0]
             if not client.retry or not client.retry.enabled:
                 return func(*args, **kwargs)
 

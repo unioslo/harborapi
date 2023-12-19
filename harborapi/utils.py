@@ -1,13 +1,22 @@
+from __future__ import annotations
+
 import re
 from base64 import b64encode
 from json import JSONDecodeError
-from typing import Dict, Mapping, Optional, Union
-from urllib.parse import quote_plus, unquote_plus
+from typing import cast
+from typing import Dict
+from typing import Optional
+from typing import Union
+from urllib.parse import quote_plus
+from urllib.parse import unquote_plus
 
 from httpx import Response
 from pydantic import SecretStr
 
-from ._types import JSONType, ParamType
+from ._types import JSONType
+from ._types import QueryParamMapping
+from ._types import QueryParamValue
+from .exceptions import HarborAPIException  # avoid circular import
 from .log import logger
 
 
@@ -51,19 +60,16 @@ def handle_optional_json_response(resp: Response) -> Optional[JSONType]:
         JSONDecodeError.
 
     """
-    # import here to resolve circular import
-    from .exceptions import HarborAPIException
 
     if not is_json(resp) or resp.status_code == 204:
         return None
     try:
-        j = resp.json()
+        # We assume Harbor API returns dict or list.
+        # If not, they are breaking their own schema and that is not our fault
+        return cast(JSONType, resp.json())
     except JSONDecodeError as e:
         logger.error("Failed to parse JSON from %s: %s", resp.url, e)
         raise HarborAPIException(f"Failed to parse JSON from {resp.url}") from e
-    # we assume Harbor API returns dict or list,
-    # if not, they are breaking their own schema and that is not our fault
-    return j  # type: ignore
 
 
 def urlencode_repo(repository_name: str) -> str:
@@ -244,20 +250,21 @@ def get_project_headers(project_name_or_id: Union[str, int]) -> Dict[str, str]:
     return {"X-Is-Resource-Name": str(isinstance(project_name_or_id, str)).lower()}
 
 
-def get_params(**kwargs: ParamType) -> Mapping[str, ParamType]:
+def get_params(**kwargs: QueryParamValue) -> QueryParamMapping:
     """Get parameters for an API call as a dict, where `None` values are ignored.
 
     Parameters
     ----------
     **kwargs: ParamType
         The parameters to use for the request.
+        Each keyword argument type must be a primitive, JSON-serializable type.
 
     Returns
     -------
-    Mapping[str, Any]
+    QueryParamMapping
         The dict representation of the parameters with `None` values removed.
     """
-    params = {k: v for k, v in kwargs.items() if v is not None}
+    params: QueryParamMapping = {k: v for k, v in kwargs.items() if v is not None}
     # Ensure that the "query" parameter is renamed to "q"
     # We use "query" as the parameter name in this library, but "q" is the
     # parameter name used by the Harbor API.

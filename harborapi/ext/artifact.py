@@ -1,10 +1,19 @@
-from functools import cached_property
-from typing import TYPE_CHECKING, Callable, Iterable, List, Optional
+from __future__ import annotations
 
-from ..version import VersionType, get_semver
+from functools import cached_property
+from typing import Callable
+from typing import Iterable
+from typing import List
+from typing import Optional
+from typing import TYPE_CHECKING
+
+from ..version import get_semver
+from ..version import VersionType
 
 if TYPE_CHECKING:
     from typing import Dict  # noqa: F401
+
+from pydantic import ConfigDict
 
 from ..models import Artifact, Repository
 from ..models.base import BaseModel
@@ -19,11 +28,8 @@ class ArtifactInfo(BaseModel):
 
     artifact: Artifact
     repository: Repository
-    report: HarborVulnerabilityReport = HarborVulnerabilityReport()  # type: ignore # why complain?
-    # NOTE: add Project?
-
-    class Config:
-        keep_untouched = (cached_property,)
+    report: HarborVulnerabilityReport = HarborVulnerabilityReport()
+    model_config = ConfigDict(ignored_types=(cached_property,))
 
     @property
     def __rich_panel_title__(self) -> str:

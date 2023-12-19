@@ -1,19 +1,20 @@
+from __future__ import annotations
+
 from typing import List
 
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given
+from hypothesis import HealthCheck
+from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
-from harborapi.client import HarborAsyncClient
-from harborapi.models import (
-    SupportedWebhookEventTypes,
-    WebhookJob,
-    WebhookLastTrigger,
-    WebhookPolicy,
-)
-
 from ..utils import json_from_list
+from harborapi.client import HarborAsyncClient
+from harborapi.models import SupportedWebhookEventTypes
+from harborapi.models import WebhookJob
+from harborapi.models import WebhookLastTrigger
+from harborapi.models import WebhookPolicy
 
 
 @pytest.mark.asyncio
@@ -97,7 +98,7 @@ async def test_get_webhook_supported_events_mock(
         f"/api/v2.0/projects/{project_id}/webhook/events",
         method="GET",
         headers={"X-Is-Resource-Name": "false"},
-    ).respond_with_data(events.json(), content_type="application/json")
+    ).respond_with_data(events.model_dump_json(), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_webhook_supported_events(project_id)
     assert resp == events
@@ -158,7 +159,7 @@ async def test_get_webhook_policy_mock(
         f"/api/v2.0/projects/{project_id}/webhook/policies/{policy_id}",
         method="GET",
         headers={"X-Is-Resource-Name": "false"},
-    ).respond_with_data(policy.json(), content_type="application/json")
+    ).respond_with_data(policy.model_dump_json(), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_webhook_policy(project_id, policy_id)
     assert resp == policy
@@ -178,6 +179,6 @@ async def test_delete_webhook_policy_mock(
         f"/api/v2.0/projects/{project_id}/webhook/policies/{policy_id}",
         method="DELETE",
         headers={"X-Is-Resource-Name": "false"},
-    ).respond_with_data(policy.json(), content_type="application/json")
+    ).respond_with_data(policy.model_dump_json(), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.delete_webhook_policy(project_id, policy_id)

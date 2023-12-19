@@ -1,7 +1,11 @@
 """Caching functions for the ext module."""
+from __future__ import annotations
+
 import re
 from functools import lru_cache
-from typing import Dict, Optional, Tuple
+from typing import Dict
+from typing import Optional
+from typing import Tuple
 
 from ..log import logger
 
@@ -42,5 +46,5 @@ def match(pattern: "re.Pattern[str]", s: str) -> Optional["re.Match[str]"]:
     try:
         return pattern.match(s)
     except Exception as e:
-        logger.error(f"Error matching pattern %s to string %s: %s", pattern, s, e)
+        logger.error("Error matching pattern %s to string %s: %s", pattern, s, e)
         return None

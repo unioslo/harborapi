@@ -1,18 +1,17 @@
-from typing import Any, Dict, List, Mapping, Sequence, TypeVar, Union
+from __future__ import annotations
 
-from pydantic import BaseModel
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import MutableMapping
+from typing import Sequence
+from typing import Union
 
-JSONType = Union[Dict[str, Any], List[Any]]
+from httpx._types import PrimitiveData
 
-# This is more correct, but leads to a whole lot of typing bloat wrt. handling iterables.
-# We assume that the API will always return a list or dict.
-# JSONType = Union[None, int, float, str, Dict[str, Any], List[Any]]
-
-T = TypeVar("T", bound=BaseModel)
-ModelOrDict = Union[T, Dict[str, Any]]
-"""A type that can be either a model or a dict."""
+JSONType = Union[Dict[str, Any], List[Any]]  # TODO: Use PrimitiveData
 
 
 # HTTP(X)
-ParamValue = Union[str, int, float, bool, None]
-ParamType = Union[ParamValue, Sequence[ParamValue], Mapping[str, ParamValue]]
+QueryParamValue = Union[PrimitiveData, Sequence[PrimitiveData]]
+QueryParamMapping = MutableMapping[str, QueryParamValue]

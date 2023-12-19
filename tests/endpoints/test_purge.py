@@ -1,14 +1,18 @@
+from __future__ import annotations
+
 from typing import List
 
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given
+from hypothesis import HealthCheck
+from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
-from harborapi.client import HarborAsyncClient
-from harborapi.models.models import ExecHistory, Schedule
-
 from ..utils import json_from_list
+from harborapi.client import HarborAsyncClient
+from harborapi.models.models import ExecHistory
+from harborapi.models.models import Schedule
 
 
 @pytest.mark.asyncio
@@ -21,7 +25,7 @@ async def test_get_audit_log_rotation_mock(
 ):
     httpserver.expect_oneshot_request(
         "/api/v2.0/system/purgeaudit/1234", method="GET"
-    ).respond_with_data(status.json(), content_type="application/json")
+    ).respond_with_data(status.model_dump_json(), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_audit_log_rotation("1234")
     assert resp == status
@@ -94,7 +98,7 @@ async def test_get_audit_log_rotation_schedule_mock(
 ):
     httpserver.expect_oneshot_request(
         "/api/v2.0/system/purgeaudit/schedule", method="GET"
-    ).respond_with_data(schedule.json(), content_type="application/json")
+    ).respond_with_data(schedule.model_dump_json(), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_audit_log_rotation_schedule()
     assert resp == schedule

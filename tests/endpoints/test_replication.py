@@ -1,14 +1,19 @@
+from __future__ import annotations
+
 from typing import List
 
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given
+from hypothesis import HealthCheck
+from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
-from harborapi.client import HarborAsyncClient
-from harborapi.models import ReplicationExecution, ReplicationPolicy, ReplicationTask
-
 from ..utils import json_from_list
+from harborapi.client import HarborAsyncClient
+from harborapi.models import ReplicationExecution
+from harborapi.models import ReplicationPolicy
+from harborapi.models import ReplicationTask
 
 
 @pytest.mark.asyncio
@@ -21,7 +26,7 @@ async def test_get_replication_mock(
 ):
     httpserver.expect_oneshot_request(
         "/api/v2.0/replication/executions/1234", method="GET"
-    ).respond_with_data(replication.json(), content_type="application/json")
+    ).respond_with_data(replication.model_dump_json(), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_replication(1234)
     assert resp == replication
@@ -122,7 +127,7 @@ async def test_get_replication_policy(
     httpserver.expect_oneshot_request(
         "/api/v2.0/replication/policies/1234", method="GET"
     ).respond_with_data(
-        policy.json(),
+        policy.model_dump_json(),
         content_type="application/json",
     )
     async_client.url = httpserver.url_for("/api/v2.0")
@@ -141,7 +146,7 @@ async def test_create_replication_policy(
     httpserver.expect_oneshot_request(
         "/api/v2.0/replication/policies",
         method="POST",
-        json=policy.dict(exclude_unset=True),
+        json=policy.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data(
         headers={
             "Location": "http://localhost:8080/api/v2.0/replication/policies/1234"
@@ -164,7 +169,7 @@ async def test_update_replication_policy(
     httpserver.expect_oneshot_request(
         "/api/v2.0/replication/policies/1234",
         method="PUT",
-        json=policy.dict(exclude_unset=True),
+        json=policy.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.update_replication_policy(1234, policy)

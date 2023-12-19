@@ -1,6 +1,6 @@
 # Get vulnerabilities in all artifacts
 
-This recipe describes how to fetch all vulnerabilities from all artifacts in all repositories in all (or a subset of) projects using the helper functions defined in [`ext.api`](/reference/ext/api.md).
+This recipe describes how to fetch all vulnerabilities from all artifacts in all repositories in all (or a subset of) projects using the helper functions defined in [`ext.api`](../../reference/ext/api.md).
 
 The recipe demonstrates how to fetch all artifacts that have vulnerabilities affecting OpenSSL version 3.x. It makes use of the built-in rate limiting implemented in [`get_artifact_vulnerabilities`][harborapi.ext.api.get_artifact_vulnerabilities]. By default, a maximum of 5 requests are sent concurrently, which prevents the program from accidentally performing a DoS attack on your Harbor instance.
 

@@ -1,13 +1,21 @@
+from __future__ import annotations
+
 import json
-from datetime import datetime, timezone
+from datetime import datetime
+from datetime import timezone
 from pathlib import Path
 
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given
+from hypothesis import HealthCheck
+from hypothesis import settings
 from hypothesis import strategies as st
 
-from harborapi.auth import HarborAuthFile, load_harbor_auth_file, save_authfile
-from harborapi.models.models import Access, RobotPermission
+from harborapi.auth import HarborAuthFile
+from harborapi.auth import load_harbor_auth_file
+from harborapi.auth import save_authfile
+from harborapi.models.models import Access
+from harborapi.models.models import RobotPermission
 
 
 def test_load_harbor_auth_file(credentials_file: Path):
@@ -61,7 +69,7 @@ def test_save_authfile(tmp_path: Path, auth_file: HarborAuthFile):
     auth_file.secret = "test"
     fpath = tmp_path / "credentials.json"
     save_authfile(fpath, auth_file, overwrite=True)
-    assert fpath.read_text() == auth_file.json(indent=4)  # potentially flaky
+    assert fpath.read_text() == auth_file.model_dump_json(indent=4)  # potentially flaky
     assert load_harbor_auth_file(fpath) == auth_file
 
     with pytest.raises(FileExistsError) as exc_info:

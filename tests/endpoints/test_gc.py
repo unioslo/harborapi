@@ -1,19 +1,23 @@
+from __future__ import annotations
+
 import json
 from typing import List
 
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given
+from hypothesis import HealthCheck
+from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
-from harborapi.client import HarborAsyncClient
-from harborapi.models.models import GCHistory, Schedule
-
 from ..utils import json_from_list
+from harborapi.client import HarborAsyncClient
+from harborapi.models.models import GCHistory
+from harborapi.models.models import Schedule
 
 
 @pytest.mark.asyncio
-@given(st.builds(Schedule, creation_time=st.datetimes()))
+@given(st.builds(Schedule))
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 async def test_get_gc_schedule_mock(
     async_client: HarborAsyncClient,
@@ -24,13 +28,13 @@ async def test_get_gc_schedule_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/system/gc/schedule",
         method="GET",
-    ).respond_with_data(schedule.json(), content_type="application/json")
+    ).respond_with_data(schedule.model_dump_json(), content_type="application/json")
     resp = await async_client.get_gc_schedule()
     assert resp == schedule
 
 
 @pytest.mark.asyncio
-@given(st.builds(Schedule, creation_time=st.datetimes()))
+@given(st.builds(Schedule))
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 async def test_create_gc_schedule_mock(
     async_client: HarborAsyncClient,
@@ -42,7 +46,7 @@ async def test_create_gc_schedule_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/system/gc/schedule",
         method="POST",
-        json=json.loads(schedule.json(exclude_unset=True)),
+        json=json.loads(schedule.model_dump_json(exclude_unset=True)),
     ).respond_with_data(
         headers={"Location": expect_location},
         status=201,
@@ -63,7 +67,7 @@ async def test_update_gc_schedule_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/system/gc/schedule",
         method="PUT",
-        json=schedule.dict(exclude_unset=True),
+        json=schedule.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
     await async_client.update_gc_schedule(schedule)
 
@@ -101,7 +105,7 @@ async def test_get_gc_job_mock(
         "/api/v2.0/system/gc/123",
         method="GET",
     ).respond_with_data(
-        job.json(),
+        job.model_dump_json(),
         content_type="application/json",
     )
     async_client.url = httpserver.url_for("/api/v2.0")

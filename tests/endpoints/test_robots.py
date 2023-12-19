@@ -1,18 +1,24 @@
+from __future__ import annotations
+
 import json
 from pathlib import Path
 from typing import List
 
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given
+from hypothesis import HealthCheck
+from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
+from ..utils import json_from_list
 from harborapi.auth import HarborAuthFile
 from harborapi.client import HarborAsyncClient
 from harborapi.exceptions import HarborAPIException
-from harborapi.models.models import Robot, RobotCreate, RobotCreated, RobotSec
-
-from ..utils import json_from_list
+from harborapi.models.models import Robot
+from harborapi.models.models import RobotCreate
+from harborapi.models.models import RobotCreated
+from harborapi.models.models import RobotSec
 
 
 @pytest.mark.asyncio
@@ -27,8 +33,10 @@ async def test_create_robot_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/robots",
         method="POST",
-        json=robot.dict(exclude_unset=True),
-    ).respond_with_data(robot_created.json(), content_type="application/json")
+        json=robot.model_dump(mode="json", exclude_unset=True),
+    ).respond_with_data(
+        robot_created.model_dump_json(), content_type="application/json"
+    )
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.create_robot(robot)
     assert resp == robot_created
@@ -45,7 +53,7 @@ async def test_create_robot_empty_response_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/robots",
         method="POST",
-        json=robot.dict(exclude_unset=True),
+        json=robot.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data("{}", content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
     with pytest.raises(HarborAPIException) as exc_info:
@@ -54,7 +62,9 @@ async def test_create_robot_empty_response_mock(
 
 
 @pytest.mark.asyncio
-@given(st.builds(RobotCreate), st.builds(RobotCreated))
+@given(
+    st.builds(RobotCreate), st.builds(RobotCreated, name=st.text(), secret=st.text())
+)
 @settings(
     suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=1
 )  # Only run once
@@ -68,8 +78,10 @@ async def test_create_robot_with_path_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/robots",
         method="POST",
-        json=robot.dict(exclude_unset=True),
-    ).respond_with_data(robot_created.json(), content_type="application/json")
+        json=robot.model_dump(exclude_unset=True),
+    ).respond_with_data(
+        robot_created.model_dump_json(), content_type="application/json"
+    )
     async_client.url = httpserver.url_for("/api/v2.0")
 
     filename = f"{robot_created.name or robot.name}.json"
@@ -121,7 +133,7 @@ async def test_get_robot_mock(
 ):
     httpserver.expect_oneshot_request(
         "/api/v2.0/robots/1234", method="GET"
-    ).respond_with_data(robot.json(), content_type="application/json")
+    ).respond_with_data(robot.model_dump_json(), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_robot(1234)
     assert resp == robot
@@ -138,7 +150,7 @@ async def test_update_robot_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/robots/1234",
         method="PUT",
-        json=robot.dict(exclude_unset=True),
+        json=robot.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.update_robot(1234, robot)
@@ -168,8 +180,10 @@ async def test_refresh_robot_secret_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/robots/1234",
         method="PATCH",
-        json=expected_resp.dict(),
-    ).respond_with_data(expected_resp.json(), content_type="application/json")
+        json=expected_resp.model_dump(mode="json", exclude_unset=True),
+    ).respond_with_data(
+        expected_resp.model_dump_json(), content_type="application/json"
+    )
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.refresh_robot_secret(1234, secret)
     assert resp == expected_resp

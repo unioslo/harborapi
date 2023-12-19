@@ -1,10 +1,15 @@
+from __future__ import annotations
+
 import json
 from pathlib import Path
 from typing import Union
 
+from pydantic import ConfigDict
 from pydantic import Field
 
-from harborapi.models.models import Robot, RobotCreate, RobotCreated
+from harborapi.models.models import Robot
+from harborapi.models.models import RobotCreate
+from harborapi.models.models import RobotCreated
 
 
 def _load_harbor_auth_file(path: Union[str, Path]) -> "HarborAuthFile":
@@ -14,7 +19,7 @@ def _load_harbor_auth_file(path: Union[str, Path]) -> "HarborAuthFile":
         # parse without any guards against exceptions
         # pass the exception to the caller
         j = json.load(f)
-    return HarborAuthFile.parse_obj(j)
+    return HarborAuthFile.model_validate(j)
 
 
 def load_harbor_auth_file(path: Union[str, Path]) -> "HarborAuthFile":
@@ -67,7 +72,7 @@ def save_authfile(
     if p.exists() and not overwrite:
         raise FileExistsError(f"File {p} already exists")
     with open(path, "w") as f:
-        f.write(authfile.json(indent=4))
+        f.write(authfile.model_dump_json(indent=4))
 
 
 def new_authfile_from_robotcreate(
@@ -93,8 +98,10 @@ def new_authfile_from_robotcreate(
     --------
     [harborapi.auth.save_authfile][]
     """
-    authfile = HarborAuthFile.parse_obj(
-        {**(robotcreated.dict()), **(robotcreate.dict())}
+    # Specify robotcreated last, since that is the object that should
+    # contain the secret (which we definitely don't want to overwrite)
+    authfile = HarborAuthFile.model_validate(
+        {**(robotcreate.model_dump()), **(robotcreated.model_dump())}
     )
     save_authfile(path, authfile, overwrite=overwrite)
 
@@ -122,7 +129,7 @@ def new_authfile_from_robot(
     --------
     [harborapi.auth.save_authfile][]
     """
-    authfile = HarborAuthFile.parse_obj(robot.dict())
+    authfile = HarborAuthFile.model_validate(robot.model_dump())
     authfile.secret = secret
     save_authfile(path, authfile, overwrite=overwrite)
 
@@ -135,7 +142,4 @@ class HarborAuthFile(Robot):
 
     name: str = Field(None, description="The name of the robot account")
     secret: str = Field(None, description="The secret for the robot account")
-
-    class Config:
-        allow_population_by_field_name = True  # why? do we have any aliases?
-        extra = "allow"
+    model_config = ConfigDict(populate_by_name=True, extra="allow")

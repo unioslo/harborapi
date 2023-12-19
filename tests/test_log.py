@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 import warnings
@@ -6,13 +8,11 @@ from typing import Optional
 import pytest
 
 from harborapi import HarborAsyncClient
-from harborapi.log import (
-    DEFAULT_LEVEL,
-    DEFAULT_LEVEL_DISABLED,
-    disable_logging,
-    enable_logging,
-    logger,
-)
+from harborapi.log import DEFAULT_LEVEL
+from harborapi.log import DEFAULT_LEVEL_DISABLED
+from harborapi.log import disable_logging
+from harborapi.log import enable_logging
+from harborapi.log import logger
 
 # TODO: ensure we are testing the logger properly (we are using the global logger object)
 # Should we import logger in each test function?

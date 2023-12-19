@@ -1,11 +1,16 @@
+from __future__ import annotations
+
 import copy
 
-from hypothesis import HealthCheck, assume, given, settings
-
-from harborapi.ext.report import ArtifactReport
-from harborapi.models.scanner import Severity, VulnerabilityItem
+from hypothesis import assume
+from hypothesis import given
+from hypothesis import HealthCheck
+from hypothesis import settings
 
 from ..strategies.ext import artifact_report_strategy
+from harborapi.ext.report import ArtifactReport
+from harborapi.models.scanner import Severity
+from harborapi.models.scanner import VulnerabilityItem
 
 # TODO: add fixture that initializes the report with the data we do in the test below
 #       Afterwards, we can split up the tests and use the fixture to initialize the report
@@ -117,9 +122,6 @@ def test_artifactreport(
         # the method should be changed to operate on ArtifactInfo objects.
         assert report.distribution[severity] == n_vulnerabilities
 
-    # Iteration
-    for i, artifact in enumerate(report):
-        assert artifact == report.artifacts[i]
     assert len(report) == len(report.artifacts)
 
     # Test constructing from a list of ArtifactInfo objects

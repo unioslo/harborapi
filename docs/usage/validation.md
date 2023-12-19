@@ -73,7 +73,7 @@ async def main():
 asyncio.run(main())
 ```
 ```py
-GeneralInfo.construct(
+GeneralInfo.model_construct(
     current_time="2023-02-06T14:34:42.449000+00:00",
     with_chartmuseum=True,
     registry_url="demo.goharbor.io",
@@ -179,7 +179,7 @@ asyncio.run(main())
 
 
 !!! info
-    `validate=False` is equivalent to constructing Pydantic models with [`BaseModel.construct()`](https://docs.pydantic.dev/usage/models/#creating-models-without-validation) instead of the usual [`BaseModel.parse_obj()`](https://docs.pydantic.dev/usage/models/#parsing-data-into-a-specified-type). The latter method will validate the data and construct submodels, while the former will not.
+    `validate=False` is equivalent to constructing Pydantic models with [`BaseModel.model_construct()`](https://docs.pydantic.dev/usage/models/#creating-models-without-validation) instead of the usual [`BaseModel.model_validate()`](https://docs.pydantic.dev/usage/models/#parsing-data-into-a-specified-type). The latter method will validate the data and construct submodels, while the former will not.
 
 
 `raw` always takes precedence over `validate` if it is set. By default, `raw` is set to `False` and `validate` is set to `True`. I.e.:

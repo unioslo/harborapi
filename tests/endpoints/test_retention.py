@@ -1,21 +1,24 @@
+from __future__ import annotations
+
 from typing import List
 
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given
+from hypothesis import HealthCheck
+from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
-from harborapi.client import HarborAsyncClient
-from harborapi.models import (
-    Project,
-    ProjectMetadata,
-    RetentionExecution,
-    RetentionExecutionTask,
-    RetentionMetadata,
-    RetentionPolicy,
-)
-
 from ..utils import json_from_list
+from harborapi.client import HarborAsyncClient
+from harborapi.exceptions import HarborAPIException
+from harborapi.exceptions import NotFound
+from harborapi.models import Project
+from harborapi.models import ProjectMetadata
+from harborapi.models import RetentionExecution
+from harborapi.models import RetentionExecutionTask
+from harborapi.models import RetentionMetadata
+from harborapi.models import RetentionPolicy
 
 
 @pytest.mark.asyncio
@@ -36,10 +39,52 @@ async def test_get_project_retention_id_mock(
         f"/api/v2.0/projects/{project_name_or_id}",
         method="GET",
         headers={"X-Is-Resource-Name": "false" if is_id else "true"},
-    ).respond_with_data(project.json(), content_type="application/json")
+    ).respond_with_data(project.model_dump_json(), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_project_retention_id(project_name_or_id)
     assert resp == expect_id
+
+
+@pytest.mark.asyncio
+@given(st.builds(Project, metadata=st.builds(ProjectMetadata)))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+async def test_get_project_retention_id_no_retention_id_mock(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+    project: Project,
+) -> None:
+    """No retention ID raises a NotFound exception."""
+    project.metadata.retention_id = None
+    project_name_or_id = 12
+    httpserver.expect_oneshot_request(
+        f"/api/v2.0/projects/{project_name_or_id}",
+        method="GET",
+    ).respond_with_json(project.model_dump(mode="json"))
+    async_client.url = httpserver.url_for("/api/v2.0")
+    with pytest.raises(NotFound) as exc_info:
+        await async_client.get_project_retention_id(project_name_or_id)
+    assert "retention ID" in exc_info.exconly()
+
+
+@pytest.mark.asyncio
+@given(st.builds(Project, metadata=st.builds(ProjectMetadata)))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+async def test_get_project_retention_id_invalid_id(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+    project: Project,
+) -> None:
+    """A retention ID that is not an integer raises a HarborAPIException."""
+    project.metadata.retention_id = "not an integer"
+    project_name_or_id = 123
+    httpserver.expect_oneshot_request(
+        f"/api/v2.0/projects/{project_name_or_id}",
+        method="GET",
+    ).respond_with_json(project.model_dump(mode="json"))
+    async_client.url = httpserver.url_for("/api/v2.0")
+    with pytest.raises(HarborAPIException) as exc_info:
+        await async_client.get_project_retention_id(project_name_or_id)
+    assert "convert" in exc_info.exconly()
 
 
 @pytest.mark.asyncio
@@ -54,7 +99,7 @@ async def test_get_retention_policy_mock(
     httpserver.expect_oneshot_request(
         f"/api/v2.0/retentions/{retention_id}",
         method="GET",
-    ).respond_with_data(policy.json(), content_type="application/json")
+    ).respond_with_data(policy.model_dump_json(), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_retention_policy(retention_id)
     assert resp == policy
@@ -70,7 +115,7 @@ async def test_create_retention_policy_mock(
 ) -> None:
     expect_location = "/api/v2.0/retentions/123"
     httpserver.expect_oneshot_request(
-        f"/api/v2.0/retentions",
+        "/api/v2.0/retentions",
         method="POST",
     ).respond_with_data(
         headers={"Location": expect_location},
@@ -92,7 +137,7 @@ async def test_update_retention_policy_mock(
     httpserver.expect_oneshot_request(
         f"/api/v2.0/retentions/{policy_id}",
         method="PUT",
-        json=policy.dict(exclude_unset=True),
+        json=policy.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.update_retention_policy(policy_id, policy)
@@ -125,7 +170,7 @@ async def test_get_retention_tasks_mock(
     httpserver.expect_oneshot_request(
         f"/api/v2.0/retentions/{policy_id}/executions/{execution_id}/tasks",
         method="GET",
-        query_string=f"page=1&page_size=10",
+        query_string="page=1&page_size=10",
     ).respond_with_data(
         json_from_list(tasks),
         headers={"Content-Type": "application/json"},
@@ -146,10 +191,10 @@ async def test_get_retention_metadata_mock(
     metadata: RetentionMetadata,
 ) -> None:
     httpserver.expect_oneshot_request(
-        f"/api/v2.0/retentions/metadatas",
+        "/api/v2.0/retentions/metadatas",
         method="GET",
     ).respond_with_data(
-        metadata.json(),
+        metadata.model_dump_json(),
         headers={"Content-Type": "application/json"},
     )
     async_client.url = httpserver.url_for("/api/v2.0")
@@ -191,7 +236,7 @@ async def test_get_retention_executions_mock(
     httpserver.expect_oneshot_request(
         f"/api/v2.0/retentions/{retention_id}/executions",
         method="GET",
-        query_string=f"page=1&page_size=10",
+        query_string="page=1&page_size=10",
     ).respond_with_data(
         json_from_list(executions),
         headers={"Content-Type": "application/json"},

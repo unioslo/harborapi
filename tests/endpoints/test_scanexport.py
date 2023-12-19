@@ -1,16 +1,18 @@
+from __future__ import annotations
+
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given
+from hypothesis import HealthCheck
+from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
 from harborapi.client import HarborAsyncClient
 from harborapi.exceptions import HarborAPIException
-from harborapi.models import (
-    ScanDataExportExecution,
-    ScanDataExportExecutionList,
-    ScanDataExportJob,
-    ScanDataExportRequest,
-)
+from harborapi.models import ScanDataExportExecution
+from harborapi.models import ScanDataExportExecutionList
+from harborapi.models import ScanDataExportJob
+from harborapi.models import ScanDataExportRequest
 
 
 @pytest.mark.asyncio
@@ -22,10 +24,10 @@ async def test_get_scan_exports_mock(
     exports: ScanDataExportExecutionList,
 ):
     httpserver.expect_oneshot_request(
-        f"/api/v2.0/export/cve/executions",
+        "/api/v2.0/export/cve/executions",
         method="GET",
     ).respond_with_data(
-        exports.json(),
+        exports.model_dump_json(),
         headers={"Content-Type": "application/json"},
     )
     async_client.url = httpserver.url_for("/api/v2.0")
@@ -46,7 +48,7 @@ async def test_get_scan_export_mock(
         f"/api/v2.0/export/cve/execution/{execution_id}",
         method="GET",
     ).respond_with_data(
-        execution.json(),
+        execution.model_dump_json(),
         headers={"Content-Type": "application/json"},
     )
     async_client.url = httpserver.url_for("/api/v2.0")
@@ -68,8 +70,8 @@ async def test_export_scan_data_mock(
         "/api/v2.0/export/cve",
         method="POST",
         headers={"X-Scan-Data-Type": scan_type},
-        data=request.json(exclude_unset=True),
-    ).respond_with_data(job.json(), content_type="application/json")
+        data=request.model_dump_json(exclude_unset=True),
+    ).respond_with_data(job.model_dump_json(), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.export_scan_data(request, scan_type)
     assert resp == job
@@ -88,7 +90,7 @@ async def test_export_scan_data_empty_response_mock(
         "/api/v2.0/export/cve",
         method="POST",
         headers={"X-Scan-Data-Type": scan_type},
-        data=request.json(exclude_unset=True),
+        data=request.model_dump_json(exclude_unset=True),
     ).respond_with_data("{}", content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
     with pytest.raises(HarborAPIException) as exc_info:

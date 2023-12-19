@@ -36,4 +36,4 @@ from harborapi.ext import api, artifact, cve, report
 from harborapi.ext.api import get_artifact_info, get_artifact_vulnerabilities #, ...
 ```
 
-Your IDE should provide auto-completion for the various imports available from the `harborapi.ext` module. Otherwise, check the [Reference](/reference)
+Your IDE should provide auto-completion for the various imports available from the `harborapi.ext` module. Otherwise, check the [Reference](../../reference/index.md)

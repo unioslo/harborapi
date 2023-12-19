@@ -1,56 +1,18 @@
+from __future__ import annotations
+
 from datetime import datetime
-from typing import Any, Optional, Type
+from typing import Any
+from typing import Type
 
 import pytest
-from pydantic import Field
 
-from harborapi.models import (
-    CVEAllowlist,
-    CVEAllowlistItem,
-    Project,
-    ProjectMetadata,
-    ProjectReq,
-)
-from harborapi.models.base import BaseModel
-
-
-def test_bool_converter() -> None:
-    class TestModel(BaseModel):
-        foo: str = Field("", description='Valid values are "true" and "false"')
-
-    assert TestModel(foo=True).foo == "true"
-    assert TestModel(foo=False).foo == "false"
-    assert TestModel().foo == ""
-
-
-def test_bool_converter_optional() -> None:
-    class TestModel(BaseModel):
-        foo: Optional[str] = Field(
-            None, description='Valid values are "true" and "false"'
-        )
-
-    assert TestModel(foo=True).foo == "true"
-    assert TestModel(foo=False).foo == "false"
-    assert TestModel().foo is None
-
-
-@pytest.mark.parametrize("field_type", [str, Optional[str]])
-def test_bool_converter_assignment(field_type: Type[Any]) -> None:
-    class TestModel(BaseModel):
-        foo: field_type = Field("", description='Valid values are "true" and "false"')
-
-    t = TestModel(foo=True)
-    t.foo = False
-    assert t.foo == "false"
-
-    t = TestModel(foo=False)
-    t.foo = True
-    assert t.foo == "true"
-
-    if field_type == Optional[str]:
-        t = TestModel(foo=True)
-        t.foo = None
-        assert t.foo is None
+from harborapi.models import CVEAllowlist
+from harborapi.models import CVEAllowlistItem
+from harborapi.models import Project
+from harborapi.models import ProjectMetadata
+from harborapi.models import ProjectReq
+from harborapi.models.base import StrDictRootModel
+from harborapi.models.base import StrRootModel
 
 
 @pytest.mark.parametrize("extra", [True, False])
@@ -126,6 +88,12 @@ def test_convert_to_req(extra: bool) -> None:
     # Deprecated field, handled by metadata.public
     assert req.public is None
 
+    if extra:
+        assert req.project_id == 1  # set by the extra argument
+    else:
+        assert not hasattr(req, "project_id")
+    # TODO: test that all extra fields were set/unset
+
 
 # TODO: test all models without increasing test run time too much
 @pytest.mark.parametrize("instantiate", [True, False])
@@ -135,7 +103,7 @@ def test_get_model_fields_project(instantiate: bool) -> None:
     else:
         model = Project
     fields = model.get_model_fields()
-    assert isinstance(fields, list)
+    assert isinstance(fields, set)
     for field in fields:
         assert isinstance(field, str)
         if instantiate:  # try to access field on model if instantiated
@@ -156,3 +124,89 @@ def test_get_model_fields_project(instantiate: bool) -> None:
     assert "repo_count" in fields
     assert "metadata" in fields
     assert "cve_allowlist" in fields
+
+
+@pytest.mark.parametrize(
+    "type_,input_,expect",
+    (
+        [int, 0, 0],
+        [int, 1, 1],
+        [str, "foo", "foo"],
+        [str, "bar", "bar"],
+        [bool, True, True],
+        [bool, False, False],
+        [float, 0.0, 0.0],
+        [float, 1.0, 1.0],
+        # Pydantic conversion rules:
+        [int, "1", 1],  # str can be cast to int
+        pytest.param(
+            str,
+            1,
+            "1",
+            marks=pytest.mark.xfail(strict=True, reason="cannot cast int to str"),
+        ),
+        [bool, 0, False],
+        [bool, 1, True],
+    ),
+)
+@pytest.mark.parametrize(
+    "n_keys",
+    [1, 2],
+)
+def test_strdictrootmodel(
+    type_: Type[Any], input_: Any, expect: Any, n_keys: int
+) -> None:
+    class TestModel(StrDictRootModel[type_]):
+        pass
+
+    keys = ["foo", "bar"]
+    inp = {}
+    for key in keys[:n_keys]:
+        inp[key] = input_
+    model = TestModel(**inp)
+
+    assert len(model.model_fields) == 1
+
+    for i in range(n_keys):
+        key = keys[i]
+        # builtin RootModel root dict access
+        assert model.root[key] == expect
+
+        # __getitem__ override
+        assert model[key] == expect
+
+        # __getattr__ override
+        assert getattr(model, key) == expect
+
+        # Explictly test dot access for the first key
+        if i == 0:
+            assert model.foo == expect
+
+    # non-existent keys
+    with pytest.raises(KeyError):
+        model["baz"]
+    with pytest.raises(AttributeError):
+        getattr(model, "baz")
+    with pytest.raises(AttributeError):
+        model.baz
+
+
+@pytest.mark.parametrize(
+    "input_,",
+    (
+        "foo",
+        "bar",
+        pytest.param(
+            1,
+            marks=pytest.mark.xfail(
+                strict=True, reason="StrRootModel only accepts str"
+            ),
+        ),
+    ),
+)
+def test_strrootmodel(input_: Any) -> None:
+    class TestModel(StrRootModel):
+        pass
+
+    model = TestModel(root=input_)
+    assert model.root == input_

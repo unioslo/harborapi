@@ -1,14 +1,18 @@
-from typing import List, Optional
+from __future__ import annotations
+
+from typing import List
+from typing import Optional
 
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given
+from hypothesis import HealthCheck
+from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
+from ..utils import json_from_list
 from harborapi.client import HarborAsyncClient
 from harborapi.models import Repository
-
-from ..utils import json_from_list
 
 
 @pytest.mark.asyncio
@@ -21,7 +25,9 @@ async def test_get_repository_mock(
 ):
     httpserver.expect_oneshot_request(
         "/api/v2.0/projects/testproj/repositories/testrepo", method="GET"
-    ).respond_with_data(repository.json(), headers={"Content-Type": "application/json"})
+    ).respond_with_data(
+        repository.model_dump_json(), headers={"Content-Type": "application/json"}
+    )
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_repository("testproj", "testrepo")
     assert resp == repository
@@ -38,7 +44,7 @@ async def test_update_repository_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/projects/testproj/repositories/testrepo",
         method="PUT",
-        json=repository.dict(exclude_unset=True),
+        json=repository.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.update_repository(

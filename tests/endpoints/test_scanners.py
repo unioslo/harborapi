@@ -1,17 +1,19 @@
+from __future__ import annotations
+
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given
+from hypothesis import HealthCheck
+from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
 from harborapi.client import HarborAsyncClient
 from harborapi.exceptions import HarborAPIException
-from harborapi.models import (
-    IsDefault,
-    ScannerAdapterMetadata,
-    ScannerRegistration,
-    ScannerRegistrationReq,
-    ScannerRegistrationSettings,
-)
+from harborapi.models import IsDefault
+from harborapi.models import ScannerAdapterMetadata
+from harborapi.models import ScannerRegistration
+from harborapi.models import ScannerRegistrationReq
+from harborapi.models import ScannerRegistrationSettings
 
 
 @pytest.mark.asyncio
@@ -41,13 +43,13 @@ async def test_get_scanners_mock(
 ):
     # TODO: use st.lists(st.builds(ScannerRegistration)) to generate a list of scanners
     httpserver.expect_oneshot_request("/api/v2.0/scanners").respond_with_json(
-        [scanner1.dict(), scanner2.dict()]
+        [scanner1.model_dump(), scanner2.model_dump()]
     )
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_scanners()
     assert len(resp) == 2
-    assert resp[0] == scanner1
-    assert resp[1] == scanner2
+    assert resp[0].model_dump() == scanner1.model_dump()
+    assert resp[1].model_dump() == scanner2.model_dump()
 
 
 @pytest.mark.asyncio
@@ -59,11 +61,11 @@ async def test_get_scanner_mock(
     scanner: ScannerRegistration,
 ):
     httpserver.expect_oneshot_request("/api/v2.0/scanners/1234").respond_with_json(
-        scanner.dict()
+        scanner.model_dump()
     )
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_scanner(registration_id=1234)
-    assert resp == scanner
+    assert resp.model_dump() == scanner.model_dump()
 
 
 @pytest.mark.asyncio
@@ -76,7 +78,7 @@ async def test_get_scanner_metadata_mock(
 ):
     httpserver.expect_oneshot_request(
         "/api/v2.0/scanners/1234/metadata"
-    ).respond_with_json(scannermeta.dict())
+    ).respond_with_json(scannermeta.model_dump(mode="json", exclude_unset=True))
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_scanner_metadata(registration_id=1234)
     assert resp == scannermeta
@@ -92,10 +94,10 @@ async def test_delete_scanner_mock(
 ):
     httpserver.expect_oneshot_request(
         "/api/v2.0/scanners/1234", method="DELETE"
-    ).respond_with_data(scanner.json(), content_type="application/json")
+    ).respond_with_data(scanner.model_dump_json(), content_type="application/json")
     async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.delete_scanner(1234)
-    assert resp == scanner
+    assert resp.model_dump() == scanner.model_dump()
 
 
 @pytest.mark.asyncio
@@ -128,7 +130,9 @@ async def test_set_default_scanner_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/scanners/1234",
         method="PATCH",
-        json=IsDefault(is_default=is_default).dict(),
+        json=IsDefault(is_default=is_default).model_dump(
+            mode="json", exclude_unset=True
+        ),
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.set_default_scanner(1234, is_default)
@@ -145,7 +149,7 @@ async def test_ping_scanner_adapter_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/scanners/ping",
         method="POST",
-        json=settings.dict(exclude_unset=True),
+        json=settings.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.ping_scanner_adapter(settings)
@@ -162,7 +166,7 @@ async def test_update_scanner_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/scanners/1234",
         method="PUT",
-        json=scanner.dict(exclude_unset=True),
+        json=scanner.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.update_scanner(1234, scanner)

@@ -1,4 +1,9 @@
-from typing import NamedTuple, Optional, Tuple, Union
+from __future__ import annotations
+
+from typing import NamedTuple
+from typing import Optional
+from typing import Tuple
+from typing import Union
 
 
 class SemVer(NamedTuple):
@@ -143,10 +148,10 @@ def get_semver(version: Optional[VersionType]) -> SemVer:
         minor = clean_version_number(parts[1])
     # Patch + prerelease + build
     if len(parts) > 2:
-        patch = parts[2]
+        patch_str = parts[2]
         # Get prerelease (if exists)
         try:
-            patch, prerelease = patch.split("-", 1)
+            patch_str, prerelease = patch_str.split("-", 1)
         except:  # noqa: E722
             pass
         # Get build info (if exists)
@@ -154,9 +159,9 @@ def get_semver(version: Optional[VersionType]) -> SemVer:
             if prerelease:
                 prerelease, build = prerelease.split("+", 1)
             else:
-                patch, build = patch.split("+", 1)
+                patch_str, build = patch_str.split("+", 1)
         except:  # noqa: E722
             pass
-        patch = clean_version_number(patch)
+        patch = clean_version_number(patch_str)
 
     return SemVer(major, minor, patch, prerelease, build)

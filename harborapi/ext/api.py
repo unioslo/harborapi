@@ -1,24 +1,24 @@
 from __future__ import annotations
 
 import asyncio
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Awaitable,
-    Callable,
-    List,
-    Optional,
-    Sequence,
-    TypeVar,
-    Union,
-)
+from typing import Any
+from typing import Awaitable
+from typing import Callable
+from typing import List
+from typing import Optional
+from typing import Sequence
+from typing import TYPE_CHECKING
+from typing import TypeVar
+from typing import Union
 
 import backoff
 from httpx import TimeoutException
 
 from ..exceptions import NotFound
 from ..log import logger
-from ..models import Artifact, Repository, UserResp
+from ..models import Artifact
+from ..models import Repository
+from ..models import UserResp
 from .artifact import ArtifactInfo
 
 if TYPE_CHECKING:
@@ -310,19 +310,23 @@ async def get_artifact_vulnerabilities(
         callback=callback,
         **kwargs,
     )
+
     # Filter out artifacts without a successful scan
     # A failed scan will not produce a report
-    artifacts = [
-        a
-        for a in artifacts
-        if a.artifact.scan_overview is not None
-        and a.artifact.scan_overview.scan_status != "Error"  # type: ignore
-    ]
+    has_scan = []
+    for artifact in artifacts:
+        if artifact.artifact.scan_overview is None:
+            continue
+        try:
+            if artifact.artifact.scan_overview.scan_status == "Success":
+                has_scan.append(artifact)
+        except AttributeError:
+            continue
 
     # We must fetch each report individually, since the API doesn't support
     # getting all reports in one call.
     # This is done concurrently to speed up the process.
-    coros = [_get_artifact_report(client, artifact) for artifact in artifacts]
+    coros = [_get_artifact_report(client, artifact) for artifact in has_scan]
     artifacts = await run_coros(coros, max_connections=max_connections)
     return handle_gather(artifacts, callback=callback)
 
@@ -391,7 +395,7 @@ async def _get_artifact_report(
     """
     digest = artifact.artifact.digest
     if digest is None:  # should never happen
-        logger.error(f"Artifact %s has no digest", artifact.name_with_tag)
+        logger.error("Artifact %s has no digest", artifact.name_with_tag)
         return artifact
 
     s = artifact.repository.split_name()

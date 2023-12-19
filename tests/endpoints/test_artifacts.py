@@ -1,19 +1,28 @@
+from __future__ import annotations
+
 from contextlib import nullcontext
 from typing import List
 
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given
+from hypothesis import HealthCheck
+from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
+from ..strategies.artifact import artifact_strategy
+from ..strategies.artifact import get_hbv_strategy
+from ..utils import json_from_list
 from harborapi.client import HarborAsyncClient
-from harborapi.exceptions import NotFound, StatusError, UnprocessableEntity
+from harborapi.exceptions import NotFound
+from harborapi.exceptions import StatusError
+from harborapi.exceptions import UnprocessableEntity
 from harborapi.models import HarborVulnerabilityReport
 from harborapi.models.buildhistory import BuildHistoryEntry
-from harborapi.models.models import Accessory, Artifact, Label, Tag
-
-from ..strategies.artifact import artifact_strategy, get_hbv_strategy
-from ..utils import json_from_list
+from harborapi.models.models import Accessory
+from harborapi.models.models import Artifact
+from harborapi.models.models import Label
+from harborapi.models.models import Tag
 
 
 @pytest.mark.asyncio
@@ -35,7 +44,7 @@ async def test_create_artifact_tag_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/tags",
         method="POST",
-        json=tag.dict(exclude_unset=True),
+        json=tag.model_dump(exclude_unset=True),
     ).respond_with_data(
         headers={"Location": expect_location},
         status=status_code,
@@ -60,9 +69,9 @@ async def test_get_artifact_vulnerabilities_mock(
         "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/additions/vulnerabilities",
         method="GET",
     ).respond_with_data(
-        # use report.json() to avoid datetime serialization issues
+        # use report.model_dump_json() to avoid datetime serialization issues
         '{{"application/vnd.security.vulnerability.report; version=1.1": {r}}}'.format(
-            r=report.json()
+            r=report.model_dump_json()
         ),
         headers={"Content-Type": "application/json"},
     )
@@ -191,26 +200,22 @@ async def test_get_artifact_accessories_mock(
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("status_code", [200, 404])
-@pytest.mark.parametrize("missing_ok", [True, False])
 async def test_delete_artifact_tag(
     async_client: HarborAsyncClient,
     httpserver: HTTPServer,
     status_code: int,
-    missing_ok: bool,
 ):
     httpserver.expect_oneshot_request(
         "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/tags/123",
         method="DELETE",
     ).respond_with_data(status=status_code)
     async_client.url = httpserver.url_for("/api/v2.0")
-    if status_code == 404 and not missing_ok:
+    if status_code == 404:
         ctx = pytest.raises(StatusError)
     else:
         ctx = nullcontext()  # type: ignore
     with ctx:
-        await async_client.delete_artifact_tag(
-            "testproj", "testrepo", "latest", "123", missing_ok=missing_ok
-        )
+        await async_client.delete_artifact_tag("testproj", "testrepo", "latest", "123")
 
 
 @pytest.mark.asyncio
@@ -256,14 +261,18 @@ async def test_get_artifacts_mock(
         headers={"Content-Type": "application/json"},
     )
     async_client.url = httpserver.url_for("/api/v2.0")
-    accessories_resp = await async_client.get_artifacts(
+    resp = await async_client.get_artifacts(
         "testproj",
         "testrepo",
     )
-    # TODO: add params tests
-    assert accessories_resp == artifacts
-    for accessory in accessories_resp:
-        assert isinstance(accessory, Artifact)
+    # FIXME: when we dump a model with a ScanOverview that has an empty
+    # root value, the resulting JSON is "scan_overview": null
+    # And when that is parsed with Pydantic again, we get an object with
+    # scan_overview = None, which can't be comapred with the original.
+    # To that end, we have to dump both the original and the response
+    # and compare the dicts instead. This is very clunky, and was
+    # not a problem in Pydantic V1
+    assert [a.model_dump() for a in resp] == [a.model_dump() for a in artifacts]
 
 
 @pytest.mark.asyncio
@@ -277,7 +286,7 @@ async def test_add_artifact_label_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/labels",
         method="POST",
-        json=label.dict(exclude_unset=True),
+        json=label.model_dump(exclude_unset=True),
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.add_artifact_label(
@@ -300,7 +309,7 @@ async def test_get_artifact_mock(
         "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest",
         method="GET",
     ).respond_with_data(
-        artifact.json(),
+        artifact.model_dump_json(),
         headers={"Content-Type": "application/json"},
     )
     async_client.url = httpserver.url_for("/api/v2.0")
@@ -310,16 +319,15 @@ async def test_get_artifact_mock(
         "testrepo",
         "latest",
     )
-    assert resp == artifact
+    # See FIXME in test_get_artifacts_mock
+    assert resp.model_dump() == artifact.model_dump()
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("missing_ok", [True, False])
 @pytest.mark.parametrize("status_code", [200, 404])
 async def test_delete_artifact_mock(
     async_client: HarborAsyncClient,
     httpserver: HTTPServer,
-    missing_ok: bool,
     status_code: int,
 ):
     httpserver.expect_oneshot_request(
@@ -330,23 +338,19 @@ async def test_delete_artifact_mock(
     )
 
     async_client.url = httpserver.url_for("/api/v2.0")
-    if status_code == 404 and not missing_ok:
+    if status_code == 404:
         ctx = pytest.raises(StatusError)
     else:
         ctx = nullcontext()  # type: ignore
     with ctx:
-        await async_client.delete_artifact(
-            "testproj", "testrepo", "latest", missing_ok=missing_ok
-        )
+        await async_client.delete_artifact("testproj", "testrepo", "latest")
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("missing_ok", [True, False])
 @pytest.mark.parametrize("status_code", [200, 404])
 async def test_delete_artifact_label_mock(
     async_client: HarborAsyncClient,
     httpserver: HTTPServer,
-    missing_ok: bool,
     status_code: int,
 ):
     httpserver.expect_oneshot_request(
@@ -357,11 +361,9 @@ async def test_delete_artifact_label_mock(
     )
 
     async_client.url = httpserver.url_for("/api/v2.0")
-    if status_code == 404 and not missing_ok:
+    if status_code == 404:
         ctx = pytest.raises(StatusError)
     else:
         ctx = nullcontext()  # type: ignore
     with ctx:
-        await async_client.delete_artifact_label(
-            "testproj", "testrepo", "latest", 123, missing_ok=missing_ok
-        )
+        await async_client.delete_artifact_label("testproj", "testrepo", "latest", 123)

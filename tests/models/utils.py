@@ -1,5 +1,11 @@
+from __future__ import annotations
+
 from enum import Enum
-from typing import Any, Optional, Sequence, Type, Union
+from typing import Any
+from typing import Optional
+from typing import Sequence
+from typing import Type
+from typing import Union
 
 from pydantic import BaseModel
 
@@ -22,7 +28,7 @@ def _override_compat_check(modified: BaseModel, generated: BaseModel) -> None:
     test should generally pass. In cases where the field type is changed
     in a non-compatible way, this test will fail and should not be invoked."""
     # we need to serialize by alias, since we can't populate by alias
-    m = modified.parse_obj(generated.dict(by_alias=True))
+    m = modified.model_validate(generated.model_dump(by_alias=True))
     assert m == generated
 
 
@@ -73,8 +79,8 @@ def _override_field_check(
         attrs.update(attr_add)
 
     for attr in attrs:
-        assert getattr(modified.__fields__[field].field_info, attr) == getattr(
-            generated.__fields__[field].field_info, attr
+        assert getattr(modified.model_fields[field], attr) == getattr(
+            generated.model_fields[field], attr
         ), f"Field {field} attribute {attr} does not match"
 
 
@@ -121,5 +127,5 @@ def _no_references_check(
                 continue
         except TypeError:
             continue
-        for field in m.__fields__.values():
+        for field in m.model_fields.values():
             assert field.type_ not in no_references

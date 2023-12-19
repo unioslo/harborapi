@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 
 import pytest
@@ -6,8 +8,11 @@ from httpx import ConnectError
 from pytest_httpserver import HTTPServer
 
 from harborapi.client import HarborAsyncClient
-from harborapi.exceptions import HarborAPIException, StatusError
-from harborapi.retry import RetrySettings, get_backoff_kwargs
+from harborapi.exceptions import HarborAPIException
+from harborapi.exceptions import StatusError
+from harborapi.retry import get_backoff_kwargs
+from harborapi.retry import retry
+from harborapi.retry import RetrySettings
 
 
 def test_retrysettings_basic():
@@ -215,3 +220,31 @@ async def test_no_retry_ctx_manager(
     assert isinstance(users, list)
     assert len(users) == 2
     assert async_client.retry.enabled
+
+
+def test_retry_decorator_on_function() -> None:
+    """Applying the retry decorator on a function without arguments
+    should raise a TypeError."""
+    with pytest.raises(TypeError) as exc_info:
+
+        @retry()
+        def foo():
+            pass
+
+        foo()
+    assert "HarborAsyncClient method" in str(exc_info.value)
+
+
+def test_retry_decorator_on_other_class() -> None:
+    """Applying the retry decorator on other classes than HarborAsyncClient
+    should raise a TypeError."""
+    with pytest.raises(TypeError) as exc_info:
+
+        class Foo:
+            @retry()
+            def foo():
+                pass
+
+        f = Foo()
+        f.foo()
+    assert "HarborAsyncClient method" in str(exc_info.value)

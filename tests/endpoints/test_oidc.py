@@ -1,7 +1,11 @@
+from __future__ import annotations
+
 from contextlib import nullcontext
 
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given
+from hypothesis import HealthCheck
+from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
@@ -23,7 +27,7 @@ async def test_test_oidc_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/system/oidc/ping",
         method="POST",
-        json=oidcreq.dict(exclude_unset=True),
+        json=oidcreq.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data(status=status)
     async_client.url = httpserver.url_for("/api/v2.0")
     if status == 200:

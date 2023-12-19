@@ -1,15 +1,23 @@
+from __future__ import annotations
+
 import json
 import os
 from pathlib import Path
-from typing import Iterable, Union
+from typing import Iterable
+from typing import Union
 
 import pytest
-from hypothesis import Verbosity, settings
+from hypothesis import settings
+from hypothesis import Verbosity
 from pytest_httpserver import HTTPServer
 
-from harborapi.client import HarborAsyncClient
-
 from .strategies import init_strategies
+from harborapi.client import HarborAsyncClient
+from harborapi.log import enable_logging
+
+# Enable logging for tests
+enable_logging()
+
 
 # Init custom hypothesis strategies
 init_strategies()
@@ -30,9 +38,8 @@ settings.load_profile(os.getenv("HYPOTHESIS_PROFILE", "default"))
 @pytest.fixture(scope="function")
 def httpserver(httpserver: HTTPServer) -> Iterable[HTTPServer]:
     yield httpserver
-    # Ensure server is running after each test
     if not httpserver.is_running():
-        httpserver.start()  # type: ignore
+        httpserver.start()
     # Ensure server has no handlers after each test
     httpserver.clear_all_handlers()  # type: ignore
     # Maybe run httpserver.clear() too?
