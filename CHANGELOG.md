@@ -12,12 +12,16 @@ While the project is still on major version 0, breaking changes may be introduce
 
 <!-- changelog follows -->
 
-## Unreleased
+<!-- ## Unreleased -->
 
-The big Pydantic V2 update. This is a major update, and will be released as version 1.0.0. In general, a lot things have become more strict, and most models that used to accept both strings and ints for `str` fields now _only_ accept strings.
+## [0.23.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.23.0) - 202y-mm-dd
+
+The big Pydantic V2 update. This is a major update in terms of both scope and API compatibility.
 
 ### Changed
-
+- Model validation has become more strict.
+  - Most importantly, `str` fields will no longer coerce `int` values to strings.
+  - See [Pydantic docs](https://docs.pydantic.dev/latest/api/standard_library_types/) for more information.
 - Models without fields now inherit from `pydantic.RootModel` and have a single field called `root`. These models have a special `__getitem__` method, so they can be accessed like a dict. Currently, these are:
   - `harborapi.models.ExtraAttrs`
   - `harborapi.models.Annotations`
