@@ -76,7 +76,7 @@ See the [Idiomatic REST updating](#idiomatic-rest-updating) section for more inf
 !!! note
     The following sections are _optional_ reading, and are only relevant if you want to following idiomatic REST principles when updating resources. If you don't care about that, you can safely ignore the following sections.
 
-The update endpoints are HTTP PUT endpoints that should expect a full resource definition according to [RFC 7231](https://datatracker.ietf.org/doc/html/rfc7231#section-4.3.4). However, as described above, testing has shown that the API supports updating with partial models. By default, `harborapi` will only include the fields that are present in the request model, and leave out the rest, which enables us to take advantage of this behavior in the API:
+The update endpoints are HTTP PUT endpoints that should expect a full resource definition according to [RFC 7231](https://datatracker.ietf.org/doc/html/rfc7231#section-4.3.4)[^1]. However, as described above, testing has shown that the API supports updating with partial models. By default, `harborapi` will only include the fields that are present in the request model, and leave out the rest, which enables us to take advantage of this behavior in the API:
 
 ```py
 from harborapi.models import ProjectReq, ProjectMetadata
