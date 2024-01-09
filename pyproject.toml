@@ -39,10 +39,10 @@ dynamic = ["version", "readme"]
 rich = ["rich>=12.6.0"]
 
 [project.urls]
-Source = "https://github.com/pederhan/harborapi"
-Documentation = "https://pederhan.github.io/harborapi/"
-Changelog = "https://github.com/pederhan/harborapi/blob/main/CHANGELOG.md"
-Issues = "https://github.com/pederhan/harborapi/issues"
+Source = "https://github.com/unioslo/harborapi"
+Documentation = "https://unioslo.github.io/harborapi/"
+Changelog = "https://github.com/unioslo/harborapi/blob/main/CHANGELOG.md"
+Issues = "https://github.com/unioslo/harborapi/issues"
 
 [tool.hatch.metadata.hooks.fancy-pypi-readme]
 content-type = "text/markdown"
