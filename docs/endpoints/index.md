@@ -30,4 +30,4 @@ See [Recipes](../recipes/index.md) for more examples on how to use the methods.
 
 ## Implemented Endpoints
 
-Check the [GitHub README](https://github.com/pederhan/harborapi/blob/main/README.md) for the most up to date overview of the implemented endpoints.
+Check the [GitHub README](https://github.com/unioslo/harborapi/blob/main/README.md) for the most up to date overview of the implemented endpoints.

@@ -14,7 +14,7 @@ While the project is still on major version 0, breaking changes may be introduce
 
 <!-- ## Unreleased -->
 
-## [0.23.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.23.0) - 2023-12-19
+## [0.23.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.23.0) - 2023-12-19
 
 The big Pydantic V2 update. This is a major update in terms of both scope and API compatibility.
 
@@ -51,7 +51,7 @@ The big Pydantic V2 update. This is a major update in terms of both scope and AP
 - `harborapi.models._models` module. All main API spec models are now defined `harborapi.models.models`.
 - `harborapi.models._scanner` module. All scanner models are now defined in `harborapi.models.scanner`.
 
-## [0.22.3](https://github.com/pederhan/harborapi/tree/harborapi-v0.22.3) - 2023-09-13
+## [0.22.3](https://github.com/unioslo/harborapi/tree/harborapi-v0.22.3) - 2023-09-13
 
 ### Changed
 
@@ -59,19 +59,19 @@ The big Pydantic V2 update. This is a major update in terms of both scope and AP
   - `httpx` >= 0.22.0
   - `typing_extensions` >= 4.4
 
-## [0.22.2](https://github.com/pederhan/harborapi/tree/harborapi-v0.22.2) - 2023-09-13
+## [0.22.2](https://github.com/unioslo/harborapi/tree/harborapi-v0.22.2) - 2023-09-13
 
 ### Changed
 
 - License changed from GPLv3 to MIT.
 
-## [0.22.1](https://github.com/pederhan/harborapi/tree/harborapi-v0.22.1) - 2023-09-05
+## [0.22.1](https://github.com/unioslo/harborapi/tree/harborapi-v0.22.1) - 2023-09-05
 
 ### Changed
 
 - Reduced sdist size significantly by removing unnecessary files (docs, tests, etc.).
 
-## [0.22.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.22.0) - 2023-08-01
+## [0.22.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.22.0) - 2023-08-01
 
 ### Changed
 
@@ -79,7 +79,7 @@ The big Pydantic V2 update. This is a major update in terms of both scope and AP
   - Migration to Pydantic V2 will begin soon.
 
 
-## [0.21.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.21.0) - 2023-06-08
+## [0.21.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.21.0) - 2023-06-08
 
 
 ### Added
@@ -104,7 +104,7 @@ The big Pydantic V2 update. This is a major update in terms of both scope and AP
   - `harborapi.models.Tag.signed`
   - `harborapi.models.GeneralInfo.with_notary`
 
-## [0.20.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.20.0) - 2023-05-30
+## [0.20.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.20.0) - 2023-05-30
 
 
 ### Changed
@@ -114,9 +114,9 @@ The big Pydantic V2 update. This is a major update in terms of both scope and AP
 
 ### Removed
 
-- Loguru dependency. The library now uses the standard Python logging library for logging purposes. See [Logging](https://pederhan.github.io/harborapi/usage/logging/) in the docs for more information.
+- Loguru dependency. The library now uses the standard Python logging library for logging purposes. See [Logging](https://unioslo.github.io/harborapi/usage/logging/) in the docs for more information.
 
-## [0.19.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.19.0) - 2023-05-15
+## [0.19.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.19.0) - 2023-05-15
 
 ### Added
 
@@ -143,7 +143,7 @@ The big Pydantic V2 update. This is a major update in terms of both scope and AP
   - Remove field `Project.chart_count`(deprecated)
 
 
-## [0.18.1](https://github.com/pederhan/harborapi/tree/harborapi-v0.18.1) - 2023-05-12
+## [0.18.1](https://github.com/unioslo/harborapi/tree/harborapi-v0.18.1) - 2023-05-12
 
 
 ### Added
@@ -155,7 +155,7 @@ The big Pydantic V2 update. This is a major update in terms of both scope and AP
 
 - Bool to string converter on `BaseModel` now correctly handles assignments.
 
-## [0.18.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.18.0) - 2023-05-05
+## [0.18.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.18.0) - 2023-05-05
 
 ### Added
 
@@ -172,11 +172,11 @@ The big Pydantic V2 update. This is a major update in terms of both scope and AP
 - Models fields assignments are now validated by default.
 - `models.base.BaseModel.bool_converter` renamed to `models.base.BaseModel._bool_converter` to hide it in IDE autocompletion. This shouldn't be a breaking change for anyone, since it was never documented or intended to be used by anyone outside of the library.
 
-## [0.17.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.17.0) - 2023-05-03
+## [0.17.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.17.0) - 2023-05-03
 
 ### Added
 
-- Configurable retrying of failed requests using the new `RetrySettings` class, which can be passed to the `HarborAsyncClient` constructor with the `retry` keyword argument. See the [retry docs](https://pederhan.github.io/harborapi/usage/retry/) for more information.
+- Configurable retrying of failed requests using the new `RetrySettings` class, which can be passed to the `HarborAsyncClient` constructor with the `retry` keyword argument. See the [retry docs](https://unioslo.github.io/harborapi/usage/retry/) for more information.
 
 ### Fixed
 
@@ -188,7 +188,7 @@ The big Pydantic V2 update. This is a major update in terms of both scope and AP
 
 `harborapi.errors.StatusError.status_code` is now always an integer. Returns 0 if no request is associated with the error.
 
-## [0.16.2](https://github.com/pederhan/harborapi/tree/harborapi-v0.16.2) - 2023-04-26
+## [0.16.2](https://github.com/unioslo/harborapi/tree/harborapi-v0.16.2) - 2023-04-26
 
 ### Added
 
@@ -206,20 +206,20 @@ The big Pydantic V2 update. This is a major update in terms of both scope and AP
 - `harborapi.HarborAsyncClient.get_retention_tasks` missing `limit` parameter in docstring.
 
 
-## [0.16.1](https://github.com/pederhan/harborapi/tree/harborapi-v0.16.1) - 2023-04-24
+## [0.16.1](https://github.com/unioslo/harborapi/tree/harborapi-v0.16.1) - 2023-04-24
 
 ### Fixed
 
 - Passing a `NativeReportSummary` to `Artifact.scan_overview` no longer raises a `ValidationError` exception.
 
-## [0.16.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.16.0) - 2023-04-24
+## [0.16.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.16.0) - 2023-04-24
 
 ### Changed
 
 - Broken or incomplete models are now completely redefined in `harborapi.models.models` to provide better documentation both in the code and in the generated documentation. This change should be backwards-compatible.
 - `harborapi.HarborAsyncClient.add_group_member` now has a clearner warning describing its purpose and the alternative methods to use instead.
 
-## [0.15.3](https://github.com/pederhan/harborapi/tree/harborapi-v0.15.3) - 2023-04-20
+## [0.15.3](https://github.com/unioslo/harborapi/tree/harborapi-v0.15.3) - 2023-04-20
 
 ### Fixed
 
@@ -228,14 +228,14 @@ The big Pydantic V2 update. This is a major update in terms of both scope and AP
   - `harborapi.models.ImutableRule.params`
 Until the official API spec is fixed, this is the best we can do.
 
-## [0.15.2](https://github.com/pederhan/harborapi/tree/harborapi-v0.15.2) - 2023-04-18
+## [0.15.2](https://github.com/unioslo/harborapi/tree/harborapi-v0.15.2) - 2023-04-18
 
 ### Removed
 
-- `harbor` being added as an executable script installed by the project. This was a mistake, as the `harbor` executable script is intended to be exposed by [harbor-cli](https://github.com/pederhan/harbor-cli).
+- `harbor` being added as an executable script installed by the project. This was a mistake, as the `harbor` executable script is intended to be exposed by [harbor-cli](https://github.com/unioslo/harbor-cli).
 
 
-## [0.15.1](https://github.com/pederhan/harborapi/tree/harborapi-v0.15.1) - 2023-04-17
+## [0.15.1](https://github.com/unioslo/harborapi/tree/harborapi-v0.15.1) - 2023-04-17
 
 ### Added
 
@@ -250,7 +250,7 @@ Until the official API spec is fixed, this is the best we can do.
 
 
 
-## [0.15.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.15.0) - 2023-04-13
+## [0.15.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.15.0) - 2023-04-13
 
 ### Added
 
@@ -267,7 +267,7 @@ Until the official API spec is fixed, this is the best we can do.
   - `HarborAsyncClient.start_retention_execution()`
   - `HarborAsyncClient.stop_retention_execution()`
 
-## [0.14.1](https://github.com/pederhan/harborapi/tree/harborapi-v0.14.1) - 2023-04-11
+## [0.14.1](https://github.com/unioslo/harborapi/tree/harborapi-v0.14.1) - 2023-04-11
 
 ### Added
 
@@ -278,20 +278,20 @@ Until the official API spec is fixed, this is the best we can do.
 
 - Potential circular import error in `harborapi.ext`, where `HarborAsyncClient` is imported as a type annotation.
 
-## [0.14.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.14.0) - 2023-04-05
+## [0.14.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.14.0) - 2023-04-05
 
 ### Changed
 
 - `limit` kwarg now treats `0` as no limit. Previously, `0` meant no results would be returned.
 - **BREAKING:** `harborapi.ext.artifact.ArtifactInfo.tags` now returns a list of tags instead of a comma-separated string of tags. This gives more flexibility to work with the various tags, and is more consistent with the rest of the library. If you need the comma-separated string, you can use `", ".join(artifact_info.tags)`.
 
-## [0.13.1](https://github.com/pederhan/harborapi/tree/harborapi-v0.13.1) - 2023-04-03
+## [0.13.1](https://github.com/unioslo/harborapi/tree/harborapi-v0.13.1) - 2023-04-03
 
 ### Fixed
 
 - Pagination URLs containing spaces are now properly handled. This could occur if passing a a query parameter with a list of items, such as `?q=operation={push pull}` or `?q=operation=(push pull)`.
 
-## [0.13.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.13.0) - 2023-03-31
+## [0.13.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.13.0) - 2023-03-31
 
 ### Changed
 
@@ -304,13 +304,13 @@ Until the official API spec is fixed, this is the best we can do.
 - JSON parsing exception in `HarborAsyncClient.get_audit_log_rotation_schedule()` that could occur if no schedule exists. The API returns an emtpy `200 OK` response, which is now handled correctly (empty `ExecHistory` object).
 - Missing docstring for `HarborAsycClient.get_project_members`.
 
-## [0.12.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.12.0) - 2023-03-14
+## [0.12.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.12.0) - 2023-03-14
 
 ### Changed
 
 - **BREAKING:** `HarborAsyncClient.export_scan_data()` now takes the arguments in the order (`criteria`, `scan_type`). Furthermore, `scan_type` now has a default argument of `"application/vnd.security.vulnerability.report; version=1.1"`, per the [blog post](https://goharbor.io/blog/harbor-2.6/#:~:text=Accessing%20CSV%20Export%20Programmatically) describing this new feature. It should not be necessary specify this argument, but it is still possible to do so if you need to.
 
-## [0.11.2](https://github.com/pederhan/harborapi/tree/harborapi-v0.11.2) - 2023-03-14
+## [0.11.2](https://github.com/unioslo/harborapi/tree/harborapi-v0.11.2) - 2023-03-14
 
 ### Fixed
 
@@ -320,13 +320,13 @@ Until the official API spec is fixed, this is the best we can do.
 
 - Missing `group_name` and `limit` parameters for `HarborAsyncClient.get_usergroups()`.
 
-## [0.11.1](https://github.com/pederhan/harborapi/tree/harborapi-v0.11.1) - 2023-03-14
+## [0.11.1](https://github.com/unioslo/harborapi/tree/harborapi-v0.11.1) - 2023-03-14
 
 ### Added
 
 - Missing `group_name` and `limit` parameters for `HarborAsyncClient.get_usergroups()`.
 
-## [0.11.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.11.0) - 2023-03-10
+## [0.11.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.11.0) - 2023-03-10
 
 ### Added
 
@@ -346,7 +346,7 @@ Until the official API spec is fixed, this is the best we can do.
   - `HarborAsyncClient.update_purge_audit_log_schedule()` -> `HarborAsyncClient.update_audit_log_rotation_schedule()`
   - `HarborAsyncClient.get_purge_audit_logs()` -> `HarborAsyncClient.get_audit_log_rotation_history()`
 
-## [0.10.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.10.0) - 2023-02-28
+## [0.10.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.10.0) - 2023-02-28
 
 ### Added
 
@@ -392,7 +392,7 @@ Until the official API spec is fixed, this is the best we can do.
 - New methods for controlling the size of the response log.
   - `harborapi.client.ResponseLog.resize()`
   - `harborapi.client.ResponseLog.clear()`
-  - Documented [here](https://pederhan.github.io/harborapi/usage/responselog)
+  - Documented [here](https://unioslo.github.io/harborapi/usage/responselog)
 - `basicauth` as a parameter for `HarborAsyncClient.__init__()` to pass in base64 basic auth credentials.
 
 ### Changed
@@ -408,7 +408,7 @@ Until the official API spec is fixed, this is the best we can do.
 - Explicit logging calls from `HarborAsyncClient.set_user_cli_secret()` and `HarborAsyncClient.set_user_password()`. The exception handler handles logging if configured.
 
 
-## [0.9.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.9.0) - 2023-02-21
+## [0.9.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.9.0) - 2023-02-21
 
 ### Changed
 
@@ -416,7 +416,7 @@ Until the official API spec is fixed, this is the best we can do.
 
 - `harborapi.models.GeneralInfo.with_chartmuseum` has been removed from the API spec, but remains on the model for backwards compatibility. In the future, this field will be removed, as the API will never return this it in sufficiently new versions of Harbor.
 
-## [0.8.6](https://github.com/pederhan/harborapi/tree/harborapi-v0.8.6) - 2023-02-20
+## [0.8.6](https://github.com/unioslo/harborapi/tree/harborapi-v0.8.6) - 2023-02-20
 
 
 ### Fixed
@@ -424,7 +424,7 @@ Until the official API spec is fixed, this is the best we can do.
 - Models with `harborapi.models.ScheduleObj` fields are now correctly validated when the Harbor API responds with a value of `"Schedule"` for the field `ScheduleObj.type`, which is not a valid value for the enum according to their own spec.
 
 
-## [0.8.5](https://github.com/pederhan/harborapi/tree/harborapi-v0.8.5) - 2023-02-20
+## [0.8.5](https://github.com/unioslo/harborapi/tree/harborapi-v0.8.5) - 2023-02-20
 
 ### Added
 
@@ -435,7 +435,7 @@ Until the official API spec is fixed, this is the best we can do.
 
 `harborarpi.scanner.Severity` enum not having a `None` value, which is observed when a report has no vulnerabilities.
 
-## [0.8.4](https://github.com/pederhan/harborapi/tree/harborapi-v0.8.4) - 2023-02-14
+## [0.8.4](https://github.com/unioslo/harborapi/tree/harborapi-v0.8.4) - 2023-02-14
 
 ### Fixed
 
@@ -443,7 +443,7 @@ Until the official API spec is fixed, this is the best we can do.
 - `HarborAsyncClient.get_gc_jobs()` ignoring user parameters.
 
 
-## [0.8.3](https://github.com/pederhan/harborapi/tree/harborapi-v0.8.3) - 2023-02-14
+## [0.8.3](https://github.com/unioslo/harborapi/tree/harborapi-v0.8.3) - 2023-02-14
 
 ### Changed
 
@@ -454,38 +454,38 @@ Until the official API spec is fixed, this is the best we can do.
 - Pagination failing when one or more query parameter values included a comma.
 - Certain `HarborAsyncClient` methods having missing or incomplete docstrings.
 
-## [0.8.2](https://github.com/pederhan/harborapi/tree/harborapi-v0.8.2) - 2023-02-09
+## [0.8.2](https://github.com/unioslo/harborapi/tree/harborapi-v0.8.2) - 2023-02-09
 
 ### Fixed
 
 - `HarborAsyncClient.get_registry_providers` now returns a `RegistryProviders` object, which is a model whose only attribute `providers` is a dict of `RegistryProviderInfo` objects. Previously this method attempted to return a list of `RegistryProviderInfo` objects, but this was incorrect.
 
 
-## [0.8.1](https://github.com/pederhan/harborapi/tree/harborapi-v0.8.1) - 2023-02-09
+## [0.8.1](https://github.com/unioslo/harborapi/tree/harborapi-v0.8.1) - 2023-02-09
 
 ### Changed
 
 - Backoff handlers for HTTP methods now handle a more strict subset of `httpx.RequestError` exceptions. This is to avoid retrying on exceptions that will never succeed such as [`httpx.UnsupportedProtocol`](https://www.python-httpx.org/exceptions/).
 
-## [0.8.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.8.0) - 2023-02-08
+## [0.8.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.8.0) - 2023-02-08
 
 ### Added
 
-- `limit` parameter for all methods that return a list of items. This parameter is used to limit the number of items returned by the API. See the [docs](https://pederhan.github.io/harborapi/usage/limit/) for more details.
+- `limit` parameter for all methods that return a list of items. This parameter is used to limit the number of items returned by the API. See the [docs](https://unioslo.github.io/harborapi/usage/limit/) for more details.
 
 
 ### Removed
 
 - `retrieve_all` parameter for all methods that return a list of items. Use the new `limit` parameter to control the number of results to retrieve. Passing `retrieve_all` to these methods will be silently ignored. In the future this will raise a DeprecationWarning.
 
-## [0.7.1](https://github.com/pederhan/harborapi/tree/harborapi-v0.7.1) - 2023-02-07
+## [0.7.1](https://github.com/unioslo/harborapi/tree/harborapi-v0.7.1) - 2023-02-07
 
 ### Added
 
-- New parameters `raw` and `validate` to `HarborAsyncClient` and `HarborClient` to control whether the client returns the raw data from the API, and whether the client validates the data from the API, respectively. See the [docs](https://pederhan.github.io/harborapi/usage/validation/) for more details.
+- New parameters `raw` and `validate` to `HarborAsyncClient` and `HarborClient` to control whether the client returns the raw data from the API, and whether the client validates the data from the API, respectively. See the [docs](https://unioslo.github.io/harborapi/usage/validation/) for more details.
 
 
-## [0.7.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.7.0) - 2023-02-06
+## [0.7.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.7.0) - 2023-02-06
 
 ### Added
 
@@ -505,14 +505,14 @@ Until the official API spec is fixed, this is the best we can do.
 
 - **BREAKING**: `HarborAsyncClient.get_internal_config()`. This endpoint is meant for internal usage only, and the new model definitions don't seem to play well with it. If you need this endpoint, please open an issue.
 
-## [0.6.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.6.0) - 2023-01-30
+## [0.6.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.6.0) - 2023-01-30
 
 ### Changed
 
 - **BREAKING**: The `max_depth` parameter of the `as_table()` and `as_panel()` methods on all models now starts counting from 1 instead of 0.
   - `max_depth=0` now means "no limit", and `max_depth=1` means "only show the top level" (previously `max_depth=0` meant "only show the top level" and `max_depth=1` meant "show the top level and one level below")
 
-## [0.5.0](https://github.com/pederhan/harborapi/tree/harborapi-v0.5.0) - 2023-01-17
+## [0.5.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.5.0) - 2023-01-17
 
 ### Added
 

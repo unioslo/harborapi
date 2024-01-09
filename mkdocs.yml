@@ -1,7 +1,7 @@
 site_name: harborapi
 
-repo_url: https://github.com/pederhan/harborapi
-repo_name: pederhan/harborapi
+repo_url: https://github.com/unioslo/harborapi
+repo_name: unioslo/harborapi
 edit_uri: edit/main/docs/
 
 theme:

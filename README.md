@@ -2,8 +2,8 @@
 
 [![PyPI - Version](https://img.shields.io/pypi/v/harborapi.svg)](https://pypi.org/project/harborapi)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/harborapi.svg)](https://pypi.org/project/harborapi)
-![Tests](https://github.com/pederhan/harborapi/workflows/test/badge.svg)
-[![Docs](https://github.com/pederhan/harborapi/workflows/docs/badge.svg)](https://pederhan.github.io/harborapi/)
+![Tests](https://github.com/unioslo/harborapi/workflows/test/badge.svg)
+[![Docs](https://github.com/unioslo/harborapi/workflows/docs/badge.svg)](https://unioslo.github.io/harborapi/)
 [![Checked with mypy](https://www.mypy-lang.org/static/mypy_badge.svg)](https://mypy-lang.org/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Linting: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
@@ -17,11 +17,11 @@ Python async client for the Harbor REST API v2.0 based on the official Harbor RE
 
 ## Features
 
-- [Async API](https://pederhan.github.io/harborapi/usage/)
+- [Async API](https://unioslo.github.io/harborapi/usage/)
 - Extensive type hint coverage
-- [Data validation](https://pederhan.github.io/harborapi/usage/models/) with [Pydantic](https://github.com/pydantic/pydantic)
-- Built-in [retry functionality](https://pederhan.github.io/harborapi/usage/retry/) with [backoff](https://github.com/litl/backoff)
-- Optional [Rich](https://github.com/Textualize/rich/) [support](https://pederhan.github.io/harborapi/usage/rich/)
+- [Data validation](https://unioslo.github.io/harborapi/usage/models/) with [Pydantic](https://github.com/pydantic/pydantic)
+- Built-in [retry functionality](https://unioslo.github.io/harborapi/usage/retry/) with [backoff](https://github.com/litl/backoff)
+- Optional [Rich](https://github.com/Textualize/rich/) [support](https://unioslo.github.io/harborapi/usage/rich/)
 
 ## Installation
 
@@ -32,7 +32,7 @@ pip install harborapi
 
 ## Documentation
 
-Documentation is available [here](https://pederhan.github.io/harborapi/). The documentation is still a work in progress, and you may have to dig around a bit to find what you're looking for.
+Documentation is available [here](https://unioslo.github.io/harborapi/). The documentation is still a work in progress, and you may have to dig around a bit to find what you're looking for.
 
 Creating proper documentation for the Pydantic models is priority number one right now, but is largely blocked by the lack of inheritance support in the [mkdocstrings python plugin](https://github.com/mkdocstrings/python/issues/58#issuecomment-1435962980).
 
@@ -113,7 +113,7 @@ asyncio.run(main())
 
 ----
 
-All endpoints are documented in the [endpoints documentation](https://pederhan.github.io/harborapi/endpoints/).
+All endpoints are documented in the [endpoints documentation](https://unioslo.github.io/harborapi/endpoints/).
 
 
 
@@ -123,7 +123,7 @@ All endpoints are documented in the [endpoints documentation](https://pederhan.g
 
 `harborapi` attempts to improve endpoint descriptions where possible and fix models with fields given the wrong type or wrongly marked as required. Without these changes, the validation provided by the library would be unusable for certain endpoints, as these endpoints can, in certain cases, return data that is inconsistent with the official API specification, thus breaking the model validation.
 
-To return the raw API responses without validation and type conversion, set `raw=True` when instantiating the client. For more information, check the [documentation](https://pederhan.github.io/harborapi/usage/validation/) on validation.
+To return the raw API responses without validation and type conversion, set `raw=True` when instantiating the client. For more information, check the [documentation](https://unioslo.github.io/harborapi/usage/validation/) on validation.
 
 
 ## Implemented endpoints
