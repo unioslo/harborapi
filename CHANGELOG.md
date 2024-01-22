@@ -14,6 +14,12 @@ While the project is still on major version 0, breaking changes may be introduce
 
 <!-- ## Unreleased -->
 
+## [0.23.1](https://github.com/unioslo/harborapi/tree/harborapi-v0.23.1) - 2024-01-22
+
+## Changed
+
+- All URLs now point to new repo owner.
+
 ## [0.23.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.23.0) - 2023-12-19
 
 The big Pydantic V2 update. This is a major update in terms of both scope and API compatibility.
