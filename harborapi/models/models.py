@@ -490,7 +490,7 @@ class ReplicationTriggerSettings(BaseModel):
 
 class ReplicationFilter(BaseModel):
     type: Optional[str] = Field(None, description="The replication policy filter type.")
-    value: Optional[Dict[str, Any]] = Field(
+    value: Optional[str, Any] = Field(
         None, description="The value of replication policy filter."
     )
     decoration: Optional[str] = Field(
