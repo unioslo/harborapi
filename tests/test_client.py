@@ -707,6 +707,27 @@ def test_authenticate(
         )
 
 
+@pytest.mark.parametrize("verify", [True, False])
+def test_authenticate_verify(verify: bool) -> None:
+    client = HarborAsyncClient(
+        url="https://example.com/api/v2.0",
+        username="username",
+        secret="secret",
+        verify=verify,  # instantiate with our verify value
+    )
+
+    # Calling authenticate should NOT change the client instance
+    client_id_pre = id(client.client)
+    client.authenticate(verify=verify)
+    assert client.verify == verify
+    assert id(client.client) == client_id_pre
+
+    # Calling with a different value should instantiate a new client
+    client.authenticate(verify=not verify)
+    assert client.verify == (not verify)
+    assert id(client.client) != client_id_pre
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "status_code",
