@@ -224,23 +224,28 @@ class HarborAsyncClient:
             raise ValueError("A Harbor API URL is required.")
         self.authenticate(username, secret, basicauth, credentials_file, url, **kwargs)
 
-        # Instantiate persistent HTTP client using the redirect policy
-        # NOTE: any reason we don't specify headers here too?
-        self.client = httpx.AsyncClient(
-            follow_redirects=follow_redirects,
-            timeout=timeout,
-            cookies=CookieDiscarder(),
-            verify=verify,
-        )
-
         self.validate = validate
         self.raw = raw
         self.retry = retry
+        self.verify = verify
+        self.timeout = timeout
+        self.follow_redirects = follow_redirects
 
         if logging or os.environ.get("HARBORAPI_LOGGING", "") == "1":
             enable_logging()
 
         self.response_log = ResponseLog(max_logs=max_logs)
+        self.client = self._get_client()
+
+    def _get_client(self) -> httpx.AsyncClient:
+        """Returns a new HTTPX client instance."""
+        # NOTE: any reason we don't specify headers here too?
+        return httpx.AsyncClient(
+            follow_redirects=self.follow_redirects,
+            timeout=self.timeout,
+            cookies=CookieDiscarder(),
+            verify=self.verify,
+        )
 
     def authenticate(
         self,
@@ -321,15 +326,11 @@ class HarborAsyncClient:
 
         # If user want to change SSL verification, we have to reinstantiate the client
         # https://www.python-httpx.org/advanced/ssl/#ssl-configuration-on-client-instances
-        if verify is not None:
+        if verify is not None and verify != self.verify:
             # TODO: add abstraction for client instantiation
             # that can be used in __init__ and here
-            self.client = httpx.AsyncClient(
-                follow_redirects=self.client.follow_redirects,
-                timeout=self.client.timeout,
-                cookies=CookieDiscarder(),
-                verify=verify,
-            )
+            self.verify = verify
+            self.client = self._get_client()
 
     @contextlib.contextmanager
     def no_retry(self) -> Generator[None, None, None]:
