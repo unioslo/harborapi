@@ -243,9 +243,7 @@ class VulnerabilityItem(BaseModel):
         examples=["1.18.0"],
     )
     severity: Severity = Field(
-        Severity.unknown,
-        description="The severity of the vulnerability.",
-        example=Severity.high.value,
+        Severity.unknown, description="The severity of the vulnerability."
     )
     description: Optional[str] = Field(
         None,
@@ -257,7 +255,6 @@ class VulnerabilityItem(BaseModel):
     links: Optional[List[str]] = Field(
         None,
         description="The list of links to the upstream databases with the full description of the vulnerability.\n",
-        example=["https://security-tracker.debian.org/tracker/CVE-2017-8283"],
     )
     preferred_cvss: Optional[CVSSDetails] = None
     cwe_ids: Optional[List[str]] = Field(

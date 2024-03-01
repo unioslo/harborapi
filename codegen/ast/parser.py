@@ -195,9 +195,6 @@ models: dict[str, dict[str, list[Modifier]]] = {
                     ctx=ast.Load(),
                 ),
                 description="The severity of the vulnerability.",
-                example=ast.keyword(
-                    arg="example", value=ast.Name(id="Severity.high.value")
-                ),
             ),
         ],
     },
