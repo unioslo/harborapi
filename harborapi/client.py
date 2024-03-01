@@ -211,7 +211,7 @@ class HarborAsyncClient:
         verify : VerifyTypes
             Control verification of the server's TLS certificate.
             See `httpx._types.VerifyTypes` for more information or
-            <https://www.python-httpx.org/advanced/#ssl-certificates>.
+            <https://www.python-httpx.org/advanced/ssl/>.
         **kwargs : Any
             Backwards-compatibility with deprecated parameters.
             Unknown kwargs are ignored.
@@ -245,6 +245,7 @@ class HarborAsyncClient:
         basicauth: Optional[str] = None,
         credentials_file: Optional[Union[str, Path]] = None,
         url: Optional[str] = None,
+        verify: Optional[VerifyTypes] = None,
         **kwargs: Any,
     ) -> None:
         """(Re-)Authenticate the client with the provided credentials.
@@ -264,6 +265,8 @@ class HarborAsyncClient:
             `username`, `secret` and `basicauth` must not be provided if this is used.
         url : Optional[str]
             The URL of the Harbor server in the format `http://host:[port]/api/v<version>`
+        verify : Optional[VerifyTypes]
+            Control verification of the server's TLS certificate.
         **kwargs : Any
             Additional keyword arguments to pass in.
         """
@@ -278,8 +281,7 @@ class HarborAsyncClient:
                 DeprecationWarning,
                 stacklevel=2,
             )
-            assert isinstance(password, str), "password must be a string"
-            secret = password
+            secret = str(password)
 
         # Get basicauth from deprecated kwarg
         # 'credentials' -> 'basicauth'
@@ -310,10 +312,18 @@ class HarborAsyncClient:
         # Only set URL if it's provided
         # This is guaranteed to be a non-empty string when this method is called
         # by __init__(), but not necessarily when called directly.
-        # This means that the URL is set on instantation, but not necessarily
-        # when the user calls authenticate() directly without providing a URL.
         if url:
             self.url = url.strip("/")  # make sure URL doesn't have a trailing slash
+
+        # If user want to change SSL verification, we have to reinstantiate the client
+        # https://www.python-httpx.org/advanced/ssl/#ssl-configuration-on-client-instances
+        if verify is not None:
+            self.client = httpx.AsyncClient(
+                follow_redirects=self.client.follow_redirects,
+                timeout=self.client.timeout,
+                cookies=self.client.cookies,
+                verify=verify,
+            )
 
     @contextlib.contextmanager
     def no_retry(self) -> Generator[None, None, None]:
