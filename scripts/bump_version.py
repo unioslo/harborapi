@@ -201,7 +201,7 @@ def _do_tag(new_version: str) -> CompletedProcess[bytes]:
 
 def _do_push() -> CompletedProcess[bytes]:
     p_git_push = subprocess.run(
-        ["git", "push", "--tags", "origin", "main"], capture_output=True
+        ["git", "push", "--tags", "upstream", "main"], capture_output=True
     )
     if p_git_push.returncode != 0:
         err_console.print(f"Failed to push new version: {p_git_push.stderr.decode()}")
