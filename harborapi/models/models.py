@@ -437,6 +437,10 @@ class ProjectMetadata(BaseModel):
         None,
         description='Whether scan images automatically when pushing. The valid values are "true", "false".',
     )
+    auto_sbom_generation: Optional[str] = Field(
+        None,
+        description='Whether generating SBOM automatically when pushing a subject artifact. The valid values are "true", "false".',
+    )
     reuse_sys_cve_allowlist: Optional[str] = Field(
         None,
         description='Whether this project reuse the system level CVE allowlist as the allowlist of its own.  The valid values are "true", "false". If it is set to "true" the actual allowlist associate with this project, if any, will be ignored.',
@@ -490,7 +494,7 @@ class ReplicationTriggerSettings(BaseModel):
 
 class ReplicationFilter(BaseModel):
     type: Optional[str] = Field(None, description="The replication policy filter type.")
-    value: Optional[Dict[str, Any]] = Field(
+    value: Union[str, Dict[str, Any], None] = Field(
         None, description="The value of replication policy filter."
     )
     decoration: Optional[str] = Field(
@@ -757,7 +761,7 @@ class Type(Enum):
 class ScheduleObj(BaseModel):
     type: Optional[Type] = Field(
         None,
-        description="The schedule type. The valid values are 'Hourly', 'Daily', 'Weekly', 'Custom', 'Manual', 'None' and 'Schedule'.\n'Manual' means to trigger it right away, 'Schedule' means to trigger it by a specified cron schedule and \n'None' means to cancel the schedule.\n",
+        description="The schedule type. The valid values are 'Hourly', 'Daily', 'Weekly', 'Custom', 'Manual', 'None' and 'Schedule'.\n'Manual' means to trigger it right away, 'Schedule' means to trigger it by a specified cron schedule and\n'None' means to cancel the schedule.\n",
     )
     cron: Optional[str] = Field(
         None, description="A cron expression, a time-based job scheduler."
@@ -2413,7 +2417,8 @@ class Robot(BaseModel):
         None, description="The level of the robot, project or system"
     )
     duration: Optional[int] = Field(
-        None, description="The duration of the robot in days"
+        None,
+        description="The duration of the robot in days, duration must be either -1(Never) or a positive integer",
     )
     editable: Optional[bool] = Field(
         None, description="The editable status of the robot"
@@ -2442,7 +2447,8 @@ class RobotCreate(BaseModel):
     )
     disable: Optional[bool] = Field(None, description="The disable status of the robot")
     duration: Optional[int] = Field(
-        None, description="The duration of the robot in days"
+        None,
+        description="The duration of the robot in days, duration must be either -1(Never) or a positive integer",
     )
     permissions: Optional[List[RobotPermission]] = None
 

@@ -14,9 +14,14 @@ While the project is still on major version 0, breaking changes may be introduce
 
 ## Unreleased
 
-## Added
+### Added
 
 - `verify` parameter for `HarborAsyncClient.authenticate()`.
+- New model field: `ProjectMetadata.auto_sbom_generation`
+
+### Fixed
+
+- `ReplicationFilter.value` validation failing due to receiving non-dict value. Now accepts `str`, `dict[str, Any]` and `None`.
 
 ## [0.23.1](https://github.com/unioslo/harborapi/tree/harborapi-v0.23.1) - 2024-01-22
 
