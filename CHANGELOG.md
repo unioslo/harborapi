@@ -24,7 +24,6 @@ While the project is still on major version 0, breaking changes may be introduce
 
 - Model field `example` keyword arguments.
 
-
 ## [0.23.3](https://github.com/unioslo/harborapi/tree/harborapi-v0.23.3) - 2024-03-01
 
 ### Fixed
