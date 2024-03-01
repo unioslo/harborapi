@@ -327,8 +327,6 @@ class HarborAsyncClient:
         # If user want to change SSL verification, we have to reinstantiate the client
         # https://www.python-httpx.org/advanced/ssl/#ssl-configuration-on-client-instances
         if verify is not None and verify != self.verify:
-            # TODO: add abstraction for client instantiation
-            # that can be used in __init__ and here
             self.verify = verify
             self.client = self._get_client()
 
