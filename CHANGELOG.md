@@ -20,6 +20,10 @@ While the project is still on major version 0, breaking changes may be introduce
 
 - `HarborAsyncClient.authenticate(verify=...)` will no longer instantiate a new client object if the `verify` value is identical to current one.
 
+### Removed
+
+- Model field `example` keyword arguments.
+
 
 ## [0.23.3](https://github.com/unioslo/harborapi/tree/harborapi-v0.23.3) - 2024-03-01
 
