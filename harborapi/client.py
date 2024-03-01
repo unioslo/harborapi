@@ -143,6 +143,10 @@ def model_to_dict(model: BaseModel) -> JSONType:
 class CookieDiscarder(CookieJar):
     """A CookieJar that discards all cookies."""
 
+    # NOTE: we need to use this custom CookieJar class because otherwise
+    # we get Invalid CSRF token errors from the server
+    # CSRF token is for UI only: https://github.com/goharbor/harbor/issues/16744#issuecomment-1109395443
+
     def set_cookie(self, *args: Any, **kwargs: Any) -> None:
         # Overriding this method causes any attempt to set cookies
         # by the client to be ignored.
@@ -318,10 +322,12 @@ class HarborAsyncClient:
         # If user want to change SSL verification, we have to reinstantiate the client
         # https://www.python-httpx.org/advanced/ssl/#ssl-configuration-on-client-instances
         if verify is not None:
+            # TODO: add abstraction for client instantiation
+            # that can be used in __init__ and here
             self.client = httpx.AsyncClient(
                 follow_redirects=self.client.follow_redirects,
                 timeout=self.client.timeout,
-                cookies=self.client.cookies,
+                cookies=CookieDiscarder(),
                 verify=verify,
             )
 

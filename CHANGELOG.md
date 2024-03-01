@@ -14,6 +14,12 @@ While the project is still on major version 0, breaking changes may be introduce
 
 <!-- ## Unreleased -->
 
+## [0.23.3](https://github.com/unioslo/harborapi/tree/harborapi-v0.23.3) - 2024-03-01
+
+### Fixed
+
+- `HarborAsyncClient.authenticate(verify=...)` causing the client to fail to discard Harbor CSRF cookies.
+
 ## [0.23.2](https://github.com/unioslo/harborapi/tree/harborapi-v0.23.2) - 2024-03-01
 
 ### Added
