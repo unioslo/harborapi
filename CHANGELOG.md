@@ -17,6 +17,7 @@ While the project is still on major version 0, breaking changes may be introduce
 ### Added
 
 - Python 3.12 support.
+- `harborapi.models.SBOMOverview` which represents the SBOM overview for an artifact. Can be accessed via `Artifact.sbom_overview`.
 
 ### Changed
 
