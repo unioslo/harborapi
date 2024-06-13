@@ -19,6 +19,8 @@ While the project is still on major version 0, breaking changes may be introduce
 - Added compatibility methods for purge endpoint methods that were renamed in HarborAPI v0.11.0.
   - The `*audit_log_rotation*` methods are now deprecated and will be removed in a future release.
   - It never made sense to create an opinionated naming for these methods.
+- Project is now formatted and linted with Ruff.
+- Code generation now explicitly imports `StrDictRootModel` and `StrRootModel`.
 
 ## [0.23.4](https://github.com/unioslo/harborapi/tree/harborapi-v0.23.4) - 2024-03-01
 

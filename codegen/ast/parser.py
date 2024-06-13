@@ -321,7 +321,9 @@ def modify_module(tree: ast.Module, fragment_dir: FragmentDir) -> ast.Module:
 
 
 # Imports that should be added to every file
-ADD_IMPORTS = {}  # type: dict[str, list[str]] # module: list[import_name]
+ADD_IMPORTS = {
+    "harborapi.models.base": ["StrDictRootModel", "StrRootModel"],
+}  # type: dict[str, list[str]] # module: list[import_name]
 
 
 def add_imports(tree: ast.Module) -> ast.Module:
