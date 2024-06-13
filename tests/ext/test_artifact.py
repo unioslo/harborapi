@@ -1,16 +1,17 @@
 from __future__ import annotations
 
 import pytest
-from hypothesis import given
 from hypothesis import HealthCheck
+from hypothesis import given
 from hypothesis import settings
 
-from ..strategies.ext import artifact_info_strategy
 from harborapi.ext.artifact import ArtifactInfo
 from harborapi.models import Tag
 from harborapi.models.scanner import Severity
 from harborapi.models.scanner import VulnerabilityItem
 from harborapi.version import SemVer
+
+from ..strategies.ext import artifact_info_strategy
 
 
 @given(artifact_info_strategy)

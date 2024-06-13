@@ -5,13 +5,12 @@ from pathlib import Path
 from typing import List
 
 import pytest
-from hypothesis import given
 from hypothesis import HealthCheck
+from hypothesis import given
 from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
-from ..utils import json_from_list
 from harborapi.auth import HarborAuthFile
 from harborapi.client import HarborAsyncClient
 from harborapi.exceptions import HarborAPIException
@@ -19,6 +18,8 @@ from harborapi.models.models import Robot
 from harborapi.models.models import RobotCreate
 from harborapi.models.models import RobotCreated
 from harborapi.models.models import RobotSec
+
+from ..utils import json_from_list
 
 
 @pytest.mark.asyncio

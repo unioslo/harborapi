@@ -6,6 +6,7 @@ name without the leading underscore. In order to maintain backwards compatibilit
 the underscore modules are still present, but they are deprecated and will be removed
 in a future version.
 """
+
 from __future__ import annotations
 
 import pytest

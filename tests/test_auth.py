@@ -6,8 +6,8 @@ from datetime import timezone
 from pathlib import Path
 
 import pytest
-from hypothesis import given
 from hypothesis import HealthCheck
+from hypothesis import given
 from hypothesis import settings
 from hypothesis import strategies as st
 

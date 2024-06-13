@@ -2,15 +2,16 @@ from __future__ import annotations
 
 import copy
 
+from hypothesis import HealthCheck
 from hypothesis import assume
 from hypothesis import given
-from hypothesis import HealthCheck
 from hypothesis import settings
 
-from ..strategies.ext import artifact_report_strategy
 from harborapi.ext.report import ArtifactReport
 from harborapi.models.scanner import Severity
 from harborapi.models.scanner import VulnerabilityItem
+
+from ..strategies.ext import artifact_report_strategy
 
 # TODO: add fixture that initializes the report with the data we do in the test below
 #       Afterwards, we can split up the tests and use the fixture to initialize the report

@@ -1,18 +1,19 @@
 from __future__ import annotations
 
 import pytest
-from hypothesis import given
 from hypothesis import HealthCheck
+from hypothesis import given
 from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_mock import MockerFixture
 
-from ..strategies.artifact import get_hbv_strategy
 from harborapi.models.scanner import CVSSDetails
 from harborapi.models.scanner import HarborVulnerabilityReport
 from harborapi.models.scanner import Scanner
 from harborapi.models.scanner import Severity
 from harborapi.models.scanner import VulnerabilityItem
+
+from ..strategies.artifact import get_hbv_strategy
 
 
 def test_vulnerabilityitem_get_severity_highest():

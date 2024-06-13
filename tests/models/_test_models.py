@@ -1,6 +1,7 @@
 """Test module that test overrides of broken and/or missing models.
 
-Tests mostly ensure that the fields """
+Tests mostly ensure that the fields"""
+
 from __future__ import annotations
 
 import pytest
@@ -8,10 +9,6 @@ from hypothesis import assume
 from hypothesis import given
 from hypothesis import strategies as st
 
-from .utils import _no_references_check
-from .utils import _override_class_check
-from .utils import _override_compat_check
-from .utils import _override_field_check
 from harborapi.models.models import Artifact
 from harborapi.models.models import ExecHistory
 from harborapi.models.models import GCHistory
@@ -25,6 +22,11 @@ from harborapi.models.models import ScheduleObj
 from harborapi.models.models import Type
 from harborapi.models.models import VulnerabilitySummary
 from harborapi.models.scanner import Severity
+
+from .utils import _no_references_check
+from .utils import _override_class_check
+from .utils import _override_compat_check
+from .utils import _override_field_check
 
 # FIXME: Remove use of .utils helper functions:
 # Tests that use `_override_*` and `_no_references_check` probably dont't
