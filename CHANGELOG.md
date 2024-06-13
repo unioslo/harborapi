@@ -21,6 +21,7 @@ While the project is still on major version 0, breaking changes may be introduce
   - It never made sense to create an opinionated naming for these methods.
 - Project is now formatted and linted with Ruff.
 - Code generation now explicitly imports `StrDictRootModel` and `StrRootModel`.
+- Updated API spec to [ec8d692](https://github.com/goharbor/harbor/blob/6a38ed3d7769e3598c6cf829aae4e0e152f93a83/api/v2.0/swagger.yaml)
 
 ## [0.23.4](https://github.com/unioslo/harborapi/tree/harborapi-v0.23.4) - 2024-03-01
 
