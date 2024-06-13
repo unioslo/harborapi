@@ -14,6 +14,10 @@ While the project is still on major version 0, breaking changes may be introduce
 
 ## Unreleased
 
+### Added
+
+- Python 3.12 support.
+
 ### Changed
 
 - Added compatibility methods for purge endpoint methods that were renamed in HarborAPI v0.11.0.
