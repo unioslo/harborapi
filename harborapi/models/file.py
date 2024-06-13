@@ -21,7 +21,7 @@ class FileResponse:
 
     @property
     def content_type(self) -> Optional[str]:
-        return self.response.headers.get("content-type", None)  # type: ignore # httpx.Headers is a subclass of  MutableMapping[str, str], but the .get() methods has the -> Any return type annotation.
+        return self.response.headers.get("content-type", None)
 
     @property
     def headers(self) -> httpx.Headers:

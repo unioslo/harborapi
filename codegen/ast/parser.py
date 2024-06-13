@@ -500,11 +500,11 @@ def insert_or_update_classdefs(
                     ) and getattr(
                         stmt.target,
                         "id",
-                        None,  # type: ignore
+                        None,
                     ) == getattr(
                         class_stmt.target,
                         "id",
-                        None,  # type: ignore
+                        None,
                     ):
                         node.body[i] = class_stmt
                         break

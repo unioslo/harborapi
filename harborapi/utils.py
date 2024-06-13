@@ -33,7 +33,7 @@ def is_json(response: Response) -> bool:
     bool
         `True` if the response has a json content type, `False` otherwise.
     """
-    return response.headers.get("content-type", "").startswith("application/json")  # type: ignore # headers guaranteed to be a dict[str, str]
+    return response.headers.get("content-type", "").startswith("application/json")
 
 
 def handle_optional_json_response(resp: Response) -> Optional[JSONType]:
