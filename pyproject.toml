@@ -60,7 +60,7 @@ path = "harborapi/__about__.py"
 [tool.hatch.envs.default]
 dependencies = [
   "mypy>=1.7.0",
-  "ruff>=0.1.7",
+  "ruff>=0.4.8",
   "pytest>=7.2.0",
   "pytest-asyncio>=0.18.3",
   "pytest-cov>=4.0.0",
@@ -130,7 +130,8 @@ exclude_also = [
   'if __name__ == __main__:',
 ]
 
-[tool.ruff]
+[tool.ruff.lint]
+extend-select = ["I"]
 ignore = [
   # Rules disabled due to using Ruff as formatter
   # See: https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
@@ -157,8 +158,16 @@ exclude = [
   "harborapi/models/_scanner.py",
 ]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.isort]
+# Force one line per import to simplify diffing and merging
+force-single-line = true
+# Add annotations import to every file
+required-imports = ["from __future__ import annotations"]
+
+
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["E402", "F401", "F403"]
+"codegen/ast/fragments/*" = []
 
 [tool.mypy]
 python_version = "3.8"
