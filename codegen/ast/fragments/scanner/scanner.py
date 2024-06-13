@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from ..version import get_semver
 from ..version import SemVer
+from ..version import get_semver
 
 
 class Scanner(BaseModel):
