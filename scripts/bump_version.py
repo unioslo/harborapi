@@ -119,11 +119,8 @@ def cleanup(state: StateMachine) -> None:
             elif st == State.GIT_ADD:
                 subprocess.run(["git", "reset", "HEAD"])
             elif st == State.NEW_VERSION:
-                # just revert change to __about__.py instead?
-                if not state.old_version:
-                    raise ValueError("No old version to revert to.")
-                # Revert the version bump
-                set_version(state.old_version)
+                # Nothing to do; when resetting git, we lose the new version.
+                pass
         except Exception as e:
             print(f"Failed to revert state {state.state}: {e}", file=sys.stderr)
 
