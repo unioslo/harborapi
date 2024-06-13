@@ -1,25 +1,28 @@
 from __future__ import annotations
 
 from functools import cached_property
+from typing import TYPE_CHECKING
 from typing import Callable
 from typing import Iterable
 from typing import List
 from typing import Optional
-from typing import TYPE_CHECKING
 
-from ..version import get_semver
 from ..version import VersionType
+from ..version import get_semver
 
 if TYPE_CHECKING:
     from typing import Dict  # noqa: F401
 
 from pydantic import ConfigDict
 
-from ..models import Artifact, Repository
+from ..models import Artifact
+from ..models import Repository
 from ..models.base import BaseModel
-from ..models.scanner import HarborVulnerabilityReport, VulnerabilityItem
+from ..models.scanner import HarborVulnerabilityReport
+from ..models.scanner import VulnerabilityItem
 from .cve import CVSSData
-from .regex import get_pattern, match
+from .regex import get_pattern
+from .regex import match
 
 
 class ArtifactInfo(BaseModel):

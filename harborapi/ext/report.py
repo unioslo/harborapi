@@ -13,12 +13,13 @@ from typing import Union
 from pydantic import ConfigDict
 from pydantic import field_validator
 
+from harborapi.models.scanner import Severity
+from harborapi.models.scanner import VulnerabilityItem
+
 from ..models.base import BaseModel
 from ..version import VersionType
 from .artifact import ArtifactInfo
 from .cve import CVSSData
-from harborapi.models.scanner import Severity
-from harborapi.models.scanner import VulnerabilityItem
 
 
 @dataclass

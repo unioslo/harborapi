@@ -3,10 +3,10 @@ from __future__ import annotations
 import re
 from base64 import b64encode
 from json import JSONDecodeError
-from typing import cast
 from typing import Dict
 from typing import Optional
 from typing import Union
+from typing import cast
 from urllib.parse import quote_plus
 from urllib.parse import unquote_plus
 

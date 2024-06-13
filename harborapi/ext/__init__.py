@@ -32,6 +32,7 @@ This difference can be summarized as the following:
     ArtifactInfo.with_* -> List[Vulnerability]
     ArtifactReport.with_* -> ArtifactReport
 """
+
 from __future__ import annotations
 
 from .api import *
