@@ -5,6 +5,7 @@ Support for printing the models as Rich tables is added through the
 use of the special `__rich_console__` method. See the Rich documentation
 for more information: <https://rich.readthedocs.io/en/latest/protocol.html#console-render/>.
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -21,9 +22,13 @@ from pydantic import RootModel as PydanticRootModel
 
 # fmt: off
 try:
-    from rich.console import Console, ConsoleOptions, Group, RenderResult
+    from rich.console import Console
+    from rich.console import ConsoleOptions
+    from rich.console import Group
+    from rich.console import RenderResult
     from rich.panel import Panel
-    from rich.table import Column, Table
+    from rich.table import Column
+    from rich.table import Table
     rich_installed = True
 except ImportError:
     rich_installed = False
@@ -97,11 +102,11 @@ class BaseModel(PydanticBaseModel):
         By default, the model's class name is be used.
         """
         try:
-            title = self.__name__  # type: ignore # this is populated by Pydantic
+            title = self.__name__
             assert isinstance(title, str)
         except (AttributeError, AssertionError):
             title = self.__class__.__name__
-        return title  # type: ignore # not sure why mypy complains after assert
+        return title
 
     @property
     def __rich_panel_title__(self) -> Optional[str]:
