@@ -28,6 +28,22 @@ While the project is still on major version 0, breaking changes may be introduce
 - Code generation now explicitly imports `StrDictRootModel` and `StrRootModel`.
 - Updated API spec to [ec8d692](https://github.com/goharbor/harbor/blob/6a38ed3d7769e3598c6cf829aae4e0e152f93a83/api/v2.0/swagger.yaml)
 
+## [0.24.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.24.0) - 2024-06-13
+
+### Added
+
+- Python 3.12 support.
+- `harborapi.models.SBOMOverview` which represents the SBOM overview for an artifact. Can be accessed via `Artifact.sbom_overview`.
+
+### Changed
+
+- Added compatibility methods for purge endpoint methods that were renamed in HarborAPI v0.11.0.
+  - The `*audit_log_rotation*` methods are now deprecated and will be removed in a future release.
+  - It never made sense to create an opinionated naming for these methods.
+- Project is now formatted and linted with Ruff instead of with Black and reorder-python-imports.
+- Code generation now explicitly imports `StrDictRootModel` and `StrRootModel`.
+- Updated API spec to [ec8d692](https://github.com/goharbor/harbor/blob/6a38ed3d7769e3598c6cf829aae4e0e152f93a83/api/v2.0/swagger.yaml)
+
 ## [0.23.4](https://github.com/unioslo/harborapi/tree/harborapi-v0.23.4) - 2024-03-01
 
 ### Changed

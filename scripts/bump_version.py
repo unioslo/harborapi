@@ -115,7 +115,7 @@ def cleanup(state: StateMachine) -> None:
                     raise ValueError("No new version to untag.")
                 subprocess.run(["git", "tag", "-d", state.new_version])
             elif st == State.GIT_COMMIT:
-                subprocess.run(["git", "revert", "HEAD"])
+                subprocess.run(["git", "reset", "HEAD"])
             elif st == State.GIT_ADD:
                 subprocess.run(["git", "reset", "HEAD"])
             elif st == State.NEW_VERSION:
