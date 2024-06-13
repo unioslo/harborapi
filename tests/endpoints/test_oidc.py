@@ -3,8 +3,8 @@ from __future__ import annotations
 from contextlib import nullcontext
 
 import pytest
-from hypothesis import given
 from hypothesis import HealthCheck
+from hypothesis import given
 from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
@@ -33,7 +33,7 @@ async def test_test_oidc_mock(
     if status == 200:
         ctx = nullcontext()
     else:
-        ctx = pytest.raises(StatusError)  # type: ignore
+        ctx = pytest.raises(StatusError)
     with ctx as exc_info:
         await async_client.test_oidc(oidcreq=oidcreq)
     if status == 200:

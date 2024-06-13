@@ -4,15 +4,12 @@ from contextlib import nullcontext
 from typing import List
 
 import pytest
-from hypothesis import given
 from hypothesis import HealthCheck
+from hypothesis import given
 from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
-from ..strategies.artifact import artifact_strategy
-from ..strategies.artifact import get_hbv_strategy
-from ..utils import json_from_list
 from harborapi.client import HarborAsyncClient
 from harborapi.exceptions import NotFound
 from harborapi.exceptions import StatusError
@@ -23,6 +20,10 @@ from harborapi.models.models import Accessory
 from harborapi.models.models import Artifact
 from harborapi.models.models import Label
 from harborapi.models.models import Tag
+
+from ..strategies.artifact import artifact_strategy
+from ..strategies.artifact import get_hbv_strategy
+from ..utils import json_from_list
 
 
 @pytest.mark.asyncio
@@ -213,7 +214,7 @@ async def test_delete_artifact_tag(
     if status_code == 404:
         ctx = pytest.raises(StatusError)
     else:
-        ctx = nullcontext()  # type: ignore
+        ctx = nullcontext()
     with ctx:
         await async_client.delete_artifact_tag("testproj", "testrepo", "latest", "123")
 
@@ -341,7 +342,7 @@ async def test_delete_artifact_mock(
     if status_code == 404:
         ctx = pytest.raises(StatusError)
     else:
-        ctx = nullcontext()  # type: ignore
+        ctx = nullcontext()
     with ctx:
         await async_client.delete_artifact("testproj", "testrepo", "latest")
 
@@ -364,6 +365,6 @@ async def test_delete_artifact_label_mock(
     if status_code == 404:
         ctx = pytest.raises(StatusError)
     else:
-        ctx = nullcontext()  # type: ignore
+        ctx = nullcontext()
     with ctx:
         await async_client.delete_artifact_label("testproj", "testrepo", "latest", 123)

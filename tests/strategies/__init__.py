@@ -17,4 +17,4 @@ from .errors import errors_strategy
 
 
 def init_strategies() -> None:
-    st.register_type_strategy(AnyUrl, urls())  # type: ignore # AnyUrl accepts str args
+    st.register_type_strategy(AnyUrl, urls())

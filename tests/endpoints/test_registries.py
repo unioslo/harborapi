@@ -3,19 +3,20 @@ from __future__ import annotations
 from typing import List
 
 import pytest
-from hypothesis import given
 from hypothesis import HealthCheck
+from hypothesis import given
 from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
-from ..utils import json_from_list
 from harborapi.client import HarborAsyncClient
 from harborapi.models import Registry
 from harborapi.models import RegistryInfo
 from harborapi.models import RegistryPing
 from harborapi.models import RegistryProviders
 from harborapi.models import RegistryUpdate
+
+from ..utils import json_from_list
 
 
 @pytest.mark.asyncio

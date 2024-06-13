@@ -1,15 +1,16 @@
 from __future__ import annotations
 
 import pytest
-from hypothesis import given
 from hypothesis import HealthCheck
+from hypothesis import given
 from hypothesis import settings
 from pytest_httpserver import HTTPServer
 
-from ..strategies import cveallowlist_strategy
 from harborapi.client import HarborAsyncClient
 from harborapi.models import CVEAllowlist
 from harborapi.models import CVEAllowlistItem
+
+from ..strategies import cveallowlist_strategy
 
 
 @pytest.mark.asyncio

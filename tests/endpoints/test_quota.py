@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import List
 
 import pytest
-from hypothesis import given
 from hypothesis import HealthCheck
+from hypothesis import given
 from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer

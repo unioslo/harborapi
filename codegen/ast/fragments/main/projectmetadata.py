@@ -6,8 +6,8 @@ from typing import Type as PyType
 from typing import Union
 
 from pydantic import Field
-from pydantic import field_validator
 from pydantic import ValidationInfo
+from pydantic import field_validator
 
 
 class ProjectMetadata(BaseModel):

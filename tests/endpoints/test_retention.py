@@ -3,13 +3,12 @@ from __future__ import annotations
 from typing import List
 
 import pytest
-from hypothesis import given
 from hypothesis import HealthCheck
+from hypothesis import given
 from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
-from ..utils import json_from_list
 from harborapi.client import HarborAsyncClient
 from harborapi.exceptions import HarborAPIException
 from harborapi.exceptions import NotFound
@@ -19,6 +18,8 @@ from harborapi.models import RetentionExecution
 from harborapi.models import RetentionExecutionTask
 from harborapi.models import RetentionMetadata
 from harborapi.models import RetentionPolicy
+
+from ..utils import json_from_list
 
 
 @pytest.mark.asyncio

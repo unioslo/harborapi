@@ -12,14 +12,15 @@ from typing import Union
 from pydantic import AnyUrl
 from pydantic import AwareDatetime
 from pydantic import Field
+from pydantic import ValidationInfo
 from pydantic import field_validator
 from pydantic import model_validator
-from pydantic import ValidationInfo
+
+from harborapi.models.base import StrDictRootModel
+from harborapi.models.base import StrRootModel
 
 from ..log import logger
 from .base import BaseModel
-from .base import StrDictRootModel
-from .base import StrRootModel
 from .scanner import Severity
 
 
@@ -199,6 +200,40 @@ class Scanner(BaseModel):
     version: Optional[str] = Field(
         None, description="Version of the scanner adapter", examples=["v0.9.1"]
     )
+
+
+class SBOMOverview(BaseModel):
+    """
+    The generate SBOM overview information
+    """
+
+    start_time: Optional[AwareDatetime] = Field(
+        None,
+        description="The start time of the generating sbom report task",
+        examples=["2006-01-02T14:04:05Z"],
+    )
+    end_time: Optional[AwareDatetime] = Field(
+        None,
+        description="The end time of the generating sbom report task",
+        examples=["2006-01-02T15:04:05Z"],
+    )
+    scan_status: Optional[str] = Field(
+        None, description="The status of the generating SBOM task"
+    )
+    sbom_digest: Optional[str] = Field(
+        None, description="The digest of the generated SBOM accessory"
+    )
+    report_id: Optional[str] = Field(
+        None,
+        description="id of the native scan report",
+        examples=["5f62c830-f996-11e9-957f-0242c0a89008"],
+    )
+    duration: Optional[int] = Field(
+        None,
+        description="Time in seconds required to create the report",
+        examples=[300],
+    )
+    scanner: Optional[Scanner] = None
 
 
 class VulnerabilitySummary(BaseModel):
@@ -684,7 +719,7 @@ class RobotSec(BaseModel):
 class Access(BaseModel):
     resource: Optional[str] = Field(
         None,
-        description='The resource of the access. Possible resources are *, artifact, artifact-addition, artifact-label, audit-log, catalog, configuration, distribution, garbage-collection, helm-chart, helm-chart-version, helm-chart-version-label, immutable-tag, label, ldap-user, log, member, metadata, notification-policy, preheat-instance, preheat-policy, project, quota, registry, replication, replication-adapter, replication-policy, repository, robot, scan, scan-all, scanner, system-volumes, tag, tag-retention, user, user-group or "" (for self-reference).',
+        description="The resource of the access. Possible resources are listed here for system and project level https://github.com/goharbor/harbor/blob/main/src/common/rbac/const.go",
     )
     action: Optional[str] = Field(
         None,
@@ -957,6 +992,11 @@ class ScannerRegistration(BaseModel):
     health: Optional[str] = Field(
         "", description="Indicate the healthy of the registration", examples=["healthy"]
     )
+    capabilities: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Indicates the capabilities of the scanner, e.g. support_vulnerability or support_sbom.",
+        examples=[{"support_vulnerability": True, "support_sbom": True}],
+    )
 
 
 class ScannerRegistrationReq(BaseModel):
@@ -1026,6 +1066,11 @@ class IsDefault(BaseModel):
 
 
 class ScannerCapability(BaseModel):
+    type: Optional[str] = Field(
+        None,
+        description="Specify the type of scanner capability, like vulnerability or sbom\n",
+        examples=["sbom"],
+    )
     consumes_mime_types: Optional[List[str]] = None
     produces_mime_types: Optional[List[str]] = None
 
@@ -1859,6 +1904,22 @@ class VulnerabilityItem(BaseModel):
     links: Optional[List[str]] = Field(None, description="Links of the vulnerability")
 
 
+class ScanType1(Enum):
+    """
+    The scan type for the scan request. Two options are currently supported, vulnerability and sbom
+    """
+
+    vulnerability = "vulnerability"
+    sbom = "sbom"
+
+
+class ScanType(BaseModel):
+    scan_type: Optional[ScanType1] = Field(
+        None,
+        description="The scan type for the scan request. Two options are currently supported, vulnerability and sbom",
+    )
+
+
 class Errors(BaseModel):
     """Errors that occurred while handling a request."""
 
@@ -2521,6 +2582,7 @@ class Artifact(BaseModel):
     addition_links: Optional[AdditionLinks] = None
     labels: Optional[List[Label]] = None
     scan_overview: Optional[ScanOverview] = None
+    sbom_overview: Optional[SBOMOverview] = None
     accessories: Optional[List[Accessory]] = None
 
     @property

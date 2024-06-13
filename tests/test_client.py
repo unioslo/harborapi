@@ -5,14 +5,13 @@ from typing import Optional
 
 import pytest
 from httpx import HTTPStatusError
-from hypothesis import given
 from hypothesis import HealthCheck
+from hypothesis import given
 from hypothesis import settings
 from pydantic import ValidationError
 from pytest_httpserver import HTTPServer
 from pytest_mock import MockerFixture
 
-from .strategies import errors_strategy
 from harborapi.auth import HarborAuthFile
 from harborapi.client import HarborAsyncClient
 from harborapi.exceptions import BadRequest
@@ -26,6 +25,8 @@ from harborapi.models import Error
 from harborapi.models import Errors
 from harborapi.models import UserResp
 from harborapi.utils import get_basicauth
+
+from .strategies import errors_strategy
 
 
 # TODO: parametrize this to test both clients
@@ -137,7 +138,7 @@ async def test_get_pagination_mock(
         "/api/v2.0/users", query_string="page=2"
     ).respond_with_json([{"username": "user3"}, {"username": "user4"}])
     async_client.url = httpserver.url_for("/api/v2.0")
-    users = await async_client.get("/users")  # type: ignore
+    users = await async_client.get("/users")
     assert isinstance(users, list)
     assert len(users) == 4
     assert users[0]["username"] == "user1"
@@ -222,7 +223,7 @@ async def test_get_pagination_no_follow(
         headers={"link": '</api/v2.0/users?page=1>; rel="prev"'},
     )
     async_client.url = httpserver.url_for("/api/v2.0")
-    users = await async_client.get("/users", follow_links=False)  # type: ignore
+    users = await async_client.get("/users", follow_links=False)
     assert isinstance(users, list)
     assert len(users) == 2
     assert users[0]["username"] == "user1"
@@ -245,7 +246,7 @@ async def test_get_pagination_limit(
         headers={"link": '</api/v2.0/users?page=1>; rel="prev"'},
     )
     async_client.url = httpserver.url_for("/api/v2.0")
-    users = await async_client.get("/users", limit=2)  # type: ignore
+    users = await async_client.get("/users", limit=2)
     assert isinstance(users, list)
     assert len(users) == 2
     assert users[0]["username"] == "user1"
@@ -268,7 +269,7 @@ async def test_get_pagination_no_limit(
         headers={"link": '</api/v2.0/users?page=1>; rel="prev"'},
     )
     async_client.url = httpserver.url_for("/api/v2.0")
-    users = await async_client.get("/users", limit=None)  # type: ignore
+    users = await async_client.get("/users", limit=None)
     assert isinstance(users, list)
     assert len(users) == 3
     assert users[0]["username"] == "user1"
@@ -295,7 +296,7 @@ async def test_get_pagination_invalid_mock(
         headers={"link": '</api/v2.0/users?page=1>; rel="prev"'},
     )
     async_client.url = httpserver.url_for("/api/v2.0")
-    users = await async_client.get("/users")  # type: ignore
+    users = await async_client.get("/users")
     assert isinstance(users, list)
     assert len(users) == 2
     assert users[0]["username"] == "user1"

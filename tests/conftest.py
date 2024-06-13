@@ -7,13 +7,14 @@ from typing import Iterable
 from typing import Union
 
 import pytest
-from hypothesis import settings
 from hypothesis import Verbosity
+from hypothesis import settings
 from pytest_httpserver import HTTPServer
 
-from .strategies import init_strategies
 from harborapi.client import HarborAsyncClient
 from harborapi.log import enable_logging
+
+from .strategies import init_strategies
 
 # Enable logging for tests
 enable_logging()
@@ -41,7 +42,7 @@ def httpserver(httpserver: HTTPServer) -> Iterable[HTTPServer]:
     if not httpserver.is_running():
         httpserver.start()
     # Ensure server has no handlers after each test
-    httpserver.clear_all_handlers()  # type: ignore
+    httpserver.clear_all_handlers()
     # Maybe run httpserver.clear() too?
 
 
@@ -101,4 +102,4 @@ def credentials_file(tmp_path: Path, credentials_dict: dict) -> Path:
 @pytest.fixture(params=["test", 1234])
 def project_name_or_id(request: pytest.FixtureRequest) -> Union[str, int]:
     """Parametrized fixture that returns a project name (str) and/or id (int)"""
-    return request.param  # type: ignore
+    return request.param

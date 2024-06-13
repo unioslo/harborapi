@@ -4,6 +4,7 @@ but their valid values are 'true' and 'false'.
 This module tests our validator that converts bools to the strings 'true'
 and 'false' instead of 'True' and 'False'.
 """
+
 from __future__ import annotations
 
 from harborapi.models import ProjectMetadata

@@ -10,9 +10,9 @@ from pytest_httpserver import HTTPServer
 from harborapi.client import HarborAsyncClient
 from harborapi.exceptions import HarborAPIException
 from harborapi.exceptions import StatusError
+from harborapi.retry import RetrySettings
 from harborapi.retry import get_backoff_kwargs
 from harborapi.retry import retry
-from harborapi.retry import RetrySettings
 
 
 def test_retrysettings_basic():

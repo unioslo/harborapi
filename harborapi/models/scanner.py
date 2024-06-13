@@ -17,15 +17,16 @@ from typing import Union
 from pydantic import AwareDatetime
 from pydantic import ConfigDict
 from pydantic import Field
-from pydantic import field_validator
 from pydantic import ValidationInfo
+from pydantic import field_validator
+
+from harborapi.models.base import StrDictRootModel
+from harborapi.models.base import StrRootModel
 
 from ..log import logger
-from ..version import get_semver
 from ..version import SemVer
+from ..version import get_semver
 from .base import BaseModel
-from .base import StrDictRootModel
-from .base import StrRootModel
 
 
 class Scanner(BaseModel):
@@ -678,7 +679,5 @@ def sort_distribution(distribution: "Counter[Severity]") -> List[Tuple[Severity,
     """Turn a counter of Severities into a sorted list of (severity, count) tuples."""
     return [
         (k, v)
-        for (k, v) in sorted(
-            distribution.items(), key=lambda x: SEVERITY_PRIORITY[x[0]]
-        )
+        for k, v in sorted(distribution.items(), key=lambda x: SEVERITY_PRIORITY[x[0]])
     ]

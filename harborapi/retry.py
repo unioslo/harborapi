@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import functools
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import Dict
@@ -8,7 +9,6 @@ from typing import Iterable
 from typing import Optional
 from typing import Tuple
 from typing import Type
-from typing import TYPE_CHECKING
 from typing import TypeVar
 from typing import Union
 
@@ -27,7 +27,6 @@ if TYPE_CHECKING:
     from .client import HarborAsyncClient
 
 from typing_extensions import ParamSpec
-
 
 RETRY_ERRORS = (
     TimeoutException,

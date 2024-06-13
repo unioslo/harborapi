@@ -1,4 +1,5 @@
 """Tests for rich rendering of models."""
+
 from __future__ import annotations
 
 from datetime import timedelta
@@ -6,8 +7,8 @@ from typing import Union
 from unittest.mock import MagicMock
 from unittest.mock import patch
 
-from hypothesis import given
 from hypothesis import HealthCheck
+from hypothesis import given
 from hypothesis import settings
 from hypothesis import strategies as st
 from pytest_mock import MockerFixture
@@ -16,16 +17,17 @@ from rich.console import Group
 from rich.panel import Panel
 from rich.table import Table
 
-from ..strategies.artifact import artifact_strategy
-from ..strategies.artifact import get_hbv_strategy
-from ..strategies.ext import artifact_info_strategy
-from ..strategies.ext import artifact_report_strategy
 from harborapi.ext.api import ArtifactInfo
 from harborapi.ext.report import ArtifactReport
 from harborapi.models import Artifact
 from harborapi.models import HarborVulnerabilityReport
 from harborapi.models import Tag
 from harborapi.models.base import BaseModel
+
+from ..strategies.artifact import artifact_strategy
+from ..strategies.artifact import get_hbv_strategy
+from ..strategies.ext import artifact_info_strategy
+from ..strategies.ext import artifact_report_strategy
 
 # Ideally we should test all models here, but that's a lot of work.
 # We'll just test a few for now.

@@ -12,7 +12,21 @@ While the project is still on major version 0, breaking changes may be introduce
 
 <!-- changelog follows -->
 
-<!-- ## Unreleased -->
+## Unreleased
+
+### Added
+
+- Python 3.12 support.
+- `harborapi.models.SBOMOverview` which represents the SBOM overview for an artifact. Can be accessed via `Artifact.sbom_overview`.
+
+### Changed
+
+- Added compatibility methods for purge endpoint methods that were renamed in HarborAPI v0.11.0.
+  - The `*audit_log_rotation*` methods are now deprecated and will be removed in a future release.
+  - It never made sense to create an opinionated naming for these methods.
+- Project is now formatted and linted with Ruff.
+- Code generation now explicitly imports `StrDictRootModel` and `StrRootModel`.
+- Updated API spec to [ec8d692](https://github.com/goharbor/harbor/blob/6a38ed3d7769e3598c6cf829aae4e0e152f93a83/api/v2.0/swagger.yaml)
 
 ## [0.23.4](https://github.com/unioslo/harborapi/tree/harborapi-v0.23.4) - 2024-03-01
 
@@ -52,6 +66,7 @@ While the project is still on major version 0, breaking changes may be introduce
 The big Pydantic V2 update. This is a major update in terms of both scope and API compatibility.
 
 ### Changed
+
 - Model validation has become more strict.
   - Most importantly, `str` fields will no longer coerce `int` values to strings.
   - See [Pydantic docs](https://docs.pydantic.dev/latest/api/standard_library_types/) for more information.
@@ -111,9 +126,7 @@ The big Pydantic V2 update. This is a major update in terms of both scope and AP
 - Pydantic version capped at <2.0.0.
   - Migration to Pydantic V2 will begin soon.
 
-
 ## [0.21.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.21.0) - 2023-06-08
-
 
 ### Added
 
@@ -139,11 +152,9 @@ The big Pydantic V2 update. This is a major update in terms of both scope and AP
 
 ## [0.20.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.20.0) - 2023-05-30
 
-
 ### Changed
 
 - `HarborAsyncClient.delete_scanner` now raises `HarborAPIException` if no scanner response is returned from the API (was `UnprocessableEntity` before).
-
 
 ### Removed
 
@@ -175,14 +186,11 @@ The big Pydantic V2 update. This is a major update in terms of both scope and AP
   - Remove model:`SearchResult` (deprecated)
   - Remove field `Project.chart_count`(deprecated)
 
-
 ## [0.18.1](https://github.com/unioslo/harborapi/tree/harborapi-v0.18.1) - 2023-05-12
-
 
 ### Added
 
 - `BaseModel.convert_to`, which allows converting a model to another model type that has a similar schema, such as `Project` to `ProjectReq`.
-
 
 ### Fixed
 
@@ -191,7 +199,6 @@ The big Pydantic V2 update. This is a major update in terms of both scope and AP
 ## [0.18.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.18.0) - 2023-05-05
 
 ### Added
-
 
 - New context manager for temporarily disabling retrying: `HarborAsyncClient.no_retry`
 - New context manager for temporarily disabling validation: `HarborAsyncClient.no_validation`
@@ -227,7 +234,6 @@ The big Pydantic V2 update. This is a major update in terms of both scope and AP
 
 - Disclaimer for `harborapi.HarborAsyncClient.delete_retention_policy`, warning that it can break a project due to a bug in Harbor.
 
-
 ### Changed
 
 - Move `harborapi.client.ResponseLog` and `harborapi.client.ResponseLogEntry` to `harborapi.responselog` module.
@@ -237,7 +243,6 @@ The big Pydantic V2 update. This is a major update in terms of both scope and AP
 - `harborapi.models.VulnerabilityItem.severity` field has had its type reverted to `Severity` from `Optional[Severity]`, which was a regression introduced in v0.16.0.
 - `harborapi.ext.regex.match` return type annotation is now correctly marked as `Optional[Match[str]]` instead of `Match[str]`.
 - `harborapi.HarborAsyncClient.get_retention_tasks` missing `limit` parameter in docstring.
-
 
 ## [0.16.1](https://github.com/unioslo/harborapi/tree/harborapi-v0.16.1) - 2023-04-24
 
@@ -267,7 +272,6 @@ Until the official API spec is fixed, this is the best we can do.
 
 - `harbor` being added as an executable script installed by the project. This was a mistake, as the `harbor` executable script is intended to be exposed by [harbor-cli](https://github.com/unioslo/harbor-cli).
 
-
 ## [0.15.1](https://github.com/unioslo/harborapi/tree/harborapi-v0.15.1) - 2023-04-17
 
 ### Added
@@ -279,9 +283,8 @@ Until the official API spec is fixed, this is the best we can do.
 - `HarborAsyncClient.get_artifact_vulnerabilities()` now always returns a `harborapi.models.HarborVulnerabilityReport` object. If the artifact has no vulnerabilities or the report cannot be processed, an exception is raised.
 
 ### Removed
+
 - `config` argument from `HarborAsyncClient.__init__()`. The `config` argument was never implemented.
-
-
 
 ## [0.15.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.15.0) - 2023-04-13
 
@@ -330,7 +333,6 @@ Until the official API spec is fixed, this is the best we can do.
 
 - `HarborAsyncClient.update_project_member_role()` now accepts integer arguments for its `role_id` parameter, since `RoleRequest` only has a single field (`role_id`).
 
-
 ### Fixed
 
 - Potential bug with `models.VulnerabilitySummary` if `summary` is `None`.
@@ -365,7 +367,6 @@ Until the official API spec is fixed, this is the best we can do.
 
 - `HarborAsyncClient.get_system_certificate()`
   - Returns the system certificate. (`GET /api/v2.0/systeminfo/getcert`)
-
 
 ### Changed
 
@@ -435,11 +436,9 @@ Until the official API spec is fixed, this is the best we can do.
 - DEPRECATED: Using `credentials` as a parameter for `HarborAsyncClient.__init__` is deprecated. Use `basicauth` instead.
 - `HarborAsyncClient.credentials` is now a Pydantic SecretStr, which prevents it from being printed in clear text when locals are dumped, such as when printing the client object. To access the value, use `HarborAsyncClient.credentials.get_secret_value()`.
 
-
 ### Removed
 
 - Explicit logging calls from `HarborAsyncClient.set_user_cli_secret()` and `HarborAsyncClient.set_user_password()`. The exception handler handles logging if configured.
-
 
 ## [0.9.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.9.0) - 2023-02-21
 
@@ -451,18 +450,15 @@ Until the official API spec is fixed, this is the best we can do.
 
 ## [0.8.6](https://github.com/unioslo/harborapi/tree/harborapi-v0.8.6) - 2023-02-20
 
-
 ### Fixed
 
 - Models with `harborapi.models.ScheduleObj` fields are now correctly validated when the Harbor API responds with a value of `"Schedule"` for the field `ScheduleObj.type`, which is not a valid value for the enum according to their own spec.
-
 
 ## [0.8.5](https://github.com/unioslo/harborapi/tree/harborapi-v0.8.5) - 2023-02-20
 
 ### Added
 
 `NativeReportSummary.severity_enum` which returns the severity of the report as a `harborarpi.scanner.Severity` enum, which can be used for comparisons between reports.
-
 
 ### Fixed
 
@@ -474,7 +470,6 @@ Until the official API spec is fixed, this is the best we can do.
 
 - Certain resource enumeration methods missing the `limit` parameter.
 - `HarborAsyncClient.get_gc_jobs()` ignoring user parameters.
-
 
 ## [0.8.3](https://github.com/unioslo/harborapi/tree/harborapi-v0.8.3) - 2023-02-14
 
@@ -493,7 +488,6 @@ Until the official API spec is fixed, this is the best we can do.
 
 - `HarborAsyncClient.get_registry_providers` now returns a `RegistryProviders` object, which is a model whose only attribute `providers` is a dict of `RegistryProviderInfo` objects. Previously this method attempted to return a list of `RegistryProviderInfo` objects, but this was incorrect.
 
-
 ## [0.8.1](https://github.com/unioslo/harborapi/tree/harborapi-v0.8.1) - 2023-02-09
 
 ### Changed
@@ -506,7 +500,6 @@ Until the official API spec is fixed, this is the best we can do.
 
 - `limit` parameter for all methods that return a list of items. This parameter is used to limit the number of items returned by the API. See the [docs](https://unioslo.github.io/harborapi/usage/limit/) for more details.
 
-
 ### Removed
 
 - `retrieve_all` parameter for all methods that return a list of items. Use the new `limit` parameter to control the number of results to retrieve. Passing `retrieve_all` to these methods will be silently ignored. In the future this will raise a DeprecationWarning.
@@ -516,7 +509,6 @@ Until the official API spec is fixed, this is the best we can do.
 ### Added
 
 - New parameters `raw` and `validate` to `HarborAsyncClient` and `HarborClient` to control whether the client returns the raw data from the API, and whether the client validates the data from the API, respectively. See the [docs](https://unioslo.github.io/harborapi/usage/validation/) for more details.
-
 
 ## [0.7.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.7.0) - 2023-02-06
 
@@ -532,7 +524,6 @@ Until the official API spec is fixed, this is the best we can do.
 ### Fixed
 
 - `HarborAsyncClient.search()` raising an error when finding Helm Charts with an empty `engine` field.
-
 
 ### Removed
 

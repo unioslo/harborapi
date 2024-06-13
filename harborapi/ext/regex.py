@@ -1,4 +1,5 @@
 """Caching functions for the ext module."""
+
 from __future__ import annotations
 
 import re
