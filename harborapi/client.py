@@ -6,17 +6,17 @@ import warnings
 from http.cookiejar import CookieJar
 from pathlib import Path
 from typing import Any
-from typing import cast
 from typing import Dict
 from typing import Generator
 from typing import List
 from typing import Literal
 from typing import Optional
-from typing import overload
 from typing import Tuple
 from typing import Type
 from typing import TypeVar
 from typing import Union
+from typing import cast
+from typing import overload
 
 import httpx
 from httpx import Response
@@ -25,15 +25,16 @@ from httpx._types import VerifyTypes
 from pydantic import BaseModel
 from pydantic import SecretStr
 from pydantic import ValidationError
+from typing_extensions import deprecated
 
 from ._types import JSONType
 from ._types import QueryParamMapping
 from .auth import load_harbor_auth_file
 from .auth import new_authfile_from_robotcreate
-from .exceptions import check_response_status
 from .exceptions import HarborAPIException
 from .exceptions import NotFound
 from .exceptions import UnprocessableEntity
+from .exceptions import check_response_status
 from .log import enable_logging
 from .log import logger
 from .models import Accessory
@@ -116,8 +117,8 @@ from .models.file import FileResponse
 from .models.scanner import HarborVulnerabilityReport
 from .responselog import ResponseLog
 from .responselog import ResponseLogEntry
-from .retry import retry
 from .retry import RetrySettings
+from .retry import retry
 from .utils import get_artifact_path
 from .utils import get_basicauth
 from .utils import get_params
@@ -220,6 +221,9 @@ class HarborAsyncClient:
             Backwards-compatibility with deprecated parameters.
             Unknown kwargs are ignored.
         """
+        self.url = ""
+        self.basicauth: SecretStr = SecretStr("")
+
         if not url:
             raise ValueError("A Harbor API URL is required.")
         self.authenticate(username, secret, basicauth, credentials_file, url, **kwargs)
@@ -399,14 +403,12 @@ class HarborAsyncClient:
     @overload
     def construct_model(
         self, cls: Type[T], data: Any, is_list: Literal[True]
-    ) -> List[T]:
-        ...
+    ) -> List[T]: ...
 
     @overload
     def construct_model(
         self, cls: Type[T], data: Any, is_list: Literal[False] = False
-    ) -> T:
-        ...
+    ) -> T: ...
 
     def construct_model(
         self, cls: Type[T], data: Any, is_list: bool = False
@@ -416,7 +418,7 @@ class HarborAsyncClient:
         # We provide it as a way to get the raw response from the API, but
         # we give no guarantees about the type of the response.
         if self.raw:
-            return data  # type: ignore # this is not type-safe
+            return data
 
         if is_list:
             return [self._construct_model(cls, item) for item in data]
@@ -1659,25 +1661,29 @@ class HarborAsyncClient:
 
     # CATEGORY: purge
 
-    # PUT /system/purgeaudit/{purge_id}
-    async def stop_audit_log_rotation(self, purge_id: int) -> None:
-        """Stop an audit log rotation job.
+    # PUT /system/purgeaudit
+    async def stop_purge_job(self, purge_id: int) -> None:
+        """Stop a purge job.
 
         Parameters
         ----------
         purge_id : int
-            The ID of the audit log rotation job to stop.
+            The ID of the purge job to stop.
         """
         await self.put(f"/system/purgeaudit/{purge_id}")
 
+    @deprecated("Use `stop_purge_job`", category=DeprecationWarning, stacklevel=1)
+    async def stop_audit_log_rotation(self, purge_id: int) -> None:
+        await self.stop_purge_job(purge_id)
+
     # GET /system/purgeaudit/{purge_id}
-    async def get_audit_log_rotation(self, purge_id: int) -> ExecHistory:
-        """Get an audit log rotation job.
+    async def get_purge_job(self, purge_id: int) -> ExecHistory:
+        """Get purge job status.
 
         Parameters
         ----------
         purge_id : int
-            The ID of the audit log rotation job to get status for.
+            The ID of the purge job to get status for.
 
         Returns
         -------
@@ -1687,10 +1693,14 @@ class HarborAsyncClient:
         resp = await self.get(f"/system/purgeaudit/{purge_id}")
         return self.construct_model(ExecHistory, resp)
 
+    @deprecated("Use `get_purge_job`", category=DeprecationWarning, stacklevel=1)
+    async def get_audit_log_rotation(self, purge_id: int) -> ExecHistory:
+        return await self.get_purge_job(purge_id)
+
     # GET /system/purgeaudit/{purge_id}/log
     # Get purge job log.
-    async def get_audit_log_rotation_log(self, purge_id: int) -> str:
-        """Get the the log of an audit log rotation job.
+    async def get_purge_job_log(self, purge_id: int) -> str:
+        """Get the the log of a purge job.
 
         Parameters
         ----------
@@ -1704,10 +1714,14 @@ class HarborAsyncClient:
         """
         return await self.get_text(f"/system/purgeaudit/{purge_id}/log")
 
+    @deprecated("Use `get_purge_job_log`", category=DeprecationWarning, stacklevel=1)
+    async def get_audit_log_rotation_log(self, purge_id: int) -> str:
+        return await self.get_purge_job_log(purge_id)
+
     # PUT /system/purgeaudit/schedule
     # Update purge job's schedule.
-    async def update_audit_log_rotation_schedule(self, schedule: Schedule) -> None:
-        """Update the log rotation schedule.
+    async def update_purge_job_schedule(self, schedule: Schedule) -> None:
+        """Update the schedule for a purge job.
 
         Parameters
         ----------
@@ -1716,10 +1730,16 @@ class HarborAsyncClient:
         """
         await self.put("/system/purgeaudit/schedule", json=schedule)
 
+    @deprecated(
+        "Use `update_purge_job_schedule`", category=DeprecationWarning, stacklevel=1
+    )
+    async def update_audit_log_rotation_schedule(self, schedule: Schedule) -> None:
+        return await self.update_purge_job_schedule(schedule)
+
     # POST /system/purgeaudit/schedule
     # Create a purge job schedule.
-    async def create_audit_log_rotation_schedule(self, schedule: Schedule) -> str:
-        """Create a log rotation schedule.
+    async def create_purge_job_schedule(self, schedule: Schedule) -> str:
+        """Create a purge job schedule.
 
         Examples
         --------
@@ -1750,14 +1770,20 @@ class HarborAsyncClient:
         Returns
         -------
         str
-            The location of the new schedule.
+            The location of the new purge job schedule.
         """
         resp = await self.post("/system/purgeaudit/schedule", json=schedule)
         return urldecode_header(resp, "Location")
 
+    @deprecated(
+        "Use `create_purge_job_schedule`", category=DeprecationWarning, stacklevel=1
+    )
+    async def create_audit_log_rotation_schedule(self, schedule: Schedule) -> str:
+        return await self.create_purge_job_schedule(schedule)
+
     # GET /system/purgeaudit/schedule
-    async def get_audit_log_rotation_schedule(self) -> ExecHistory:
-        """Get the log rotation schedule.
+    async def get_purge_job_schedule(self) -> ExecHistory:
+        """Get the current purge job schedule.
 
         Returns
         -------
@@ -1775,8 +1801,14 @@ class HarborAsyncClient:
             return ExecHistory()  # type: ignore[call-arg] # Mypy doesn't understand defaults?
         return self.construct_model(ExecHistory, resp)
 
+    @deprecated(
+        "Use `get_purge_job_schedule`", category=DeprecationWarning, stacklevel=1
+    )
+    async def get_audit_log_rotation_schedule(self) -> ExecHistory:
+        return await self.get_purge_job_schedule()
+
     # GET /system/purgeaudit
-    async def get_audit_log_rotation_history(
+    async def get_purge_job_history(
         self,
         query: Optional[str] = None,
         sort: Optional[str] = None,
@@ -1784,7 +1816,7 @@ class HarborAsyncClient:
         page_size: int = 10,
         limit: Optional[int] = None,
     ) -> List[ExecHistory]:
-        """Get the log rotation job history.
+        """Get previous purge job results.
 
         Parameters
         ----------
@@ -1809,16 +1841,31 @@ class HarborAsyncClient:
             All of these query patterns should be put in the query string
             and separated by `","`. e.g. `"k1=v1,k2=~v2,k3=[min~max]"`
         limit : Optional[int], optional
-            The maximum number of log rotation jobs to return.
+            The maximum number of purge jobs to return.
 
         Returns
         -------
         List[ExecHistory]
-            A list of log rotation jobs matching the query.
+            A list of purge jobs jobs matching the query.
         """
         params = get_params(q=query, sort=sort, page=page, page_size=page_size)
         resp = await self.get("/system/purgeaudit", params=params, limit=limit)
         return self.construct_model(ExecHistory, resp, is_list=True)
+
+    @deprecated(
+        "Use `get_purge_job_history`", category=DeprecationWarning, stacklevel=1
+    )
+    async def get_audit_log_rotation_history(
+        self,
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 10,
+        limit: Optional[int] = None,
+    ) -> List[ExecHistory]:
+        return await self.get_purge_job_history(
+            query=query, sort=sort, page=page, page_size=page_size, limit=limit
+        )
 
     # CATEGORY: scan data export
 
