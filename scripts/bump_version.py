@@ -2,7 +2,11 @@ from __future__ import annotations
 
 import subprocess
 import sys
+from datetime import datetime
 from enum import Enum
+from enum import IntEnum
+from enum import auto
+from pathlib import Path
 from subprocess import CompletedProcess
 from typing import Any
 from typing import Iterator
@@ -57,17 +61,31 @@ versions = [v.value for v in VersionType]
 statuses = [s.value for s in StatusType]
 
 
-class State(Enum):
-    OLD_VERSION = 0  # before bumping version
-    NEW_VERSION = 1  # after bumping version
-    GIT_ADD = 2  # after git adding version file
-    GIT_COMMIT = 3  # after git commit
-    GIT_TAG = 4  # after git tag
-    GIT_PUSH = 5  # after git push
+class State(IntEnum):
+    OLD_VERSION = auto()  # before bumping version
+    NEW_VERSION = auto()  # after bumping version
+    MODIFY_CHANGELOG = auto()  # after modifying changelog
+    GIT_ADD = auto()  # after git adding version file
+    GIT_COMMIT = auto()  # after git commit
+    GIT_TAG = auto()  # after git tag
+    GIT_PUSH = auto()  # after git push
 
     @classmethod
     def __missing__(cls, value: Any) -> State:
         return State.OLD_VERSION
+
+    @classmethod
+    def ensure_contiguous(cls) -> None:
+        """Ensure that enum values are contiguous and increment by 1"""
+        # NOTE: this is just a sanity check that ensures we increment and
+        # decrement the state machine correctly.
+        if len(cls) != max(cls):  # starts at 1
+            raise ValueError("Enum values must be contiguous")
+        prev = None
+        for st in cls:
+            if prev is not None and st != prev + 1:
+                raise ValueError("Enum values must increment by 1")
+            prev = st
 
 
 class StateMachine:
@@ -164,9 +182,9 @@ def _do_get_new_version() -> str:
     return new_version
 
 
-def _do_add() -> CompletedProcess[bytes]:
+def git_add() -> CompletedProcess[bytes]:
     p_git_add = subprocess.run(
-        ["git", "add", "harborapi/__about__.py"], capture_output=True
+        ["git", "add", "harborapi/__about__.py", "CHANGELOG.md"], capture_output=True
     )
     if p_git_add.returncode != 0:
         err_console.print(f"Failed to add version file: {p_git_add.stderr.decode()}")
@@ -174,20 +192,25 @@ def _do_add() -> CompletedProcess[bytes]:
     return p_git_add
 
 
-def _do_commit(new_version: str) -> CompletedProcess[bytes]:
+def git_commit(new_version: str, rerun: bool = False) -> CompletedProcess[bytes]:
     p_git_commit = subprocess.run(
         ["git", "commit", "-m", f"Bump version to {new_version}"],
         capture_output=True,
     )
     if p_git_commit.returncode != 0:
-        err_console.print(
-            f"Failed to commit version bump: {p_git_commit.stderr.decode()}"
-        )
-        raise typer.Exit(1)
+        # pre-commit might have modified our files
+        msg = p_git_commit.stderr.decode()
+        if "- hook id" in msg and not rerun:
+            # re-run git-add and git-commit
+            git_add()
+            git_commit(new_version, rerun=True)
+        else:
+            err_console.print(f"Failed to commit version bump:\n{msg}")
+            raise typer.Exit(1)
     return p_git_commit
 
 
-def _do_tag(new_version: str) -> CompletedProcess[bytes]:
+def git_tag(new_version: str) -> CompletedProcess[bytes]:
     tag = f"harborapi-v{new_version}"
     p_git_tag = subprocess.run(["git", "tag", tag], capture_output=True)
     if p_git_tag.returncode != 0:
@@ -196,7 +219,7 @@ def _do_tag(new_version: str) -> CompletedProcess[bytes]:
     return p_git_tag
 
 
-def _do_push() -> CompletedProcess[bytes]:
+def git_push() -> CompletedProcess[bytes]:
     p_git_push = subprocess.run(
         ["git", "push", "--tags", "upstream", "main"], capture_output=True
     )
@@ -204,6 +227,28 @@ def _do_push() -> CompletedProcess[bytes]:
         err_console.print(f"Failed to push new version: {p_git_push.stderr.decode()}")
         raise typer.Exit(1)
     return p_git_push
+
+
+def add_changelog_header(new_version: str) -> None:
+    changelog_path = Path("CHANGELOG.md")
+    changelog = changelog_path.read_text()
+
+    # Find the line containing the unreleased header
+    lines = changelog.splitlines()
+    index = next(
+        iter(
+            [idx for idx, line in enumerate(lines) if line.startswith("## Unreleased")],
+        ),
+        None,
+    )
+    if index is None:
+        err_console.print("Failed to find '## Unreleased' section in CHANGELOG.md")
+        raise typer.Exit(1)
+
+    header = f"## [{new_version}](https://github.com/unioslo/harborapi/tree/harborapi-v{new_version}) - {datetime.now().strftime('%Y-%m-%d')}"
+    lines[index] = "<!-- ## Unreleased -->"  # comment out
+    lines.insert(index + 1, f"\n{header}")  # insert after
+    changelog_path.write_text("\n".join(lines))
 
 
 def main(
@@ -220,8 +265,10 @@ def main(
 ) -> None:
     """Bump the version of the project and create a new git tag.
 
-    Examples:
+    If using --no-push, remember to also push the tag manually:
+    `git push --tags upstream main`.
 
+    Examples:
     $ python bump_version.py minor
 
     $ python bump_version.py major,rc
@@ -238,6 +285,12 @@ def main(
 
 def _main(state: StateMachine, version: str, push: bool) -> None:
     _check_commands()
+    State.ensure_contiguous()  # sanity check
+
+    # TODO: * ensure we are on the correct branch
+    #           `git rev-parse --abbrev-ref HEAD`
+    #       * ensure we are up-to-date with the remote
+    #           `git fetch upstream`
 
     old_version = subprocess.check_output(["hatch", "version"])
     state.old_version = old_version.decode().strip()
@@ -245,25 +298,28 @@ def _main(state: StateMachine, version: str, push: bool) -> None:
     set_version(version)
     state.advance()
     assert state.state == State.NEW_VERSION
-
     new_version = _do_get_new_version()
     state.new_version = new_version
 
+    add_changelog_header(new_version)
+    state.advance()
+    assert state.state == State.MODIFY_CHANGELOG
+
     # Add the updated version file to staged changes
-    _do_add()
+    git_add()
     state.advance()
     assert state.state == State.GIT_ADD
 
-    _do_commit(new_version)
+    git_commit(new_version)
     state.advance()
     assert state.state == State.GIT_COMMIT
 
-    _do_tag(new_version)
+    git_tag(new_version)
     state.advance()
     assert state.state == State.GIT_TAG
 
     if push:
-        _do_push()
+        git_push()
         state.advance()
         assert state.state == State.GIT_PUSH
 
