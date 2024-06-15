@@ -12,6 +12,7 @@ from subprocess import CompletedProcess
 from typing import Any
 from typing import Iterable
 from typing import Iterator
+from typing import List
 from typing import NamedTuple
 from typing import Protocol
 from typing import Sequence
@@ -121,22 +122,23 @@ class State(IntEnum):
 
 
 class StateMachine:
-    old_version: str | None = None
-    new_version: str | None = None
-
     def __init__(self) -> None:
         self.state = State.OLD_VERSION
 
-    def advance(self) -> None:
+    def forward(self) -> None:
+        """Advance the state machine to the next state."""
         self.state = State(self.state.value + 1)
 
-    def revert(self) -> State:
+    def back(self) -> State:
+        """Revert the state machine to the previous state."""
         self.state = State(self.state.value - 1)
         return self.state
 
     def rewind(self) -> Iterator[State]:
+        """Iterate through all states in reverse order from the current state."""
+        yield self.state
         while self.state != State.OLD_VERSION:
-            yield self.revert()
+            yield self.back()
 
 
 # I will not add type annotations to this decorator. If someone wants to do it, go ahead!
@@ -146,17 +148,14 @@ def advance(after: State):
     def decorator(f):
         @wraps(f)
         def inner(self: StateMachine, *args, **kwargs):
-            try:
-                return f(self, *args, **kwargs)
-            finally:
-                # Only advance if we haven't run the function before.
-                # In certain cases, we have to run git add twice, in which case
-                # we cannot advance and and check the state on the second call.
-                if after > self.state:
-                    self.advance()
-                    assert (
-                        self.state == after
-                    ), f"Expected state {after}, got {self.state}"
+            res = f(self, *args, **kwargs)
+            # Only advance if we haven't run the function before.
+            # In certain cases, we have to run git add twice, in which case
+            # we cannot advance and and check the state on the second call.
+            if after > self.state:
+                self.forward()
+                assert self.state == after, f"Expected state {after}, got {self.state}"
+            return res
 
         return inner
 
@@ -174,6 +173,13 @@ class VersionBumper(StateMachine):
     """Run a command in a subprocess.
 
     If dry_run is True, the command will be printed but not executed."""
+
+    source_dir = Path("harborapi")
+    version_file = source_dir / "__about__.py"
+    changelog_file = Path("CHANGELOG.md")
+    changelog_file_bak = changelog_file.with_suffix(".bak")
+    old_version: str | None = None
+    new_version: str | None = None
 
     def __init__(
         self, target_version: str, push: bool, dry_run: bool, remote: str, branch: str
@@ -220,7 +226,7 @@ class VersionBumper(StateMachine):
         )
         return dryrun_subprocess_run
 
-    def cleanup(self) -> None:
+    def undo(self) -> None:
         for st in self.rewind():
             # from last to first
             # Best-effort cleanup
@@ -230,22 +236,32 @@ class VersionBumper(StateMachine):
                     # we could do a git push --delete, but if it failed,
                     # it probably isn't in the upstream repo anyway
                     pass
-                # FIXME: tag is not being deleted when we fail to tag.
-                #        State seems to be wrong when we fail to tag
                 elif st == State.GIT_TAG:
                     if not self.new_version:
                         raise ValueError("No new version to untag.")
                     self.run(["git", "tag", "-d", self.tag])
                 elif st == State.GIT_COMMIT:
-                    self.run(["git", "reset", "HEAD"])
+                    # Undo last commit, but keep changes in the working directory
+                    # --soft to keep changes in the working directory
+                    self.run(["git", "reset", "--soft", "HEAD~"])
                 elif st == State.GIT_ADD:
-                    self.run(["git", "reset", "HEAD"])
+                    # Unstage changelog
+                    self.run(["git", "restore", "--staged", str(self.changelog_file)])
+                elif st == State.MODIFY_CHANGELOG:
+                    # Revert the changes in the changelog file
+                    if self.changelog_file_bak.exists():
+                        self.changelog_file_bak.rename(self.changelog_file)
                 elif st == State.NEW_VERSION:
-                    # Nothing to do; when resetting git, we lose the new version.
-                    pass
+                    # Hatch can't set the version to a lower than the current version
+                    # so we have to revert the changes in the version file
+                    self.run(["git", "checkout", "HEAD", str(self.version_file)])
             except Exception as e:
                 print(f"Failed to revert state {self.state}: {e}", file=sys.stderr)
                 raise e
+
+    def cleanup(self) -> None:
+        if self.changelog_file_bak.exists():
+            self.changelog_file_bak.unlink()
 
     def bump(self) -> None:
         check_commands()
@@ -282,17 +298,23 @@ class VersionBumper(StateMachine):
         return new_version
 
     @advance(State.GIT_ADD)
-    def git_add(self) -> CompletedProcess[bytes]:
+    def git_add(self, *files: str) -> CompletedProcess[bytes]:
         p_git_add = self.run(
-            ["git", "add", "harborapi/__about__.py", "CHANGELOG.md"],
+            ["git", "add", "harborapi/__about__.py", "CHANGELOG.md", *files],
             capture_output=True,
         )
         if p_git_add.returncode != 0:
-            err_console.print(
-                f"Failed to add version file: {p_git_add.stderr.decode()}"
-            )
+            err_console.print(f"Failed to stage files: {p_git_add.stderr.decode()}")
             raise typer.Exit(1)
         return p_git_add
+
+    def get_pre_commit_files(self, msg: str) -> List[str]:
+        files: List[str] = []
+        for line in msg.splitlines():
+            if line.startswith("Fixing "):
+                _, _, file = line.partition("Fixing ")
+                files.append(file)
+        return files
 
     @advance(State.GIT_COMMIT)
     def git_commit(
@@ -307,7 +329,12 @@ class VersionBumper(StateMachine):
             msg = p_git_commit.stderr.decode()
             if "- hook id" in msg and not rerun:
                 # re-run git-add and git-commit
-                self.git_add()
+                self.state = State(State.GIT_ADD - 1)
+                # User might have added other files to the staging area
+                # that pre-commit modified. We need to detect these files
+                # and add them to the commit.
+                files = self.get_pre_commit_files(msg)
+                self.git_add(*files)
                 self.git_commit(new_version, rerun=True)
             else:
                 err_console.print(f"Failed to commit version bump:\n{msg}")
@@ -342,8 +369,8 @@ class VersionBumper(StateMachine):
             )
             return
 
-        changelog_path = Path("CHANGELOG.md")
-        changelog = changelog_path.read_text()
+        changelog = self.changelog_file.read_text()
+        self.changelog_file_bak.write_text(changelog)
 
         # Find the line containing the unreleased header
         lines = changelog.splitlines()
@@ -364,7 +391,7 @@ class VersionBumper(StateMachine):
         header = f"## [{new_version}](https://github.com/unioslo/harborapi/tree/harborapi-v{new_version}) - {datetime.now().strftime('%Y-%m-%d')}"
         lines[index] = "<!-- ## Unreleased -->"  # comment out
         lines.insert(index + 1, f"\n{header}")  # insert after
-        changelog_path.write_text("\n".join(lines))
+        self.changelog_file.write_text("\n".join(lines))
 
     @advance(State.NEW_VERSION)
     def set_version(self, version: str) -> str:
@@ -428,12 +455,14 @@ def main(
     try:
         bumper.bump()
     except Exception as e:
-        bumper.cleanup()
+        bumper.undo()
         raise e
     else:
         console.print(
             f"Successfully bumped version from {bumper.old_version} to {bumper.new_version} :tada:"
         )
+    finally:
+        bumper.cleanup()
 
 
 if __name__ == "__main__":
