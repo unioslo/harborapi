@@ -26,7 +26,7 @@ async def test_get_quotas_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/quotas", method="GET"
     ).respond_with_json([q.model_dump(mode="json", exclude_unset=True) for q in quotas])
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_quotas()
     if quotas:
         assert resp == quotas
@@ -39,7 +39,7 @@ async def test_update_quota(async_client: HarborAsyncClient, httpserver: HTTPSer
         method="PUT",
         json={"hard": {"storage": 100, "storage2": 200}},
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.update_quota(
         1234,
         QuotaUpdateReq(
@@ -62,6 +62,6 @@ async def test_get_quota_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/quotas/1234", method="GET"
     ).respond_with_json(quota.model_dump(mode="json", exclude_unset=True))
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_quota(1234)
     assert resp == quota

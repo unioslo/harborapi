@@ -33,7 +33,7 @@ async def test_ping_ldap_with_config_mock(
         method="POST",
         json=config.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data(result.model_dump_json(), content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.ping_ldap(config)
     assert resp == result
 
@@ -50,7 +50,7 @@ async def test_ping_ldap_no_config_mock(
         "/api/v2.0/ldap/ping",
         method="POST",
     ).respond_with_data(result.model_dump_json(), content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.ping_ldap()
     assert resp == result
 
@@ -72,7 +72,6 @@ async def test_search_ldap_groups_mock(
         "/api/v2.0/ldap/groups/search",
         method="GET",
     ).respond_with_data(json_from_list(results), content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
 
     if not group_name and not group_dn:
         with pytest.raises(ValueError):
@@ -96,7 +95,6 @@ async def test_search_ldap_users_mock(
         "/api/v2.0/ldap/users/search",
         method="GET",
     ).respond_with_data(json_from_list(results), content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
 
     resp = await async_client.search_ldap_users(username)
     assert resp == results
@@ -115,7 +113,7 @@ async def test_import_ldap_users_mock(
         method="POST",
         json={"ldap_uid_list": user_ids},
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     # The method constructs the request model,
     # we just pass in the list of user IDs.
     await async_client.import_ldap_users(user_ids)

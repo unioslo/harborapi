@@ -41,7 +41,7 @@ async def test_get_project_retention_id_mock(
         method="GET",
         headers={"X-Is-Resource-Name": "false" if is_id else "true"},
     ).respond_with_data(project.model_dump_json(), content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_project_retention_id(project_name_or_id)
     assert resp == expect_id
 
@@ -61,7 +61,7 @@ async def test_get_project_retention_id_no_retention_id_mock(
         f"/api/v2.0/projects/{project_name_or_id}",
         method="GET",
     ).respond_with_json(project.model_dump(mode="json"))
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     with pytest.raises(NotFound) as exc_info:
         await async_client.get_project_retention_id(project_name_or_id)
     assert "retention ID" in exc_info.exconly()
@@ -82,7 +82,7 @@ async def test_get_project_retention_id_invalid_id(
         f"/api/v2.0/projects/{project_name_or_id}",
         method="GET",
     ).respond_with_json(project.model_dump(mode="json"))
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     with pytest.raises(HarborAPIException) as exc_info:
         await async_client.get_project_retention_id(project_name_or_id)
     assert "convert" in exc_info.exconly()
@@ -101,7 +101,7 @@ async def test_get_retention_policy_mock(
         f"/api/v2.0/retentions/{retention_id}",
         method="GET",
     ).respond_with_data(policy.model_dump_json(), content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_retention_policy(retention_id)
     assert resp == policy
 
@@ -121,7 +121,7 @@ async def test_create_retention_policy_mock(
     ).respond_with_data(
         headers={"Location": expect_location},
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.create_retention_policy(policy)
     assert resp == expect_location
 
@@ -140,7 +140,7 @@ async def test_update_retention_policy_mock(
         method="PUT",
         json=policy.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.update_retention_policy(policy_id, policy)
 
 
@@ -154,7 +154,7 @@ async def test_delete_retention_policy_mock(
         f"/api/v2.0/retentions/{policy_id}",
         method="DELETE",
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.delete_retention_policy(policy_id)
 
 
@@ -176,7 +176,7 @@ async def test_get_retention_tasks_mock(
         json_from_list(tasks),
         headers={"Content-Type": "application/json"},
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_retention_tasks(
         policy_id, execution_id, page=1, page_size=10
     )
@@ -198,7 +198,7 @@ async def test_get_retention_metadata_mock(
         metadata.model_dump_json(),
         headers={"Content-Type": "application/json"},
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_retention_metadata()
     assert resp == metadata
 
@@ -218,7 +218,7 @@ async def test_get_retention_execution_task_log_mock(
         f"/api/v2.0/retentions/{retention_id}/executions/{execution_id}/tasks/{task_id}",
         method="GET",
     ).respond_with_data(log, content_type="text/plain")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_retention_execution_task_log(
         retention_id, execution_id, task_id
     )
@@ -242,7 +242,7 @@ async def test_get_retention_executions_mock(
         json_from_list(executions),
         headers={"Content-Type": "application/json"},
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_retention_executions(
         retention_id, page=1, page_size=10
     )
@@ -263,7 +263,7 @@ async def test_start_retention_execution_mock(
     ).respond_with_data(
         headers={"Location": expect_location},
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.start_retention_execution(retention_id, dry_run=dry_run)
     assert resp == expect_location
 
@@ -279,5 +279,5 @@ async def test_stop_retention_execution_mock(
         method="PATCH",
         json={"action": "stop"},
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.stop_retention_execution(retention_id, execution_id)

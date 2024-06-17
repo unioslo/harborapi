@@ -48,8 +48,8 @@ def httpserver(httpserver: HTTPServer) -> Iterable[HTTPServer]:
 
 # must be set to "function" to make sure logging is enabled for each test
 @pytest.fixture(scope="function")
-def async_client(httpserver: HTTPServer) -> HarborAsyncClient:
-    return HarborAsyncClient(
+def async_client(httpserver: HTTPServer) -> Iterable[HarborAsyncClient]:
+    yield HarborAsyncClient(
         username="username",
         secret="secret",
         url=httpserver.url_for("/api/v2.0"),

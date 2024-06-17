@@ -64,7 +64,7 @@ async def test_update_project_immutable_tag_rule_mock(
         json=rule.model_dump(mode="json", exclude_unset=True),
         headers={"X-Is-Resource-Name": "false"},
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.update_project_immutable_tag_rule(1234, 1, rule)
 
 
@@ -85,7 +85,7 @@ async def test_enable_project_immutable_tagrule(
         json={"disabled": not enable},
         headers={"X-Is-Resource-Name": "false"},
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.enable_project_immutable_tagrule(1234, 1, enable)
 
 
@@ -99,5 +99,5 @@ async def test_delete_project_immutable_tag_rule_mock(
         method="DELETE",
         headers={"X-Is-Resource-Name": "false"},
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.delete_project_immutable_tag_rule(1234, 1)

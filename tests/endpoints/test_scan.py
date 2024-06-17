@@ -26,7 +26,7 @@ async def test_scan_artifact_mock(
         endpoint_path,
         method="POST",
     ).respond_with_data("foo", status=status_code)
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.scan_artifact(project, repository, artifact)
     if status_code == 200:
         assert "expected 202" in caplog.text
@@ -49,7 +49,6 @@ async def test_get_scan_report_log_mock(
         method="GET",
     ).respond_with_data(f"foo: {report_id}")
 
-    async_client.url = httpserver.url_for("/api/v2.0")
     resp = await async_client.get_artifact_scan_report_log(
         project, repository, artifact, report_id
     )
@@ -75,7 +74,7 @@ async def test_stop_artifact_scan_mock(
         endpoint_path,
         method="POST",
     ).respond_with_data("foo", status=status_code)
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.stop_artifact_scan(project, repository, artifact)
     if status_code == 200:
         assert "expected 202" in caplog.text

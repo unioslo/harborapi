@@ -23,7 +23,7 @@ async def test_health_check(
     httpserver.expect_oneshot_request(
         "/api/v2.0/health", method="GET"
     ).respond_with_json(healthstatus.model_dump(mode="json"))
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     health = await async_client.health_check()
     assert health == healthstatus
     if health.components:  # TODO: add OverallHealthStatus.components strategy

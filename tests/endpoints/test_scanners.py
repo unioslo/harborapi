@@ -27,7 +27,7 @@ async def test_create_scanner_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/scanners", method="POST"
     ).respond_with_data(status=201, headers={"Location": "/scanners/1234"})
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.create_scanner(scanner)
     assert resp == "/scanners/1234"
 
@@ -45,7 +45,7 @@ async def test_get_scanners_mock(
     httpserver.expect_oneshot_request("/api/v2.0/scanners").respond_with_json(
         [scanner1.model_dump(), scanner2.model_dump()]
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_scanners()
     assert len(resp) == 2
     assert resp[0].model_dump() == scanner1.model_dump()
@@ -63,7 +63,7 @@ async def test_get_scanner_mock(
     httpserver.expect_oneshot_request("/api/v2.0/scanners/1234").respond_with_json(
         scanner.model_dump()
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_scanner(registration_id=1234)
     assert resp.model_dump() == scanner.model_dump()
 
@@ -79,7 +79,7 @@ async def test_get_scanner_metadata_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/scanners/1234/metadata"
     ).respond_with_json(scannermeta.model_dump(mode="json", exclude_unset=True))
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_scanner_metadata(registration_id=1234)
     assert resp == scannermeta
 
@@ -95,7 +95,7 @@ async def test_delete_scanner_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/scanners/1234", method="DELETE"
     ).respond_with_data(scanner.model_dump_json(), content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.delete_scanner(1234)
     assert resp.model_dump() == scanner.model_dump()
 
@@ -111,7 +111,7 @@ async def test_delete_scanner_no_response_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/scanners/1234", method="DELETE"
     ).respond_with_data("{}", content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     with pytest.raises(HarborAPIException) as exc_info:
         await async_client.delete_scanner(1234)
     assert "got nothing" in exc_info.value.args[0]
@@ -134,7 +134,7 @@ async def test_set_default_scanner_mock(
             mode="json", exclude_unset=True
         ),
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.set_default_scanner(1234, is_default)
 
 
@@ -151,7 +151,7 @@ async def test_ping_scanner_adapter_mock(
         method="POST",
         json=settings.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.ping_scanner_adapter(settings)
 
 
@@ -168,5 +168,5 @@ async def test_update_scanner_mock(
         method="PUT",
         json=scanner.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.update_scanner(1234, scanner)

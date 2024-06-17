@@ -25,7 +25,7 @@ async def test_get_cve_allowlist(
         "/api/v2.0/system/CVEAllowlist",
         method="GET",
     ).respond_with_json(cve_allowlist.model_dump(mode="json"))
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     allowlist = await async_client.get_cve_allowlist()
     assert allowlist == cve_allowlist
     if allowlist.items:
@@ -46,5 +46,5 @@ async def test_update_cve_allowlist(
         "/api/v2.0/system/CVEAllowlist",
         method="PUT",
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.update_cve_allowlist(cve_allowlist)

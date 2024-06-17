@@ -12,6 +12,6 @@ async def test_ping(
     httpserver: HTTPServer,
 ):
     httpserver.expect_oneshot_request("/api/v2.0/ping").respond_with_data("pong")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     pong = await async_client.ping()
     assert pong == "pong"

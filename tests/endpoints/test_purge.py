@@ -27,7 +27,7 @@ async def test_get_audit_log_rotation_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/system/purgeaudit/1234", method="GET"
     ).respond_with_data(status.model_dump_json(), content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_audit_log_rotation("1234")
     assert resp == status
 
@@ -40,7 +40,7 @@ async def test_get_audit_log_rotation_log_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/system/purgeaudit/1234/log", method="GET"
     ).respond_with_data("Hello World")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_audit_log_rotation_log(1234)
     assert resp == "Hello World"
 
@@ -56,7 +56,7 @@ async def test_update_audit_log_rotation_schedule_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/system/purgeaudit/schedule", method="PUT"
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.update_audit_log_rotation_schedule(schedule)
 
 
@@ -69,7 +69,7 @@ async def test_stop_audit_log_rotation_mock(
         "/api/v2.0/system/purgeaudit/1234",
         method="PUT",
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.stop_audit_log_rotation(1234)
 
 
@@ -84,7 +84,7 @@ async def test_create_audit_log_rotation_schedule_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/system/purgeaudit/schedule", method="POST"
     ).respond_with_data(headers={"Location": "1234"})
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.create_audit_log_rotation_schedule(schedule)
     assert resp == "1234"
 
@@ -100,7 +100,7 @@ async def test_get_audit_log_rotation_schedule_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/system/purgeaudit/schedule", method="GET"
     ).respond_with_data(schedule.model_dump_json(), content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_audit_log_rotation_schedule()
     assert resp == schedule
 
@@ -114,7 +114,7 @@ async def test_get_audit_log_rotation_schedule_none(
     httpserver.expect_oneshot_request(
         "/api/v2.0/system/purgeaudit/schedule", method="GET"
     ).respond_with_data("", content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_audit_log_rotation_schedule()
     assert resp == ExecHistory()  # expect empty ExecHistory object
 
@@ -133,6 +133,6 @@ async def test_get_audit_log_rotation_history_mock(
         json_from_list(logs),
         headers={"Content-Type": "application/json"},
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_audit_log_rotation_history()
     assert resp == logs

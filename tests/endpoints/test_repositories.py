@@ -29,7 +29,7 @@ async def test_get_repository_mock(
     ).respond_with_data(
         repository.model_dump_json(), headers={"Content-Type": "application/json"}
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_repository("testproj", "testrepo")
     assert resp == repository
 
@@ -47,7 +47,7 @@ async def test_update_repository_mock(
         method="PUT",
         json=repository.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.update_repository(
         "testproj",
         "testrepo",
@@ -63,7 +63,7 @@ async def test_delete_repository_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/projects/testproj/repositories/testrepo", method="DELETE"
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.delete_repository("testproj", "testrepo")
 
 
@@ -88,6 +88,6 @@ async def test_get_repositories_mock(
         json_from_list(repositories),
         headers={"Content-Type": "application/json"},
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_repositories(project_name)
     assert resp == repositories

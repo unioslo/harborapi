@@ -26,7 +26,6 @@ async def test_get_permissions(
         permissions.model_dump(mode="json"),
         headers={"Content-Type": "application/json"},
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
 
     resp = await async_client.get_permissions()
     assert resp == permissions

@@ -37,7 +37,6 @@ async def test_create_artifact_tag_mock(
     status_code: int,
     tag: Tag,
 ):
-    async_client.url = httpserver.url_for("/api/v2.0")
     expect_location = (
         async_client.url
         + "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/tags/123"
@@ -76,7 +75,7 @@ async def test_get_artifact_vulnerabilities_mock(
         ),
         headers={"Content-Type": "application/json"},
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     r = await async_client.get_artifact_vulnerabilities(
         "testproj", "testrepo", "latest"
     )
@@ -99,7 +98,7 @@ async def test_get_artifact_build_history_mock(
         json_from_list(build_history),
         content_type="application/json",
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_artifact_build_history(
         "testproj", "testrepo", "latest"
     )
@@ -120,7 +119,6 @@ async def test_get_artifact_vulnerabilities_empty_mock(
         "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/additions/vulnerabilities",
         method="GET",
     ).respond_with_json({})
-    async_client.url = httpserver.url_for("/api/v2.0")
 
     with pytest.raises(NotFound):
         await async_client.get_artifact_vulnerabilities(
@@ -144,7 +142,6 @@ async def test_get_artifact_vulnerabilities_nondict_mock(
         "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/additions/vulnerabilities",
         method="GET",
     ).respond_with_json([{"MIME_TYPE_HERE": {"foo": "bar"}}])
-    async_client.url = httpserver.url_for("/api/v2.0")
 
     with pytest.raises(UnprocessableEntity):
         await async_client.get_artifact_vulnerabilities(
@@ -167,7 +164,7 @@ async def test_get_artifact_tags_mock(
         json_from_list(tags),
         headers={"Content-Type": "application/json"},
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     tags_resp = await async_client.get_artifact_tags("testproj", "testrepo", "latest")
     # TODO: test params
     assert tags_resp == tags
@@ -190,7 +187,7 @@ async def test_get_artifact_accessories_mock(
         json_from_list(accessories),
         headers={"Content-Type": "application/json"},
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     accessories_resp = await async_client.get_artifact_accessories(
         "testproj", "testrepo", "latest"
     )
@@ -210,7 +207,7 @@ async def test_delete_artifact_tag(
         "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/tags/123",
         method="DELETE",
     ).respond_with_data(status=status_code)
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     if status_code == 404:
         ctx = pytest.raises(StatusError)
     else:
@@ -234,7 +231,6 @@ async def test_copy_artifact(
     ).respond_with_data(
         status=status_code, headers={"Location": "/api/v2.0/artifacts/123"}
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
 
     location = await async_client.copy_artifact(
         "testproj",
@@ -261,7 +257,7 @@ async def test_get_artifacts_mock(
         json_from_list(artifacts),
         headers={"Content-Type": "application/json"},
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_artifacts(
         "testproj",
         "testrepo",
@@ -289,7 +285,7 @@ async def test_add_artifact_label_mock(
         method="POST",
         json=label.model_dump(exclude_unset=True),
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.add_artifact_label(
         "testproj",
         "testrepo",
@@ -313,7 +309,7 @@ async def test_get_artifact_mock(
         artifact.model_dump_json(),
         headers={"Content-Type": "application/json"},
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     # TODO: test params
     resp = await async_client.get_artifact(
         "testproj",
@@ -338,7 +334,6 @@ async def test_delete_artifact_mock(
         status=status_code,
     )
 
-    async_client.url = httpserver.url_for("/api/v2.0")
     if status_code == 404:
         ctx = pytest.raises(StatusError)
     else:
@@ -361,7 +356,6 @@ async def test_delete_artifact_label_mock(
         status=status_code,
     )
 
-    async_client.url = httpserver.url_for("/api/v2.0")
     if status_code == 404:
         ctx = pytest.raises(StatusError)
     else:

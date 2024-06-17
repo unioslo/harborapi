@@ -29,7 +29,7 @@ async def test_get_label_mock(
     ).respond_with_data(
         label.model_dump_json(), headers={"Content-Type": "application/json"}
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_label(123)
     assert resp == label
 
@@ -48,7 +48,7 @@ async def test_update_label_mock(
         method="PUT",
         json=label.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.update_label(123, label)
 
 
@@ -67,7 +67,7 @@ async def test_create_label_mock(
         method="POST",
         json=label.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data(headers={"Location": expect_location})
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.create_label(label)
     assert resp == expect_location
 
@@ -81,7 +81,7 @@ async def test_delete_label_mock(
     httpserver.expect_oneshot_request(
         f"/api/v2.0/labels/{label_id}", method="DELETE"
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.delete_label(label_id)
 
 
@@ -99,7 +99,7 @@ async def test_get_labels_mock(
         json_from_list(labels),
         headers={"Content-Type": "application/json"},
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     # TODO: query parameters
     resp = await async_client.get_labels()
     assert resp == labels
