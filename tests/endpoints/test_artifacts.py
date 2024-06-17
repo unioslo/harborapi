@@ -60,7 +60,7 @@ async def test_create_artifact_tag_mock(
 @pytest.mark.asyncio
 @given(get_hbv_strategy())
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-async def test_get_artifact_vulnerabilities_mock(
+async def test_get_artifact_vulnerabilities_single_mimetype_mock(
     async_client: HarborAsyncClient,
     httpserver: HTTPServer,
     report: HarborVulnerabilityReport,
@@ -77,10 +77,120 @@ async def test_get_artifact_vulnerabilities_mock(
     )
 
     r = await async_client.get_artifact_vulnerabilities(
-        "testproj", "testrepo", "latest"
+        "testproj",
+        "testrepo",
+        "latest",
+        mime_type="application/vnd.security.vulnerability.report; version=1.1",
     )
-    # TODO: specify MIME type when testing?
     assert r == report
+
+
+@pytest.mark.asyncio
+@given(get_hbv_strategy())
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+async def test_get_artifact_vulnerability_reports_mock(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+    report: HarborVulnerabilityReport,
+):
+    MIME_TYPES = [
+        "application/vnd.security.vulnerability.report; version=1.2",
+        "application/vnd.security.vulnerability.report; version=1.1",
+        "application/vnd.security.vulnerability.report; version=1.0",
+    ]
+    report_dict = report.model_dump(mode="json")
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/additions/vulnerabilities",
+        method="GET",
+    ).respond_with_json(
+        {
+            "application/vnd.security.vulnerability.report; version=1.2": report_dict,
+            "application/vnd.security.vulnerability.report; version=1.1": report_dict,
+            "application/vnd.security.vulnerability.report; version=1.0": report_dict,
+        }
+    )
+
+    r = await async_client.get_artifact_vulnerability_reports(
+        "testproj",
+        "testrepo",
+        "latest",
+        mime_type=MIME_TYPES,
+    )
+    assert len(r) == 3
+    for mime_type, report in r.items():
+        assert report == report
+        assert mime_type in MIME_TYPES
+
+
+@pytest.mark.asyncio
+@given(get_hbv_strategy())
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+async def test_get_artifact_vulnerability_reports_single_mock(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+    report: HarborVulnerabilityReport,
+):
+    """Test get_artifact_vulnerability_reports with `mime_type` str arg"""
+    report_dict = report.model_dump(mode="json")
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/additions/vulnerabilities",
+        method="GET",
+    ).respond_with_json(
+        {
+            # Respond with multiple MIME types, but only request one
+            "application/vnd.security.vulnerability.report; version=1.2": report_dict,
+            "application/vnd.security.vulnerability.report; version=1.1": report_dict,
+            "application/vnd.security.vulnerability.report; version=1.0": report_dict,
+        }
+    )
+    mime_type = "application/vnd.security.vulnerability.report; version=1.1"
+    r = await async_client.get_artifact_vulnerability_reports(
+        "testproj",
+        "testrepo",
+        "latest",
+        mime_type=mime_type,
+    )
+    assert len(r) == 1
+    assert r[mime_type] == report
+
+
+@pytest.mark.asyncio
+@given(get_hbv_strategy())
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+async def test_get_artifact_vulnerability_reports_raw_mock(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+    report: HarborVulnerabilityReport,
+):
+    async_client.raw = True
+    MIME_TYPES = [
+        "application/vnd.security.vulnerability.report; version=1.2",
+        "application/vnd.security.vulnerability.report; version=1.1",
+        "application/vnd.security.vulnerability.report; version=1.0",
+    ]
+    report_dict = report.model_dump(mode="json")
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/projects/testproj/repositories/testrepo/artifacts/latest/additions/vulnerabilities",
+        method="GET",
+    ).respond_with_json(
+        {
+            "application/vnd.security.vulnerability.report; version=1.2": report_dict,
+            "application/vnd.security.vulnerability.report; version=1.1": report_dict,
+            "application/vnd.security.vulnerability.report; version=1.0": report_dict,
+        }
+    )
+
+    r = await async_client.get_artifact_vulnerability_reports(
+        "testproj",
+        "testrepo",
+        "latest",
+        mime_type=MIME_TYPES,
+    )
+    assert len(r) == 3
+    assert isinstance(r, dict)
+    for mime_type, report in r.items():
+        assert report == report_dict
+        assert mime_type in MIME_TYPES
 
 
 @pytest.mark.asyncio

@@ -11,6 +11,7 @@ from typing import Generator
 from typing import List
 from typing import Literal
 from typing import Optional
+from typing import Sequence
 from typing import Tuple
 from typing import Type
 from typing import TypeVar
@@ -134,6 +135,11 @@ from .utils import urldecode_header
 __all__ = ["HarborAsyncClient"]
 
 T = TypeVar("T", bound=BaseModel)
+
+DEFAULT_MIME_TYPES = (
+    "application/vnd.security.vulnerability.report; version=1.1",
+    "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0",
+)
 
 
 # TODO: move pydantic model functions to separate module
@@ -3756,15 +3762,19 @@ class HarborAsyncClient:
         await self.delete(url, missing_ok=missing_ok)
 
     # GET /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/vulnerabilities
+    @deprecated("Use get_artifact_vulnerability_reports instead")
     async def get_artifact_vulnerabilities(
         self,
         project_name: str,
         repository_name: str,
         reference: str,  # Make this default to "latest"?
-        # TODO: support multiple mime types?
         mime_type: str = "application/vnd.security.vulnerability.report; version=1.1",
     ) -> HarborVulnerabilityReport:
         """Get the vulnerabilities for an artifact.
+
+        !!! warning
+            This method is deprecated.
+            Use [get_artifact_vulnerability_reports][harborapi.client.HarborAsyncClient.get_artifact_vulnerability_reports] instead.
 
         Parameters
         ----------
@@ -3799,6 +3809,53 @@ class HarborAsyncClient:
             raise NotFound(f"Unable to find report for {mime_type} from {url}")
 
         return self.construct_model(HarborVulnerabilityReport, report)
+
+    async def get_artifact_vulnerability_reports(
+        self,
+        project_name: str,
+        repository_name: str,
+        reference: str,
+        mime_type: Union[str, Sequence[str]] = DEFAULT_MIME_TYPES,
+    ) -> Dict[str, HarborVulnerabilityReport]:
+        """Get the vulnerability report(s) for an artifact.
+
+        Parameters
+        ----------
+        project_name : str
+            The name of the project
+        repository_name : str
+            The name of the repository
+        reference : str
+            The reference of the artifact, can be digest or tag
+        mime_type : Union[str, Sequence[str]]
+            MIME type or list of MIME types for the scan report or scan summary.
+
+        Returns
+        -------
+        Dict[str, HarborVulnerabilityReport]
+            A dict of vulnerability reports keyed by MIME type
+        """
+        path = get_artifact_path(project_name, repository_name, reference)
+        url = f"{path}/additions/vulnerabilities"
+        # NOTE: in the offical API spec, a comma AND space is used to separate:
+        # https://github.com/goharbor/harbor/blob/df4ab856c7597e6fe28b466ba8419257de8a1af7/api/v2.0/swagger.yaml#L6256
+        if not isinstance(mime_type, str):
+            mime_type_param = ", ".join(mime_type)
+        else:
+            mime_type_param = mime_type
+        resp = await self.get(
+            url, headers={"X-Accept-Vulnerabilities": mime_type_param}
+        )
+        if not isinstance(resp, dict):
+            raise UnprocessableEntity(f"Unable to process response from {url}: {resp}")
+        reports: Dict[str, HarborVulnerabilityReport] = {}
+        if isinstance(mime_type, str):
+            mime_type = [mime_type]
+        for mt in mime_type:
+            report = resp.get(mt)
+            if report:
+                reports[mt] = self.construct_model(HarborVulnerabilityReport, report)
+        return reports
 
     # GET /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/build_history
     async def get_artifact_build_history(
