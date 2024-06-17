@@ -12,7 +12,13 @@ While the project is still on major version 0, breaking changes may be introduce
 
 <!-- changelog follows -->
 
-<!-- ## Unreleased -->
+## Unreleased
+
+### Added
+
+- Permissions method:
+  - `HarborAsyncClient.get_permissions()`: Get system and project permissions for a user.
+
 
 ## [0.24.2](https://github.com/unioslo/harborapi/tree/harborapi-v0.24.2) - 2024-06-15
 
