@@ -116,6 +116,7 @@ nav:
       - endpoints/labels.md
       - endpoints/ldap.md
       - endpoints/oidc.md
+      - endpoints/permissions.md
       - endpoints/ping.md
       - endpoints/projects.md
       - endpoints/projectmetadata.md

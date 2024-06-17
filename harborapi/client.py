@@ -27,6 +27,8 @@ from pydantic import SecretStr
 from pydantic import ValidationError
 from typing_extensions import deprecated
 
+from harborapi.models.models import Permissions
+
 from ._types import JSONType
 from ._types import QueryParamMapping
 from .auth import load_harbor_auth_file
@@ -4852,6 +4854,23 @@ class HarborAsyncClient:
         params = get_params(q=query, sort=sort, page=page, page_size=page_size)
         resp = await self.get("/audit-logs", params=params, limit=limit)
         return self.construct_model(AuditLog, resp, is_list=True)
+
+    # CATEGORY: permissions
+    # GET /permissions
+    async def get_permissions(self) -> Permissions:
+        """Get system and project level permissions.
+
+        !!! attention
+
+            Requires admin privileges or a privileged Robot account.
+
+        Returns
+        -------
+        Permissions
+            The system and project level permissions.
+        """
+        resp = await self.get("/permissions")
+        return self.construct_model(Permissions, resp)
 
     def _get_headers(self, headers: Optional[Dict[str, Any]] = None) -> Dict[str, str]:
         headers = headers or {}
