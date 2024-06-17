@@ -17,7 +17,13 @@ While the project is still on major version 0, breaking changes may be introduce
 ### Added
 
 - Permissions method:
-  - `HarborAsyncClient.get_permissions()`: Get system and project permissions for a user.
+  - `HarborAsyncClient.get_permissions()`
+- Immutable tag rules methods:
+  - `HarborAsyncClient.get_project_immutable_tag_rules()`
+  - `HarborAsyncClient.create_project_immutable_tag_rule()`
+  - `HarborAsyncClient.update_project_immutable_tag_rule()`
+  - `HarborAsyncClient.enable_project_immutable_tagrule()`
+  - `HarborAsyncClient.delete_project_immutable_tag_rule()`
 
 ### Removed
 

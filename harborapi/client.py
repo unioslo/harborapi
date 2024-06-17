@@ -49,6 +49,7 @@ from .models import ExecHistory
 from .models import GCHistory
 from .models import GeneralInfo
 from .models import Icon
+from .models import ImmutableRule
 from .models import IsDefault
 from .models import Label
 from .models import LdapConf
@@ -3836,6 +3837,160 @@ class HarborAsyncClient:
     # GET /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/dependencies
 
     # CATEGORY: immutable
+    # GET /projects/{project_name_or_id}/immutabletagrules
+    # List all immutable tag rules of current project
+    async def get_project_immutable_tag_rules(
+        self,
+        project_name_or_id: Union[str, int],
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 10,
+        limit: Optional[int] = None,
+    ) -> List[ImmutableRule]:
+        """Get the immutable tag rules for a project.
+
+        Parameters
+        ----------
+        project_name_or_id : Union[str, int]
+            The name or ID of the project.
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+        query : Optional[str]
+            A query string to filter the immutable tag rules
+        sort : Optional[str]
+            The sort order of the rules
+        page : int
+            The page of results to return
+        page_size : int
+            The number of results to return per page
+        limit : Optional[int]
+            The maximum number of results to return
+
+        Returns
+        -------
+        List[ImmutableRule]
+            The immutable tag rules for the project.
+        """
+        params = get_params(
+            q=query,
+            sort=sort,
+            page=page,
+            page_size=page_size,
+        )
+        headers = get_project_headers(project_name_or_id)
+        projects = await self.get(
+            f"/projects/{project_name_or_id}/immutabletagrules",
+            params=params,
+            limit=limit,
+            headers=headers,
+        )
+        return self.construct_model(ImmutableRule, projects, is_list=True)
+
+    # POST /projects/{project_name_or_id}/immutabletagrules
+    # Add an immutable tag rule to current project
+    async def create_project_immutable_tag_rule(
+        self, project_name_or_id: Union[str, int], rule: ImmutableRule
+    ) -> str:
+        """Create an immutable tag rule for a project.
+
+        Parameters
+        ----------
+        project_name_or_id : Union[str, int]
+            The name or ID of the project.
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+        rule : ImmutableRule
+            The immutable tag rule to create.
+
+        Returns
+        -------
+        str
+            The location of the created immutable tag rule.
+        """
+        headers = get_project_headers(project_name_or_id)
+        resp = await self.post(
+            f"/projects/{project_name_or_id}/immutabletagrules",
+            json=rule,
+            headers=headers,
+        )
+        return urldecode_header(resp, "Location")
+
+    # PUT /projects/{project_name_or_id}/immutabletagrules/{immutable_rule_id}
+    # Update the immutable tag rule or enable or disable the rule
+    async def update_project_immutable_tag_rule(
+        self,
+        project_name_or_id: Union[str, int],
+        immutable_rule_id: int,
+        rule: ImmutableRule,
+    ) -> None:
+        """Update an immutable tag rule for a project.
+
+        Parameters
+        ----------
+        project_name_or_id : Union[str, int]
+            The name or ID of the project.
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+        immutable_rule_id : int
+            The ID of the immutable tag rule.
+        rule : ImmutableRule
+            The updated immutable tag rule.
+        """
+        headers = get_project_headers(project_name_or_id)
+        await self.put(
+            f"/projects/{project_name_or_id}/immutabletagrules/{immutable_rule_id}",
+            json=rule,
+            headers=headers,
+        )
+
+    async def enable_project_immutable_tagrule(
+        self,
+        project_name_or_id: Union[str, int],
+        immutable_rule_id: int,
+        enabled: bool = True,
+    ) -> None:
+        """Enable or disable an immutable tag rule for a project.
+
+        Parameters
+        ----------
+        project_name_or_id : Union[str, int]
+            The name or ID of the project.
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+        immutable_rule_id : int
+            The ID of the immutable tag rule.
+        enabled : bool
+            Whether to enable or disable the rule.
+        """
+        rule = ImmutableRule(disabled=not enabled)
+        return await self.update_project_immutable_tag_rule(
+            project_name_or_id, immutable_rule_id, rule
+        )
+
+    # DELETE /projects/{project_name_or_id}/immutabletagrules/{immutable_rule_id}
+    # Delete the immutable tag rule.
+    async def delete_project_immutable_tag_rule(
+        self,
+        project_name_or_id: Union[str, int],
+        immutable_rule_id: int,
+    ) -> None:
+        """Delete an immutable tag rule for a project.
+
+        Parameters
+        ----------
+        project_name_or_id : Union[str, int]
+            The name or ID of the project.
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+        immutable_rule_id : int
+            The ID of the immutable tag rule.
+        """
+        headers = get_project_headers(project_name_or_id)
+        await self.delete(
+            f"/projects/{project_name_or_id}/immutabletagrules/{immutable_rule_id}",
+            headers=headers,
+        )
 
     # CATEGORY: retention
 
