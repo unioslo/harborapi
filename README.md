@@ -10,7 +10,6 @@
 
 -----
 
-
 Python async client for the Harbor REST API v2.0 based on the official Harbor REST API specification.
 
 **NOTE:** The official Harbor API spec is hand-written, and numerous errors and inconsistencies have been found in it. This library attempts to work around these issues as much as possible, but errors may still occur. If you find any errors, please open an issue.
@@ -29,7 +28,6 @@ Python async client for the Harbor REST API v2.0 based on the official Harbor RE
 pip install harborapi
 ```
 
-
 ## Documentation
 
 Documentation is available [here](https://unioslo.github.io/harborapi/). The documentation is still a work in progress, and you may have to dig around a bit to find what you're looking for.
@@ -38,9 +36,7 @@ Creating proper documentation for the Pydantic models is priority number one rig
 
 ## Quick Start
 
-
 ### Authentication
-
 
 ```python
 from harborapi import HarborAsyncClient
@@ -83,7 +79,6 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-
 ### Create a project
 
 ```python
@@ -115,8 +110,6 @@ asyncio.run(main())
 
 All endpoints are documented in the [endpoints documentation](https://unioslo.github.io/harborapi/endpoints/).
 
-
-
 ## Disclaimer
 
 `harborapi` makes use of code generation for its data models, but it doesn't entirely rely on it like, for example, [githubkit](https://github.com/yanyongyu/githubkit). Thus, while the library is based on the Harbor REST API specification, it is not beholden to it. The official schema contains several inconsistencies and errors, and this package takes steps to rectify some of these locally until they are fixed in the official Harbor API spec.
@@ -124,7 +117,6 @@ All endpoints are documented in the [endpoints documentation](https://unioslo.gi
 `harborapi` attempts to improve endpoint descriptions where possible and fix models with fields given the wrong type or wrongly marked as required. Without these changes, the validation provided by the library would be unusable for certain endpoints, as these endpoints can, in certain cases, return data that is inconsistent with the official API specification, thus breaking the model validation.
 
 To return the raw API responses without validation and type conversion, set `raw=True` when instantiating the client. For more information, check the [documentation](https://unioslo.github.io/harborapi/usage/validation/) on validation.
-
 
 ## Implemented endpoints
 
@@ -137,7 +129,7 @@ To return the raw API responses without validation and type conversion, set `raw
 - [x] Garbage Collection
 - [x] Health
 - [x] Icon
-- [ ] Immutable
+- [x] Immutable
 - [x] Label
 - [x] Ldap
 - [x] OIDC
