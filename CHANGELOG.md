@@ -26,6 +26,12 @@ While the project is still on major version 0, breaking changes may be introduce
   - `HarborAsyncClient.delete_project_immutable_tag_rule()`
 - Artifact vulnerability reports method:
   - `HarborAsyncClient.get_artifact_vulnerability_reports()`
+- Robot V1 methods:
+  - `HarborAsyncClient.get_robots_v1()`
+  - `HarborAsyncClient.create_robot_v1()`
+  - `HarborAsyncClient.get_robot_v1()`
+  - `HarborAsyncClient.update_robot_v1()`
+  - `HarborAsyncClient.delete_robot_v1()`
 
 ### Removed
 
