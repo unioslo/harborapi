@@ -11,7 +11,6 @@ async def test_response_log(async_client: HarborAsyncClient, httpserver: HTTPSer
         [{"username": "user1"}, {"username": "user2"}], status=200
     )
 
-    async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.get_users()
     await async_client.get_users()
     await async_client.get_users()
@@ -51,7 +50,6 @@ async def test_last_response(async_client: HarborAsyncClient, httpserver: HTTPSe
         [{"username": "user1"}, {"username": "user2"}], status=200
     )
 
-    async_client.url = httpserver.url_for("/api/v2.0")
     await async_client.get_users()
     last_response = async_client.last_response
     assert last_response is not None

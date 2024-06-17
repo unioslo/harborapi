@@ -30,7 +30,6 @@ async def test_get_audit_logs_mock(
         json_from_list(audit_logs),
         headers={"Content-Type": "application/json"},
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
 
     logs = await async_client.get_audit_logs()
     assert logs == audit_logs

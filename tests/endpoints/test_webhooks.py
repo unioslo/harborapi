@@ -37,7 +37,7 @@ async def test_get_webhook_jobs_mock(
         json_from_list(jobs),
         headers={"Content-Type": "application/json"},
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_webhook_jobs(project_id, policy_id)
     assert resp == jobs
 
@@ -59,7 +59,7 @@ async def test_create_webhook_policy_mock(
     ).respond_with_data(
         headers={"Location": "/api/v2.0/projects/123/webhook/policies/456"},
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.create_webhook_policy(project_id, policy)
     assert resp == expect_location
 
@@ -81,7 +81,7 @@ async def test_get_webhook_policies_mock(
         json_from_list(policies),
         headers={"Content-Type": "application/json"},
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_webhook_policies(project_id)
     assert resp == policies
 
@@ -100,7 +100,7 @@ async def test_get_webhook_supported_events_mock(
         method="GET",
         headers={"X-Is-Resource-Name": "false"},
     ).respond_with_data(events.model_dump_json(), content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_webhook_supported_events(project_id)
     assert resp == events
 
@@ -122,7 +122,7 @@ async def test_get_webhook_policy_last_trigger_mock(
         json_from_list(triggers),
         headers={"Content-Type": "application/json"},
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_webhook_policy_last_trigger(project_id)
     assert resp == triggers
 
@@ -142,7 +142,7 @@ async def test_update_webhook_policy_mock(
         method="PUT",
         headers={"X-Is-Resource-Name": "false"},
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.update_webhook_policy(project_id, policy_id, policy)
 
 
@@ -161,7 +161,7 @@ async def test_get_webhook_policy_mock(
         method="GET",
         headers={"X-Is-Resource-Name": "false"},
     ).respond_with_data(policy.model_dump_json(), content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_webhook_policy(project_id, policy_id)
     assert resp == policy
 
@@ -181,5 +181,5 @@ async def test_delete_webhook_policy_mock(
         method="DELETE",
         headers={"X-Is-Resource-Name": "false"},
     ).respond_with_data(policy.model_dump_json(), content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.delete_webhook_policy(project_id, policy_id)

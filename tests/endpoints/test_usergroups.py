@@ -24,7 +24,6 @@ async def test_search_usergroups_mock(
     httpserver: HTTPServer,
     usergroups: List[UserGroupSearchItem],
 ):
-    async_client.url = httpserver.url_for("/api/v2.0")
     httpserver.expect_oneshot_request(
         "/api/v2.0/usergroups/search",
         method="GET",
@@ -44,7 +43,7 @@ async def test_create_usergroup_mock(
 ):
     usergroup.id = 123
     expect_location = "/api/v2.0/usergroups/123"  # idk?
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     httpserver.expect_oneshot_request(
         "/api/v2.0/usergroups",
         method="POST",
@@ -65,7 +64,6 @@ async def test_update_usergroup_mock(
     httpserver: HTTPServer,
     usergroup: UserGroup,
 ):
-    async_client.url = httpserver.url_for("/api/v2.0")
     httpserver.expect_oneshot_request(
         "/api/v2.0/usergroups/123",
         method="PUT",
@@ -89,7 +87,7 @@ async def test_get_usergroups_mock(
         json_from_list(usergroups),
         content_type="application/json",
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_usergroups()
     assert resp == usergroups
 
@@ -110,7 +108,7 @@ async def test_get_usergroup_mock(
         usergroup.model_dump_json(),
         content_type="application/json",
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_usergroup(123)
     assert resp == usergroup
 
@@ -124,5 +122,5 @@ async def test_delete_usergroup(
         "/api/v2.0/usergroups/123",
         method="DELETE",
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.delete_usergroup(123)

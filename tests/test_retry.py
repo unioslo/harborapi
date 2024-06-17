@@ -118,7 +118,6 @@ async def test_get_retry_mock(async_client: HarborAsyncClient, httpserver: HTTPS
         [{"username": "user1"}, {"username": "user2"}],
     )
 
-    async_client.url = httpserver.url_for("/api/v2.0")
     users = await async_client.get("/users")
     assert isinstance(users, list)
     assert len(users) == 2
@@ -136,7 +135,6 @@ async def test_get_retry_disabled_mock(
         [{"username": "user1"}, {"username": "user2"}],
     )
 
-    async_client.url = httpserver.url_for("/api/v2.0")
     async_client.retry = None  # disable retry
     with pytest.raises(ConnectError):
         users = await async_client.get("/users")
@@ -170,7 +168,6 @@ async def test_get_retry_custom_wait_gen(
             call_count += 1
             yield 0.01
 
-    async_client.url = httpserver.url_for("/api/v2.0")
     async_client.retry.wait_gen = wait_gen
 
     # First call(s) should fail
@@ -195,8 +192,6 @@ async def test_no_retry_ctx_manager(
     httpserver.expect_oneshot_request("/api/v2.0/users").respond_with_json(
         [{"username": "user1"}, {"username": "user2"}],
     )
-
-    async_client.url = httpserver.url_for("/api/v2.0")
 
     # assert we have active retry settings
     assert async_client.retry is not None

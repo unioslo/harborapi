@@ -25,7 +25,6 @@ async def test_get_gc_schedule_mock(
     httpserver: HTTPServer,
     schedule: Schedule,
 ):
-    async_client.url = httpserver.url_for("/api/v2.0")
     httpserver.expect_oneshot_request(
         "/api/v2.0/system/gc/schedule",
         method="GET",
@@ -43,7 +42,7 @@ async def test_create_gc_schedule_mock(
     schedule: Schedule,
 ):
     expect_location = "/api/v2.0/system/gc/schedule"  # idk?
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     httpserver.expect_oneshot_request(
         "/api/v2.0/system/gc/schedule",
         method="POST",
@@ -64,7 +63,6 @@ async def test_update_gc_schedule_mock(
     httpserver: HTTPServer,
     schedule: Schedule,
 ):
-    async_client.url = httpserver.url_for("/api/v2.0")
     httpserver.expect_oneshot_request(
         "/api/v2.0/system/gc/schedule",
         method="PUT",
@@ -88,7 +86,7 @@ async def test_get_gc_jobs_mock(
         json_from_list(jobs),
         content_type="application/json",
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_gc_jobs()
     assert resp == jobs
 
@@ -109,7 +107,7 @@ async def test_get_gc_job_mock(
         job.model_dump_json(),
         content_type="application/json",
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_gc_job(123)
     assert resp == job
 
@@ -131,7 +129,7 @@ async def test_get_gc_log_mock(
         log,
         content_type="text/plain",
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_gc_log(123, as_list=as_list)
     if as_list:
         assert isinstance(resp, list)

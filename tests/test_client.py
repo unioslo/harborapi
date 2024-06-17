@@ -137,7 +137,7 @@ async def test_get_pagination_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/users", query_string="page=2"
     ).respond_with_json([{"username": "user3"}, {"username": "user4"}])
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     users = await async_client.get("/users")
     assert isinstance(users, list)
     assert len(users) == 4
@@ -170,7 +170,7 @@ async def test_get_pagination_next_and_prev_mock(
         [{"username": "user5"}, {"username": "user6"}],
         headers={"link": '</api/v2.0/users?page=2>; rel="prev"'},
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     users = await async_client.get("/users")
     assert isinstance(users, list)
     assert len(users) == 6
@@ -201,7 +201,6 @@ async def test_get_pagination_large_mock(
             "/api/v2.0/users", query_string=f"page={page}"
         ).respond_with_json([{"username": f"user{page}"}], headers=headers)
 
-    async_client.url = httpserver.url_for("/api/v2.0")
     users = await async_client.get("/users")
     assert isinstance(users, list)
     assert len(users) == N_PAGES
@@ -222,7 +221,7 @@ async def test_get_pagination_no_follow(
         [{"username": "user3"}],
         headers={"link": '</api/v2.0/users?page=1>; rel="prev"'},
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     users = await async_client.get("/users", follow_links=False)
     assert isinstance(users, list)
     assert len(users) == 2
@@ -245,7 +244,7 @@ async def test_get_pagination_limit(
         [{"username": "user3"}],
         headers={"link": '</api/v2.0/users?page=1>; rel="prev"'},
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     users = await async_client.get("/users", limit=2)
     assert isinstance(users, list)
     assert len(users) == 2
@@ -268,7 +267,7 @@ async def test_get_pagination_no_limit(
         [{"username": "user3"}],
         headers={"link": '</api/v2.0/users?page=1>; rel="prev"'},
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     users = await async_client.get("/users", limit=None)
     assert isinstance(users, list)
     assert len(users) == 3
@@ -295,7 +294,7 @@ async def test_get_pagination_invalid_mock(
         {"username": "user3"},
         headers={"link": '</api/v2.0/users?page=1>; rel="prev"'},
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     users = await async_client.get("/users")
     assert isinstance(users, list)
     assert len(users) == 2
@@ -410,14 +409,13 @@ async def test_construct_model_raw(
     async_client: HarborAsyncClient,
     mocker: MockerFixture,
 ):
-    c = async_client
-    c.raw = True
+    async_client.raw = True
     construct_spy = mocker.spy(UserResp, "model_construct")
     parse_spy = mocker.spy(UserResp, "model_validate")
 
     # Extra field "foo" is added to the model
     expect_resp = {"username": "user1", "foo": "bar"}
-    m = c.construct_model(UserResp, expect_resp)
+    m = async_client.construct_model(UserResp, expect_resp)
     assert m == expect_resp
     assert m["username"] == "user1"
     assert m["foo"] == "bar"
@@ -545,7 +543,6 @@ async def test_get_invalid_data(
         [{"username": {}}, {"username": "user2"}],
     )
 
-    async_client.url = httpserver.url_for("/api/v2.0")
     with pytest.raises(ValidationError) as e:
         await async_client.get_users()
     assert e.value.errors()[0]["loc"] == ("username",)
@@ -563,7 +560,6 @@ async def test_get_errors(
         errors.model_dump_json(), status=500
     )
 
-    async_client.url = httpserver.url_for("/api/v2.0")
     with pytest.raises(StatusError) as exc_info:
         await async_client.get("/errorpath")
     assert exc_info is not None
@@ -756,7 +752,6 @@ async def test_exceptions(
         "/api/v2.0/exceptions", method=method
     ).respond_with_data(status=status_code)
 
-    async_client.url = httpserver.url_for("/api/v2.0")
     exceptions = {
         400: BadRequest,
         401: Unauthorized,
@@ -786,7 +781,7 @@ async def test_cookies(async_client: HarborAsyncClient, httpserver: HTTPServer):
         status=200,
         headers={"Set-Cookie": "foo=bar"},
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.get_users()
     assert async_client.client.cookies.get("foo") is None
     assert len(async_client.client.cookies) == 0

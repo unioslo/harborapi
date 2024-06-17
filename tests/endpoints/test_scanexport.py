@@ -30,7 +30,7 @@ async def test_get_scan_exports_mock(
         exports.model_dump_json(),
         headers={"Content-Type": "application/json"},
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_scan_exports()
     assert resp == exports
 
@@ -51,7 +51,7 @@ async def test_get_scan_export_mock(
         execution.model_dump_json(),
         headers={"Content-Type": "application/json"},
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_scan_export(execution_id)
     assert resp == execution
 
@@ -72,7 +72,7 @@ async def test_export_scan_data_mock(
         headers={"X-Scan-Data-Type": scan_type},
         data=request.model_dump_json(exclude_unset=True),
     ).respond_with_data(job.model_dump_json(), content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.export_scan_data(request, scan_type)
     assert resp == job
 
@@ -92,7 +92,7 @@ async def test_export_scan_data_empty_response_mock(
         headers={"X-Scan-Data-Type": scan_type},
         data=request.model_dump_json(exclude_unset=True),
     ).respond_with_data("{}", content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     with pytest.raises(HarborAPIException) as exc_info:
         await async_client.export_scan_data(request, scan_type)
     assert "empty response" in exc_info.value.args[0].lower()
@@ -109,7 +109,7 @@ async def test_download_scan_export_mock(
         f"/api/v2.0/export/cve/download/{execution_id}",
         method="GET",
     ).respond_with_data(data)
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.download_scan_export(execution_id)
     assert resp.content == data
     assert bytes(resp) == data

@@ -23,7 +23,7 @@ async def test_get_scan_all_metrics_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/scans/all/metrics", method="GET"
     ).respond_with_json(stats.model_dump(mode="json", exclude_unset=True))
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     metrics = await async_client.get_scan_all_metrics()
     assert metrics is not None
 
@@ -40,7 +40,7 @@ async def test_update_scan_all_schedule_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/system/scanAll/schedule", method="PUT"
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.update_scan_all_schedule(
         schedule
     )  # just test endpoint is working
@@ -60,7 +60,7 @@ async def test_create_scan_all_schedule_mock(
     ).respond_with_data(
         status=201, headers={"Location": "/system/scanAll/schedules/1234"}
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.create_scan_all_schedule(schedule)
     assert resp == "/system/scanAll/schedules/1234"
 
@@ -77,7 +77,7 @@ async def test_get_scan_all_schedule(
     httpserver.expect_oneshot_request(
         "/api/v2.0/system/scanAll/schedule", method="GET"
     ).respond_with_json(schedule.model_dump(mode="json", exclude_unset=True))
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     schedule_resp = await async_client.get_scan_all_schedule()
     assert schedule_resp == schedule
 
@@ -89,5 +89,5 @@ async def test_stop_scan_all_job(
     httpserver.expect_oneshot_request(
         "/api/v2.0/system/scanAll/stop", method="POST"
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.stop_scan_all_job()

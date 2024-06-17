@@ -38,7 +38,7 @@ async def test_create_robot_mock(
     ).respond_with_data(
         robot_created.model_dump_json(), content_type="application/json"
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.create_robot(robot)
     assert resp == robot_created
 
@@ -56,7 +56,7 @@ async def test_create_robot_empty_response_mock(
         method="POST",
         json=robot.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data("{}", content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     with pytest.raises(HarborAPIException) as exc_info:
         await async_client.create_robot(robot)
     assert "empty response" in exc_info.value.args[0].lower()
@@ -83,7 +83,6 @@ async def test_create_robot_with_path_mock(
     ).respond_with_data(
         robot_created.model_dump_json(), content_type="application/json"
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
 
     filename = f"{robot_created.name or robot.name}.json"
     filepath = tmp_path / filename
@@ -119,7 +118,7 @@ async def test_get_robots_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/robots", method="GET"
     ).respond_with_data(json_from_list(robots), content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_robots()
     assert resp == robots
 
@@ -135,7 +134,7 @@ async def test_get_robot_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/robots/1234", method="GET"
     ).respond_with_data(robot.model_dump_json(), content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_robot(1234)
     assert resp == robot
 
@@ -153,7 +152,7 @@ async def test_update_robot_mock(
         method="PUT",
         json=robot.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.update_robot(1234, robot)
 
 
@@ -165,7 +164,7 @@ async def test_delete_robot_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/robots/1234", method="DELETE"
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.delete_robot(1234)
 
 
@@ -185,6 +184,6 @@ async def test_refresh_robot_secret_mock(
     ).respond_with_data(
         expected_resp.model_dump_json(), content_type="application/json"
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.refresh_robot_secret(1234, secret)
     assert resp == expected_resp

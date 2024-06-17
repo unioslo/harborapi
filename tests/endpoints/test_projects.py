@@ -34,7 +34,7 @@ async def test_set_project_scanner_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/projects/1234/scanner", method="PUT"
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.set_project_scanner("1234", "myscanner")
 
 
@@ -50,7 +50,7 @@ async def test_get_project_scanner_mock(
         "/api/v2.0/projects/1234/scanner",
         method="GET",
     ).respond_with_data(scanner.model_dump_json(), content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_project_scanner("1234")
     assert resp.model_dump() == scanner.model_dump()
 
@@ -66,7 +66,7 @@ async def test_get_project_logs_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/projects/1234/logs", method="GET"
     ).respond_with_data(json_from_list(logs), content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_project_logs("1234")
     assert resp == logs
 
@@ -82,7 +82,7 @@ async def test_project_exists_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/projects", method="HEAD", query_string="project_name=1234"
     ).respond_with_data(status=status)
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     try:
         assert await async_client.project_exists("1234") == expected
     except Exception as e:
@@ -103,7 +103,7 @@ async def test_create_project_mock(
         method="POST",
         json=project.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data(headers={"Location": "%2Fapi%2Fv2.0%2Fprojects%2F1234"})
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.create_project(project)
     assert resp == "/api/v2.0/projects/1234"
 
@@ -120,7 +120,7 @@ async def test_get_projects_mock(
         "/api/v2.0/projects",
         method="GET",
     ).respond_with_data(json_from_list(projects), content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_projects("1234")
     assert resp == projects
 
@@ -137,7 +137,7 @@ async def test_update_project_mock(
         "/api/v2.0/projects/1234",
         method="PUT",
     ).respond_with_data(project.model_dump_json(), content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.update_project("1234", project)
 
 
@@ -153,7 +153,7 @@ async def test_get_project_mock(
         "/api/v2.0/projects/1234",
         method="GET",
     ).respond_with_data(project.model_dump_json(), content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_project("1234")
     assert resp == project
 
@@ -167,7 +167,7 @@ async def test_delete_project_mock(
         "/api/v2.0/projects/1234",
         method="DELETE",
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.delete_project("1234")
 
 
@@ -183,7 +183,7 @@ async def test_get_project_scanner_candidates_mock(
         "/api/v2.0/projects/1234/scanner/candidates",
         method="GET",
     ).respond_with_data(json_from_list(scanners), content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_project_scanner_candidates("1234")
     assert [r.model_dump() for r in resp] == [s.model_dump() for s in scanners]
 
@@ -202,7 +202,7 @@ async def test_get_project_summary_mock(
     ).respond_with_data(
         project_summary.model_dump_json(), content_type="application/json"
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_project_summary("1234")
     assert resp == project_summary
 
@@ -219,7 +219,7 @@ async def test_get_project_deletable_mock(
         "/api/v2.0/projects/1234/_deletable",
         method="GET",
     ).respond_with_data(deletable.model_dump_json(), content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_project_deletable("1234")
     assert resp == deletable
 
@@ -236,7 +236,7 @@ async def test_get_project_member_mock(
         "/api/v2.0/projects/1234/members/567",
         method="GET",
     ).respond_with_data(member.model_dump_json(), content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_project_member("1234", 567)
     assert resp == member
 
@@ -254,7 +254,7 @@ async def test_add_project_member_mock_fuzz(
         "/api/v2.0/projects/1234/members",
         method="POST",
     ).respond_with_data(status=201)  # TODO: header location
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.add_project_member("1234", member)
 
 
@@ -277,7 +277,7 @@ async def test_add_project_member_with_user_mock(
     ).respond_with_data(
         status=201, headers={"Location": "/api/v2.0/projects/1234/members/567"}
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.add_project_member("1234", member)
 
 
@@ -300,7 +300,7 @@ async def test_add_project_member_with_group_mock(
     ).respond_with_data(
         status=201, headers={"Location": "/api/v2.0/projects/1234/members/567"}
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.add_project_member("1234", member)
 
 
@@ -326,7 +326,7 @@ async def test_add_project_member_user_mock(
     ).respond_with_data(
         status=201, headers={"Location": "/api/v2.0/projects/1234/members/567"}
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.add_project_member_user(
         "1234",
         username_or_id=username or user_id,  # type: ignore
@@ -356,7 +356,7 @@ async def test_add_project_member_group_mock(
     ).respond_with_data(
         status=201, headers={"Location": "/api/v2.0/projects/1234/members/567"}
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.add_project_member_group(
         "1234",
         ldap_group_dn_or_id=ldap_group_dn or group_id,  # type: ignore
@@ -381,7 +381,7 @@ async def test_update_project_member_role_mock(
         method="PUT",
         json=expect.model_dump(exclude_unset=True),
     ).respond_with_data(status=200)
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.update_project_member_role("1234", 567, role_arg)
 
 
@@ -393,7 +393,7 @@ async def test_remove_project_member_mock(
         "/api/v2.0/projects/1234/members/567",
         method="DELETE",
     ).respond_with_data(status=200)
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.remove_project_member("1234", 567)
 
 
@@ -409,7 +409,7 @@ async def test_get_project_members_mock(
         "/api/v2.0/projects/1234/members",
         method="GET",
     ).respond_with_data(json_from_list(members), content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_project_members("1234")
     assert resp == members
 

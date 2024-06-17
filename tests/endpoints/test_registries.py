@@ -32,7 +32,7 @@ async def test_check_registry_status_mock(
         method="POST",
         json=ping.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.check_registry_status(ping)
 
 
@@ -48,7 +48,7 @@ async def test_get_registry_adapters_mock(
         "/api/v2.0/replication/adapters",
         method="GET",
     ).respond_with_json(adapters)
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.get_registry_adapters()
 
 
@@ -63,7 +63,7 @@ async def test_get_registry_info_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/registries/123/info", method="GET"
     ).respond_with_json(registryinfo.model_dump(mode="json", exclude_unset=True))
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.get_registry_info(123)
 
 
@@ -81,7 +81,7 @@ async def test_get_registry_providers_mock(
         providers.model_dump_json(),
         headers={"Content-Type": "application/json"},
     )
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_registry_providers()
     assert resp == providers
 
@@ -99,7 +99,7 @@ async def test_update_registry_mock(
         method="PUT",
         json=registry.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     await async_client.update_registry(123, registry)
 
 
@@ -114,7 +114,7 @@ async def test_get_registry_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/registries/123", method="GET"
     ).respond_with_json(registry.model_dump(mode="json", exclude_unset=True))
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_registry(123)
     assert resp == registry
 
@@ -127,7 +127,7 @@ async def test_delete_registry_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/registries/123", method="DELETE"
     ).respond_with_data()
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     # TODO test missing_ok=True
     await async_client.delete_registry(123)
 
@@ -145,7 +145,7 @@ async def test_create_registry_mock(
         method="POST",
         json=registry.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data(headers={"Location": "/api/v2.0/registries/123"})
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.create_registry(registry)
     assert resp == "/api/v2.0/registries/123"
 
@@ -161,6 +161,6 @@ async def test_get_registries_mock(
     httpserver.expect_oneshot_request(
         "/api/v2.0/registries", method="GET"
     ).respond_with_data(json_from_list(registries), content_type="application/json")
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     resp = await async_client.get_registries()
     assert resp == registries

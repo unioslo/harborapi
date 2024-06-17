@@ -29,7 +29,7 @@ async def test_test_oidc_mock(
         method="POST",
         json=oidcreq.model_dump(mode="json", exclude_unset=True),
     ).respond_with_data(status=status)
-    async_client.url = httpserver.url_for("/api/v2.0")
+
     if status == 200:
         ctx = nullcontext()
     else:
