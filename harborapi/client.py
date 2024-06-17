@@ -3254,14 +3254,7 @@ class HarborAsyncClient:
     # CATEGORY: search
     # GET /search
     async def search(self, query: str) -> Search:
-        """Search for projects, repositories and helm charts that the user has access to.
-
-        !!! warning
-            The endpoints's interface seems immature, and may change in the future.
-            The query string is not documented, and the API spec is not clear.
-            In the future, this method might change and take a separate argument
-            for each of the search types (projects, repositories, helm charts).
-
+        """Search for information about the projects and repositories the user has access to.
 
         Parameters
         ----------
