@@ -118,41 +118,8 @@ All endpoints are documented in the [endpoints documentation](https://unioslo.gi
 
 To return the raw API responses without validation and type conversion, set `raw=True` when instantiating the client. For more information, check the [documentation](https://unioslo.github.io/harborapi/usage/validation/) on validation.
 
-## Implemented endpoints
+## TODO
 
-<!-- - [ ] Products
-- [ ] Chart Repository
-- [ ] Label -->
-- [x] Artifact
-- [x] Auditlog
-- [x] Configure
-- [x] Garbage Collection
-- [x] Health
-- [x] Icon
-- [x] Immutable
-- [x] Label
-- [x] Ldap
-- [x] OIDC
-- [x] Ping
+### Endpoints
+
 - [ ] Preheat
-- [x] Project
-- [x] Project Metadata
-- [x] Purge
-- [x] Quota
-- [x] Registry
-- [x] Replication
-- [x] Repository
-- [x] Retention
-- [x] Robot
-- [x] Robotv1
-- [x] Scan
-- [x] Scan Data Export
-- [x] Scanall
-- [x] Scanner
-- [x] Search
-- [x] Statistic
-- [x] System CVE Allowlist
-- [x] System Info
-- [x] User
-- [x] Usergroup
-- [x] Webhooks
