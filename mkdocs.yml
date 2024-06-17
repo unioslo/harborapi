@@ -128,6 +128,7 @@ nav:
       - endpoints/repositories.md
       - endpoints/retention.md
       - endpoints/robots.md
+      - endpoints/robotv1.md
       - endpoints/scan.md
       - endpoints/scanall.md
       - endpoints/scanexport.md

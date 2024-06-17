@@ -28,8 +28,6 @@ from pydantic import SecretStr
 from pydantic import ValidationError
 from typing_extensions import deprecated
 
-from harborapi.models.models import Permissions
-
 from ._types import JSONType
 from ._types import QueryParamMapping
 from .auth import load_harbor_auth_file
@@ -61,6 +59,7 @@ from .models import OIDCTestReq
 from .models import OverallHealthStatus
 from .models import PasswordReq
 from .models import Permission
+from .models import Permissions
 from .models import Project
 from .models import ProjectDeletable
 from .models import ProjectMember
@@ -87,6 +86,7 @@ from .models import RetentionPolicy
 from .models import Robot
 from .models import RobotCreate
 from .models import RobotCreated
+from .models import RobotCreateV1
 from .models import RobotSec
 from .models import RoleRequest
 from .models import ScanDataExportExecution
@@ -4859,6 +4859,154 @@ class HarborAsyncClient:
         return self.construct_model(OverallHealthStatus, resp)
 
     # CATEGORY: robotv1
+    # GET /projects/{project_name_or_id}/robots
+    async def get_robots_v1(
+        self,
+        project_name_or_id: Union[str, int],
+        query: Optional[str] = None,
+        sort: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 10,
+        limit: Optional[int] = None,
+    ) -> List[Robot]:
+        """Get all robot v1 accounts for the specified project.
+
+        Parameters
+        ----------
+        project_name_or_id : Union[str, int]
+            The name or ID of the project.
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+        query : Optional[str]
+            A query string to filter the robots
+        sort : Optional[str]
+            The sort order of the robots
+        page : int
+            The page of results to return
+        page_size : int
+            The number of results to return per page
+        limit : Optional[int]
+            The maximum number of results to return
+
+        Returns
+        -------
+        List[Robot]
+            The robot v1 accounts for the project.
+        """
+        params = get_params(q=query, sort=sort, page=page, page_size=page_size)
+        headers = get_project_headers(project_name_or_id)
+        robots = await self.get(
+            f"/projects/{project_name_or_id}/robots",
+            params=params,
+            limit=limit,
+            headers=headers,
+        )
+        return self.construct_model(Robot, robots, is_list=True)
+
+    # POST /projects/{project_name_or_id}/robots
+    async def create_robot_v1(
+        self,
+        project_name_or_id: Union[str, int],
+        robot: RobotCreateV1,
+    ) -> RobotCreated:
+        """Create a robot v1 account for the specified project.
+
+        Parameters
+        ----------
+        project_name_or_id : Union[str, int]
+            The name or ID of the project.
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+        robot : RobotCreateV1
+            The robot v1 account to create.
+
+        Returns
+        -------
+        RobotCreated
+            The created robot v1 account.
+        """
+        headers = get_project_headers(project_name_or_id)
+        resp = await self.post(
+            f"/projects/{project_name_or_id}/robots", json=robot, headers=headers
+        )
+        j = handle_optional_json_response(resp)
+        if not j:
+            raise HarborAPIException("Server returned an empty response.")
+        return self.construct_model(RobotCreated, j)
+
+    # GET /projects/{project_name_or_id}/robots/{robot_id}
+    async def get_robot_v1(
+        self, project_name_or_id: Union[str, int], robot_id: int
+    ) -> Robot:
+        """Get a robot v1 account for the specified project.
+
+        Parameters
+        ----------
+        project_name_or_id : Union[str, int]
+            The name or ID of the project.
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+        robot_id : int
+            The ID of the robot v1 account to get.
+
+        Returns
+        -------
+        Robot
+            The robot v1 account.
+        """
+        headers = get_project_headers(project_name_or_id)
+        robot = await self.get(
+            f"/projects/{project_name_or_id}/robots/{robot_id}", headers=headers
+        )
+        return self.construct_model(Robot, robot)
+
+    # PUT /projects/{project_name_or_id}/robots/{robot_id}
+    async def update_robot_v1(
+        self,
+        project_name_or_id: Union[str, int],
+        robot_id: int,
+        robot: Robot,
+    ) -> None:
+        """Update a robot v1 account for the specified project.
+
+        Parameters
+        ----------
+        project_name_or_id : Union[str, int]
+            The name or ID of the project.
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+        robot_id : int
+            The ID of the robot v1 account to update.
+        robot : Robot
+            The updated robot v1 account.
+        """
+        headers = get_project_headers(project_name_or_id)
+        await self.put(
+            f"/projects/{project_name_or_id}/robots/{robot_id}",
+            json=robot,
+            headers=headers,
+        )
+
+    # DELETE /projects/{project_name_or_id}/robots/{robot_id}
+    async def delete_robot_v1(
+        self, project_name_or_id: Union[str, int], robot_id: int
+    ) -> None:
+        """Delete a robot v1 account for the specified project.
+
+        Parameters
+        ----------
+        project_name_or_id : Union[str, int]
+            The name or ID of the project.
+            String arguments are treated as project names.
+            Integer arguments are treated as project IDs.
+        robot_id : int
+            The ID of the robot v1 account to delete.
+        """
+        headers = get_project_headers(project_name_or_id)
+        await self.delete(
+            f"/projects/{project_name_or_id}/robots/{robot_id}", headers=headers
+        )
+
     # CATEGORY: projectMetadata
 
     # POST /projects/{project_name_or_id}/metadatas/

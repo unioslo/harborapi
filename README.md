@@ -144,7 +144,7 @@ To return the raw API responses without validation and type conversion, set `raw
 - [x] Repository
 - [x] Retention
 - [x] Robot
-- [ ] Robotv1
+- [x] Robotv1
 - [x] Scan
 - [x] Scan Data Export
 - [x] Scanall
