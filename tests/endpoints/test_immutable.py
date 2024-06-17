@@ -100,4 +100,4 @@ async def test_delete_project_immutable_tag_rule_mock(
         headers={"X-Is-Resource-Name": "false"},
     ).respond_with_data()
     async_client.url = httpserver.url_for("/api/v2.0")
-    await async_client.delete_project_immutable_tag_rule(123, 1)
+    await async_client.delete_project_immutable_tag_rule(1234, 1)
