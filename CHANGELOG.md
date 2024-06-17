@@ -24,10 +24,17 @@ While the project is still on major version 0, breaking changes may be introduce
   - `HarborAsyncClient.update_project_immutable_tag_rule()`
   - `HarborAsyncClient.enable_project_immutable_tagrule()`
   - `HarborAsyncClient.delete_project_immutable_tag_rule()`
+- Artifact vulnerability reports method:
+  - `HarborAsyncClient.get_artifact_vulnerability_reports()`
 
 ### Removed
 
 - References to Helm charts in `HarborAsyncClient.search()`.
+
+### Deprecated
+
+- `HarborAsyncClient.get_artifact_vulnerabilities()` in favor of `HarborAsyncClient.get_artifact_vulnerability_reports()`.
+  - The old method only supported a single MIME type and was not flexible enough to support returning multiple reports given multiple MIME types. The new method supports this use case and is less strict than the old method in terms of MIME type validation.
 
 ## [0.24.2](https://github.com/unioslo/harborapi/tree/harborapi-v0.24.2) - 2024-06-15
 
