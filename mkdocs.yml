@@ -113,6 +113,7 @@ nav:
       - endpoints/gc.md
       - endpoints/health.md
       - endpoints/icon.md
+      - endpoints/immutable.md
       - endpoints/labels.md
       - endpoints/ldap.md
       - endpoints/oidc.md
