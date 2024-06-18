@@ -1,6 +1,6 @@
-# Get artifact vulnerability report
+# Get artifact vulnerability reports
 
-We can fetch the vulnerability report for an artifact using [`get_artifact_vulnerability_reports`][harborapi.client.HarborAsyncClient.get_artifact_vulnerability_reports]. It returns a dict of [`HarborVulnerabilityReport`][harborapi.models.HarborVulnerabilityReport] objects indexed by MIME type. If no reports are found, the dict will be empty.
+We can fetch the vulnerability report(s) for an artifact using [`get_artifact_vulnerability_reports`][harborapi.client.HarborAsyncClient.get_artifact_vulnerability_reports]. It returns a dict of [`HarborVulnerabilityReport`][harborapi.models.HarborVulnerabilityReport] objects indexed by MIME type. If no reports are found, the dict will be empty.
 
 A [`HarborVulnerabilityReport`][harborapi.models.HarborVulnerabilityReport] is more comprehensive than the [`NativeReportSummary`][harborapi.models.models.NativeReportSummary] returned by [`get_artifact(..., with_scan_overview=True)`](../get-artifact-scan-overview). It contains detailed information about the vulnerabilities found in the artifact.
 
@@ -77,7 +77,7 @@ reports = await client.get_artifact_vulnerabilities(
         "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0",
     ],
 )
-for report in reports:
+for mime_type, report in reports.items():
     print(report)
 
 # OR
