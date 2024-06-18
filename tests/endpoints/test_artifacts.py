@@ -16,6 +16,7 @@ from harborapi.exceptions import StatusError
 from harborapi.exceptions import UnprocessableEntity
 from harborapi.models import HarborVulnerabilityReport
 from harborapi.models.buildhistory import BuildHistoryEntry
+from harborapi.models.mappings import FirstDict
 from harborapi.models.models import Accessory
 from harborapi.models.models import Artifact
 from harborapi.models.models import Label
@@ -120,6 +121,11 @@ async def test_get_artifact_vulnerability_reports_mock(
     for mime_type, report in r.items():
         assert report == report
         assert mime_type in MIME_TYPES
+    # Test return type
+    assert isinstance(r, dict)
+    assert isinstance(r, FirstDict)
+    assert r.first() == report
+    assert list(r.values()) == [report, report, report]
 
 
 @pytest.mark.asyncio
@@ -152,6 +158,9 @@ async def test_get_artifact_vulnerability_reports_single_mock(
     )
     assert len(r) == 1
     assert r[mime_type] == report
+    # Test FirstDict methods
+    assert r.first() == report
+    assert list(r.values()) == [report]
 
 
 @pytest.mark.asyncio
@@ -191,6 +200,11 @@ async def test_get_artifact_vulnerability_reports_raw_mock(
     for mime_type, report in r.items():
         assert report == report_dict
         assert mime_type in MIME_TYPES
+
+    # Even in Raw mode, we should still get a FirstDict
+    assert isinstance(r, FirstDict)
+    assert r.first() == report_dict
+    assert list(r.values()) == [report_dict, report_dict, report_dict]
 
 
 @pytest.mark.asyncio

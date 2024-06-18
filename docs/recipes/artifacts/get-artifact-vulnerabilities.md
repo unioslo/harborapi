@@ -31,6 +31,19 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
+The dict returned by the method is a [`FirstDict`][harborapi.models.mappings.FirstDict] object, which is a subclass of Python's built-in `dict` that provides a `first()` method to get the first value in the dict. We often only have a single vulnerability report for an artifact, so we can use the `first()` method to get the report directly:
+
+```py
+report = await client.get_artifact_vulnerabilities(
+    "library",
+    "hello-world",
+    "latest",
+)
+report = report.first()
+```
+
+## Filtering vulnerabilities
+
 The [`HarborVulnerabilityReport`][harborapi.models.HarborVulnerabilityReport] class provides a simple interface for filtering the vulnerabilities by severity. For example, if we only want to see vulnerabilities with a [`Severity`][harborapi.models.Severity] of [`critical`][harborapi.models.Severity.critical] we can access the [`HarborVulnerabilityReport.critical`][harborapi.models.HarborVulnerabilityReport.critical] attribute, which is a property that returns a list of [`VulnerabilityItem`][harborapi.models.VulnerabilityItem] objects:
 
 ```py

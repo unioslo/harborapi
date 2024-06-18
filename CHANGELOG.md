@@ -12,7 +12,15 @@ While the project is still on major version 0, breaking changes may be introduce
 
 <!-- changelog follows -->
 
-<!-- ## Unreleased -->
+## Unreleased
+
+## Added
+
+- `harborapi.models.mappings.FirstDict` which is a subclass of Python's built-in `dict` that provides a `first()` method to get the first value in the dict (or `None` if the dict is empty).
+
+## Changed
+
+- `HarborAsyncClient.get_artifact_vulnerability_reports()` now returns `FirstDict` to provide easier access to the first (and likely only) report for the artifact.
 
 ## [0.25.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.25.0) - 2024-06-17
 
