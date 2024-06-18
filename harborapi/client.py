@@ -28,6 +28,8 @@ from pydantic import SecretStr
 from pydantic import ValidationError
 from typing_extensions import deprecated
 
+from harborapi.models.mappings import FirstDict
+
 from ._types import JSONType
 from ._types import QueryParamMapping
 from .auth import load_harbor_auth_file
@@ -3816,7 +3818,7 @@ class HarborAsyncClient:
         repository_name: str,
         reference: str,
         mime_type: Union[str, Sequence[str]] = DEFAULT_MIME_TYPES,
-    ) -> Dict[str, HarborVulnerabilityReport]:
+    ) -> FirstDict[str, HarborVulnerabilityReport]:
         """Get the vulnerability report(s) for an artifact.
 
         Parameters
@@ -3832,8 +3834,9 @@ class HarborAsyncClient:
 
         Returns
         -------
-        Dict[str, HarborVulnerabilityReport]
-            A dict of vulnerability reports keyed by MIME type
+        FirstDict[str, HarborVulnerabilityReport]
+            A dict of vulnerability reports keyed by MIME type.
+            Supports the `first()` method to get the first report.
         """
         path = get_artifact_path(project_name, repository_name, reference)
         url = f"{path}/additions/vulnerabilities"
@@ -3848,7 +3851,7 @@ class HarborAsyncClient:
         )
         if not isinstance(resp, dict):
             raise UnprocessableEntity(f"Unable to process response from {url}: {resp}")
-        reports: Dict[str, HarborVulnerabilityReport] = {}
+        reports: FirstDict[str, HarborVulnerabilityReport] = FirstDict()
         if isinstance(mime_type, str):
             mime_type = [mime_type]
         for mt in mime_type:

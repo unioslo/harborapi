@@ -154,6 +154,7 @@ nav:
           - reference/models/_scanner.md
           - reference/models/base.md
           - reference/models/models.md
+          - reference/models/mappings.md
           - reference/models/scanner.md
           - reference/models/buildhistory.md
           - reference/models/oidc.md

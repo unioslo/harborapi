@@ -1,6 +1,6 @@
-# Get artifact vulnerability report
+# Get artifact vulnerability reports
 
-We can fetch the vulnerability report for an artifact using [`get_artifact_vulnerability_reports`][harborapi.client.HarborAsyncClient.get_artifact_vulnerability_reports]. It returns a dict of [`HarborVulnerabilityReport`][harborapi.models.HarborVulnerabilityReport] objects indexed by MIME type. If no reports are found, the dict will be empty.
+We can fetch the vulnerability report(s) for an artifact using [`get_artifact_vulnerability_reports`][harborapi.client.HarborAsyncClient.get_artifact_vulnerability_reports]. It returns a dict of [`HarborVulnerabilityReport`][harborapi.models.HarborVulnerabilityReport] objects indexed by MIME type. If no reports are found, the dict will be empty.
 
 A [`HarborVulnerabilityReport`][harborapi.models.HarborVulnerabilityReport] is more comprehensive than the [`NativeReportSummary`][harborapi.models.models.NativeReportSummary] returned by [`get_artifact(..., with_scan_overview=True)`](../get-artifact-scan-overview). It contains detailed information about the vulnerabilities found in the artifact.
 
@@ -30,6 +30,19 @@ async def main() -> None:
 
 asyncio.run(main())
 ```
+
+The dict returned by the method is a [`FirstDict`][harborapi.models.mappings.FirstDict] object, which is a subclass of Python's built-in `dict` that provides a `first()` method to get the first value in the dict. We often only have a single vulnerability report for an artifact, so we can use the `first()` method to get the report directly:
+
+```py
+report = await client.get_artifact_vulnerabilities(
+    "library",
+    "hello-world",
+    "latest",
+)
+report = report.first()
+```
+
+## Filtering vulnerabilities
 
 The [`HarborVulnerabilityReport`][harborapi.models.HarborVulnerabilityReport] class provides a simple interface for filtering the vulnerabilities by severity. For example, if we only want to see vulnerabilities with a [`Severity`][harborapi.models.Severity] of [`critical`][harborapi.models.Severity.critical] we can access the [`HarborVulnerabilityReport.critical`][harborapi.models.HarborVulnerabilityReport.critical] attribute, which is a property that returns a list of [`VulnerabilityItem`][harborapi.models.VulnerabilityItem] objects:
 
@@ -77,7 +90,7 @@ reports = await client.get_artifact_vulnerabilities(
         "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0",
     ],
 )
-for report in reports:
+for mime_type, report in reports.items():
     print(report)
 
 # OR
