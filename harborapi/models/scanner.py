@@ -401,7 +401,7 @@ class HarborVulnerabilityReport(BaseModel):
         default=None, description="The scanner used to generate the report."
     )
     severity: Optional[Severity] = Field(
-        default=None, description="The overall severity of the vulnerabilities."
+        default=Severity.unknown, description="The overall severity of the vulnerabilities."
     )
     vulnerabilities: List[VulnerabilityItem] = Field(
         default_factory=list, description="The list of vulnerabilities found."
@@ -410,7 +410,15 @@ class HarborVulnerabilityReport(BaseModel):
 
     def __repr__(self) -> str:
         return f"HarborVulnerabilityReport(generated_at={self.generated_at}, artifact={self.artifact}, scanner={self.scanner}, severity={self.severity}, vulnerabilities=list(len={len(self.vulnerabilities)}))"
-
+    
+    @field_validator("severity", mode="before")
+    @classmethod
+    def _severity_none_is_default(
+        cls, v: Optional[Severity], info: ValidationInfo
+    ) -> Severity:
+        if not info.field_name:
+            raise ValueError("Validator is not attached to a field.")
+        return v or cls.model_fields[info.field_name].default
     @property
     def fixable(self) -> List[VulnerabilityItem]:
         return [v for v in self.vulnerabilities if v.fixable]
