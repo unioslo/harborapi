@@ -14,6 +14,12 @@ While the project is still on major version 0, breaking changes may be introduce
 
 <!-- ## Unreleased -->
 
+## [0.25.2](https://github.com/unioslo/harborapi/tree/harborapi-v0.25.2) - 2024-06-26
+
+### Changed
+
+- All Pydantic models now use `default=` kwarg for default values. This prevents certain type checking errors when the model is instantiated without specifying the field.
+
 ## [0.25.1](https://github.com/unioslo/harborapi/tree/harborapi-v0.25.1) - 2024-06-18
 
 ## Added
