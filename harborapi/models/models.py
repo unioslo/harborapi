@@ -263,23 +263,27 @@ class VulnerabilitySummary(BaseModel):
         examples=[{"Critical": 5, "High": 5}],
     )
     critical: int = Field(
-        0,
+        default=0,
         alias="Critical",
         description="The number of critical vulnerabilities detected.",
     )
     high: int = Field(
-        0, alias="High", description="The number of critical vulnerabilities detected."
+        default=0,
+        alias="High",
+        description="The number of critical vulnerabilities detected.",
     )
     medium: int = Field(
-        0,
+        default=0,
         alias="Medium",
         description="The number of critical vulnerabilities detected.",
     )
     low: int = Field(
-        0, alias="Low", description="The number of critical vulnerabilities detected."
+        default=0,
+        alias="Low",
+        description="The number of critical vulnerabilities detected.",
     )
     unknown: int = Field(
-        0,
+        default=0,
         alias="Unknown",
         description="The number of critical vulnerabilities detected.",
     )
@@ -519,7 +523,7 @@ class ProjectMetadata(BaseModel):
         description='Whether this project reuse the system level CVE allowlist as the allowlist of its own.  The valid values are "true", "false". If it is set to "true" the actual allowlist associate with this project, if any, will be ignored.',
     )
     retention_id: Optional[Union[str, int]] = Field(
-        None, description="The ID of the tag retention policy for the project"
+        default=None, description="The ID of the tag retention policy for the project"
     )
 
     @field_validator("*", mode="before")
@@ -570,7 +574,7 @@ class ReplicationFilter(BaseModel):
         default=None, description="The replication policy filter type."
     )
     value: Union[str, Dict[str, Any], None] = Field(
-        None, description="The value of replication policy filter."
+        default=None, description="The value of replication policy filter."
     )
     decoration: Optional[str] = Field(
         default=None, description="matches or excludes the result"
@@ -2276,7 +2280,7 @@ class GeneralInfo(BaseModel):
         description="The OIDC provider name, empty if current auth is not OIDC_auth or OIDC provider is not configured.",
     )
     with_chartmuseum: Optional[bool] = Field(
-        None,
+        default=None,
         description="DEPRECATED: Harbor instance is deployed with nested chartmuseum.",
     )
 
@@ -2789,6 +2793,6 @@ class Artifact(BaseModel):
 
 class RegistryProviders(StrDictRootModel[RegistryProviderInfo]):
     root: Dict[str, RegistryProviderInfo] = Field(
-        {},
+        default={},
         description="The registry providers. Each key is the name of the registry provider.",
     )

@@ -12,7 +12,7 @@ from pydantic import field_validator
 
 class ProjectMetadata(BaseModel):
     retention_id: Optional[Union[str, int]] = Field(
-        None, description="The ID of the tag retention policy for the project"
+        default=None, description="The ID of the tag retention policy for the project"
     )
 
     @field_validator("*", mode="before")

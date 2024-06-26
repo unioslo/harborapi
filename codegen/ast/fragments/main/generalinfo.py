@@ -7,6 +7,6 @@ from pydantic import Field
 
 class GeneralInfo(BaseModel):
     with_chartmuseum: Optional[bool] = Field(
-        None,
+        default=None,
         description="DEPRECATED: Harbor instance is deployed with nested chartmuseum.",
     )
