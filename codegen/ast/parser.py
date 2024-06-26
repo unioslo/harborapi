@@ -118,6 +118,7 @@ class AttrDocstring(Modifier):
 Unset = object()  # Sentinel value so we can pass None as a default
 
 
+# NOTE: Unused right now. Field additions should be added using fragments.
 class Field(Modifier):
     def __init__(
         self,
