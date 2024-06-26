@@ -184,20 +184,7 @@ class Field(Modifier):
 # Changes to existing definitions (change annotation, etc.) or additions
 # that are too minor to create new fragments for.
 models: dict[str, dict[str, list[Modifier]]] = {
-    FragmentDir.scanner: {
-        "VulnerabilityItem": [
-            Field(
-                "severity",
-                "Severity",
-                default=ast.Attribute(
-                    value=ast.Name(id="Severity", ctx=ast.Load()),
-                    attr="unknown",
-                    ctx=ast.Load(),
-                ),
-                description="The severity of the vulnerability.",
-            ),
-        ],
-    },
+    FragmentDir.scanner: {},
     FragmentDir.main: {
         "ExtraAttrs": [
             Annotation(
