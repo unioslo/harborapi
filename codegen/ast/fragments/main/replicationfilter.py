@@ -9,5 +9,5 @@ from pydantic import Field
 
 class ReplicationFilter(BaseModel):
     value: Union[str, Dict[str, Any], None] = Field(
-        None, description="The value of replication policy filter."
+        default=None, description="The value of replication policy filter."
     )

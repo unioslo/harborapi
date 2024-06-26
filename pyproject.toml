@@ -190,3 +190,4 @@ use-schema-description = true
 use-field-descriptions = true
 input-file-type = "openapi"
 output-model-type = "pydantic_v2.BaseModel"
+use-default-kwarg = true

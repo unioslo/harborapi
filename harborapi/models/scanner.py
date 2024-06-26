@@ -36,15 +36,15 @@ class Scanner(BaseModel):
     """
 
     name: Optional[str] = Field(
-        None, description="The name of the scanner.", examples=["Trivy"]
+        default=None, description="The name of the scanner.", examples=["Trivy"]
     )
     vendor: Optional[str] = Field(
-        None,
+        default=None,
         description="The name of the scanner's provider.",
         examples=["Aqua Security"],
     )
     version: Optional[str] = Field(
-        None, description="The version of the scanner.", examples=["0.4.0"]
+        default=None, description="The version of the scanner.", examples=["0.4.0"]
     )
 
     @property
@@ -103,12 +103,12 @@ class ScanRequestId(StrRootModel):
 
 class Registry(BaseModel):
     url: Optional[str] = Field(
-        None,
+        default=None,
         description="A base URL or the Docker Registry v2 API.",
         examples=["https://core.harbor.domain"],
     )
     authorization: Optional[str] = Field(
-        None,
+        default=None,
         description="An optional value of the HTTP Authorization header sent with each request to the Docker Registry v2 API.\nIt's used to exchange Base64 encoded robot account credentials to a short lived JWT access token which\nallows the underlying scanner to pull the artifact from the Docker Registry.\n",
         examples=["Basic BASE64_ENCODED_CREDENTIALS"],
     )
@@ -116,22 +116,22 @@ class Registry(BaseModel):
 
 class Artifact(BaseModel):
     repository: Optional[str] = Field(
-        None,
+        default=None,
         description="The name of the Docker Registry repository containing the artifact.",
         examples=["library/mongo"],
     )
     digest: Optional[str] = Field(
-        None,
+        default=None,
         description="The artifact's digest, consisting of an algorithm and hex portion.",
         examples=[
             "sha256:6c3c624b58dbbcd3c0dd82b4c53f04194d1247c6eebdaab7c610cf7d66709b3b"
         ],
     )
     tag: Optional[str] = Field(
-        None, description="The artifact's tag", examples=["3.14-xenial"]
+        default=None, description="The artifact's tag", examples=["3.14-xenial"]
     )
     mime_type: Optional[str] = Field(
-        None,
+        default=None,
         description="The MIME type of the artifact.",
         examples=["application/vnd.docker.distribution.manifest.v2+json"],
     )
@@ -178,23 +178,25 @@ class Severity(Enum):
 
 
 class Error(BaseModel):
-    message: Optional[str] = Field(None, examples=["Some unexpected error"])
+    message: Optional[str] = Field(default=None, examples=["Some unexpected error"])
 
 
 class CVSSDetails(BaseModel):
     score_v3: Optional[float] = Field(
-        None, description="The CVSS 3.0 score for the vulnerability.\n", examples=[3.2]
+        default=None,
+        description="The CVSS 3.0 score for the vulnerability.\n",
+        examples=[3.2],
     )
     score_v2: Optional[float] = Field(
-        None, description="The CVSS 2.0 score for the vulnerability.\n"
+        default=None, description="The CVSS 2.0 score for the vulnerability.\n"
     )
     vector_v3: Optional[str] = Field(
-        None,
+        default=None,
         description="The CVSS 3.0 vector for the vulnerability. \n",
         examples=["CVSS:3.0/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N"],
     )
     vector_v2: Optional[str] = Field(
-        None,
+        default=None,
         description="The CVSS 2.0 vector for the vulnerability. The string is of the form AV:L/AC:M/Au:N/C:P/I:N/A:N\n",
         examples=["AV:N/AC:L/Au:N/C:N/I:N/A:P"],
     )
@@ -224,22 +226,22 @@ class ScanResponse(BaseModel):
 
 class VulnerabilityItem(BaseModel):
     id: Optional[str] = Field(
-        None,
+        default=None,
         description="The unique identifier of the vulnerability.",
         examples=["CVE-2017-8283"],
     )
     package: Optional[str] = Field(
-        None,
+        default=None,
         description="An operating system package containing the vulnerability.\n",
         examples=["dpkg"],
     )
     version: Optional[str] = Field(
-        None,
+        default=None,
         description="The version of the package containing the vulnerability.\n",
         examples=["1.17.27"],
     )
     fix_version: Optional[str] = Field(
-        None,
+        default=None,
         description="The version of the package containing the fix if available.\n",
         examples=["1.18.0"],
     )
@@ -247,7 +249,7 @@ class VulnerabilityItem(BaseModel):
         Severity.unknown, description="The severity of the vulnerability."
     )
     description: Optional[str] = Field(
-        None,
+        default=None,
         description="The detailed description of the vulnerability.\n",
         examples=[
             "dpkg-source in dpkg 1.3.0 through 1.18.23 is able to use a non-GNU patch program\nand does not offer a protection mechanism for blank-indented diff hunks, which\nallows remote attackers to conduct directory traversal attacks via a crafted\nDebian source package, as demonstrated by using of dpkg-source on NetBSD.\n"
@@ -259,7 +261,7 @@ class VulnerabilityItem(BaseModel):
     )
     preferred_cvss: Optional[CVSSDetails] = None
     cwe_ids: Optional[List[str]] = Field(
-        None,
+        default=None,
         description="The Common Weakness Enumeration Identifiers associated with this vulnerability.\n",
         examples=[["CWE-476"]],
     )
