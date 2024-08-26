@@ -12,7 +12,17 @@ While the project is still on major version 0, breaking changes may be introduce
 
 <!-- changelog follows -->
 
-<!-- ## Unreleased -->
+## Unreleased
+
+### Added
+
+- Model fields:
+  - `ProjectMetadata.proxy_speed_kb`
+  - `Configurations.ldap_group_attach_parallel`
+  - `ConfigurationsResponse.ldap_group_attach_parallel`
+  - `Robot.creator`
+  - `Artifact.artifact_type`
+  - `Artifact.repository_name`
 
 ## [0.25.2](https://github.com/unioslo/harborapi/tree/harborapi-v0.25.2) - 2024-06-26
 

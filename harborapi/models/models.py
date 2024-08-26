@@ -525,6 +525,10 @@ class ProjectMetadata(BaseModel):
     retention_id: Optional[Union[str, int]] = Field(
         default=None, description="The ID of the tag retention policy for the project"
     )
+    proxy_speed_kb: Optional[str] = Field(
+        default=None,
+        description="The bandwidth limit of proxy cache, in Kbps (kilobits per second). It limits the communication between Harbor and the upstream registry, not the client and the Harbor.",
+    )
 
     @field_validator("*", mode="before")
     @classmethod
@@ -1438,6 +1442,10 @@ class Configurations(BaseModel):
     ldap_group_search_scope: Optional[int] = Field(
         default=None,
         description="The scope to search ldap group. ''0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE''",
+    )
+    ldap_group_attach_parallel: Optional[bool] = Field(
+        default=None,
+        description="Attach LDAP user group information in parallel, the parallel worker count is 5",
     )
     ldap_scope: Optional[int] = Field(
         default=None,
@@ -2401,6 +2409,7 @@ class ConfigurationsResponse(BaseModel):
     ldap_group_attribute_name: Optional[StringConfigItem] = None
     ldap_group_search_filter: Optional[StringConfigItem] = None
     ldap_group_search_scope: Optional[IntegerConfigItem] = None
+    ldap_group_attach_parallel: Optional[BoolConfigItem] = None
     ldap_scope: Optional[IntegerConfigItem] = None
     ldap_search_dn: Optional[StringConfigItem] = None
     ldap_timeout: Optional[IntegerConfigItem] = None
@@ -2673,6 +2682,7 @@ class Robot(BaseModel):
         default=None, description="The expiration date of the robot"
     )
     permissions: Optional[List[RobotPermission]] = None
+    creator: Optional[str] = Field(default=None, description="The creator of the robot")
     creation_time: Optional[AwareDatetime] = Field(
         default=None, description="The creation time of the robot."
     )
@@ -2748,12 +2758,19 @@ class Artifact(BaseModel):
     manifest_media_type: Optional[str] = Field(
         default=None, description="The manifest media type of the artifact"
     )
+    artifact_type: Optional[str] = Field(
+        default=None, description="The artifact_type in the manifest of the artifact"
+    )
     project_id: Optional[int] = Field(
         default=None, description="The ID of the project that the artifact belongs to"
     )
     repository_id: Optional[int] = Field(
         default=None,
         description="The ID of the repository that the artifact belongs to",
+    )
+    repository_name: Optional[str] = Field(
+        default=None,
+        description="The name of the repository that the artifact belongs to",
     )
     digest: Optional[str] = Field(
         default=None, description="The digest of the artifact"
