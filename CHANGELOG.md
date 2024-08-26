@@ -24,6 +24,10 @@ While the project is still on major version 0, breaking changes may be introduce
   - `Artifact.artifact_type`
   - `Artifact.repository_name`
 
+### Fixed
+
+- `HarborVulnerabilityReport.severity` when report contains no vulnerabilities.
+
 ## [0.25.2](https://github.com/unioslo/harborapi/tree/harborapi-v0.25.2) - 2024-06-26
 
 ### Changed
