@@ -157,6 +157,21 @@ def test_vulnerability_item_severity_none() -> None:
     assert v.severity is not None
     assert v.severity == Severity.unknown
 
+def test_harborvulnerabilityreport_severity_none() -> None:
+    """Passing None to HarborVulnerabilityReport.severity should assign it Severity.unknown"""
+    v = HarborVulnerabilityReport(
+        severity=None,
+    )
+    assert v.severity is not None
+    assert v.severity == Severity.unknown
+
+def test_harborvulnerabilityreport_severity_empty_str() -> None:
+    """Passing empty string to HarborVulnerabilityReport.severity should assign it Severity.unknown"""
+    v = HarborVulnerabilityReport(
+        severity="",
+    )
+    assert v.severity is not None
+    assert v.severity == Severity.unknown
 
 @pytest.mark.parametrize("scanner_name", ["Trivy", "Clair"])
 def test_vulnerability_item_get_cvss_score(scanner_name: str) -> None:
