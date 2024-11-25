@@ -37,10 +37,16 @@ def is_json(response: Response) -> bool:
 
 
 def handle_optional_json_response(resp: Response) -> Optional[JSONType]:
+    """Attempt to parse response body as JSON, returning None if body is not JSON or is empty."""
+    if not is_json(resp) or resp.status_code == 204:
+        return None
+    return handle_json_response(resp)
+
+
+def handle_json_response(resp: Response) -> JSONType:
     """Takes in a response and attempts to parse the body as JSON.
 
     If the response cannot be parsed, an exception is raised.
-    If the response has no body, `None` is returned.
 
     Parameters
     ----------
@@ -49,8 +55,8 @@ def handle_optional_json_response(resp: Response) -> Optional[JSONType]:
 
     Returns
     -------
-    Optional[JSONType]
-        The parsed JSON, or `None` if the response has no body.
+    JSONType
+        The parsed JSON response body.
 
     Raises
     ------
@@ -58,18 +64,17 @@ def handle_optional_json_response(resp: Response) -> Optional[JSONType]:
         Raised if the response body cannot be parsed as JSON.
         The `__cause__` attribute of the exception will be the original
         JSONDecodeError.
-
     """
-
-    if not is_json(resp) or resp.status_code == 204:
-        return None
     try:
         # We assume Harbor API returns dict or list.
         # If not, they are breaking their own schema and that is not our fault
         return cast(JSONType, resp.json())
     except JSONDecodeError as e:
         logger.error("Failed to parse JSON from %s: %s", resp.url, e)
-        raise HarborAPIException(f"Failed to parse JSON from {resp.url}") from e
+        msg = f"{resp.url} did not return valid JSON: {resp.text}"
+        if "/api/v2.0" not in str(resp.url):
+            msg += "\nDid you remember to include /api/v2.0 in the server URL?"
+        raise HarborAPIException(msg) from e
 
 
 def urlencode_repo(repository_name: str) -> str:
