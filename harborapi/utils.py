@@ -5,6 +5,7 @@ from base64 import b64encode
 from json import JSONDecodeError
 from typing import Dict
 from typing import Optional
+from typing import Sequence
 from typing import Union
 from typing import cast
 from urllib.parse import quote_plus
@@ -253,6 +254,16 @@ def get_project_headers(project_name_or_id: Union[str, int]) -> Dict[str, str]:
         The headers to use for the request.
     """
     return {"X-Is-Resource-Name": str(isinstance(project_name_or_id, str)).lower()}
+
+
+def get_mime_type_header(mime_type: Union[str, Sequence[str]]) -> Dict[str, str]:
+    # NOTE: in the offical API spec, a comma AND space is used to separate:
+    # https://github.com/goharbor/harbor/blob/df4ab856c7597e6fe28b466ba8419257de8a1af7/api/v2.0/swagger.yaml#L6256
+    if not isinstance(mime_type, str):
+        mime_type_param = ", ".join(mime_type)
+    else:
+        mime_type_param = mime_type
+    return {"X-Accept-Vulnerabilities": mime_type_param}
 
 
 def get_params(**kwargs: QueryParamValue) -> QueryParamMapping:

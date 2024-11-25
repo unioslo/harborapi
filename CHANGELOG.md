@@ -14,6 +14,11 @@ While the project is still on major version 0, breaking changes may be introduce
 
 ## Unreleased
 
+### Added
+
+- Project artifacts method: `HarborAsyncClient.get_project_artifacts()`
+- `with_sbom_overview` parameter for `HarborAsyncClient.get_artifact()` and `HarborAsyncClient.get_artifacts()` to include SBOM overview in the response.
+
 ### Changed
 
 - Models updated to API schema from [c97253f](https://github.com/goharbor/harbor/blob/4a12623459a754ff4d07fbd1cddb4df436e8524c/api/v2.0/swagger.yaml)

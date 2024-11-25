@@ -11,6 +11,7 @@ from hypothesis import strategies as st
 from pytest_httpserver import HTTPServer
 
 from harborapi.client import HarborAsyncClient
+from harborapi.models.models import Artifact
 from harborapi.models.models import AuditLog
 from harborapi.models.models import Project
 from harborapi.models.models import ProjectDeletable
@@ -205,6 +206,23 @@ async def test_get_project_summary_mock(
 
     resp = await async_client.get_project_summary("1234")
     assert resp == project_summary
+
+
+@pytest.mark.asyncio
+@given(st.lists(st.builds(Artifact)))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+async def test_get_project_artifacts_mock(
+    async_client: HarborAsyncClient,
+    httpserver: HTTPServer,
+    artifacts: List[Artifact],
+):
+    httpserver.expect_oneshot_request(
+        "/api/v2.0/projects/1234/artifacts",
+        method="GET",
+    ).respond_with_data(json_from_list(artifacts), content_type="application/json")
+
+    resp = await async_client.get_project_artifacts("1234")
+    assert resp == artifacts
 
 
 @pytest.mark.asyncio
