@@ -8,7 +8,7 @@ from typing import Dict
 from pydantic import Field
 
 
-class RegistryProviders(RootModel):
+class RegistryProviders(RootModel[Dict[str, RegistryProviderInfo]]):
     root: Dict[str, RegistryProviderInfo] = Field(
         default={},
         description="The registry providers. Each key is the name of the registry provider.",

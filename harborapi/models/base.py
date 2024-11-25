@@ -9,10 +9,13 @@ for more information: <https://rich.readthedocs.io/en/latest/protocol.html#conso
 from __future__ import annotations
 
 from typing import Any
-from typing import Dict
+from typing import Generator
 from typing import Iterable
+from typing import Mapping
 from typing import Optional
+from typing import Sequence
 from typing import Set
+from typing import Tuple
 from typing import Type
 from typing import TypeVar
 
@@ -54,38 +57,31 @@ T = TypeVar("T")
 class RootModel(PydanticRootModel[T]):
     model_config = ConfigDict(validate_assignment=True)
 
+    root: T
+
     def __bool__(self) -> bool:
         return bool(self.root)
 
-
-class StrDictRootModel(RootModel[Optional[Dict[str, T]]]):
-    # All JSON keys are string, so the key type does need to be
-    # parameterized with a generic type.
-
-    def __iter__(self) -> Any:
+    def __iter__(self) -> Generator[Tuple[Any, Any], None, None]:
         # TODO: fix API spec so root  types can never be none, only
         # the empty container. That way we can always iterate and access
         # without checking for None.
-        if self.root is not None:
-            return iter(self.root)
-        return iter([])
+        if isinstance(self.root, Iterable):
+            yield from iter(self.root)  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType]
+        else:
+            yield from iter([])
 
-    def __getitem__(self, item: str) -> Optional[T]:
-        if self.root is not None:
-            return self.root[item]
+    def __getitem__(self, key: Any) -> Any:
+        if isinstance(self.root, (Mapping, Sequence)):
+            return self.root[key]  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
         return None
 
     # Enables dot access to dict keys for backwards compatibility
     def __getattr__(self, attr: str) -> T:
         try:
-            return self.root[attr]  # type: ignore # forego None check and let KeyError raise
-        except (KeyError, TypeError):
+            return self.root[attr]  # pyright: ignore[reportUnknownVariableType, reportIndexIssue]
+        except (KeyError, TypeError, IndexError):
             raise AttributeError(f"{self.__class__.__name__} has no attribute {attr}")
-
-
-class StrRootModel(RootModel[str]):
-    def __str__(self) -> str:
-        return str(self.root)
 
 
 class BaseModel(PydanticBaseModel):

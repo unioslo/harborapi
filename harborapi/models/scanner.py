@@ -17,11 +17,9 @@ from typing import Union
 from pydantic import AwareDatetime
 from pydantic import ConfigDict
 from pydantic import Field
+from pydantic import RootModel
 from pydantic import ValidationInfo
 from pydantic import field_validator
-
-from harborapi.models.base import StrDictRootModel
-from harborapi.models.base import StrRootModel
 
 from ..log import logger
 from ..version import SemVer
@@ -52,7 +50,7 @@ class Scanner(BaseModel):
         return get_semver(self.version)
 
 
-class ScannerProperties(StrDictRootModel[str]):
+class ScannerProperties(RootModel[Optional[Dict[str, str]]]):
     """
     A set of custom properties that can further describe capabilities of a given scanner.
 
@@ -93,7 +91,7 @@ class ScannerCapability(BaseModel):
     )
 
 
-class ScanRequestId(StrRootModel):
+class ScanRequestId(RootModel[str]):
     root: str = Field(
         ...,
         description="A unique identifier returned by the [/scan](#/operation/AcceptScanRequest] operations. The format of the\nidentifier is not imposed but it should be unique enough to prevent collisons when polling for scan reports.\n",

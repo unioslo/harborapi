@@ -182,6 +182,7 @@ asyncio_mode = "auto"
 
 [tool.datamodel-codegen]
 base-class = ".base.BaseModel"
+class-name = ".base.RootModel"
 field-constraints = true
 snake-case-field = true
 strip-default-none = false

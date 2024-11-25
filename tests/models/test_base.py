@@ -2,17 +2,18 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Any
+from typing import Dict
 from typing import Type
 
 import pytest
+from pydantic import ValidationError
 
 from harborapi.models import CVEAllowlist
 from harborapi.models import CVEAllowlistItem
 from harborapi.models import Project
 from harborapi.models import ProjectMetadata
 from harborapi.models import ProjectReq
-from harborapi.models.base import StrDictRootModel
-from harborapi.models.base import StrRootModel
+from harborapi.models.base import RootModel
 
 
 @pytest.mark.parametrize("extra", [True, False])
@@ -153,10 +154,10 @@ def test_get_model_fields_project(instantiate: bool) -> None:
     "n_keys",
     [1, 2],
 )
-def test_strdictrootmodel(
+def test_rootmodel_dict(
     type_: Type[Any], input_: Any, expect: Any, n_keys: int
 ) -> None:
-    class TestModel(StrDictRootModel[type_]):
+    class TestModel(RootModel[Dict[str, type_]]):
         pass
 
     keys = ["foo", "bar"]
@@ -199,13 +200,15 @@ def test_strdictrootmodel(
         pytest.param(
             1,
             marks=pytest.mark.xfail(
-                strict=True, reason="StrRootModel only accepts str"
+                strict=True,
+                reason="StrRootModel only accepts str",
+                raises=ValidationError,
             ),
         ),
     ),
 )
-def test_strrootmodel(input_: Any) -> None:
-    class TestModel(StrRootModel):
+def test_rootmodel_str(input_: Any) -> None:
+    class TestModel(RootModel[str]):
         pass
 
     model = TestModel(root=input_)
