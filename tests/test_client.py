@@ -625,10 +625,10 @@ async def test_authentication(
             "accept": "application/json",
         },
         method=method,
-    ).respond_with_data()
+    ).respond_with_json({"foo": "bar"})
 
     if method == "GET":
-        await client.get("/foo")
+        assert await client.get("/foo") == {"foo": "bar"}
     elif method == "POST":
         await client.post("/foo", json={"foo": "bar"})
     elif method == "PUT":

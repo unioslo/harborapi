@@ -130,6 +130,7 @@ from .utils import get_basicauth
 from .utils import get_params
 from .utils import get_project_headers
 from .utils import get_repo_path
+from .utils import handle_json_response
 from .utils import handle_optional_json_response
 from .utils import parse_pagination_url
 from .utils import urldecode_header
@@ -5281,7 +5282,6 @@ class HarborAsyncClient:
                 params=None if paginating else params,
                 headers=headers,
                 follow_links=follow_links,
-                **kwargs,
             )
 
             # No next URL - return the result directly
@@ -5318,7 +5318,9 @@ class HarborAsyncClient:
         """Hacky workaround to have a cleaner API for fetching text/plain responses."""
         headers = headers or {}
         headers.update({"Accept": "text/plain"})
-        resp, _ = await self._get(path, params=params, headers=headers, **kwargs)
+        resp, _ = await self._get(
+            path, params=params, headers=headers, text=True, **kwargs
+        )
         # OPINION: assume text is never paginated
         return str(resp)
 
@@ -5384,15 +5386,47 @@ class HarborAsyncClient:
         )
         return FileResponse(resp)
 
-    # TODO: refactor this method so it looks like the other methods, while still supporting pagination.
+    @overload
+    async def _get(
+        self,
+        path: str,
+        *,
+        params: Optional[QueryParamMapping],
+        headers: Optional[Dict[str, Any]],
+        follow_links: bool,
+        text: Literal[True],
+    ) -> Tuple[str, Optional[str]]: ...
+
+    @overload
+    async def _get(
+        self,
+        path: str,
+        *,
+        params: Optional[QueryParamMapping],
+        headers: Optional[Dict[str, Any]],
+        follow_links: bool,
+        text: Literal[False] = False,
+    ) -> Tuple[JSONType, Optional[str]]: ...
+
+    @overload
+    async def _get(
+        self,
+        path: str,
+        *,
+        params: Optional[QueryParamMapping],
+        headers: Optional[Dict[str, Any]],
+        follow_links: bool,
+        text: bool,
+    ) -> Tuple[JSONType, Optional[str]]: ...
+
     async def _get(
         self,
         path: str,
         params: Optional[QueryParamMapping] = None,
         headers: Optional[Dict[str, Any]] = None,
         follow_links: bool = True,
-        **kwargs: Any,
-    ) -> Tuple[JSONType, Optional[str]]:
+        text: bool = False,
+    ) -> Tuple[Union[JSONType, str], Optional[str]]:
         """Sends a GET request to the Harbor API.
         Returns JSON unless the response is text/plain.
 
@@ -5420,9 +5454,9 @@ class HarborAsyncClient:
         )
         self.log_response(resp)
         check_response_status(resp)
-        j = handle_optional_json_response(resp)
-        if j is None:
-            return resp.text, None  # type: ignore # FIXME: resolve this ASAP (use overload?)
+        if text:
+            return resp.text, None
+        j = handle_json_response(resp)
 
         # If we have "Link" in headers, we need to parse the next page link
         if follow_links and (link := resp.headers.get("link")):
