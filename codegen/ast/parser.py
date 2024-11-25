@@ -310,7 +310,7 @@ def modify_module(tree: ast.Module, fragment_dir: FragmentDir) -> ast.Module:
 
 # Imports that should be added to every file
 ADD_IMPORTS = {
-    "harborapi.models.base": ["StrDictRootModel", "StrRootModel"],
+    "harborapi.models.base": [],
 }  # type: dict[str, list[str]] # module: list[import_name]
 
 
@@ -321,6 +321,8 @@ def add_imports(tree: ast.Module) -> ast.Module:
         if isinstance(node, ast.ImportFrom):
             if node.module in ADD_IMPORTS:
                 node_names = [node.name for node in node.names]
+                if not node.module:
+                    continue
                 for name in ADD_IMPORTS[node.module]:
                     if name not in node_names:
                         node.names.append(ast.alias(name=name, asname=None))
@@ -328,9 +330,12 @@ def add_imports(tree: ast.Module) -> ast.Module:
     # Remaining imports that were not appended to existing imports
     for name in set(ADD_IMPORTS) - added:
         names = [ast.alias(name=name, asname=None) for name in ADD_IMPORTS[name]]
+        if not names:
+            continue  # no imports to add from module
+
+        # Inserts `from module import name1, name2, ...`
         tree.body.insert(1, ast.ImportFrom(module=name, names=names, level=0))
         # Assume from __future__ is at the top of the file
-        # Regardless, we automatically sort imports afterwards anyway
     return tree
 
 
@@ -363,98 +368,6 @@ def get_rootmodel_type(classdef: ast.ClassDef) -> ast.expr:
         ):
             return node.annotation
     raise ValueError(f"Class definition '{classdef.name}' does not have a root field.")
-
-
-def fix_rootmodel_base(classdef: ast.ClassDef) -> None:
-    """Adds the appropriate subclass as the base of a RootModel type.
-
-    Depending on the root value annotation, the function will assign one of two
-    bases:
-
-    - `StrDictRootModel` if the root value annotation is `Optional[Dict[str, T]]`
-    - `StrRootModel` if the root value annotation is `str`
-
-    As of goharbor/harbor@5c02fd8, there are no models encapsulating dicts
-    whose root value type is `Dict[str, T]`; they are always `Optional[Dict[str, T]]`.
-
-    Examples
-    --------
-
-    ```
-    class Foo(RootModel):
-        root: Optional[Dict[str, str]]
-    # ->
-    class Foo(StrDictRootModel[str]):
-        root: Optional[Dict[str, str]]
-    ```
-
-    Also works for str root models:
-    ```
-    class Bar(RootModel):
-        root: str
-    # ->
-    class Bar(StrRootModel):
-        root: str
-    ```
-
-    See also
-    --------
-    `harborapi.models.base.StrRootModel`
-    `harborapi.models.base.StrDictRootModel`
-    """
-    # Determine what sort of root model we are dealing with
-    root_type = get_rootmodel_type(classdef)
-    base = "RootModel"
-    vt = "Any"
-    # Root type is a string annotation
-    # e.g. root: "Dict[str, str]"
-    if isinstance(root_type, ast.Name):
-        # HACK: this will break for root models with more complicated signatures,
-        # but we are not dealing with that right now
-        if "Dict[str" in root_type.id:
-            base = "StrDictRootModel"
-            # HACK: create Python statement with the type annotation
-            # and then parse it to get the AST
-            # Say our annotation is `Dict[str, str]`, we want to pass
-            # `str` as the type parameter to `StrDictRootModel`.
-            annotation = ast.parse(f"var: {root_type.id}").body[0].annotation
-            # If the annotation is Optional[Dict[str, str]], then we need
-            # to go through one more slice to get the value type
-            # i.e. Optional[Dict[str, str]] -> Dict[str, str] -> str
-            if "Optional" in root_type.id:
-                slc = annotation.slice.slice
-            else:
-                slc = annotation.slice
-            vt = slc.elts[1].id  # (KT, VT)
-        elif root_type.id == "str":
-            base = "StrRootModel"
-    # Root type is an annotation with a subscript, e.g. Dict[str, T]
-    # or Optional[Dict[str, T]]
-    elif isinstance(root_type, ast.Subscript):
-        # Inspect the AST to determine the type of root model
-        # If annotation is wrapped in Optional[], we need to get the inner slice
-        if getattr(root_type.value, "id", None) == "Optional":
-            inner_root_type = getattr(root_type, "slice")
-        else:
-            inner_root_type = root_type
-        if getattr(inner_root_type.value, "id", None) == "Dict":
-            base = "StrDictRootModel"
-            vt = inner_root_type.slice.elts[1].id  # (KT, VT)
-        # TODO: handle list root types
-    else:
-        raise ValueError(f"Invalid root type: {root_type}")
-
-    # Construct the node for the class's new base
-    if base == "StrDictRootModel":
-        classdef.bases = [
-            ast.Subscript(
-                value=ast.Name(id="StrDictRootModel"),
-                slice=ast.Index(ast.Name(id=vt)),
-            )
-        ]
-    else:
-        # Otherwise, we use the base we determined earlier
-        classdef.bases = [ast.Name(id=base)]
 
 
 def insert_or_update_classdefs(

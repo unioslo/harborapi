@@ -17,10 +17,11 @@ While the project is still on major version 0, breaking changes may be introduce
 ### Changed
 
 - Models updated to API schema from [c97253f](https://github.com/goharbor/harbor/blob/4a12623459a754ff4d07fbd1cddb4df436e8524c/api/v2.0/swagger.yaml)
+- All root models now share a common `harborapi.models.base.RootModel` base class.
 
 ### Fixed
 
-- Root models failing to validate on Pydantic 2.10.
+- Root models failing to build on Pydantic 2.10.
 
 ### Removed
 
