@@ -12,7 +12,9 @@ While the project is still on major version 0, breaking changes may be introduce
 
 <!-- changelog follows -->
 
-## Unreleased
+<!-- ## Unreleased -->
+
+## [0.26.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.26.0) - 2024-11-25
 
 ### Added
 
