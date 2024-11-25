@@ -12,7 +12,21 @@ While the project is still on major version 0, breaking changes may be introduce
 
 <!-- changelog follows -->
 
-<!-- ## Unreleased -->
+## Unreleased
+
+### Changed
+
+- Models updated to API schema from [c97253f](https://github.com/goharbor/harbor/blob/4a12623459a754ff4d07fbd1cddb4df436e8524c/api/v2.0/swagger.yaml)
+
+### Fixed
+
+- Root models failing to validate on Pydantic 2.10.
+
+### Removed
+
+- Generic aliased root models:
+  - `harborapi.models.base.StrDictRootModel`
+  - `harborapi.models.base.StrRootModel`
 
 ## [0.25.3](https://github.com/unioslo/harborapi/tree/harborapi-v0.25.3) - 2024-08-26
 

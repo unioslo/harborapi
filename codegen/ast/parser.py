@@ -457,15 +457,6 @@ def fix_rootmodel_base(classdef: ast.ClassDef) -> None:
         classdef.bases = [ast.Name(id=base)]
 
 
-def fix_rootmodels(tree: ast.Module, classdefs: dict[str, ast.ClassDef]) -> ast.Module:
-    for node in ast.walk(tree):
-        if not isinstance(node, ast.ClassDef):
-            continue
-        if _get_class_base_name(node) == "RootModel":
-            fix_rootmodel_base(node)
-    return tree
-
-
 def insert_or_update_classdefs(
     tree: ast.Module, classdefs: dict[str, ast.ClassDef]
 ) -> ast.Module:
@@ -554,7 +545,6 @@ def add_fragments(tree: ast.Module, directory: Path) -> ast.Module:
             statements["stmts"].extend(stmts["stmts"])
     new_tree = insert_or_update_classdefs(tree, classdefs)
     new_tree = insert_statements(new_tree, statements)
-    new_tree = fix_rootmodels(new_tree, classdefs)
     return new_tree
 
 
