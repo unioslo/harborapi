@@ -4,13 +4,12 @@ This section contains API documentation for the methods implementing the differe
 
 The methods listed can be called on an instance of the [`HarborAsyncClient`][harborapi.client.HarborAsyncClient] class:
 
-
 ```py
 from harborapi import HarborAsyncClient
 
 client = HarborAsyncClient(...)
 
-def main() -> None:
+async def main() -> None:
     projects = await client.get_projects()
     repos = await client.get_repositories()
 
