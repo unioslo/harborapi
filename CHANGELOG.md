@@ -14,6 +14,12 @@ While the project is still on major version 0, breaking changes may be introduce
 
 <!-- ## Unreleased -->
 
+## [0.26.1](https://github.com/unioslo/harborapi/tree/harborapi-v0.26.1) - 2024-11-26
+
+### Fixed
+
+- Incorporate missing SBOM and `HarborAsyncClient.get_project_artifacts()` changes intended for 0.26.0.
+
 ## [0.26.0](https://github.com/unioslo/harborapi/tree/harborapi-v0.26.0) - 2024-11-25
 
 ### Added
