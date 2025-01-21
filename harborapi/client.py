@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import os
+import ssl
 import warnings
 from http.cookiejar import CookieJar
 from pathlib import Path
@@ -22,7 +23,6 @@ from typing import overload
 import httpx
 from httpx import Response
 from httpx import Timeout
-from httpx._types import VerifyTypes
 from pydantic import BaseModel
 from pydantic import SecretStr
 from pydantic import ValidationError
@@ -184,7 +184,7 @@ class HarborAsyncClient:
         # HTTPX client options
         follow_redirects: bool = True,
         timeout: Union[float, Timeout] = 10.0,
-        verify: VerifyTypes = True,
+        verify: Union[ssl.SSLContext, str, bool] = True,
         # Retry options
         retry: Optional[RetrySettings] = RetrySettings(),  # type: ignore[call-arg]
         **kwargs: Any,
@@ -226,10 +226,10 @@ class HarborAsyncClient:
         timeout : Union[float, Timeout]
             The timeout to use for requests.
             Can be either a float or a `httpx.Timeout` object.
-        verify : VerifyTypes
+        verify : Union[ssl.SSLContext, str, bool]
             Control verification of the server's TLS certificate.
-            See `httpx._types.VerifyTypes` for more information or
-            <https://www.python-httpx.org/advanced/ssl/>.
+            Can be an SSL context, a path to a CA bundle, or a boolean.
+            Defaults to True.
         **kwargs : Any
             Backwards-compatibility with deprecated parameters.
             Unknown kwargs are ignored.
@@ -271,7 +271,7 @@ class HarborAsyncClient:
         basicauth: Optional[str] = None,
         credentials_file: Optional[Union[str, Path]] = None,
         url: Optional[str] = None,
-        verify: Optional[VerifyTypes] = None,
+        verify: Optional[Union[ssl.SSLContext, str, bool]] = None,
         **kwargs: Any,
     ) -> None:
         """(Re-)Authenticate the client with the provided credentials.
@@ -291,7 +291,7 @@ class HarborAsyncClient:
             `username`, `secret` and `basicauth` must not be provided if this is used.
         url : Optional[str]
             The URL of the Harbor server in the format `http://host:[port]/api/v<version>`
-        verify : Optional[VerifyTypes]
+        verify : Optional[Union[ssl.SSLContext, str, bool]]
             Control verification of the server's TLS certificate.
         **kwargs : Any
             Additional keyword arguments to pass in.
