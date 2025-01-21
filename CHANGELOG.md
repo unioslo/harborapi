@@ -12,7 +12,11 @@ While the project is still on major version 0, breaking changes may be introduce
 
 <!-- changelog follows -->
 
-<!-- ## Unreleased -->
+## Unreleased
+
+### Fixed
+
+- Missing import error when using httpx>=0.28.0. ([#102](https://github.com/unioslo/harborapi/issues/102))
 
 ## [0.26.1](https://github.com/unioslo/harborapi/tree/harborapi-v0.26.1) - 2024-11-26
 
